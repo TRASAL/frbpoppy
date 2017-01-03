@@ -1,9 +1,4 @@
 # frbpoppy
-*Fast Radio Burst Population Synthesis in Python*
+David Gardenier | [gardenier@astron.nl](gardenier@astron.nl) | ASTRON, University of Amsterdam | APERTIF, ALERT
 
-
-Author: David Gardenier
-
-Affiliations: ASTRON, University of Amsterdam
-
-Contact: [gardenier@astron.nl](gardenier@astron.nl)
+Fast Radio Burst Population Synthesis in Python
