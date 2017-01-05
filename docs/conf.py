@@ -20,6 +20,7 @@
 import os
 import sys
 sys.path.insert(0,os.path.abspath('../code/'))
+#sys.path.insert(0, os.path.abspath('..'))
 
 # -- General configuration ------------------------------------------------
 
@@ -147,8 +148,8 @@ html_theme = 'alabaster'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#
-# html_logo = None
+
+# html_logo = 'logo.png'
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
