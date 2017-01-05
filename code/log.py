@@ -1,21 +1,20 @@
+import inspect
 import logging
 import logging.config
+import os
 import sys
-import inspect
 
 class Log(object):
     """
     Class for logging in- and output in a variety of styles. Only really helpful
-    if calling as such:
-        logger = Log().logger()
-    and then one can use the form:
-        logger.info('Something moderately important')
+    if calling as such ``logger = Log().logger()`` and then using e.g. 
+    ``logger.info('Something moderately important')``
     
     Args:
-        save (Boolean): log to file
-        verbose (Boolean): give more output in console
-        quiet (Boolean): stop console output
-        loc (Str): give the log's filename
+        save (boolean): Log to file
+        verbose (boolean): Give more output in console
+        quiet (boolean): Stop console output
+        loc (str): Give the log's filename
     """
     
     
@@ -56,6 +55,11 @@ class Log(object):
             fn = self.filename.split('.')[-2]
             self.loc = __file__[:-6] + '../logs/' + fn + '.log'
 
+        # Warn if log size is getting out of hand
+        if os.path.getsize(self.loc) > 1e+6:
+            print('WARNING: Your log file is getting rather big - ' + 
+                'please consider deleting it')
+        
         # Format log file output
         frmt_file='%(asctime)s | %(name)-12s | %(levelname)-8s | %(message)s'
         self.formatters['f'] = {'format':frmt_file}
@@ -64,7 +68,7 @@ class Log(object):
             'formatter': 'f',
             'level': logging.DEBUG,
             'filename': self.loc,
-            'mode': 'w',
+            'mode': 'a',
             'backupCount': 0} # Increase for longer backups
         self.handlers['file'] =  hnd_file
         
@@ -73,7 +77,8 @@ class Log(object):
         """Add console options"""
         
         if self.verbose and self.quiet:
-            raise ValueError("You can't be both verbose and quiet")
+            raise ValueError("Really now.. You can't ask me to be " +
+                "both verbose and quiet")
 
         frmt_style = 'c'
         

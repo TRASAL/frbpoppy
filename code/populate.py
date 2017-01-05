@@ -1,10 +1,11 @@
 """Code for creating a population of FRBs"""
 
 import sys
-
 from argparse import ArgumentParser
 
 from log import Log
+from population import Population
+from frb import Frb
 
 assert sys.version_info >= (3,0), 'Please run with Python3'
 
@@ -12,11 +13,13 @@ if __name__ == '__main__':
     
     parser = ArgumentParser(description='Generate a population of FRBs')
 
+    # Scientific parameters
     parser.add_argument('-n',
                         type=int, 
                         required=False,
                         help='number of FRBs to generate/detect')
 
+    # Logging options
     parser.add_argument('-nl',
                         '--nolog', 
                         action='store_true',
@@ -26,7 +29,8 @@ if __name__ == '__main__':
                         '--logloc',
                         default=None,
                         help='location of log file')
-                      
+                        
+    # Verbosity                 
     parser.add_argument('-v',
                         '--verbose',
                         action='store_true',
