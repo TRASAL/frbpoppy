@@ -12,6 +12,7 @@ git push origin master
 git checkout gh-pages
 rm -rf .
 rm -rf ./_sources
+rm -rf ./_static
 touch .nojekyll
 git checkout master docs/_build/html
 mv ./docs/_build/html/* ./
