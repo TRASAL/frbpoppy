@@ -140,7 +140,7 @@ html_theme_options = {
     "github_button": "false"}
 
 # Add any paths that contain custom themes here, relative to this directory.
-# html_theme_path = []
+html_theme_path = ['_templates/']
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
@@ -186,15 +186,15 @@ html_last_updated_fmt = "%b %d, %Y"
 
 # Custom sidebar templates, maps document names to template names.
 #
-html_sidebars = {'index':[], '**':['about.html', 
-                                   'globaltoc.html', 
-                                   'relations.html',
-                                   'searchbox.html',]}
+html_sidebars = {'**':['about.html', 
+                       'globaltoc.html', 
+                       'relations.html',
+                       'searchbox.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 #
-# html_additional_pages = {}
+html_additional_pages = {'**':'searchbox.html', '**':'globaltoc.html'}
 
 # If false, no module index is generated.
 #

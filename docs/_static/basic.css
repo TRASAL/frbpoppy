@@ -72,8 +72,9 @@ div.sphinxsidebar ul ul {
 }
 
 div.sphinxsidebar form {
-    margin-top: 10px;
+    margin-top: 5px;
     float: center;
+    text-align: center;
 }
 
 div.sphinxsidebar input {
@@ -85,9 +86,10 @@ div.sphinxsidebar input {
 }
 
 div.sphinxsidebar #searchbox input[type="text"] {
-    margin: 0 auto;
+    margin: 0 0;
     width: 200px;
     text-align: center;
+    margin-bottom: -25px;
 }
 
 img {
@@ -95,6 +97,7 @@ img {
     border: 0;
     max-width: 100%;
     float: center;
+    text-align: center;
 }
 
 /* -- search page ----------------------------------------------------------- */
