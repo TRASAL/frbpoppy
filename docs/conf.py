@@ -137,7 +137,8 @@ html_theme_options = {
     "github_repo": "frbpoppy",
     "show_powered_by": "false",
     "description": 'Fast Radio Burst Population Synthesis in Python',
-    "github_button": "false"}
+    "github_button": "false",
+    }
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['_templates/']
