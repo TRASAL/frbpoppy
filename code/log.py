@@ -6,9 +6,13 @@ import sys
 
 class Log(object):
     """
-    Class for logging in- and output in a variety of styles. Only really helpful
-    if calling as such ``logger = Log().logger()`` and then using e.g. 
-    ``logger.info('Something moderately important')``
+    Setting default logging styles. Only really helpful when invoking as 
+    
+    >>> logger = Log().logger()
+    
+    and to log/output text, you can use
+    
+    >>> logger.info('Something moderately important')
     
     Args:
         save (boolean): Log to file
@@ -19,13 +23,13 @@ class Log(object):
     
     
     def __init__(self, 
-            save=True, 
-            verbose=False, 
-            quiet=False, 
-            loc=None):
+                 no_log=False, 
+                 verbose=False, 
+                 quiet=False, 
+                 loc=None):
 
         # Input
-        self.save = save
+        self.save = not no_log
         self.verbose = verbose
         self.quiet = quiet
         self.loc = loc
@@ -56,10 +60,13 @@ class Log(object):
             self.loc = __file__[:-6] + '../logs/' + fn + '.log'
 
         # Warn if log size is getting out of hand
-        if os.path.getsize(self.loc) > 1e+6:
-            print('WARNING: Your log file is getting rather big - ' + 
-                'please consider deleting it')
-        
+        try:
+            if os.path.getsize(self.loc) > 1e+6:
+                print('WARNING: Your log file is getting rather big - ' + 
+                    'please consider deleting it')
+        except FileNotFoundError:
+            pass
+            
         # Format log file output
         frmt_file='%(asctime)s | %(name)-12s | %(levelname)-8s | %(message)s'
         self.formatters['f'] = {'format':frmt_file}
