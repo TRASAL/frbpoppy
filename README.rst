@@ -7,9 +7,9 @@ What's frbpoppy?
 ****************
 Establishing the origin and properties of Fast Radio Bursts (FRBs) is one of the biggest goals in radio astronomy. ``frbpoppy`` was called into life to help astronomers determine which FRB properties to expect. Designed to be simple in use and easy to adapt, ``frbpoppy`` continues the work of ``psrpop`` and ``psrpoppy`` in the realm of FRBs.   
    
-**********************
-How do you install it?
-**********************
+*********************
+How can I install it?
+*********************
 1. Get the files from the github repository:
    ::
    
@@ -22,7 +22,7 @@ How do you install it?
 
 
 ******************
-How do you use it?
+How do I use it?
 ******************
 Well, that's where things get more interesting.
 
