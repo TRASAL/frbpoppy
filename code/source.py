@@ -1,5 +1,3 @@
-import math
-
 class Source:
     """Class containing individual source properties"""
 
@@ -16,6 +14,12 @@ class Source:
         self.gy = None
         self.gz = None
 
+        # Detection properties
+        self.s2n = None
+        self.w_obs = None
+        self.fwhm = None
+        self.s_peak = None
+        self.f_obs = None
 
     def __str__(self):
         """Define how to print an FRB source to a console"""
@@ -30,20 +34,3 @@ class Source:
         s += ''.join(attributes)
 
         return s
-
-
-    # From here on Galactic operations (doesn't that sound cool?!),
-    # as in converting coordinates, calculating DM etc.
-
-
-    def lb_to_xyz(self, dist):
-        """Convert galactic coordinates to galactic XYZ"""
-
-        rsun = 8.5  # kpc
-
-        l = math.radians(self.gl)
-        b = math.radians(self.gb)
-
-        self.gx = dist * math.cos(b) * math.sin(l)
-        self.gy = rsun - dist * math.cos(b) * math.cos(l)
-        self.gz = dist * math.sin(b)

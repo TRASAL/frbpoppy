@@ -89,5 +89,8 @@ ENV/
 .ropeproject
 
 # User set files
-*.log
-logo.png
+data/logs/*
+!data/logs/*.gitignore
+*logo.png
+*screenshot*.png
+misc/

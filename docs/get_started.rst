@@ -1,5 +1,38 @@
+===========
 Get Started
 ===========
+
+**********************
+How can I install it?
+**********************
+1. Get the files from the github repository:
+   ::
+
+    $ git clone https://github.com/davidgardenier/frbpoppy
+
+2. Install it on your system:
+   ::
+
+    $ python setup.py install
+
+****************
+How do I use it?
+****************
+Population synthesis always involves three steps: 
+
+1. **Model population**
+
+   Constructing a population in ``frbpoppy`` can be done in a variety of ways. 
+
+2. **Survey modeled population**
+
+   In ``frbpoppy``, a population can be observed with a number of different surveys. While many current survey parameters have been included within ``frbpoppy``, it is possible to define your own survey parameters. 
+   
+3. **Compare obtained results with actual survey results**
+
+   This is left as an exercise for the reader
+
+
 
 *****
 Oops!

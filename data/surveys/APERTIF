@@ -1,0 +1,21 @@
+   None ! survey degradation factor
+      2 ! antenna gain (K/Jy)  # Unknown, but this should be a typical value
+  10800 ! integration time (s)  # Has not been defined yet, but should be something like this
+   .041 ! sampling time (ms)  # Probably 40.92 microseconds actually
+    100 ! system temperature (K)  # Again not sure, but Boudewijn thinks it's something Like A/Tsys = 2.6 m^2 K
+   1400 ! centre frequency (MHz)
+    300 ! bandwidth (MHz)
+0.78125 ! channel bandwidth (MHz)
+      2 ! number of polarizations
+     15 ! full-width half maximum (arcmin)  # worst case: center beam in N-S direction. It's only ~8 arcseconds in E-W direction.
+      0 ! minimum RA (deg)  # I think we want to have as much of the northern sky as possible, although we can't observe at DEC=90 (equatorial mounts don't like that). The actual survey strategy is still being developed.
+    360 ! maximum RA (deg)
+      0 ! minimum DEC (deg)
+     90 ! maximum DEC (deg)
+TODO
+None  ! minimum Galactic longitude (deg)
+None ! maximum Galactic longitude (deg)
+None ! minimum abs(Galactic latitude) (deg)
+None ! maximum abs(Galactic latitude) (deg)
+None ! fractional survey coverage (0-1)
+10 ! signal-to-noise ratio  # typically either 8 or 10

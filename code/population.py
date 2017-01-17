@@ -1,13 +1,12 @@
-import sys
+import os
 
 from collections import OrderedDict as OD
 
 from log import Log
-from source import Source
+
 
 class Population:
     """Class to hold a population of FRBs"""
-
 
     def __init__(self,
                  log_loc=None,
@@ -15,8 +14,8 @@ class Population:
                  quiet=False,
                  verbose=False):
 
-        # Store FRB source
-        self.population = []
+        # Store FRB sources
+        self.sources = []
 
         # Logging options
         self.log_loc = log_loc
@@ -27,7 +26,6 @@ class Population:
 
         # Counter
         self.n_det = 0
-
 
     def __str__(self):
         """Define how to print a population object to a console"""
@@ -43,7 +41,6 @@ class Population:
 
         return s
 
-
     def log(self):
         """Set up log"""
         logger = Log(no_log=self.no_log,
@@ -52,27 +49,49 @@ class Population:
                      loc=self.log_loc).logger()
         return logger
 
+    def write_csv(self, out=None, sep=','):
+        """
+        Write out source properties as csv file
 
-    def write_csv(self,out):
-        """Write out source properties as csv file"""
+        Args:
+            out (str): Outfile location (default=data/logs/population.csv)
+            sep (str): [Optional] Define seperator
+        """
+
+        if out is None:
+            loc = '../data/logs/population.csv'
+            out = os.path.join(os.path.dirname(__file__), loc)
 
         with open(out, 'w') as f:
 
             # Find all source properties
-            a = self.population[0].__dict__
+            a = self.sources[0].__dict__
             attrs = OD(sorted(a.items()))
 
             # Create header
-            text = '#' + ','.join(attrs.keys()) + '\n'
+            text = '#' + sep.join(attrs.keys()) + '\n'
 
             # Print values per source
-            for src in self.population:
-                text += ','.join([str(src.__dict__[k]) for k in attrs]) + '\n'
+            for src in self.sources:
+                text += sep.join([str(src.__dict__[k]) for k in attrs]) + '\n'
 
             f.write(text)
 
+    def write_ascii(self, out=None):
+        """
+        Write out source properties in ascii format
 
-    def write_pickle(self,out):
+        Args:
+            out (str): Outfile location (default=data/logs/population.dat)
+        """
+
+        if out is None:
+            loc = '../data/logs/population.dat'
+            out = os.path.join(os.path.dirname(__file__), loc)
+            print(out)
+
+        self.write_csv(out=None, sep=' ')
+
+    def write_pickle(self, out):
         """Write a pickled class"""
-        return 'Hmm'
-
+        self.logger.debug('TODO')

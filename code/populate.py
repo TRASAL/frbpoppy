@@ -3,13 +3,16 @@
 import math
 import random
 import sys
+
 from argparse import ArgumentParser
 
-from log import Log
+import galacticops as go
+
 from population import Population
 from source import Source
 
-assert sys.version_info >= (3,0), 'Please run with Python3'
+
+assert sys.version_info >= (3, 0), 'Please run with Python3'
 
 
 def generate(n_gen,
@@ -43,21 +46,21 @@ def generate(n_gen,
 
         # Initialise
         src = Source()
-        if pop.n_det < 5:
-            # Add random coordinates
-            src.gb = math.degrees(math.asin(random.random()))
-            if random.random() < 0.5:
-                src.gb *= -1
-            src.gl = random.random() * 360.0
 
-            # Convert coordinates
-            src.lb_to_xyz(1.0) #1 kpc
+        # Add random coordinates
+        src.gb = math.degrees(math.asin(random.random()))
+        if random.random() < 0.5:
+            src.gb *= -1
+        src.gl = random.random() * 360.0
+
+        # Convert coordinates
+        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, 1.0)  # 1 kpc
 
         # Add to population
-        pop.population.append(src)
+        pop.sources.append(src)
         pop.n_det += 1
 
-    pop.write_csv('logs/test.csv')
+    return pop
 
 
 if __name__ == '__main__':
