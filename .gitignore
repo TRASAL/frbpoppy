@@ -94,3 +94,5 @@ data/logs/*
 *logo.png
 *screenshot*.png
 misc/
+*.o  # Fortran files
+*.so  # Shared libraries
