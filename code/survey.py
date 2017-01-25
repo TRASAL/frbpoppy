@@ -4,6 +4,7 @@ import random
 
 import galacticops as go
 
+
 class Survey:
     """
     Method containing survey parameters and functions
@@ -14,7 +15,7 @@ class Survey:
                            (see data/surveys/) or a path name to a new survey
                            filename
         pattern (str): Set gain pattern
-        """
+    """
 
     def __init__(self, survey_name, pattern='gaussian'):
 
@@ -39,6 +40,7 @@ class Survey:
         self.pointings_list = None
         self.gains_list = None
         self.t_obs_list = None
+        self.T_sky_list = go.load_T_sky()
         self.gain_pattern = pattern
         self.aa = False  # Whether aperture array
 
@@ -58,10 +60,12 @@ class Survey:
 
     def parse(self, f):
         """
-        Attempt to parse survey files
+        Attempt to parse survey file already opened
 
         Args:
             f (str): Filename, see Survey class
+        Returns:
+            Various attributes
         """
 
         for line in f:
@@ -84,9 +88,9 @@ class Survey:
             elif p.count('sampling'):
                 self.t_samp = float(v)  # [ms]
             elif p.count('system temperature'):
-                self.t_sys = float(v)  # [K]
+                self.T_sys = float(v)  # [K]
             elif p.count('centre frequency'):
-                self.freq = float(v)  # [MHz]
+                self.central_freq = float(v)  # [MHz]
             elif p.startswith('bandwidth'):
                 self.bw = float(v)  # [MHz]
             elif p.count('channel bandwidth'):
@@ -161,6 +165,76 @@ class Survey:
 
         return True
 
+    def dm_smear(self, source):
+        """
+        Calculate delay in pulse across a channel due to dm smearing. Formula's
+        based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
+        Kramer, section A2.4. Note the power of the forefactor has changed due
+        to the central frequency being given in MHz.
+
+        Args:
+            source (class): Source object with a dm attribute
+        Returns:
+            t_dm, t_dm_err (float): Time of delay [ms] at central band
+                                     frequency, with its error assuming a
+                                     20% uncertainty in the dispersion measure
+        """
+        t_dm = 8.297616e6 * self.bw_chan * source.dm * (self.central_freq)**-3
+        t_dm_err = t_dm / source.dm/(0.20*t_dm)
+        return t_dm, t_dm_err
+
+    def cal_flux(self, source, freq):
+        """
+        Calculate the flux of an FRB source at a particular frequency
+
+        Args:
+            source (class): Source method, needed for flux at 1400 MHz
+            freq (float): Frequency [MHz] at which to calculate the flux
+        Returns:
+            flux (float): Source flux [TODO] at given input frequency
+        """
+        return source.s_1400() * (self.central_freq/freq)**source.spindex
+
+    def cal_T_sky(self, source):
+        """
+        Calculate the sky temperature from the Haslam table, before scaling to
+        the survey frequency. The temperature sky map is given in the weird
+        units of HealPix and despite looking up info on this coordinate system,
+        I don't have the foggiest idea of how to transform these to galactic
+        coordinates. I have therefore directly copied the following code from
+        psrpoppy in the assumption Sam Bates managed to figure it out.
+
+        Args:
+            source (class): Needed for coordinates
+        Returns:
+            T_sky (float): Sky temperature [K]
+        """
+
+        # ensure l is in range 0 -> 360
+        B = source.gb
+        if source.gl < 0.:
+            L = 360 + source.gl
+        else:
+            L = source.gl
+
+        # convert from l and b to list indices
+        j = B + 90.5
+        if j > 179:
+            j = 179
+
+        nl = L - 0.5
+        if L < 0.5:
+            nl = 359
+        i = float(nl) / 4.
+
+        T_sky_haslam = self.T_sky_list[180*int(i) + int(j)]
+
+        # scale temperature
+        # Assuming dominated by syncrotron radiation
+        T_sky = T_sky_haslam * (self.central_freq/408.0)**(-2.6)
+
+        return T_sky
+
     def calc_snr(self, source, population):
         """
         Calculate the signal to noise ratio of a source in the survey
@@ -170,7 +244,9 @@ class Survey:
             population (class): Population to which the source belongs
 
         Returns:
-            0.0: If source is not in survey region
+            snr (float): Signal to noise ratio based on the radiometer equation
+                         for a single pulse (will return 0.0 if source is not in
+                         survey region)
         """
 
         if not self.in_region(source):
@@ -183,13 +259,46 @@ class Survey:
             # George W. Swenson, JR. (Second edition), around p. 15
 
             # Angular variable on sky, defined so that at fwhm/2, the
-            # intensity profile is exactly 1. It's multiplied by the sqrt of
+            # intensity profile is exactly 0.5. It's multiplied by the sqrt of
             # a random number to ensure the distribution of variables on the
             # sky remains uniform, not that it increases towards the centre
-            # (uniform random point within circle)
+            # (uniform random point within circle). You could see this as
+            # the calculated offset from the centre of the beam.
             xi = self.fwhm * math.sqrt(random.random()) / 2.
 
             # Intensity profile
             alpha = 2*math.sqrt(math.log(2))
             int_pro = math.exp(-(alpha*xi/self.fwhm)**2)
+
+        # Dispersion measure across single channel, with error
+        t_dm, t_dm_err = self.dm_smear(source)
+
+        # Intrinsic pulse width
+        w_int = source.width
+
+        # Calculate scattering
+        t_scat = go.scatter_bhat(source.dm, freq=self.central_freq)
+
+        # From Narayan (1987, DOI: 10.1086/165442)
+        # Also Cordes & McLaughlin (2003, DOI: 10.1086/378231)
+        # For details see p. 30 of Emily Petroff's thesis (2016), found here:
+        # http://hdl.handle.net/1959.3/417307
+        w_eff = math.sqrt(w_int**2 + t_dm**2 + t_dm_err**2 +
+                          t_scat**2 + self.t_samp**2)
+
+        # Calculate total temperature
+        T_sky = self.cal_T_sky(source)
+        T_tot = self.T_sys + T_sky
+
+        # Calculate flux density at central frequency
+        s_peak = source.s_1400()
+
+        # Radiometer equation for single pulse (Dewey et al., 1984)
+        snr = s_peak * self.gain * math.sqrt(self.n_pol*self.bw_chan*w_eff)
+        snr /= (T_tot * self.beta)
+
+        # Account for offset in beam
+        snr *= int_pro
+
+        return snr
 

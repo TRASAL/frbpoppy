@@ -2,23 +2,22 @@
 
 import math
 import random
-import sys
 
 from argparse import ArgumentParser
 
+import distributions as ds
 import galacticops as go
-
 from population import Population
 from source import Source
 
 
-assert sys.version_info >= (3, 0), 'Please run with Python3'
-
-
 def generate(n_gen,
+             electron_model='ne2001',
              log_loc=None,
+             lum_dist_pars=[0, 0, 0],
              no_log=False,
              quiet=False,
+             scindex=-3.86,
              verbose=False):
 
     """
@@ -35,6 +34,7 @@ def generate(n_gen,
     pop = Population()
 
     pop.n_gen = n_gen
+    pop.lum_dist_pars = lum_dist_pars
 
     # Log parameters
     pop.logloc = log_loc
@@ -54,7 +54,21 @@ def generate(n_gen,
         src.gl = random.random() * 360.0
 
         # Convert coordinates
-        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, 1.0)  # 1 kpc
+        d = 5*random.random()  # [kpc]
+        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, d)
+
+        # Calculate distance to source
+        src.dist = go.calc_d_sun(src.gx, src.gy, src.gz)
+
+        # Calculate dispersion measure
+        src.dm = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
+
+        # Calculate intrinsic pulse width [ms]
+        src.width = 3.0
+
+        # Add luminosity at 1400 MHz
+        src.lum_1400 = 1.14
+        #src.lum_1400 = ds.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add to population
         pop.sources.append(src)

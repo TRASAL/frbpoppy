@@ -9,10 +9,16 @@ class Population:
     """Class to hold a population of FRBs"""
 
     def __init__(self,
+                 electron_model=None,
+                 lum_dist_pars=None,
                  log_loc=None,
                  no_log=False,
                  quiet=False,
                  verbose=False):
+
+        # Population properties
+        self.electron_model = None
+        self.lum_dist_pars = None
 
         # Store FRB sources
         self.sources = []
@@ -69,7 +75,7 @@ class Population:
             attrs = OD(sorted(a.items()))
 
             # Create header
-            text = '#' + sep.join(attrs.keys()) + '\n'
+            text = sep.join(attrs.keys()) + '\n'
 
             # Print values per source
             for src in self.sources:
@@ -88,10 +94,5 @@ class Population:
         if out is None:
             loc = '../data/logs/population.dat'
             out = os.path.join(os.path.dirname(__file__), loc)
-            print(out)
 
-        self.write_csv(out=None, sep=' ')
-
-    def write_pickle(self, out):
-        """Write a pickled class"""
-        self.logger.debug('TODO')
+        self.write_csv(out=out, sep=' ')
