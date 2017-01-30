@@ -1,11 +1,12 @@
 import bokeh.io
 import pandas as pd
+import os
 
-from bokeh.layouts import widgetbox, layout
+from bokeh.layouts import layout, widgetbox
 from bokeh.models import ColumnDataSource, CustomJS
-from bokeh.models.widgets import Paragraph, Select, CheckboxGroup
+from bokeh.models.widgets import Paragraph, Select
 from bokeh.palettes import Category10
-from bokeh.plotting import Figure
+from bokeh.plotting import Figure, output_file
 
 # Number of dataframes/populations
 num_df = 0
@@ -45,6 +46,7 @@ def plot_pop(pops=[], files=[]):
         '''
         global num_df
         df = pd.read_csv(path)
+        df['plot_num'] = num_df
         df['plot_colour'] = colours[num_df]
         df['plot_size'] = str((num_df+1)*5)
         dfs.append(df)
@@ -111,14 +113,7 @@ def plot_pop(pops=[], files=[]):
     callbacky = CustomJS(args=dict(source=source),
                          code=code.format(var='gy'))
     callbackpop = CustomJS(args=dict(source=source),
-                         code=code.format(var='gy'))
-
-    # Add check boxes for toggling populations
-    pop_ops = ['pop_1', 'pop_2']
-    choose_pop = CheckboxGroup(name='Populations',
-                               labels=pop_ops,
-                               active=[i for i in range(ld)],
-                               callback=callbackpop)
+                           code=code.format(var='gy'))
 
     # Add list boxes for selecting which columns to plot on the x and y axis
     xaxis_select = Select(title='X-axis:',
@@ -133,8 +128,11 @@ def plot_pop(pops=[], files=[]):
     # Setup layout plot window
     title = Paragraph(text='frbpoppy')
     text = Paragraph(text='Please select options')
-    inputs = widgetbox(title, text, choose_pop, xaxis_select, yaxis_select)
+    inputs = widgetbox(title, text, xaxis_select, yaxis_select)
     panel = layout([[inputs, plot]])
 
     # Show the plot!
+    loc = '../data/results/plot.html'
+    out = os.path.join(os.path.dirname(__file__), loc)
+    output_file(out, title='frbpoppy plot')
     bokeh.io.show(panel)

@@ -31,7 +31,8 @@ class Population:
         self.logger = self.log()
 
         # Counter
-        self.n_det = 0
+        self.n_srcs = 0
+        self.name = None  # Population name
 
     def __str__(self):
         """Define how to print a population object to a console"""
@@ -55,44 +56,56 @@ class Population:
                      loc=self.log_loc).logger()
         return logger
 
-    def write_csv(self, out=None, sep=','):
+    def save(self, out=None, sep=','):
         """
-        Write out source properties as csv file
+        Write out source properties as data file
 
         Args:
-            out (str): Outfile location (default=data/logs/population.csv)
-            sep (str): [Optional] Define seperator
+            out (str): Outfile location (default=data/results/population.csv or
+                       data/results/population_<survey_name>.csv if survey)
+            sep (str): Define seperator in file, which also changes the file
+                       type between .dat and .csv
         """
+        # Check the population contains sources
+        if len(self.sources) == 0:
+            print('Nothing to write: survey population contains no sources')
+            return
 
+        # Set default file locations
         if out is None:
-            loc = '../data/logs/population.csv'
-            out = os.path.join(os.path.dirname(__file__), loc)
+
+            # Check if a population has been a survey name
+            if self.name is None:
+                loc = '../data/results/population'
+                out = os.path.join(os.path.dirname(__file__), loc)
+            else:
+                loc = '../data/results/population_' + self.name.lower()
+                out = os.path.join(os.path.dirname(__file__), loc)
+
+            # Set file types
+            if sep == ',':
+                out += '.csv'
+            elif sep == ' ':
+                out += '.dat'
 
         with open(out, 'w') as f:
+            f.write(self.values(sep=sep))
 
-            # Find all source properties
-            a = self.sources[0].__dict__
-            attrs = OD(sorted(a.items()))
+    def values(self, sep=','):
+        """Gather source values into table"""
 
-            # Create header
-            text = sep.join(attrs.keys()) + '\n'
+        # Check the population contains sources
+        if len(self.sources) == 0:
+            print('Nothing to write: survey population contains no sources')
+            return
 
-            # Print values per source
-            for src in self.sources:
-                text += sep.join([str(src.__dict__[k]) for k in attrs]) + '\n'
+        # Find all source properties
+        a = self.sources[0].__dict__
+        attrs = OD(sorted(a.items()))
 
-            f.write(text)
+        # Create header
+        data = sep.join(attrs.keys()) + '\n'
 
-    def write_ascii(self, out=None):
-        """
-        Write out source properties in ascii format
-
-        Args:
-            out (str): Outfile location (default=data/logs/population.dat)
-        """
-
-        if out is None:
-            loc = '../data/logs/population.dat'
-            out = os.path.join(os.path.dirname(__file__), loc)
-
-        self.write_csv(out=out, sep=' ')
+        # Print values per source
+        for src in self.sources:
+            data += sep.join([str(src.__dict__[k]) for k in attrs]) + '\n'

@@ -34,7 +34,6 @@ class Survey:
 
         # Parse survey file
         self.parse(f)
-
         self.discoveries = 0
         self.survey_name = survey_name
         self.pointings_list = None
@@ -43,6 +42,11 @@ class Survey:
         self.T_sky_list = go.load_T_sky()
         self.gain_pattern = pattern
         self.aa = False  # Whether aperture array
+
+        # Counters
+        self.n_det = 0  # Number of detected sources
+        self.n_faint = 0  # Number of sources too faint to detect
+        self.n_out = 0 # Number of sources outside detection region
 
     def __str__(self):
         """Define how to print a survey object to a console"""
@@ -245,12 +249,12 @@ class Survey:
 
         Returns:
             snr (float): Signal to noise ratio based on the radiometer equation
-                         for a single pulse (will return 0.0 if source is not in
-                         survey region)
+                         for a single pulse. Will return -2.0 if source is not
+                         in survey region
         """
 
         if not self.in_region(source):
-            return 0.0
+            return -2.0
 
         if self.gain_pattern == 'gaussian':
 

@@ -42,7 +42,7 @@ def generate(n_gen,
     pop.quiet = quiet
     pop.verbose = verbose
 
-    while pop.n_det < pop.n_gen:
+    while pop.n_srcs < pop.n_gen:
 
         # Initialise
         src = Source()
@@ -72,7 +72,7 @@ def generate(n_gen,
 
         # Add to population
         pop.sources.append(src)
-        pop.n_det += 1
+        pop.n_srcs += 1
 
     return pop
 

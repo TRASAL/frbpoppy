@@ -2,26 +2,38 @@ from population import Population
 from survey import Survey
 
 
-def run(pop, survey_list):
-    """Run any surveys and detect FRB sources"""
+def observe(pop, survey_name):
+    """
+    Run survey to detect FRB sources
 
-    # List of survey populations
-    survey_pops = []
+    Args:
+        pop (class): Population class of FRB sources to observe
+        survey_name (str): Name of survey with which to observe
+    Returns:
+        surv_pop (class): Observed survey population
+    """
 
-    for surv in survey_list:
+    s = Survey(survey_name)
+    surv_pop = Population()
+    surv_pop.name = survey_name
 
-        s = Survey(surv)
-        surv_pop = Population()
+    for src in pop.sources:
 
-        # Counters
-        n_det = 0
+        # Calculate signal to noise ratio
+        snr = s.calc_snr(src, pop)
 
-        for src in pop.sources:
+        if snr > s.snr_limit:
 
-            # Calculate signal to noise ratio
-            snr = s.calc_snr(src, pop)
+            # Note that source has been detected
+            s.n_det += 1
+            src.snr = snr
+            surv_pop.sources.append(src)
 
-            if snr > s.snr_limit:
-                n_det += 1
-                src.snr = snr_limit
-                surv_pop.sources.append(src)
+        elif snr == -2.0:
+            s.n_out += 1
+        else:
+            s.n_faint += 1
+
+    print(len(pop.sources), s.n_det, s.n_faint, s.n_out)
+
+    return surv_pop
