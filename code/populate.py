@@ -13,6 +13,7 @@ from source import Source
 
 def generate(n_gen,
              electron_model='ne2001',
+             dm_max=3000,
              log_loc=None,
              lum_dist_pars=[0, 0, 0],
              no_log=False,
@@ -54,20 +55,29 @@ def generate(n_gen,
         src.gl = random.random() * 360.0
 
         # Convert coordinates
-        d = 5*random.random()  # [kpc]
+        d = 500*random.random()  # [kpc]
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, d)
 
         # Calculate distance to source
         src.dist = go.calc_d_sun(src.gx, src.gy, src.gz)
+        src.z = go.d_to_z(src.dist)
 
         # Calculate dispersion measure
-        src.dm = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
+
+        # Milky Way
+        src.dm_mw = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
+        # Intergalactic medium
+        src.dm_igm = go.ioka_dm_igm(src.z)
+        # Host
+        src.dm_host = 100.  # Thornton et al. (2013)
+        # Total
+        src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
         # Calculate intrinsic pulse width [ms]
         src.width = 3.0
 
         # Add luminosity at 1400 MHz
-        src.lum_1400 = 1.14
+        src.lum_1400 = 10.0#1.14
         #src.lum_1400 = ds.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add to population

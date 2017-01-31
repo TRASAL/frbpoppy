@@ -8,7 +8,9 @@ class Source:
 
         self.flux = None
         self.dm = None
-        self.rm = None
+        self.dm_mw = None
+        self.dm_igm = None
+        self.dm_host = None
         self.width = None  # Intrinsic pulse width
         self.lum_1400 = None
 
@@ -18,7 +20,8 @@ class Source:
         self.gx = None
         self.gy = None
         self.gz = None
-        self.dist = None  # Distance source to Sun
+        self.dist = None  # Distance source to Sun [kpc]
+        self.z = None
 
         # Detection properties
         self.snr = None
@@ -50,5 +53,5 @@ class Source:
         Returns:
             s (float): Flux density of a source [mJy] at 1400 MHz
         """
-        # TODO: I differ from psrpoppy in that I include a factor 4pi
+        # Differs from psrpoppy in that it includes a factor 4pi
         return self.lum_1400 / (4*math.pi*self.dist**2)

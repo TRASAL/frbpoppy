@@ -46,7 +46,7 @@ class Survey:
         # Counters
         self.n_det = 0  # Number of detected sources
         self.n_faint = 0  # Number of sources too faint to detect
-        self.n_out = 0 # Number of sources outside detection region
+        self.n_out = 0  # Number of sources outside detection region
 
     def __str__(self):
         """Define how to print a survey object to a console"""
@@ -303,6 +303,74 @@ class Survey:
 
         # Account for offset in beam
         snr *= int_pro
+
+        return snr
+
+    def scint(self, source, snr):
+        """
+        Calculate scintillation effect on the signal to noise ratio (rather than
+        adapting the flux, as the snr can change per survey attempt). Formula's
+        based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
+        Kramer, section 4.2.
+
+        Args:
+            src (class): Source object
+            snr (float): Signal to noise ratio
+        Returns:
+            snr (float): Signal to noise ratio modulated by scintillation
+        """
+        # Calculate scattering
+        t_scat = go.scatter_bhat(source.dm, freq=self.central_freq)
+        # Convert to seconds
+        t_scat /= 1000.
+
+        # Decorrelation bandwidth (eq. 4.39)
+        decorr_bw = 1.16/(2*math.pi*t_scat)
+        # Convert to MHz
+        decorr_bw /= 1e6
+
+        # Scintillation strength (eq. 4.33)
+        u = math.sqrt(self.central_freq / decorr_bw)
+
+        # Strong scintillation
+        if u < 1:
+            # (eq. 4.35)
+            m = math.sqrt(u**(5/3))
+
+        # Weak scintillation
+        else:
+
+            # Refractive scintillation (eq. 4.47)
+            m_riss = u**-(1/3)
+
+            # Taking the average kappa value
+            kappa = 0.15
+
+            t_diss, decorr_bw = go.ne2001_scint_time_bw(source.dist,
+                                                        source.gl,
+                                                        source.gb,
+                                                        self.central_freq)
+
+            # Following Cordes and Lazio (1991) (eq. 4.43)
+            if t_diss is None:
+                n_t = 1.
+            else:
+                n_t = 1 + kappa * self.t_obs / t_diss
+
+            if decorr_bw is None:
+                n_f = 1.
+            else:
+                n_f = 1 + kappa * self.bw / decorr_bw
+
+
+            # Diffractive scintillation (eq. 4.41)
+            m_diss = 1 / math.sqrt(n_t * n_f)
+
+            # (eq. 4.48)
+            m = math.sqrt(m_diss**2 + m_riss**2 + m_diss*m_riss)
+
+        # Distribute the scintillation according to gaussian distribution
+        snr = random.gauss(snr, m*snr)
 
         return snr
 

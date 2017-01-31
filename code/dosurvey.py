@@ -22,15 +22,19 @@ def observe(pop, survey_name):
         # Calculate signal to noise ratio
         snr = s.calc_snr(src, pop)
 
-        if snr > s.snr_limit:
+        # Check whether source outside survey region
+        if snr == -2.0:
+            s.n_out += 1
+            continue
 
+        # Add scintillation
+        snr = s.scint(src, snr)
+
+        if snr > s.snr_limit:
             # Note that source has been detected
             s.n_det += 1
             src.snr = snr
             surv_pop.sources.append(src)
-
-        elif snr == -2.0:
-            s.n_out += 1
         else:
             s.n_faint += 1
 

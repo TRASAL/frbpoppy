@@ -3,10 +3,10 @@ from dosurvey import observe
 from plot import plot_pop
 
 # Generate FRB population
-#population = generate(10000, electron_model='ne2001')
+population = generate(10, electron_model='ne2001')
 
 # Observe FRB population
-#survey_population = observe(population, 'PMSURV')
+survey_population = observe(population, 'PMSURV')
 
 # Plot populations
 
@@ -16,4 +16,4 @@ from plot import plot_pop
 # Or with
 #population.save()
 #survey_population.save()
-plot_pop(files=['./data/results/population.csv', './data/results/population_pmsurv.csv'])
+#plot_pop(files=['./data/results/population.csv', './data/results/population_pmsurv.csv'])

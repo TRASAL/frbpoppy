@@ -125,6 +125,81 @@ def ne2001_dist_to_dm(dist, gl, gb):
 
     return dm
 
+def ne2001_get_smtau(dist, gl, gb):
+    """
+    Use the NE2001 model to calculate scattering measure. Calculations based on
+    work presented in Cordes & Lazio (1991, DOI: 10.1086/170261)
+
+    Args:
+        dist (float): Distance to source [kpc]
+        gl (float): Galactic longitude [fractional degrees]
+        gb (float): Galactic latitude [fractional degrees]
+    Returns:
+        sm (float): Scattering measure
+        smtau (float): Scattering measure, but unsure why different to sm
+    """
+
+    dist = C.c_float(dist)
+    # Note the galactic coordinates need to be given in radians
+    gl = C.c_float(math.radians(gl))
+    gb = C.c_float(math.radians(gb))
+
+    ndir = C.c_int(-1)
+    sm = C.c_float(0.)
+    smtau = C.c_float(0.)
+
+    inpath = C.create_string_buffer(dm_mods.encode())
+    linpath = C.c_int(len(dm_mods))
+
+    ne2001lib.dmdsm_(C.byref(gl),
+                     C.byref(gb),
+                     C.byref(ndir),
+                     C.byref(C.c_float(0.0)),
+                     C.byref(dist),
+                     C.byref(C.create_string_buffer(' '.encode())),
+                     C.byref(sm),
+                     C.byref(smtau),
+                     C.byref(C.c_float(0.0)),
+                     C.byref(C.c_float(0.0)),
+                     C.byref(inpath),
+                     C.byref(linpath)
+                     )
+
+    return sm.value, smtau.value
+
+
+def ne2001_scint_time_bw(dist, gl, gb, freq):
+    """
+    Use the NE2001 model to get the diffractive scintillation timescale
+
+    Args:
+        dist (float): Distance to source [kpc]
+        gl (float): Galactic longitude [fractional degrees]
+        gb (float): Galactic latitude [fractional degrees]
+        freq (float): Observing frequency [MHz]
+    Returns:
+        scint_time (float): Diffractive scintillation timescale [Hz]
+        scint_bw (float): Scintillation bandwidth [Hz]
+    """
+
+    sm, smtau = ne2001_get_smtau(dist, gl, gb)
+
+    if smtau <= 0.:
+        scint_time = None
+    else:
+        # Eq. 46 of Cordes & Lazio 1991, ApJ, 376, 123 uses coefficient 3.3
+        # instead of 2.3. They do this in the code and mention it explicitly,
+        # so I trust it! <- From psrpoppy
+        scint_time = 3.3 * (freq/1e3)**1.2 * smtau**(-0.6)
+
+    if sm <= 0.:
+        scint_bw = None
+    else:
+        # (eq. 48)
+        scint_bw = 223. * (freq/1e3)**4.4 * sm**(-1.2) / dist
+
+    return scint_time, scint_bw
+
 
 def scatter_bhat(dm, scindex=-3.86, freq=1400.0):
     """
@@ -142,7 +217,7 @@ def scatter_bhat(dm, scindex=-3.86, freq=1400.0):
     log_t = -6.46 + 0.154*math.log10(dm) + 1.07*math.log10(dm)**2
     log_t += scindex*math.log10(freq/1e3)
 
-    # Width of Gaussian distribution based on values given in psrpoppy
+    # Width of Gaussian distribution based on values given Lorimer et al. (2008)
     t_scat = 10**random.gauss(log_t, 0.8)
 
     return t_scat
@@ -178,3 +253,34 @@ def load_T_sky():
                 str_idx += 5
 
     return t_sky_list
+
+def d_to_z(d):
+    """
+    Convert distance in kpc to z. Holds for z <= 2
+
+    Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
+    Bradley W. Carroll, Dale A. Ostlie.
+
+    Args:
+        d (float): Distance from Earth to a source [kpc]
+    Returns:
+        z (float): Redshift
+    """
+    # Rewrite eq. 27.7 for z
+    c = 299792.458  # Speed of light [km/s]
+    H = 71.9  # Hubble's constant [km/s/Mpc] (Hubble Space Telescope)
+    d /= 1e3  # Convert distance into units of Mpc
+    dhc = d*H/c
+    det = math.sqrt(1 - dhc**2)
+    z = -(det + dhc - 1)/(dhc - 1)
+    return z
+
+def ioka_dm_igm(z):
+    """
+    Calculate the contribution of the intergalactic electron density to the
+    dispersion measure, following Ioka (2003) and Inoue (2004)
+
+    Args:
+        z (float): Redshift of source
+    """
+    return 1200 * z
