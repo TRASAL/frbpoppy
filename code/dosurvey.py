@@ -3,7 +3,9 @@ from population import Population
 from survey import Survey
 
 
-def observe(pop, survey_name):
+def observe(pop,
+            survey_name,
+            scint=False):
     """
     Run survey to detect FRB sources
 
@@ -29,7 +31,8 @@ def observe(pop, survey_name):
             continue
 
         # Add scintillation
-        snr = s.scint(src, snr)
+        if scint:
+            snr = s.scint(src, snr)
 
         if snr > s.snr_limit:
             # Note that source has been detected
