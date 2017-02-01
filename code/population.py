@@ -1,8 +1,7 @@
 import os
-
 from collections import OrderedDict as OD
 
-from log import Log
+from log import pprint
 
 
 class Population:
@@ -11,28 +10,18 @@ class Population:
     def __init__(self,
                  electron_model=None,
                  lum_dist_pars=None,
-                 log_loc=None,
-                 no_log=False,
-                 quiet=False,
-                 verbose=False):
+                 name=None):
 
         # Population properties
-        self.electron_model = None
-        self.lum_dist_pars = None
+        self.electron_model = electron_model
+        self.lum_dist_pars = lum_dist_pars
 
         # Store FRB sources
         self.sources = []
 
-        # Logging options
-        self.log_loc = log_loc
-        self.no_log = no_log
-        self.quiet = quiet
-        self.verbose = verbose
-        self.logger = self.log()
-
         # Counter
         self.n_srcs = 0
-        self.name = None  # Population name
+        self.name = name  # Population name
 
     def __str__(self):
         """Define how to print a population object to a console"""
@@ -41,20 +30,12 @@ class Population:
 
         attributes = []
         for e in self.__dict__:
-            attr = '\n\t{0:11.12}{1:.60}'.format(e, str(self.__dict__[e]))
+            attr = '\n\t{0:12.11}{1:.60}'.format(e, str(self.__dict__[e]))
             attributes.append(attr)
 
         s += ''.join(attributes)
 
         return s
-
-    def log(self):
-        """Set up log"""
-        logger = Log(no_log=self.no_log,
-                     verbose=self.verbose,
-                     quiet=self.quiet,
-                     loc=self.log_loc).logger()
-        return logger
 
     def save(self, out=None, sep=','):
         """
@@ -66,10 +47,6 @@ class Population:
             sep (str): Define seperator in file, which also changes the file
                        type between .dat and .csv
         """
-        # Check the population contains sources
-        if len(self.sources) == 0:
-            print('Nothing to write: survey population contains no sources')
-            return
 
         # Set default file locations
         if out is None:
@@ -89,14 +66,18 @@ class Population:
                 out += '.dat'
 
         with open(out, 'w') as f:
-            f.write(self.values(sep=sep))
+            v = self.values(sep=sep)
+            if not v:
+                v = ' '
+            f.write(v)
 
     def values(self, sep=','):
         """Gather source values into table"""
 
         # Check the population contains sources
         if len(self.sources) == 0:
-            print('Nothing to write: survey population contains no sources')
+            m = 'Population {} contains no sources'
+            pprint(m.format(self.name))
             return
 
         # Find all source properties
@@ -109,3 +90,5 @@ class Population:
         # Print values per source
         for src in self.sources:
             data += sep.join([str(src.__dict__[k]) for k in attrs]) + '\n'
+
+        return data

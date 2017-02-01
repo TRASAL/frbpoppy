@@ -1,3 +1,4 @@
+from log import pprint
 from population import Population
 from survey import Survey
 
@@ -38,6 +39,6 @@ def observe(pop, survey_name):
         else:
             s.n_faint += 1
 
-    print(len(pop.sources), s.n_det, s.n_faint, s.n_out)
+    pprint(len(pop.sources), s.n_det, s.n_faint, s.n_out)
 
     return surv_pop

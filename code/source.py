@@ -38,7 +38,7 @@ class Source:
 
         attributes = []
         for e in self.__dict__:
-            attr = '\n\t{0:11.12}{1:.60}'.format(e, str(self.__dict__[e]))
+            attr = '\n\t{0:12.11}{1:.60}'.format(e, str(self.__dict__[e]))
             attributes.append(attr)
 
         s += ''.join(attributes)

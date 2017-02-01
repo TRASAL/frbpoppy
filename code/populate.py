@@ -2,11 +2,11 @@
 
 import math
 import random
-
 from argparse import ArgumentParser
 
 import distributions as ds
 import galacticops as go
+from log import pprint
 from population import Population
 from source import Source
 
@@ -14,12 +14,8 @@ from source import Source
 def generate(n_gen,
              electron_model='ne2001',
              dm_max=3000,
-             log_loc=None,
              lum_dist_pars=[0, 0, 0],
-             no_log=False,
-             quiet=False,
-             scindex=-3.86,
-             verbose=False):
+             scindex=-3.86):
 
     """
     Generate a population of FRB sources
@@ -33,15 +29,9 @@ def generate(n_gen,
     """
 
     pop = Population()
-
     pop.n_gen = n_gen
     pop.lum_dist_pars = lum_dist_pars
-
-    # Log parameters
-    pop.logloc = log_loc
-    pop.no_log = no_log
-    pop.quiet = quiet
-    pop.verbose = verbose
+    pop.electron_model = electron_model
 
     while pop.n_srcs < pop.n_gen:
 

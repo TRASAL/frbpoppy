@@ -4,6 +4,12 @@ import logging.config
 import os
 import sys
 
+def pprint(*s):
+    """Hack to make for more informative print statements"""
+    f = inspect.stack()[1][1].split('/')[-1]
+    m = '{:13.13} |'.format(f)
+    print(m, *s)
+
 
 class Log(object):
     """Setting default logging styles. Only really helpful when invoking as
@@ -58,7 +64,7 @@ class Log(object):
 
         # Warn if log size is getting out of hand
         try:
-            if os.path.getsize(self.loc) > 1e+6:
+            if os.path.getsize(self.loc) > 1e6:
                 print('WARNING: Your log file is getting rather big - ' +
                       'please consider deleting it')
         except FileNotFoundError:
@@ -92,7 +98,7 @@ class Log(object):
             self.level = logging.ERROR
 
         # Format console output
-        frmt_console = '%(message)s'
+        frmt_console = '%(filename)-12s | %(message)s'
         self.formatters['c'] = {'format': frmt_console}
 
         hnd_console = {'class': 'logging.StreamHandler',
@@ -115,8 +121,9 @@ class Log(object):
 
     def logger(self):
         """Return logger instance (see argparse library)"""
+
         # Finds out which function/class is calling this log class
-        module = inspect.stack()[1][3]
+        module = inspect.stack()[1][1].split('/')[-1]
         if module == '<module>':
             module = self.filename
 

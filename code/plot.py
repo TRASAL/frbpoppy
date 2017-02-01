@@ -1,12 +1,14 @@
 import bokeh.io
 import pandas as pd
 import os
-
 from bokeh.layouts import layout, widgetbox
 from bokeh.models import ColumnDataSource, CustomJS
 from bokeh.models.widgets import Paragraph, Select
 from bokeh.palettes import Category10
 from bokeh.plotting import Figure, output_file
+from io import StringIO
+
+from log import pprint
 
 # Number of dataframes/populations
 num_df = 0
@@ -37,15 +39,33 @@ def plot_pop(pops=[], files=[]):
     # Dataframes
     dfs = []
 
-    def read(path):
+    def read(path=None,pop=None):
         '''
         Mini-function to read in data
 
         Args:
             path (str): Path to file to read
+            pop (str): Population input
         '''
         global num_df
-        df = pd.read_csv(path)
+
+        if path:
+            if os.path.isfile(path):
+                df = pd.read_csv(path)
+            else:
+                pprint('Population {} does not exist. Skipping'.format(f))
+                return
+
+        if pop:
+            v = pop.values()
+            if v:
+                db = StringIO(v)
+                df = pd.read_csv(db)
+            else:
+                pprint('Population {} is empty. Skipping'.format(pop.name))
+                return
+
+
         df['plot_num'] = num_df
         df['plot_colour'] = colours[num_df]
         df['plot_size'] = str((num_df+1)*5)
@@ -60,12 +80,12 @@ def plot_pop(pops=[], files=[]):
     # Get dataframe from populations
     elif lp > 0:
         for p in pops:
-            read(p.values())
+            read(pop=p)
 
     # Get dataframe from files
     elif lf > 0:
         for f in files:
-            read(f)
+            read(path=f)
 
     # Check which overlapping attributes the populations have
     attrs = set(list(dfs[0]))
