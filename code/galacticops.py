@@ -57,7 +57,7 @@ def lb_to_radec(l, b):
     gb = math.radians(b)
 
     # Coordinates of the galactic north pole (J2000)
-    a_ngp = math.radians(12.9406333 * 15. + 180.)
+    a_ngp = math.radians(12.9406333 * 15.)
     d_ngp = math.radians(27.1282500)
     l_ngp = math.radians(123.9320000)
 
@@ -69,23 +69,14 @@ def lb_to_radec(l, b):
     # Calculate right ascension
     y = cb*math.sin(l_ngp - gl)
     x = cd_ngp*sb - sd_ngp*cb*math.cos(l_ngp - gl)
-    ra = math.atan(y/x) + a_ngp
-    ra = math.degrees(ra)
-
-    # Ensure value is in right quadrant
-    if y > 0 and x > 0:
-        ra = ra % 90
-    elif y > 0 and x < 0:
-        ra = 90 + (ra % 90)
-    elif y < 0 and x < 0:
-        ra = 180 + (ra % 90)
-    elif y < 0 and x > 0:
-        ra = 270 + (ra % 90)
+    ra = math.atan2(y, x) + a_ngp
+    ra = math.degrees(ra) % 360
 
     # Calculate declination
     dec = math.asin(sd_ngp*sb + cd_ngp*cb*math.cos(l_ngp - gl))
     dec = math.degrees(dec) % 360.
-
+    if dec > 270:
+        dec = - (360 - dec)
     return ra, dec
 
 
