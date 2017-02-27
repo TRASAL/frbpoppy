@@ -63,8 +63,8 @@ def generate(n_gen,
         # Total
         src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
-        # Calculate intrinsic pulse width [ms]
-        src.width = 3.0
+        # Give an intrinsic pulse width [ms]
+        src.w_int = random.uniform(0.1,10)
 
         # Add luminosity at 1400 MHz
         src.lum_1400 = 10.0#1.14

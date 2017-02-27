@@ -2,11 +2,12 @@ from populate import generate
 from dosurvey import observe
 from plot import plot_pop
 from log import pprint
+
 # Generate FRB population
-population = generate(100, electron_model='ne2001')
+population = generate(1000, electron_model='ne2001')
 
 # Observe FRB population
-survey_population = observe(population, 'PMSURV')
+survey_population = observe(population, 'WHOLESKY')
 
 # Plot populations
 

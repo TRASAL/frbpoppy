@@ -23,7 +23,7 @@ def observe(pop,
     for src in pop.sources:
 
         # Calculate signal to noise ratio
-        snr = s.calc_snr(src, pop)
+        snr, w_eff = s.calc_snr(src, pop)
 
         # Check whether source outside survey region
         if snr == -2.0:
@@ -38,10 +38,11 @@ def observe(pop,
             # Note that source has been detected
             s.n_det += 1
             src.snr = snr
+            src.w_eff = w_eff
             surv_pop.sources.append(src)
         else:
             s.n_faint += 1
 
-    pprint(len(pop.sources), s.n_det, s.n_faint, s.n_out)
+    s.numbers()
 
     return surv_pop

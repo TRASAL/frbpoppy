@@ -3,7 +3,7 @@ import os
 import random
 
 import galacticops as go
-
+from log import pprint
 
 class Survey:
     """
@@ -61,6 +61,20 @@ class Survey:
         s += ''.join(attributes)
 
         return s
+
+    def numbers(self):
+        """Print survey numbers, such as the number of detected sources etc."""
+
+        m = self.survey_name + ':'
+        n = self.n_det+self.n_out+self.n_faint
+        nt = '   {:15.14} {}'.format('Input', n)
+        nd = '   {:15.14} {}'.format('Detected', self.n_det)
+        no = '   {:15.14} {}'.format('Outside region', self.n_out)
+        nf = '   {:15.14} {}'.format('Too faint', self.n_faint)
+
+        for n in [m,nt,nd,no,nf]:
+            pprint(n)
+
 
     def parse(self, f):
         """
@@ -187,7 +201,7 @@ class Survey:
         t_dm_err = t_dm / source.dm/(0.20*t_dm)
         return t_dm, t_dm_err
 
-    def cal_flux(self, source, freq):
+    def calc_flux(self, source, freq):
         """
         Calculate the flux of an FRB source at a particular frequency
 
@@ -199,7 +213,7 @@ class Survey:
         """
         return source.s_1400() * (self.central_freq/freq)**source.spindex
 
-    def cal_T_sky(self, source):
+    def calc_T_sky(self, source):
         """
         Calculate the sky temperature from the Haslam table, before scaling to
         the survey frequency. The temperature sky map is given in the weird
@@ -251,10 +265,12 @@ class Survey:
             snr (float): Signal to noise ratio based on the radiometer equation
                          for a single pulse. Will return -2.0 if source is not
                          in survey region
+            w_eff (float): Observed pulse width [ms]. Will return 0. if source
+                           not in survey region
         """
 
         if not self.in_region(source):
-            return -2.0
+            return -2.0, 0.0
 
         if self.gain_pattern == 'gaussian':
 
@@ -278,11 +294,12 @@ class Survey:
         t_dm, t_dm_err = self.dm_smear(source)
 
         # Intrinsic pulse width
-        w_int = source.width
+        w_int = source.w_int
 
         # Calculate scattering
         t_scat = go.scatter_bhat(source.dm, freq=self.central_freq)
 
+        # Effective pulse width
         # From Narayan (1987, DOI: 10.1086/165442)
         # Also Cordes & McLaughlin (2003, DOI: 10.1086/378231)
         # For details see p. 30 of Emily Petroff's thesis (2016), found here:
@@ -291,7 +308,7 @@ class Survey:
                           t_scat**2 + self.t_samp**2)
 
         # Calculate total temperature
-        T_sky = self.cal_T_sky(source)
+        T_sky = self.calc_T_sky(source)
         T_tot = self.T_sys + T_sky
 
         # Calculate flux density at central frequency
@@ -304,7 +321,7 @@ class Survey:
         # Account for offset in beam
         snr *= int_pro
 
-        return snr
+        return snr, w_eff
 
     def scint(self, source, snr):
         """

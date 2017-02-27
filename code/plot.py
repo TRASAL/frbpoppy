@@ -53,7 +53,7 @@ def plot_pop(pops=[], files=[]):
             if os.path.isfile(path):
                 df = pd.read_csv(path)
             else:
-                pprint('Population {} does not exist. Skipping'.format(f))
+                pprint('Skipping population {} - contains no sources'.format(f))
                 return
 
         if pop:
@@ -62,7 +62,8 @@ def plot_pop(pops=[], files=[]):
                 db = StringIO(v)
                 df = pd.read_csv(db)
             else:
-                pprint('Population {} is empty. Skipping'.format(pop.name))
+                n = pop.name
+                pprint('Skipping population {} - contains no sources'.format(n))
                 return
 
 
@@ -154,5 +155,5 @@ def plot_pop(pops=[], files=[]):
     # Show the plot!
     loc = '../data/results/plot.html'
     out = os.path.join(os.path.dirname(__file__), loc)
-    output_file(out, title='frbpoppy plot')
+    output_file(out, title='frbpoppy plot', mode='inline')
     bokeh.io.show(panel)

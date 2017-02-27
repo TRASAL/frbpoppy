@@ -11,7 +11,8 @@ class Source:
         self.dm_mw = None
         self.dm_igm = None
         self.dm_host = None
-        self.width = None  # Intrinsic pulse width
+        self.w_int = None  # Intrinsic pulse width [ms]
+        self.w_eff = None  # Effective pulse width [ms]
         self.lum_1400 = None
 
         # Galactic coordinates
@@ -25,7 +26,6 @@ class Source:
 
         # Detection properties
         self.snr = None
-        self.w_obs = None
         self.fwhm = None
         self.s_peak = None
         self.f_obs = None
