@@ -13,8 +13,9 @@ from source import Source
 
 def generate(n_gen,
              electron_model='ne2001',
-             dm_max=3000,
-             lum_dist_pars=[0, 0, 0],
+             z_max=2.5,
+             lum_dist_pars=[1, 2, 1],
+             si_pars=[1,1],
              scindex=-3.86):
 
     """
@@ -22,15 +23,14 @@ def generate(n_gen,
 
     Args:
         ngen (int): Number of FRB sources to generate
-        no_log (boolean): Don't save a log of this run
-        log_loc (str): Location of log filename
-        verbose (boolean): Up the verbosity
-        quiet (boolean): Turn off piping output to console
     """
+    # Check input
 
     pop = Population()
     pop.n_gen = n_gen
     pop.lum_dist_pars = lum_dist_pars
+    pop.si_pars = si_pars
+
     pop.electron_model = electron_model
 
     while pop.n_srcs < pop.n_gen:
@@ -45,15 +45,11 @@ def generate(n_gen,
         src.gl = random.random() * 360.0
 
         # Convert coordinates
-        d = 500*random.random()  # [kpc]
-        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, d)
-
-        # Calculate distance to source
-        src.dist = go.calc_d_sun(src.gx, src.gy, src.gz)
-        src.z = go.d_to_z(src.dist)
+        src.z = z_max*random.random()
+        src.dist = go.z_to_d(src.z)  # [kpc]
+        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
         # Calculate dispersion measure
-
         # Milky Way
         src.dm_mw = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
         # Intergalactic medium
@@ -69,6 +65,10 @@ def generate(n_gen,
         # Add luminosity at 1400 MHz
         src.lum_1400 = 10.0#1.14
         #src.lum_1400 = ds.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+
+        # Add spectral index
+        src.si = 1.0
+        #src.si = random.gauss(pop.si_mean, pop.si_sigma)
 
         # Add to population
         pop.sources.append(src)
