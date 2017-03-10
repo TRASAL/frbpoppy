@@ -203,15 +203,51 @@ class Survey:
 
     def calc_flux(self, source, freq):
         """
-        Calculate the flux of an FRB source at a particular frequency
+        Calculate the observed flux density of an FRB source at a particular
+        frequency.
 
         Args:
-            source (class): Source method, needed for flux at 1400 MHz
+            source (class): Source method, needed for intrinsic flux density at
+                            1400 MHz and spectral index
             freq (float): Frequency [MHz] at which to calculate the flux
         Returns:
-            flux (float): Source flux [TODO] at given input frequency
+            S (float): Observed source flux density [Jy] at given input
+                       frequency
         """
-        return source.s_1400() * (self.central_freq/freq)**source.spindex
+        return source.s_1400() * (self.central_freq/freq)**source.si
+
+    def calc_s_peak(self, src):
+        """
+        Calculate the mean spectral flux density following Lorimer et al (2013),
+        eq. 9.
+
+        Args:
+            src (class): Source method
+        Return:
+            s_peak (float): Mean spectral flux density [W/m**2]
+        """
+
+        # Limits source emission
+        f_low = 10e6
+        f_high = 10e9
+        # Limits observing bandwidth
+        f_1 = self.central_freq - 0.5*self.bw
+        f_1 *= 1e6  # MHz -> Hz
+        f_2 = self.central_freq + 0.5*self.bw
+        f_2 *= 1e6  # MHz -> Hz
+        # Spectral index
+        sp = src.si + 1
+        sm = src.si - 1
+        # Convert distance to metres
+        dist = src.dist*3.08567758149137e25
+
+        freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
+        nom = src.lum_bol * (1+src.z)**sm * freq_frac
+        den = 4*math.pi*dist**2 * (f_high**sp - f_low**sp)
+        s_peak = nom/den
+
+        return s_peak
+
 
     def calc_T_sky(self, source):
         """
@@ -293,11 +329,12 @@ class Survey:
         # Dispersion measure across single channel, with error
         t_dm, t_dm_err = self.dm_smear(source)
 
-        # Intrinsic pulse width
+        # Intrinsic pulse width (modified by redshift)
         w_int = source.w_int
 
         # Calculate scattering
-        t_scat = go.scatter_bhat(source.dm, freq=self.central_freq)
+        # Offset according to Lorimer et al. (2013, doi:10.1093/mnrasl/slt098)
+        t_scat = go.scatter_bhat(source.dm, offset=-9.5, freq=self.central_freq)
 
         # Effective pulse width
         # From Narayan (1987, DOI: 10.1086/165442)
@@ -311,8 +348,8 @@ class Survey:
         T_sky = self.calc_T_sky(source)
         T_tot = self.T_sys + T_sky
 
-        # Calculate flux density at central frequency
-        s_peak = source.s_1400()
+        # Calculate flux density
+        s_peak = self.calc_s_peak(source)
 
         # Radiometer equation for single pulse (Dewey et al., 1984)
         snr = s_peak * self.gain * math.sqrt(self.n_pol*self.bw_chan*w_eff)

@@ -9,12 +9,32 @@ class Population:
 
     def __init__(self,
                  electron_model=None,
-                 lum_dist_pars=None,
+                 cosmology=None,
+                 H_0=None,
+                 W_m=None,
+                 W_v=None,
+                 z_max=None,
+                 v_max=None,
+                 lum_min=None,
+                 lum_max=None,
+                 lum_pow=None,
+                 si_mean=None,
+                 si_sigma=None,
                  name=None):
 
         # Population properties
         self.electron_model = electron_model
-        self.lum_dist_pars = lum_dist_pars
+        self.cosmology = cosmology
+        self.H_0 = H_0
+        self.W_m = W_m
+        self.W_v = W_v
+        self.z_max = z_max
+        self.v_max = v_max
+        self.lum_min = lum_min
+        self.lum_max = lum_max
+        self.lum_pow = lum_pow
+        self.si_mean = si_mean
+        self.si_sigma = si_sigma
 
         # Store FRB sources
         self.sources = []

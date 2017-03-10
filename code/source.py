@@ -13,7 +13,8 @@ class Source:
         self.dm_host = None
         self.w_int = None  # Intrinsic pulse width [ms]
         self.w_eff = None  # Effective pulse width [ms]
-        self.lum_1400 = None
+        self.lum_bol = None
+        self.si = None  # Spectral index
 
         # Galactic coordinates
         self.gl = None
@@ -21,14 +22,12 @@ class Source:
         self.gx = None
         self.gy = None
         self.gz = None
-        self.dist = None  # Distance source to Sun [kpc]
+        self.dist = None  # Distance source to Sun [Gpc]
         self.z = None
 
         # Detection properties
         self.snr = None
         self.fwhm = None
-        self.s_peak = None
-        self.f_obs = None
         self.detected = False
 
     def __str__(self):
@@ -44,14 +43,3 @@ class Source:
         s += ''.join(attributes)
 
         return s
-
-    # Functions with which to derive properties
-    def s_1400(self):
-        """
-        Calculate the flux density of a source at 1400 MHz
-
-        Returns:
-            s (float): Flux density of a source [mJy] at 1400 MHz
-        """
-        # Differs from psrpoppy in that it includes a factor 4pi
-        return self.lum_1400 / (4*math.pi*self.dist**2)

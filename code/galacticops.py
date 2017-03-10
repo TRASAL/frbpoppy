@@ -4,12 +4,15 @@ coordinates, calculating DM etc.
 """
 
 import ctypes as C
+import csv
 import math
 import os
 import random
 
 # Import fortran libraries
-dm_mods = os.path.join(os.path.dirname(__file__), '../data/models/dm/')
+mods = os.path.join(os.path.dirname(__file__), '../data/models/')
+uni_mods = os.path.join(mods,'universe/')
+dm_mods = os.path.join(mods, 'dm/')
 loc = os.path.join(dm_mods, 'libne2001.so')
 ne2001lib = C.CDLL(loc)
 ne2001lib.dm_.restype = C.c_float
@@ -20,13 +23,13 @@ def lb_to_xyz(gl, gb, dist):
     Convert galactic coordinates to galactic XYZ
 
     Args:
-        dist (float): Distance to source [kpc]
+        dist (float): Distance to source [Gpc]
     """
 
     if gl is None or gb is None:
         raise IOError('Galactic longitude and/or latitude not set')
 
-    rsun = 8.5  # kpc
+    rsun = 8.5e-6  # Gpc
 
     L = math.radians(gl)
     B = math.radians(gb)
@@ -102,7 +105,7 @@ def ne2001_dist_to_dm(dist, gl, gb):
     fortran)
 
     Args:
-        dist (float): Distance to source [kpc]. Distance will be cut at 100 kpc,
+        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc,
                       as NE2001 can not cope with larger distances. This value
                       should be more than enough to clear the Milky Way.
         gl (float): Galactic longitude [fractional degrees]
@@ -110,6 +113,7 @@ def ne2001_dist_to_dm(dist, gl, gb):
     Returns:
         dm (float): Dispersion measure [pc*cm^-3]
     """
+    dist *= 1e6  # Convert from Gpc to kpc
 
     # NE2001 gives errors if distance input is too large! 100 kpc ought to be
     # enough to clear the galaxy.
@@ -189,7 +193,7 @@ def ne2001_scint_time_bw(dist, gl, gb, freq):
     Use the NE2001 model to get the diffractive scintillation timescale
 
     Args:
-        dist (float): Distance to source [kpc]. Distance will be cut at 100 kpc,
+        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc,
                       as NE2001 can not cope with larger distances. Therefore
                       the calculated scintillation timescale will only be that
                       from the Milky Way.
@@ -200,6 +204,7 @@ def ne2001_scint_time_bw(dist, gl, gb, freq):
         scint_time (float): Diffractive scintillation timescale [Hz]
         scint_bw (float): Scintillation bandwidth [Hz]
     """
+    dist *= 1e6  # Convert from Gpc to kpc
 
     sm, smtau = ne2001_get_smtau(dist, gl, gb)
 
@@ -220,14 +225,15 @@ def ne2001_scint_time_bw(dist, gl, gb, freq):
     return scint_time, scint_bw
 
 
-def scatter_bhat(dm, scindex=-3.86, freq=1400.0):
+def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
     """
-    Calculate scattering timescale according to Bhat et al. (2004,
-    DOI:10.1086/382680) and to simluate the scatter around this relationship,
-    draw from a Gaussian around this value.
+    Calculate scattering timescale (values default to those from Bhat et al.
+    (2004, DOI:10.1086/382680) and to simluate the scatter around this
+    relationship, draw from a Gaussian around this value.
 
     Args:
         dm (float): Dispersion measure [pc*cm^-3]
+        offset (float): Offset of scattering relationship. Defaults to -6.46
         scindex (float): Scattering index. Defaults to -3.86
         freq (float): Frequency at which to evaluate scattering time [MHz].
                       Defaults to 1400 MHz
@@ -235,7 +241,7 @@ def scatter_bhat(dm, scindex=-3.86, freq=1400.0):
         t_scat (float): Scattering timescale [ms]
     """
 
-    log_t = -6.46 + 0.154*math.log10(dm) + 1.07*math.log10(dm)**2
+    log_t = offset + 0.154*math.log10(dm) + 1.07*math.log10(dm)**2
     log_t += scindex*math.log10(freq/1e3)
 
     # Width of Gaussian distribution based on values given Lorimer et al. (2008)
@@ -276,9 +282,9 @@ def load_T_sky():
     return t_sky_list
 
 
-def z_to_d(z, H_0=69.6, W_m=0.286, W_v=0.714):
+def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
     """
-    Convert redshift to a luminosity distance. Based on James Schombert's python
+    Convert redshift to a comoving volume. Based on James Schombert's python
     implementation of Edward L. Wright's cosmology calculator.
 
     Args:
@@ -287,7 +293,7 @@ def z_to_d(z, H_0=69.6, W_m=0.286, W_v=0.714):
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
     Returns:
-        d (float): Luminosity distance from Earth to the source [kpc]
+        v_gpc (float): Comoving volume from Earth to the source [Gpc^3]
     """
 
     # Initialize constants
@@ -308,7 +314,8 @@ def z_to_d(z, H_0=69.6, W_m=0.286, W_v=0.714):
     dcmr = (1.-az)*dcmr/n
     dc_mpc = (c/H_0)*dcmr  # Comoving distance [Mpc]
 
-    # Calculate tangential comoving distance
+    # Not necessary, but handy to have
+    # Calculate luminosity distance
     ratio = 1.
     x = math.sqrt(abs(W_k))*dcmr
 
@@ -328,29 +335,149 @@ def z_to_d(z, H_0=69.6, W_m=0.286, W_v=0.714):
     dl = da/(az*az)
     dl_mpc = (c/H_0)*dl # Luminosity distance [Mpc]
 
-    return dl_mpc*1000
+    # Calculate comoving volume
+    ratio = 1.00
+    x = math.sqrt(abs(W_k))*dcmr
+    if x > 0.1:
+        if W_k > 0:
+            ratio = (0.125*(math.exp(2.*x)-math.exp(-2.*x))-x/2.)/(x*x*x/3.)
+        else:
+            ratio = (x/2. - math.sin(2.*x)/4.)/(x*x*x/3.)
+    else:
+        y = x*x
+        if W_k < 0:
+            y = -y
+        ratio = 1. + y/5. + (2./105.)*y*y
+
+    v_cm = ratio*dcmr*dcmr*dcmr/3.
+    v_gpc = 4.*math.pi*((0.001*c/H_0)**3)*v_cm  # Comoving volume
+
+    return v_gpc
 
 
-def d_to_z(d):
+def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
     """
-    Convert distance in kpc to z. Holds for z <= 2
-
-    Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
-    Bradley W. Carroll, Dale A. Ostlie.
+    Create a list of tuples to lookup the corresponding redshift for a comoving
+    distance [Gpc]. Uses formulas from Hoggs et al. (1999) for the cosmological
+    calculations, assuming a flat universe. To avoid long calculation times,
+    it will check if a previous run with the same parameters has been done,
+    which it will then load it. If not, it will calculate a new table, and save
+    the table for later runs.
 
     Args:
-        d (float): Distance from Earth to a source [kpc]
+        cosmology (boolean, optional): Whether to use cosmology or not. Defaults
+                                       to True
+        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+        W_m (float, optional): Omega matter. Defaults to 0.286
+        W_k (float, optional): Omega vacuum. Defaults to 0.714
+        z_max (float, optional): Maximum redshift. Defaults to 8.0
+    Returns:
+        None: If cosmology is not enabled
+        ds (list): Comoving distances [Gpc]
+        zs (list): Corresponding redshifts
+    """
+    # Initializing
+    c = 299792.458  # Velocity of light [km/sec]
+    ds = []
+    zs = []
+
+    if not cosmology:
+        return None, None
+
+    def cvt(value):
+        """Convert a value to a string without a period"""
+        return str(value).replace('.','d')
+
+    # Filename
+    paras = ['h0', cvt(H_0), 'wm', cvt(W_m), 'wv', cvt(W_v), 'zmax', cvt(z_max)]
+    f = '-'.join(paras) + '.csv'
+
+    # Check whether frbpoppy can avoid creating new tables
+    if os.path.isfile(uni_mods + f):
+        with open(uni_mods + f, 'Ur') as f:
+            data = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
+            for r in data:
+                ds.append(r[0])
+                zs.append(r[1])
+
+    # If unavoidable, proceed with integration...
+    else:
+
+        # Knowingly put imports here
+        from scipy.integrate import quad as integrate
+        import numpy as np
+
+        # Initialize parameters
+        step = 0.001
+        W_k = 1.0 - W_m - W_v  # Omega curvature
+
+        if W_k != 0.0:
+            print('Careful now. Your cosmological parameters do not sum to 1.0')
+
+        # Numerically integrate the following function
+        def d_c(x):
+            """Comoving distance (Hogg et al, 1999)"""
+            return 1/math.sqrt((W_m*(1+x)**3 + W_k*(1+x)**2 + W_v))
+
+        for z in np.arange(0,z_max+step,step):
+            d = c/H_0*integrate(d_c, 0, z)[0]
+            d /= 1e3  # Covert from Mpc to Gpc
+            ds.append(d)
+            zs.append(z)
+
+        # Save distance and redshift
+        with open(uni_mods + f, 'w+') as df:
+            df.write('\n'.join('{},{}'.format(ds[i],zs[i]) for i in range(len(ds))))
+
+    return ds, zs
+
+def interpolate_z(d, ds, zs, H_0=69.6):
+    """
+    Interpolate between two comoving distances to obtain an approximate
+    redshift, unless dzs is none (i.e. cosmology has been set to False in the
+    function dist_lookup), in which case use an approximation that works to z<2.
+
+    Args:
+        d (float): Comoving distance [Gpc]
+        ds (list): Comoving distances [Gpc]
+        zs (list): Corresponding redshifts
+        H_0 (float, optional): The value of the Hubble expansion, only required
+                                when using a non-cosmology approximation
     Returns:
         z (float): Redshift
     """
-    # Rewrite eq. 27.7 for z
-    c = 299792.458  # Speed of light [km/s]
-    H = 71.9  # Hubble's constant [km/s/Mpc] (Hubble Space Telescope)
-    d /= 1e3  # Convert distance into units of Mpc
-    dhc = d*H/c
-    det = math.sqrt(1 - dhc**2)
-    z = -(det + dhc - 1)/(dhc - 1)
-    return z
+    z = 0
+
+    if not ds:
+        # Convert distance in Gpc to z. Holds for z <= 2
+        # Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)'
+        # by Bradley W. Carroll, Dale A. Ostlie.
+        c = 299792.458  # Velocity of light [km/sec]
+        d *= 1e3
+        dhc = d*H_0/c
+        det = math.sqrt(1 - dhc**2)
+        z = -(det + dhc - 1)/(dhc - 1)
+        return z
+
+    # Interpolate between values
+    for i,e in enumerate(ds):
+
+        if d < e:
+            i2 = i
+            i1 = i-1
+
+            # Return lowest z if before first value
+            if i1 < 0:
+                return zs[0]
+
+            slope = (zs[i2] - zs[i1]) / (ds[i2] - ds[i1])
+            z = zs[i1] + slope*(d - ds[i1])
+
+            return z
+
+    print('Gone over your maximum redshift', d)
+    # Return highest z if beyond the largest redshift
+    return zs[-1]
 
 
 def ioka_dm_igm(z):

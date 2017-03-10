@@ -13,7 +13,9 @@ from source import Source
 
 def generate(n_gen,
              electron_model='ne2001',
-             z_max=2.5,
+             cosmology=True,
+             cosmo_pars=[69.6, 0.286, 0.714],
+             z_max=8.0,
              lum_dist_pars=[1, 2, 1],
              si_pars=[1,1],
              scindex=-3.86):
@@ -25,13 +27,29 @@ def generate(n_gen,
         ngen (int): Number of FRB sources to generate
     """
     # Check input
-
     pop = Population()
+    pop.name = 'Initial'
     pop.n_gen = n_gen
-    pop.lum_dist_pars = lum_dist_pars
-    pop.si_pars = si_pars
-
     pop.electron_model = electron_model
+    pop.cosmology = cosmology
+    pop.H_0 = cosmo_pars[0]
+    pop.W_m = cosmo_pars[1]
+    pop.W_v = cosmo_pars[2]
+    pop.z_max = z_max
+    pop.v_max = go.z_to_v(z_max)
+    pop.lum_min = lum_dist_pars[0]
+    pop.lum_max = lum_dist_pars[1]
+    pop.lum_pow = lum_dist_pars[2]
+    pop.si_mean = si_pars[0]
+    pop.si_sigma = si_pars[1]
+
+    # Create a comoving distance to redshift lookup table
+    ds, zs = go.dist_lookup(cosmology=pop.cosmology,
+                            H_0=pop.H_0,
+                            W_m=pop.W_m,
+                            W_v=pop.W_v,
+                            z_max=pop.z_max
+                            )
 
     while pop.n_srcs < pop.n_gen:
 
@@ -45,8 +63,9 @@ def generate(n_gen,
         src.gl = random.random() * 360.0
 
         # Convert coordinates
-        src.z = z_max*random.random()
-        src.dist = go.z_to_d(src.z)  # [kpc]
+        # Calculate comoving distance [Gpc]
+        src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
+        src.z = go.interpolate_z(src.dist, ds, zs, H_0=pop.H_0)
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
         # Calculate dispersion measure
@@ -60,14 +79,14 @@ def generate(n_gen,
         src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
         # Give an intrinsic pulse width [ms]
-        src.w_int = random.uniform(0.1,10)
+        src.w_int = (1+src.z)*random.uniform(0.1,10)
 
-        # Add luminosity at 1400 MHz
-        src.lum_1400 = 10.0#1.14
-        #src.lum_1400 = ds.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+        # Add bolometric luminosity [W]
+        src.lum_bol = 1e64  # 8.0e37
+        #src.lum_bol = ds.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add spectral index
-        src.si = 1.0
+        src.si = -1.4
         #src.si = random.gauss(pop.si_mean, pop.si_sigma)
 
         # Add to population
