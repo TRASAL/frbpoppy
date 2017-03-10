@@ -94,4 +94,6 @@ data/logs/*
 *logo.png
 *screenshot*.png
 misc/
+*.profile
 *.so  # Shared libraries
+*.csv
