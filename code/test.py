@@ -1,12 +1,10 @@
-import cProfile
-import galacticops as go
-import random
-ds, zs = go.dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0)
+from populate import generate
+from dosurvey import observe
+from plot import plot_pop
+from log import pprint
 
-rd = [random.random() for d in range(100000)]
+# Generate FRB population
+population = generate(10)
 
-def test():
-    for d in rd:
-        go.interpolate_z(d, ds, zs)
-
-test()
+# Observe FRB population
+survey_population = observe(population, 'WHOLESKY')
