@@ -3,10 +3,17 @@ python:
   - "3.5"
 before_install:
   - "sudo apt-get install -y gfortran"
-install: "pip install -r requirements.txt"
+install:
+  - "pip install -r requirements.txt"
+  - "pip install python-coveralls"
+  - "pip install nose"
 before_script:
   - "python3 setup.py"
-script: "python3 ./code/test.py"
+script:
+  - "python3 ./code/test.py"
+  - "nosetests --with-coverage"
 branches:
   only:
     - master
+after_success:
+  - coveralls

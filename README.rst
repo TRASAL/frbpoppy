@@ -1,6 +1,7 @@
 .. image:: docs/logo_text.png
+    :scale: 10
 
-Conduct Fast Radio Burst Population Synthesis | **David Gardenier** | ASTRON
+Conduct Fast Radio Burst Population Synthesis | **David Gardenier** | ASTRON | |Build Status Master| | |Coverage Status Master| |
 
 ****************
 What's frbpoppy?
@@ -41,3 +42,8 @@ Who are the authors?
 Looking for more?
 *****************
 Check out ``frbpoppy``'s `webpage <https://davidgardenier.github.io/frbpoppy/>`_ for more information!
+
+.. |Build Status Master| image:: https://travis-ci.org/davidgardenier/frbpoppy.svg?branch=master
+    :target: https://travis-ci.org/davidgardenier/frbpoppy
+.. |Coverage Status Master| image:: https://coveralls.io/repos/github/davidgardenier/frbpoppy/badge.svg?branch=master
+    :target: https://coveralls.io/github/davidgardenier/frbpoppy?branch=master
