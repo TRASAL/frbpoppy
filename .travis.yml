@@ -6,12 +6,10 @@ before_install:
 install:
   - "pip install -r requirements.txt"
   - "pip install python-coveralls"
-  - "pip install nose"
 before_script:
   - "python3 setup.py"
 script:
-  - "python3 ./code/test.py"
-  - "nosetests --with-coverage"
+  - "coverage run --source=python3 ./code/test.py"
 branches:
   only:
     - master
