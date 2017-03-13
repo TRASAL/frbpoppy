@@ -2,7 +2,7 @@ language: python
 python:
   - "3.5"
 install: "pip install -r requirements.txt"
-before-script:
+before_script:
   - "python3 setup.py"
 script: "python3 ./code/test.py"
 branches:
