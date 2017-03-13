@@ -14,7 +14,7 @@ from log import pprint
 num_df = 0
 
 
-def plot_pop(pops=[], files=[]):
+def plot_pop(pops=[], files=[], show=True):
     """
     Function to plot populations in browser using Bokeh
 
@@ -23,6 +23,7 @@ def plot_pop(pops=[], files=[]):
         files (list): List of population files to plot (currently only works
                       with csv files - file an issue if you would like more
                       options)
+        show (boolean): Show plot or not. Defaults to True
     """
 
     lp = len(pops)
@@ -156,4 +157,6 @@ def plot_pop(pops=[], files=[]):
     loc = '../data/results/plot.html'
     out = os.path.join(os.path.dirname(__file__), loc)
     output_file(out, title='frbpoppy plot', mode='inline')
-    bokeh.io.show(panel)
+
+    if show:
+        bokeh.io.show(panel)

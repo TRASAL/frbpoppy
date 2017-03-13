@@ -8,3 +8,5 @@ population = generate(10)
 
 # Observe FRB population
 survey_population = observe(population, 'WHOLESKY')
+
+plot_pop(pops=[population, survey_population], show=False)
