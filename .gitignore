@@ -95,5 +95,3 @@ data/logs/*
 *screenshot*.png
 misc/
 *.profile
-*.so  # Shared libraries
-*.csv
