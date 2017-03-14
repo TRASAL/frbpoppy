@@ -14,4 +14,4 @@ branches:
   only:
     - master
 after_success:
-  - coveralls
+  - coveralls --data_file=.coverage --config_file=.coveragerc
