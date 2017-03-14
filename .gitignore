@@ -96,3 +96,4 @@ data/logs/*
 misc/
 *.profile
 *.so  # Shared libraries
+*.coverage

@@ -1,5 +1,10 @@
 [report]
 omit =
+    /usr/*
     */python?.?/*
     */data/*
+    */docs/*
     *__init__*
+    [report]
+
+ignore_errors = True
