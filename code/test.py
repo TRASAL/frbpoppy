@@ -1,12 +1,131 @@
+import os
+import unittest
+
+import distributions as ds
+from population import Population as pop
 from populate import generate
 from dosurvey import observe
 from plot import plot_pop
-from log import pprint
 
-# Generate FRB population
-population = generate(10)
 
-# Observe FRB population
-survey_population = observe(population, 'WHOLESKY')
+class TestFullRun(unittest.TestCase):
 
-plot_pop(pops=[population, survey_population], show=False)
+    def test_run(self):
+        # Test a full run of frbpoppy
+        # Should be the equivalent to a bucket load of rainbows, unicorns and
+        # puppies. All other tests just check the weird cases work.
+        population = generate(10)
+        survey_population = observe(population, 'WHOLESKY')
+        plot_pop(pops=[population, survey_population], show=False)
+
+
+class TestDistributions(unittest.TestCase):
+
+    def test_powerlaw(self):
+
+        # Check normal usage
+        r1 = ds.powerlaw(1, 2, 2, y=1)
+        self.assertEqual(r1, 2.0)
+
+        # Check inverted input
+        r2 = ds.powerlaw(2, 1, 2, y=1)
+        self.assertEqual(r2, r1)
+
+        # Check what happens when zero is raised to a negative power
+        with self.assertRaises(ValueError):
+            ds.powerlaw(0, 5, -2, y=0)
+
+
+class TestPopulate(unittest.TestCase):
+
+    def testgenerate(self):
+
+        # Check generating a population works
+        r1 = generate(2, name='temp')
+        self.assertIsInstance(r1, pop)
+
+        # Check printing a population works
+        self.assertTrue(r1.__str__())
+
+        # Check saving works
+        r1.save()
+
+        # Check different input values
+        with self.assertRaises(ValueError):
+            generate(0)
+        with self.assertRaises(ValueError):
+            generate(1.5)
+        with self.assertRaises(ValueError):
+            generate(1, 'string')
+        with self.assertRaises(ValueError):
+            generate(1, cosmology=1)
+        with self.assertRaises(ValueError):
+            generate(1, cosmo_pars=[1, 2])
+        with self.assertRaises(ValueError):
+            generate(1, cosmo_pars=[True, '1'])
+        with self.assertRaises(ValueError):
+            generate(1, emission_pars=[2])
+        with self.assertRaises(ValueError):
+            generate(1, emission_pars=[2, 'test'])
+        with self.assertRaises(ValueError):
+            generate(1, lum_dist_pars=[True, '1'])
+        with self.assertRaises(ValueError):
+            generate(1, lum_dist_pars=[1, 2])
+        with self.assertRaises(ValueError):
+            generate(1, name=1.5)
+        with self.assertRaises(ValueError):
+            generate(1, si_pars=[True])
+        with self.assertRaises(ValueError):
+            generate(1, si_pars=[1.2, True, 'test'])
+        with self.assertRaises(ValueError):
+            generate(1, z_max=[0, 0])
+        with self.assertRaises(ValueError):
+            generate(1, electron_model='unsupported')
+
+    def tearDown(self):
+        """Clean up temp files"""
+        loc = '../data/results/population_temp.csv'
+        out = os.path.join(os.path.dirname(__file__), loc)
+        os.remove(out)
+
+
+class TestSurvey(unittest.TestCase):
+
+    def setUp(self):
+
+        self.pop = generate(10)
+        self.bright_pop = generate(10, lum_dist_pars=[1e80, 1e90, 1])
+
+    def testobserve(self):
+
+        # Check different input values
+        with self.assertRaises(IOError):
+            observe(self.pop, 'ABCDEFG')
+
+        # Check printing a survey works
+        s = observe(self.pop, 'PMSURV', return_pop=False)
+        self.assertTrue(s.__str__())
+
+        # Check conducting a survey works
+        s1 = observe(self.pop, 'PMSURV')
+        self.assertIsInstance(s1, pop)
+
+        # Check bright FRBs are always found
+        s2 = observe(self.bright_pop, 'WHOLESKY')
+        self.assertEqual(len(s2.sources),len(self.pop.sources))
+
+        # Not the best tests for scat and scint, but will have to do
+        # Check scattering works
+        s3 = observe(self.bright_pop, 'WHOLESKY', scat=True)
+        self.assertIsInstance(s3, pop)
+
+        # Check scintillation works
+        s4 = observe(self.bright_pop, 'WHOLESKY', scint=True)
+        self.assertIsInstance(s4, pop)
+
+        # Test printing of sources
+        self.assertTrue(s3.sources[0].__str__())
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -12,7 +12,6 @@ class Source:
         self.dm_igm = None
         self.dm_host = None
         self.w_int = None  # Intrinsic pulse width [ms]
-        self.w_eff = None  # Effective pulse width [ms]
         self.lum_bol = None
         self.si = None  # Spectral index
 
@@ -29,6 +28,9 @@ class Source:
         self.snr = None
         self.fwhm = None
         self.detected = False
+        self.w_eff = None
+        self.s_peak = None
+        self.fluence = None
 
     def __str__(self):
         """Define how to print an FRB source to a console"""

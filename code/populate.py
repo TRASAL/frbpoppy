@@ -2,33 +2,115 @@
 
 import math
 import random
-from argparse import ArgumentParser
 
-import distributions as ds
+import distributions as dis
 import galacticops as go
-from log import pprint
 from population import Population
 from source import Source
 
 
 def generate(n_gen,
-             electron_model='ne2001',
              cosmology=True,
              cosmo_pars=[69.6, 0.286, 0.714],
-             z_max=8.0,
-             lum_dist_pars=[1, 2, 1],
-             si_pars=[1,1],
-             scindex=-3.86):
+             electron_model='ne2001',
+             emission_pars=[10e6, 10e9],
+             lum_dist_pars=[1e50, 1e90, 1],
+             name=None,
+             si_pars=[1, 1],
+             z_max=2.5):
 
-    """
-    Generate a population of FRB sources
+    """Generate a population of FRB sources
 
     Args:
-        ngen (int): Number of FRB sources to generate
+        n_gen (int): Number of FRB sources to generate
+        cosmology (bool): Whether to use cosmology in all calculations.
+            Defaults to True.
+        cosmo_pars (list): Three values, the first being the Hubble constant,
+            the second the density parameter Omega_m and the third being the
+            cosmological constant Omega_Lambda (referred to as W_m in the
+            rest of the code). These parameters default to those determined
+            with Planck [69.6, 0.286, 0.714]
+        electron_model (str): Model for the free electron density in the Milky
+            Way. Defaults to 'ne2001'
+        emission_pars (list): The minimum and maximum frequency [Hz] between
+            which FRB sources should emit the given bolometric luminosity.
+            Defaults to [10e6,10e9]
+        lum_dist_pars (list): Bolometric luminosity distribution parameters
+            being: the minimum luminosity [W], the maximum luminosity [W] and
+            the powerlaw index of the distribution. Defaults to [1e50, 1e90, 1]
+        name (str): Name to be given to the population. Defaults to 'initial'
+        si_pars (list): Spectral index parameters, being the mean index and the
+            standard deviation thereof. Defaults to [1, 1]
+        z_max (float): The maximum redshift out to which to distribute FRBs
+
+    Returns:
+        pop (Population): A population of generated sources
     """
+
     # Check input
+    if type(n_gen) != int:
+        m = 'Please ensure the number of generated sources is an integer'
+        raise ValueError(m)
+
+    if n_gen < 1:
+        m = 'Please ensure the number of generated sources is > 0'
+        raise ValueError(m)
+
+    if type(cosmology) != bool:
+        raise ValueError('Please ensure cosmology is a boolean')
+
+    if not all(isinstance(par, (float, int)) for par in cosmo_pars):
+        m = 'Please ensure all cosmology parameters are floats or integeters'
+        raise ValueError(m)
+
+    if len(cosmo_pars) != 3:
+        m = 'Please ensure there are three cosmology parameters'
+        raise ValueError(m)
+
+    if electron_model not in ['ne2001']:
+        m = 'Unsupported electron model: {}'.format(electron_model)
+        raise ValueError(m)
+
+    if not all(isinstance(par, (float, int)) for par in emission_pars):
+        m = 'Please ensure all emission parameters are floats or integeters'
+        raise ValueError(m)
+
+    if len(emission_pars) != 2:
+        m = 'Please ensure there are two emission parameters'
+        raise ValueError(m)
+
+    if not all(isinstance(par, (float, int)) for par in lum_dist_pars):
+        m = 'Please ensure all luminosity distribution parameters are '
+        m += 'floats or integeters'
+        raise ValueError(m)
+
+    if len(lum_dist_pars) != 3:
+        m = 'Please ensure there are three luminosity distribution parameters'
+        raise ValueError(m)
+
+    if not name:
+        name = 'Initial'
+
+    if type(name) != str:
+        m = 'Please provide a string as input for the name of the population'
+        raise ValueError(m)
+
+    if not all(isinstance(par, (float, int)) for par in si_pars):
+        m = 'Please ensure all spectral index parameters are '
+        m += 'floats or integers'
+        raise ValueError(m)
+
+    if len(si_pars) != 2:
+        m = 'Please ensure there are two spectral index parameters'
+        raise ValueError(m)
+
+    if not isinstance(z_max, (float, int)):
+        m = 'Please ensure the maximum redshift is given as a float or integer'
+        raise ValueError(m)
+
+    # Set up population
     pop = Population()
-    pop.name = 'Initial'
+    pop.name = name
     pop.n_gen = n_gen
     pop.electron_model = electron_model
     pop.cosmology = cosmology
@@ -40,6 +122,8 @@ def generate(n_gen,
     pop.lum_min = lum_dist_pars[0]
     pop.lum_max = lum_dist_pars[1]
     pop.lum_pow = lum_dist_pars[2]
+    pop.f_min = emission_pars[0]
+    pop.f_max = emission_pars[1]
     pop.si_mean = si_pars[0]
     pop.si_sigma = si_pars[1]
 
@@ -56,83 +140,41 @@ def generate(n_gen,
         # Initialise
         src = Source()
 
-        # Add random coordinates
+        # Add random directional coordinates
         src.gb = math.degrees(math.asin(random.random()))
         if random.random() < 0.5:
             src.gb *= -1
         src.gl = random.random() * 360.0
 
-        # Convert coordinates
         # Calculate comoving distance [Gpc]
         src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
+        # Calculate redshift
         src.z = go.interpolate_z(src.dist, ds, zs, H_0=pop.H_0)
+        # Convert into galactic coordinates
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
-        # Calculate dispersion measure
-        # Milky Way
+        # Dispersion measure of the Milky Way
         src.dm_mw = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
-        # Intergalactic medium
+        # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z)
-        # Host
+        # Dispersion measure of the host
         src.dm_host = 100.  # Thornton et al. (2013)
-        # Total
+        # Total dispersion measure
         src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
-        # Give an intrinsic pulse width [ms]
-        src.w_int = (1+src.z)*random.uniform(0.1,10)
+        # Give an random intrinsic pulse width [ms]
+        src.w_int = go.redshift_pulse(z=src.z)
 
         # Add bolometric luminosity [W]
-        src.lum_bol = 1e64  # 8.0e37
-        #src.lum_bol = ds.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+        #src.lum_bol = go.ergspers_to_watts(1e52)
+        src.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add spectral index
         src.si = -1.4
-        #src.si = random.gauss(pop.si_mean, pop.si_sigma)
+        # src.si = random.gauss(pop.si_mean, pop.si_sigma)
 
         # Add to population
         pop.sources.append(src)
         pop.n_srcs += 1
 
     return pop
-
-
-if __name__ == '__main__':
-
-    parser = ArgumentParser(description='Generate a population of FRB sources')
-
-    # Scientific parameters
-    parser.add_argument('-n',
-                        '--n_gen',
-                        type=int,
-                        required=False,
-                        help='number of FRB sources to generate/detect')
-
-    # Logging options
-    parser.add_argument('-nl',
-                        '--no_log',
-                        action='store_true',
-                        help="don't save log to file")
-
-    parser.add_argument('-ll',
-                        '--log_loc',
-                        default=None,
-                        help='location of log file')
-
-    # Verbosity
-    parser.add_argument('-v',
-                        '--verbose',
-                        action='store_true',
-                        help='get more output in the console')
-
-    parser.add_argument('-q',
-                        '--quiet',
-                        action='store_true',
-                        help='turn off output in the console')
-
-    args = parser.parse_args()
-
-    generate(n_gen=args.n_gen,
-             no_log=args.no_log,
-             verbose=args.verbose,
-             quiet=args.quiet,
-             log_loc=args.log_loc)

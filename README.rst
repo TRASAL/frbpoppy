@@ -1,7 +1,7 @@
 .. image:: docs/logo_text.png
     :scale: 50
 
-Conduct Fast Radio Burst Population Synthesis | **David Gardenier** | ASTRON | |Build Status Master| | |Coverage Status Master| |
+Conduct Fast Radio Burst Population Synthesis | **David Gardenier** | ASTRON | |Build Status Master| | |Coverage Status Master|
 
 ****************
 What's frbpoppy?

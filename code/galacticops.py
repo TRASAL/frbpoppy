@@ -23,12 +23,13 @@ def lb_to_xyz(gl, gb, dist):
     Convert galactic coordinates to galactic XYZ
 
     Args:
+        l (float): Galactic longitude [fractional degrees]
+        b (float): Galactic latitude [fractional degrees]
         dist (float): Distance to source [Gpc]
+
+    Returns:
+        gx, gy, gz: Galactic XYZ [Gpc]
     """
-
-    if gl is None or gb is None:
-        raise IOError('Galactic longitude and/or latitude not set')
-
     rsun = 8.5e-6  # Gpc
 
     L = math.radians(gl)
@@ -79,24 +80,28 @@ def lb_to_radec(l, b):
     dec = math.asin(sd_ngp*sb + cd_ngp*cb*math.cos(l_ngp - gl))
     dec = math.degrees(dec) % 360.
     if dec > 270:
-        dec = - (360 - dec)
+        dec = -(360 - dec)
+
     return ra, dec
 
 
-def calc_d_sun(x, y, z):
+def redshift_pulse(z=0, cosmology=True, min_w=0.1, max_w=10):
     """
-    Calculate the distance from the source to the Sun
+    A random value from a uniform distribution redshifted by z
 
     Args:
-        x (float): Galactic coordinate [kpc]
-        y (float): Galactic coordinate [kpc]
-        z (float): Galactic coordinate [kpc]
+        z (float): Redshift. Defaults to 0
+        cosmology (boolean): Whether to use cosmology. Default to True
+        min_w (float): Minimum pulse width [ms]. Defaults to 0.1
+        max_w (float): Maximum pulse width [ms]. Defaults to 10
     Returns:
-        d (float): Distance from source at the given galactic coordinates to
-                   the Sun [kpc]
+        w_int (float): A pulse width drawn from a uniform distribution, and
+                       redshifted if cosmology was used.
     """
-    r_sun = 8.5  # kpc
-    return math.sqrt(x**2 + (r_sun - y)**2 + z**2)
+    w = random.uniform(0.1, 10)
+    if cosmology:
+        w *= (1+z)
+    return w
 
 
 def ne2001_dist_to_dm(dist, gl, gb):
@@ -394,7 +399,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
 
     # Check whether frbpoppy can avoid creating new tables
     if os.path.isfile(uni_mods + f):
-        with open(uni_mods + f, 'Ur') as f:
+        with open(uni_mods + f, 'r') as f:
             data = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
             for r in data:
                 ds.append(r[0])
@@ -427,7 +432,8 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
 
         # Save distance and redshift
         with open(uni_mods + f, 'w+') as df:
-            df.write('\n'.join('{},{}'.format(ds[i],zs[i]) for i in range(len(ds))))
+            d = '\n'.join('{},{}'.format(ds[i],zs[i]) for i in range(len(ds)))
+            df.write(d)
 
     return ds, zs
 
@@ -442,7 +448,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
         ds (list): Comoving distances [Gpc]
         zs (list): Corresponding redshifts
         H_0 (float, optional): The value of the Hubble expansion, only required
-                                when using a non-cosmology approximation
+            when using a non-cosmology approximation. Defaults to 69.6
     Returns:
         z (float): Redshift
     """

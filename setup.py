@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-assert sys.version_info >= (3, 0), 'Please run with Python3'
+assert sys.version_info >= (3, 0), 'Please run with python3 or higher'
 
 
 def loc(f):

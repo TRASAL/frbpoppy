@@ -1,19 +1,26 @@
-from log import pprint
 from population import Population
 from survey import Survey
 
 
 def observe(pop,
             survey_name,
-            scint=False):
-    """
-    Run survey to detect FRB sources
+            return_pop=True,
+            scat=False,
+            scint=False,):
+    """Run survey to detect FRB sources
 
     Args:
-        pop (class): Population class of FRB sources to observe
-        survey_name (str): Name of survey with which to observe
+        pop (Population): Population class of FRB sources to observe
+        survey_name (str): Name of survey file with which to observe
+        return_pop (bool): Whether to return a population or survey class.
+            Primarily intended for debugging. Defaults to True
+        scat (bool): Whether to include scattering in signal to noise
+            calculations. Defaults to False
+        scint (bool): Whether to apply scintillation to observations. Defaults
+            to False
+
     Returns:
-        surv_pop (class): Observed survey population
+        surv_pop (Population): Observed survey population
     """
 
     s = Survey(survey_name)
@@ -22,10 +29,11 @@ def observe(pop,
 
     for src in pop.sources:
 
-        # Calculate signal to noise ratio
-        snr, w_eff = s.calc_snr(src, pop)
+        # Calculate observing properties such as the signal to noise ratio,
+        # effective pulse width etc.
+        snr, w_eff, s_peak, fluence = s.obs_prop(src, pop, scat=scat)
 
-        # Check whether source outside survey region
+        # Check whether source is outside survey region
         if snr == -2.0:
             s.n_out += 1
             continue
@@ -39,10 +47,15 @@ def observe(pop,
             s.n_det += 1
             src.snr = snr
             src.w_eff = w_eff
+            src.s_peak = s_peak
+            src.fluence = fluence
             surv_pop.sources.append(src)
         else:
             s.n_faint += 1
 
-    s.numbers()
+    s.result()
 
-    return surv_pop
+    if return_pop:
+        return surv_pop
+    else:
+        return s

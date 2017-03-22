@@ -11,10 +11,10 @@ class Survey:
 
     Args:
         survey_name (str): Name of survey with which to observe population. Can
-                           either be a predefined survey present in frbpoppy
-                           (see data/surveys/) or a path name to a new survey
-                           filename
-        pattern (str): Set gain pattern
+            either be a predefined survey present in frbpoppy
+            (see data/surveys/) or a path name to a new survey
+            filename
+        pattern (str): Set gain pattern. Defaults to 'gaussian'
     """
 
     def __init__(self, survey_name, pattern='gaussian'):
@@ -62,8 +62,8 @@ class Survey:
 
         return s
 
-    def numbers(self):
-        """Print survey numbers, such as the number of detected sources etc."""
+    def result(self):
+        """Print survey numbers, such as the number of detected sources etc"""
 
         m = self.survey_name + ':'
         n = self.n_det+self.n_out+self.n_faint
@@ -75,13 +75,13 @@ class Survey:
         for n in [m,nt,nd,no,nf]:
             pprint(n)
 
-
     def parse(self, f):
         """
-        Attempt to parse survey file already opened
+        Attempt to parse an already opened survey file
 
         Args:
             f (str): Filename, see Survey class
+
         Returns:
             Various attributes
         """
@@ -138,13 +138,13 @@ class Survey:
                 if self.coverage > 1.0:
                     self.coverage = 1.0
             elif p.count('signal-to-noise'):
-                self.snr_limit = float(v)
+                self.snr_limit = float(v)  # Minimum snr required for detection
             elif p.count('gain pattern'):
-                self.gain_pat = v  # default = gaussian
+                self.gain_pat = v  # Gain pattern of telescope
             elif p.count('Aperture Array'):
                 self.aa = True
             else:
-                print('Parameter {0} not recognised'.format(p))
+                pprint('Parameter {0} not recognised'.format(p))
 
         f.close()
 
@@ -153,7 +153,7 @@ class Survey:
         Check if a given source is within the survey region
 
         Args:
-            source (class): Source of which to check whether in survey region
+            source (Source): Source of which to check whether in survey region
 
         Returns:
             True: If source is within survey region
@@ -183,7 +183,7 @@ class Survey:
 
         return True
 
-    def dm_smear(self, source):
+    def dm_smear(self, source, dm_err=0.2):
         """
         Calculate delay in pulse across a channel due to dm smearing. Formula's
         based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
@@ -191,45 +191,36 @@ class Survey:
         to the central frequency being given in MHz.
 
         Args:
-            source (class): Source object with a dm attribute
+            source (Source): Source object with a dm attribute
+            dm_err (float): Error on dispersion measure. Defaults to 0.2
+
         Returns:
             t_dm, t_dm_err (float): Time of delay [ms] at central band
-                                     frequency, with its error assuming a
-                                     20% uncertainty in the dispersion measure
+                frequency, with its error assuming a
+                20% uncertainty in the dispersion measure
         """
+
         t_dm = 8.297616e6 * self.bw_chan * source.dm * (self.central_freq)**-3
-        t_dm_err = t_dm / source.dm/(0.20*t_dm)
+        t_dm_err = (t_dm / source.dm) *(dm_err*source.dm)
+
         return t_dm, t_dm_err
 
-    def calc_flux(self, source, freq):
-        """
-        Calculate the observed flux density of an FRB source at a particular
-        frequency.
-
-        Args:
-            source (class): Source method, needed for intrinsic flux density at
-                            1400 MHz and spectral index
-            freq (float): Frequency [MHz] at which to calculate the flux
-        Returns:
-            S (float): Observed source flux density [Jy] at given input
-                       frequency
-        """
-        return source.s_1400() * (self.central_freq/freq)**source.si
-
-    def calc_s_peak(self, src):
+    def calc_s_peak(self, src, f_low=10e6, f_high=10e9):
         """
         Calculate the mean spectral flux density following Lorimer et al (2013),
-        eq. 9.
+        eq. 9., at the central frequency of the survey.
 
         Args:
             src (class): Source method
+            f_low (float): Source emission lower frequency limit [Hz]. Defaults
+                to 10e6
+            f_high (float): Source emission higher frequency limit [Hz].
+                Defaults to 10e6
+
         Return:
-            s_peak (float): Mean spectral flux density [W/m**2]
+            s_peak (float): Mean spectral flux density [W/(m**2*Hz)]
         """
 
-        # Limits source emission
-        f_low = 10e6
-        f_high = 10e9
         # Limits observing bandwidth
         f_1 = self.central_freq - 0.5*self.bw
         f_1 *= 1e6  # MHz -> Hz
@@ -247,7 +238,6 @@ class Survey:
         s_peak = nom/den
 
         return s_peak
-
 
     def calc_T_sky(self, source):
         """
@@ -289,24 +279,28 @@ class Survey:
 
         return T_sky
 
-    def calc_snr(self, source, population):
+    def obs_prop(self, source, population, scat=False):
         """
         Calculate the signal to noise ratio of a source in the survey
 
         Args:
             source (class): Source of which to calculate the signal to noise
             population (class): Population to which the source belongs
+            scat (bool): Including scattering or not. Defaults to False
 
         Returns:
             snr (float): Signal to noise ratio based on the radiometer equation
-                         for a single pulse. Will return -2.0 if source is not
-                         in survey region
+                for a single pulse. Will return -2.0 if source is not
+                in survey region
             w_eff (float): Observed pulse width [ms]. Will return 0. if source
-                           not in survey region
+                not in survey region
+            s_peak (float): Mean spectral flux density per observed source
+                [W/m**2]
+            fluence (float): Fluence of the observed pulse [Jy*ms]
         """
 
         if not self.in_region(source):
-            return -2.0, 0.0
+            return -2.0, 0.0, 0.0, 0.0
 
         if self.gain_pattern == 'gaussian':
 
@@ -332,11 +326,17 @@ class Survey:
         # Intrinsic pulse width (modified by redshift)
         w_int = source.w_int
 
-        # Calculate scattering
-        # Offset according to Lorimer et al. (2013, doi:10.1093/mnrasl/slt098)
-        t_scat = go.scatter_bhat(source.dm, offset=-9.5, freq=self.central_freq)
+        # Initialize scattering timescale [ms]
+        t_scat = 0.
 
-        # Effective pulse width
+        if scat:
+            # Offset according to Lorimer et al.
+            # (2013, doi:10.1093/mnrasl/slt098)
+            t_scat = go.scatter_bhat(source.dm,
+                                     offset=-9.5,
+                                     freq=self.central_freq)
+
+        # Effective pulse width [ms]
         # From Narayan (1987, DOI: 10.1086/165442)
         # Also Cordes & McLaughlin (2003, DOI: 10.1086/378231)
         # For details see p. 30 of Emily Petroff's thesis (2016), found here:
@@ -349,16 +349,21 @@ class Survey:
         T_tot = self.T_sys + T_sky
 
         # Calculate flux density
-        s_peak = self.calc_s_peak(source)
+        s_peak = self.calc_s_peak(source,
+                                  f_low=population.f_min,
+                                  f_high=population.f_max)
 
         # Radiometer equation for single pulse (Dewey et al., 1984)
         snr = s_peak * self.gain * math.sqrt(self.n_pol*self.bw_chan*w_eff)
         snr /= (T_tot * self.beta)
 
+        # Calculate fluence [Jy*ms]
+        fluence = s_peak * 1e26 * w_eff
+
         # Account for offset in beam
         snr *= int_pro
 
-        return snr, w_eff
+        return snr, w_eff, s_peak, fluence
 
     def scint(self, source, snr):
         """

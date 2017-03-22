@@ -4,7 +4,7 @@ from plot import plot_pop
 from log import pprint
 
 # Generate FRB population
-population = generate(1000)
+population = generate(10000)
 
 # Observe FRB population
 survey_population = observe(population, 'WHOLESKY')
@@ -12,7 +12,7 @@ survey_population = observe(population, 'WHOLESKY')
 # Plot populations
 
 # Either with
-#plot_pop(pops=[population, survey_population])
+plot_pop(pops=[population, survey_population])
 
 # Or with
 #population.save()
