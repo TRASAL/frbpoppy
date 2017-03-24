@@ -134,8 +134,6 @@ def plot_pop(pops=[], files=[], show=True):
                          code=code.format(var='gx'))
     callbacky = CustomJS(args=dict(source=source),
                          code=code.format(var='gy'))
-    callbackpop = CustomJS(args=dict(source=source),
-                           code=code.format(var='gy'))
 
     # Add list boxes for selecting which columns to plot on the x and y axis
     xaxis_select = Select(title='X-axis:',

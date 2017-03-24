@@ -6,7 +6,6 @@ class Source:
 
     def __init__(self):
 
-        self.flux = None
         self.dm = None
         self.dm_mw = None
         self.dm_igm = None
@@ -26,7 +25,6 @@ class Source:
 
         # Detection properties
         self.snr = None
-        self.fwhm = None
         self.detected = False
         self.w_eff = None
         self.s_peak = None
