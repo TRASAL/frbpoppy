@@ -45,6 +45,7 @@ def observe(pop,
         if snr > s.snr_limit:
             # Note that source has been detected
             s.n_det += 1
+            src.detected = True
             src.snr = snr
             src.w_eff = w_eff
             src.s_peak = s_peak

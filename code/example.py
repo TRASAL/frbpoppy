@@ -7,7 +7,7 @@ from log import pprint
 population = generate(1000)
 
 # Observe FRB population
-survey_population = observe(population, 'WHOLESKY')
+survey_population = observe(population, 'PMSURV')
 
 # Plot populations
 
