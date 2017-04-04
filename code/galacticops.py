@@ -47,7 +47,14 @@ def lb_to_radec(l, b):
     Convert galactic coordinates to RA, Dec
 
     Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
-    Bradley W. Carroll, Dale A. Ostlie.
+    Bradley W. Carroll, Dale A. Ostlie (Eq. 24.19 onwards).
+
+    NOTE: This function is not as accurate as the astropy conversion, nor as
+    the Javascript calculators found online. However, as using astropy was
+    prohibitively slow while running over large populations, frbpoppy uses this
+    function. While this function is not as accurate, the under/over
+    estimations of the coordinates are equally distributed meaning the errors
+    cancel each other in the limit of large populations.
 
     Args:
         l (float): Galactic longitude [fractional degrees]
@@ -83,6 +90,75 @@ def lb_to_radec(l, b):
         dec = -(360 - dec)
 
     return ra, dec
+
+
+def radec_to_lb(ra, dec):
+    """
+    Convert from ra, dec to galactic coordinates
+
+    Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
+    Bradley W. Carroll, Dale A. Ostlie (Eq. 24.16 onwards).
+
+    NOTE: This function is not as accurate as the astropy conversion, nor as
+    the Javascript calculators found online. However, as using astropy was
+    prohibitively slow while running over large populations, frbpoppy uses this
+    function. While this function is not as accurate, the under/over
+    estimations of the coordinates are equally distributed meaning the errors
+    cancel each other in the limit of large populations.
+
+    Args:
+        ra (string): Right ascension given in the form '19:06:53'
+        dec (string): Declination given in the form '-40:37:14'
+
+    Returns:
+        gl, gb (float): Galactic longitude and latitude [fractional degrees]
+    """
+
+    # Convert to fractional degrees
+    # Inspired by Joe Filippazzo calculator
+    rh, rm, rs = [float(r) for r in ra.split(':')]
+    ra = rh*15 + rm/4 + rs/240
+    dd, dm, ds = [float(d) for d in dec.split(':')]
+    if dd < 0:
+        sign = -1
+    else:
+        sign = 1
+    dec = dd + sign*dm/60 + sign*ds/3600
+
+    a = math.radians(ra)
+    d = math.radians(dec)
+
+    # Coordinates of the galactic north pole (J2000)
+    a_ngp = math.radians(12.9406333 * 15.)
+    d_ngp = math.radians(27.1282500)
+    l_ngp = math.radians(123.9320000)
+
+    sd_ngp = math.sin(d_ngp)
+    cd_ngp = math.cos(d_ngp)
+    sd = math.sin(d)
+    cd = math.cos(d)
+
+    # Calculate galactic longitude
+    y = cd*math.sin(a - a_ngp)
+    x = cd_ngp*sd - sd_ngp*cd*math.cos(a - a_ngp)
+    gl = - math.atan2(y, x) + l_ngp
+    gl = math.degrees(gl) % 360
+    # Shift so in range -180 to 180
+    if gl > 180:
+        gl = -(360 - gl)
+
+    # Calculate galactic latitude
+    gb = math.asin(sd_ngp*sd + cd_ngp*cd*math.cos(a - a_ngp))
+    gb = math.degrees(gb) % 360.
+    if gb > 270:
+        gb = -(360 - gb)
+
+    return gl, gb
+
+
+def ergspers_to_watts(e):
+    """Quick converstion from luminosity given in ergs/s to Watts"""
+    return e*1e-7
 
 
 def redshift_pulse(z=0, cosmology=True, min_w=0.1, max_w=10):
@@ -417,7 +493,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
         W_k = 1.0 - W_m - W_v  # Omega curvature
 
         if W_k != 0.0:
-            print('Careful now. Your cosmological parameters do not sum to 1.0')
+            print('Careful - Your cosmological parameters do not sum to 1.0')
 
         # Numerically integrate the following function
         def d_c(x):

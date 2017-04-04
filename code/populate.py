@@ -23,25 +23,28 @@ def generate(n_gen,
 
     Args:
         n_gen (int): Number of FRB sources to generate
-        cosmology (bool): Whether to use cosmology in all calculations.
-            Defaults to True.
-        cosmo_pars (list): Three values, the first being the Hubble constant,
-            the second the density parameter Omega_m and the third being the
-            cosmological constant Omega_Lambda (referred to as W_m in the
-            rest of the code). These parameters default to those determined
-            with Planck [69.6, 0.286, 0.714]
-        electron_model (str): Model for the free electron density in the Milky
-            Way. Defaults to 'ne2001'
-        emission_pars (list): The minimum and maximum frequency [Hz] between
-            which FRB sources should emit the given bolometric luminosity.
-            Defaults to [10e6,10e9]
-        lum_dist_pars (list): Bolometric luminosity distribution parameters
-            being: the minimum luminosity [W], the maximum luminosity [W] and
-            the powerlaw index of the distribution. Defaults to [1e50, 1e90, 1]
-        name (str): Name to be given to the population. Defaults to 'initial'
-        si_pars (list): Spectral index parameters, being the mean index and the
-            standard deviation thereof. Defaults to [1, 1]
-        z_max (float): The maximum redshift out to which to distribute FRBs
+        cosmology (bool, optional): Whether to use cosmology in all
+            calculations. Defaults to True.
+        cosmo_pars (list, optional): Three values, the first being the Hubble
+            constant, the second the density parameter Omega_m and the third
+            being the cosmological constant Omega_Lambda (referred to as W_m
+            in the rest of the code). These parameters default to those
+            determined with Planck [69.6, 0.286, 0.714]
+        electron_model (str, optional): Model for the free electron density in
+            the Milky Way. Defaults to 'ne2001'
+        emission_pars (list, optional): The minimum and maximum frequency [Hz]
+            between which FRB sources should emit the given bolometric
+            luminosity. Defaults to [10e6,10e9]
+        lum_dist_pars (list, optional): Bolometric luminosity distribution
+            parameters being: the minimum luminosity [W], the maximum
+            luminosity [W] and the powerlaw index of the distribution.
+            Defaults to [1e50, 1e90, 1]
+        name (str, optional): Name to be given to the population. Defaults to
+            'initial'
+        si_pars (list, optional): Spectral index parameters, being the mean
+            index and the standard deviation thereof. Defaults to [1, 1]
+        z_max (float, optional): The maximum redshift out to which to
+            distribute FRBs
 
     Returns:
         pop (Population): A population of generated sources
@@ -166,8 +169,8 @@ def generate(n_gen,
         src.w_int = go.redshift_pulse(z=src.z)
 
         # Add bolometric luminosity [W]
-        #src.lum_bol = go.ergspers_to_watts(1e52)
-        src.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+        src.lum_bol = go.ergspers_to_watts(1e48)
+        #src.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add spectral index
         src.si = -1.4

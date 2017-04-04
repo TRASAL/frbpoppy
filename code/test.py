@@ -2,6 +2,7 @@ import os
 import unittest
 
 import distributions as ds
+import galacticops as go
 from population import Population as pop
 from populate import generate
 from dosurvey import observe
@@ -112,7 +113,7 @@ class TestSurvey(unittest.TestCase):
 
         # Check bright FRBs are always found
         s2 = observe(self.bright_pop, 'WHOLESKY')
-        self.assertEqual(len(s2.sources),len(self.pop.sources))
+        self.assertEqual(len(s2.sources), len(self.pop.sources))
 
         # Not the best tests for scat and scint, but will have to do
         # Check scattering works
@@ -125,6 +126,26 @@ class TestSurvey(unittest.TestCase):
 
         # Test printing of sources
         self.assertTrue(s3.sources[0].__str__())
+
+
+class TestGalacticops(unittest.TestCase):
+
+    def test_radec_to_lb(self):
+        """Test values from Robert Martin Ayers's calculator"""
+
+        # Actual FRB coordinates
+        gl, gb = go.radec_to_lb('19:06:53', '-40:37:14')
+        self.assertTrue(abs(gl - 356.6411) <= 1.5)
+        self.assertTrue(abs(gb + 20.0207) <= 1.5)
+
+        # Some extreme cases
+        gl, gb = go.radec_to_lb('0:0:0', '0:0:0')
+        self.assertTrue(abs(gl - 96.3373) <= 1.5)
+        self.assertTrue(abs(gb + 60.1886) <= 1.5)
+
+        gl, gb = go.radec_to_lb('23:0:0', '-90:0:0')
+        self.assertTrue(abs(gl - 302.9319) <= 1.5)
+        self.assertTrue(abs(gb + 27.1283) <= 1.5)
 
 
 if __name__ == '__main__':

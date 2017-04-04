@@ -1,112 +1,92 @@
-from collections import OrderedDict
-import math
+"""
+Plot FRB populations with a Bokeh server. Run script with:
+
+    $ bokeh serve --show code/interactive_plot.py --args <pop_example.csv>
+
+in which all csv-files with populations can be given after ``--args``, and as
+well as the optional arguments of ``-noshow`` and ``-nofrbcat``, to
+respectively not show the resulting plot, and to not overplot frbcat
+"""
+
 import numpy as np
 import os
 import pandas as pd
+import sys
 
 from bokeh.io import curdoc
-from bokeh.layouts import layout, widgetbox
-from bokeh.models import ColumnDataSource, HoverTool
-from bokeh.models.widgets import RadioButtonGroup, Select
+from bokeh.layouts import row, column, layout, widgetbox
+from bokeh.models import ColumnDataSource, HoverTool, Div
+from bokeh.models.widgets import Select
 from bokeh.palettes import Category10
 from bokeh.plotting import figure
 
+from frbcat import get_frbcat
 from log import pprint
 
 # Number of dataframes/populations
 num_df = 0
 
-def plot_pop(pops=[], files=[], show=True):
+
+def plot_pop(files=[], frbcat=True):
     """
     Function to plot populations in browser using Bokeh
 
     Args:
-        pops (list): List of population objects to plot
         files (list): List of population files to plot (currently only works
                       with csv files - file an issue if you would like more
                       options)
-        show (boolean): Show plot or not. Defaults to True
+        frbcat (bool): Whether to plot frbcat parameters. Defaults to True
     """
 
-    lp = len(pops)
-    lf = len(files)
-
     # Configure colours
-    colours = OrderedDict()
+    mc = len(files)
+    if frbcat:
+        mc += 1
+    colours = Category10[10][:mc]
 
     # Dataframes
     dfs = []
 
-    def read(path=None,pop=None):
+    def read(path=None):
         '''
         Mini-function to read in data
 
         Args:
             path (str): Path to file to read
-            pop (str): Population input
         '''
+
         global num_df
 
-        if path:
-            if os.path.isfile(path):
+        if os.path.isfile(path):
+            try:
                 df = pd.read_csv(path)
-                name = f.split('_')[-1].split('.')[0]
-                df[name] = True
-            else:
-                pprint('Skipping population {} - contains no sources'.format(f))
+            except ValueError:
                 return
+            name = f.split('_')[-1].split('.')[0]
+        else:
+            m = 'Skipping population {} - contains no sources'.format(f)
+            pprint(m)
+            return
 
-        if pop:
-            v = pop.values()
-            if v:
-                df = pd.read_csv(StringIO(v))
-                name = pop.name
-                df[name] = True
-            else:
-                name = pop.name
-                pprint('Skipping population {} - contains no sources'.format(name))
-                return
-
+        df['population'] = name
+        df['color'] = colours[num_df]
         dfs.append(df)
-        colours[name] = Category10[10][num_df]
         num_df += 1
 
-    # Check whether populations have been given as input
-    if lp == 0 and lf == 0:
-        print('Nothing to plot: plot arguments are empty')
-        return
-
-    # Get dataframe from populations
-    elif lp > 0:
-        for p in pops:
-            read(pop=p)
-
     # Get dataframe from files
-    elif lf > 0:
-        for f in files:
-            read(path=f)
+    for f in files:
+        read(path=f)
 
-    # Combine populations to single dataframe, using updating the initial
-    # population if observation values have been found in the second one
-    df = dfs[0]
+    # Import frbcat
+    if frbcat:
+        df = get_frbcat()
+        num = len(dfs)
+        df['color'] = colours[num]
+        dfs.append(df)
 
-    if num_df > 1:
-        for d in dfs:
-            df = pd.merge(df,
-                          d,
-                          on=['gx', 'gy', 'gz'],
-                          how='outer',
-                          suffixes=('_old',''))
-
-            for c in df:
-                if c + '_old' in df:
-                    df[c] = df[c].fillna(df[c + '_old'])
-                    del df[c + '_old']
-
-    # Add colours to each source
-    for n in colours:
-        df.loc[(df[n].notnull()), 'color'] = colours[n]
-        df.loc[(df[n].notnull()), 'population'] = n
+    # Create Column Data Sources for interacting with the plot
+    props = dict(x=[], y=[], color=[], population=[])
+    sources = [ColumnDataSource(props) for df in dfs]
 
     # Create axis options
     axis_map = {
@@ -122,7 +102,7 @@ def plot_pop(pops=[], files=[], show=True):
         'Galactic Y (Gpc)': 'gy',
         'Galactic Z (Gpc)': 'gz',
         'Luminosity - Bolometric': 'lum_bol',
-        'Peak Flux Density (W/m**2)': 's_peak',
+        'Peak Flux Density (W/(m**2*Hz))': 's_peak',
         'Pulse Width - Effective (ms)': 'w_eff',
         'Pulse Width - Intrinsic (ms)': 'w_int',
         'Redshift': 'z',
@@ -130,41 +110,120 @@ def plot_pop(pops=[], files=[], show=True):
         'Spectral Index': 'si',
         }
 
-    x_axis = Select(title='X-Axis',
+    x_axis = Select(title='',
                     options=sorted(axis_map.keys()),
-                    value='Galactic X (Gpc)')
+                    value='Galactic Latitude (degrees)')
 
     # Add histogram option
-    axis_map['Number'] = 'number'
+    axis_map['Fraction'] = 'number'
 
-    y_axis = Select(title='Y-Axis',
+    y_axis = Select(title='',
                     options=sorted(axis_map.keys()),
-                    value='Number')
-                    #value='Galactic Y (Gpc)')
-
-    # Create Column Data Source for interacting with the plot
-    source = ColumnDataSource(data=dict(x=[], y=[], color=[]))
+                    #value='Number')
+                    value='Galactic Longitude (degrees)')
 
     # What to display while hovering
-    hover = HoverTool(tooltips=[("Pop", "$population"), ("X", "@x"), ("Y", "@y")])
+    props = [("Pop", "@population"), ("X", "@x"), ("Y", "@y")]
+    hover = HoverTool(tooltips=props)
+
     # Set up tools
-    tools_to_show = ['box_zoom', 'pan', 'save',hover,'reset','wheel_zoom']
+    tools_to_show = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
+
+    # Set up title
+    title = '|'
+    for df in dfs:
+        name = df['population'].iloc[0]
+        num = df.shape[0]
+        title += ' {}: {} |'.format(name, num)
 
     # Create main plot
     p = figure(plot_height=600,
                plot_width=600,
-               title='',
+               title=title,
                active_scroll='wheel_zoom',
                toolbar_location='above',
-               tools=tools_to_show)
+               tools=tools_to_show,
+               webgl=True)
 
-    # Plot scatter plot
-    p.circle(x='x',
-             y='y',
-             source=source,
-             size=7,
-             color='color',
-             alpha=0.5)
+    for source in sources:
+
+        # Plot scatter plot for the populations
+        p.circle(x='x',
+                 y='y',
+                 source=source,
+                 size=7,
+                 alpha=0.7,
+                 color='color',
+                 legend='population')
+
+    # How to filter data
+    def filter_data(df, x_name, y_name, bin_edges):
+
+        # How to plot a histogram
+        if y_name == 'number':
+
+            # Initialise different histograms
+            xn = []
+            yn = []
+
+            # Find x-axis values in that population
+            dfx = df[x_name]
+
+            # Check there are values
+            dfx = pd.to_numeric(dfx, errors='coerce')
+            dfx.dropna(inplace=True)
+
+            print(dfx)
+            # Ensure bins overlap if existing
+            print(bin_edges)
+            if len(bin_edges) > 0:
+                be = bin_edges
+            else:
+                be = 15
+
+            hist, bin_edges = np.histogram(dfx, bins=be)
+
+            # Normalise
+            hist = [h/dfx.count() for h in hist]
+
+            # Ugly hack for plotting a histogram with points
+            m = 15
+            xn = []
+            yn = []
+            cn = []
+            pn = []
+
+            for i, v in enumerate(hist):
+
+                if i < (len(hist) - 1):
+                    upper_y = hist[i+1]
+                else:
+                    upper_y = 0
+
+                dy = upper_y - hist[i]
+                dx = bin_edges[i+1] - bin_edges[i]
+
+                xh = [bin_edges[i] + a*dx/m for a in range(m)]
+                xh.extend([bin_edges[i+1] for _ in range(m)])
+                yh = [v for _ in range(m)]
+                yh.extend([v + a*dy/m for a in range(m)])
+
+                xn.extend(xh)
+                yn.extend(yh)
+                cn.extend(df['color'].iloc[0] for i in range(len(xh)))
+                pn.extend(df['population'].iloc[0] for i in range(len(xh)))
+
+            props = {x_name: xn, 'number': yn, 'color': cn, 'population': pn}
+
+            df = pd.DataFrame(props)
+
+        # Only return relevant values
+        df = df[[x_name, y_name, 'color', 'population']]
+        df = pd.to_numeric(df, errors='coerce')
+        df = df.dropna()
+        print(df)
+
+        return df, bin_edges
 
     # Interactive goodness
     def update():
@@ -174,61 +233,33 @@ def plot_pop(pops=[], files=[], show=True):
         p.xaxis.axis_label = x_axis.value
         p.yaxis.axis_label = y_axis.value
 
-        num_pop = len(df)
-        num_subpop =len(df[(df.pmsurv.notnull())])
+        bins = []
 
-        # Set up title
-        title = '|'
-        for n in colours:
-            num_pop = df[(df[n].notnull())][x_name].shape[0]
-            title += ' {}: {} |'.format(n.capitalize(), num_pop)
-        p.title.text = title
+        for i, source in enumerate(sources):
 
-        # How to plot a histogram
-        if y_name == 'number':
+            # Create an empty data set
+            cols = [x_name, y_name, 'color', 'population']
+            empty = pd.DataFrame(np.nan, index=[0], columns=cols)
 
-            # Initialise different histograms
-            xn = []
-            yn = []
-            cn = []
-            bin_edges = []
+            # Ensure columns are present in each population
+            if x_name not in dfs[i]:
+                df = empty
+            elif y_name not in dfs[i] and y_name != 'number':
+                df = empty
+            else:
+                # Apply filtering
+                df, bins = filter_data(dfs[i], x_name, y_name, bins)
 
-            # For each population
-            for n in colours:
+            # Don't plot if empty
+            #if df.shape[0] > 0:
 
-                # Find x-axis values in that population
-                dfx = df[(df[n].notnull())][x_name]
-
-                # Check there are values
-                dfx = pd.to_numeric(dfx, errors='coerce')
-                dfx.dropna(inplace=True)
-
-                # Ensure bins overlap
-                if len(bin_edges) > 0:
-                    be = bin_edges
-                else:
-                    be = 15
-                hist, bin_edges = np.histogram(dfx, bins=be)
-
-                xh = [val for val in bin_edges for _ in (0, 1)]
-                yh = [val for val in hist for _ in (0, 1)]
-                xn.extend(xh)
-                yn.append(0)
-                yn.extend(yh)
-                yn.append(0)
-                cn.extend([colours[n] for i in range(len(xh))])
-
-            db = pd.DataFrame({x_name: xn, 'number': yn, 'color': cn})
-
-            #p.line(x='x', y='y', source=source)
-        else:
-            db = df
-
-        source.data = dict(
-            x=db[x_name],
-            y=db[y_name],
-            color=db['color']
-        )
+            # Update data
+            source.data = dict(
+                x=df[x_name],
+                y=df[y_name],
+                color=df['color'],
+                population=df['population']
+            )
 
     # What to interact with
     controls = [x_axis, y_axis]
@@ -237,17 +268,42 @@ def plot_pop(pops=[], files=[], show=True):
         control.on_change('value', lambda attr, old, new: update())
 
     # Layout options
-    sizing_mode = 'scale_width'
+    sizing_mode = 'fixed'
 
-    inputs = widgetbox(*controls, width=100)
-    l = layout([
-        [inputs, p],
-    ], sizing_mode=sizing_mode)
+    cwd = os.path.dirname(__file__)
 
-    if show:
-        update()  # initial load of the data
-        curdoc().add_root(l)
-        curdoc().title = 'frbpoppy'
+    def path(p):
+        d = os.path.join(cwd, 'plot_config/{}.html'.format(p))
+        return open(d).read()
 
-plot_pop(pops=[], files=['/media/DATA/phd/frbpoppy/data/results/population_initial.csv',
-                             '/media/DATA/phd/frbpoppy/data/results/population_pmsurv.csv'])
+    text_top = Div(text=path('text_top'))
+    text_bottom = Div(text=path('text_bottom'))
+
+    sidebar = [text_top, x_axis, y_axis, text_bottom]
+    s = widgetbox(sidebar, width=350)
+    L = layout([[s, p]], sizing_mode=sizing_mode)
+
+    update()  # initial load of the data
+    curdoc().add_root(L)
+    curdoc().title = 'frbpoppy'
+
+
+# Parse system arguments
+# I know ArgumentParser is nicer, but bokeh only works with argv
+
+args = sys.argv
+
+frbcat = True
+if '-nofrbcat' in args:
+    frbcat = False
+
+files = []
+for a in args:
+    if a.endswith('.csv'):
+        files.append(a)
+
+# Check whether populations have been given as input
+if len(files) == 0:
+    pprint('Nothing to plot: plot arguments are empty')
+else:
+    plot_pop(files=files, frbcat=frbcat)
