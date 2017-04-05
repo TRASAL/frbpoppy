@@ -169,8 +169,8 @@ def generate(n_gen,
         src.w_int = go.redshift_pulse(z=src.z)
 
         # Add bolometric luminosity [W]
-        src.lum_bol = go.ergspers_to_watts(1e48)
-        #src.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+        #src.lum_bol = go.ergspers_to_watts(1e48)
+        src.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add spectral index
         src.si = -1.4

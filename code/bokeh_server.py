@@ -5,7 +5,7 @@ import subprocess
 
 def plot(*pops, files=[], frbcat=True, show=True):
     """
-    Plot populations with bokeh
+    Plot populations with bokeh. Has to save populations before plotting.
 
     Args:
         *pops (Population, optional): Add the populations you would like to

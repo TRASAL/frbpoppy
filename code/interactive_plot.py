@@ -221,7 +221,6 @@ def plot_pop(files=[], frbcat=True):
         df = df[[x_name, y_name, 'color', 'population']]
         df = pd.to_numeric(df, errors='coerce')
         df = df.dropna()
-        print(df)
 
         return df, bin_edges
 

@@ -6,7 +6,7 @@ import galacticops as go
 from population import Population as pop
 from populate import generate
 from dosurvey import observe
-from plot import plot_pop
+from bokeh_server import plot
 
 
 class TestFullRun(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestFullRun(unittest.TestCase):
         # puppies. All other tests just check the weird cases work.
         population = generate(10)
         survey_population = observe(population, 'WHOLESKY')
-        plot_pop(pops=[population, survey_population], show=False)
+        plot(population, survey_population, show=False)
 
 
 class TestDistributions(unittest.TestCase):
@@ -135,7 +135,7 @@ class TestGalacticops(unittest.TestCase):
 
         # Actual FRB coordinates
         gl, gb = go.radec_to_lb('19:06:53', '-40:37:14')
-        self.assertTrue(abs(gl - 356.6411) <= 1.5)
+        self.assertTrue(abs(gl + (360 - 356.6411)) <= 1.5)
         self.assertTrue(abs(gb + 20.0207) <= 1.5)
 
         # Some extreme cases
@@ -144,7 +144,7 @@ class TestGalacticops(unittest.TestCase):
         self.assertTrue(abs(gb + 60.1886) <= 1.5)
 
         gl, gb = go.radec_to_lb('23:0:0', '-90:0:0')
-        self.assertTrue(abs(gl - 302.9319) <= 1.5)
+        self.assertTrue(abs(gl + (360 - 302.9319)) <= 1.5)
         self.assertTrue(abs(gb + 27.1283) <= 1.5)
 
 
