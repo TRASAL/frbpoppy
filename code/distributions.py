@@ -1,7 +1,7 @@
 import random
 
 
-def powerlaw(low, high, power, y=random.random()):
+def powerlaw(low, high, power):
     """
     Return random variable distributed according to power law
 
@@ -9,7 +9,6 @@ def powerlaw(low, high, power, y=random.random()):
         low (float): Lower limit of distribution
         high (float): Higher limit of distribution
         power (float): Power of power law distribution
-        y (float): Random seed variable
     Returns:
         x (float): Random variable picked from power law distribution
     """
@@ -19,5 +18,11 @@ def powerlaw(low, high, power, y=random.random()):
     p1 = power + 1
     if (low == 0. or high == 0.) and p1 < 0:
         raise ValueError('Power laws are not defined at 0 if power is negative')
+    if p1 == 0:
+        raise ValueError('Power law distribution undefined at -1')
 
-    return ((high**p1 - low**p1)*y + low**p1)**(1/p1)
+    y=random.random()
+
+    a = ((high**p1 - low**p1)*y + low**p1)**(1/p1)
+
+    return a

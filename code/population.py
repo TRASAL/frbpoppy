@@ -22,7 +22,9 @@ class Population:
                  v_max=None,
                  W_m=None,
                  W_v=None,
-                 z_max=None):
+                 z_max=None,
+                 w_min=None,
+                 w_max=None):
 
         # Population properties
         self.cosmology = cosmology
@@ -40,6 +42,8 @@ class Population:
         self.W_m = W_m
         self.W_v = W_v
         self.z_max = z_max
+        self.w_min = w_min
+        self.w_max = w_max
 
         # Store FRB sources
         self.sources = []

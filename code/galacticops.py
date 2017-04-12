@@ -161,20 +161,20 @@ def ergspers_to_watts(e):
     return e*1e-7
 
 
-def redshift_pulse(z=0, cosmology=True, min_w=0.1, max_w=10):
+def redshift_pulse(z=0, cosmology=True, w_min=0.1, w_max=5):
     """
     A random value from a uniform distribution redshifted by z
 
     Args:
         z (float): Redshift. Defaults to 0
         cosmology (boolean): Whether to use cosmology. Default to True
-        min_w (float): Minimum pulse width [ms]. Defaults to 0.1
-        max_w (float): Maximum pulse width [ms]. Defaults to 10
+        w_min (float): Minimum pulse width [ms]. Defaults to 0.1
+        w_max (float): Maximum pulse width [ms]. Defaults to 5
     Returns:
         w_int (float): A pulse width drawn from a uniform distribution, and
                        redshifted if cosmology was used.
     """
-    w = random.uniform(0.1, 10)
+    w = random.uniform(w_min, w_max)
     if cosmology:
         w *= (1+z)
     return w

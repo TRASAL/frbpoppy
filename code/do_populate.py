@@ -14,8 +14,9 @@ def generate(n_gen,
              cosmo_pars=[69.6, 0.286, 0.714],
              electron_model='ne2001',
              emission_pars=[10e6, 10e9],
-             lum_dist_pars=[1e50, 1e90, 1],
+             lum_dist_pars=[1e40, 1e50, 1],
              name=None,
+             pulse=[0.1,5],
              si_pars=[1, 1],
              z_max=2.5):
 
@@ -36,11 +37,13 @@ def generate(n_gen,
             between which FRB sources should emit the given bolometric
             luminosity. Defaults to [10e6,10e9]
         lum_dist_pars (list, optional): Bolometric luminosity distribution
-            parameters being: the minimum luminosity [W], the maximum
-            luminosity [W] and the powerlaw index of the distribution.
+            parameters being: the minimum luminosity [erg/s], the maximum
+            luminosity [erg/s] and the powerlaw index of the distribution.
             Defaults to [1e50, 1e90, 1]
         name (str, optional): Name to be given to the population. Defaults to
             'initial'
+        pulse (str, optional): Values between which the intrinsic pulse width
+            should be [ms]. Defaults to [0.5, 5]
         si_pars (list, optional): Spectral index parameters, being the mean
             index and the standard deviation thereof. Defaults to [1, 1]
         z_max (float, optional): The maximum redshift out to which to
@@ -91,6 +94,15 @@ def generate(n_gen,
         m = 'Please ensure there are three luminosity distribution parameters'
         raise ValueError(m)
 
+    if not all(isinstance(par, (float, int)) for par in pulse):
+        m = 'Please ensure all pulse parameters are '
+        m += 'floats or integeters'
+        raise ValueError(m)
+
+    if len(pulse) != 2:
+        m = 'Please ensure there are two pulse parameters'
+        raise ValueError(m)
+
     if not name:
         name = 'Initial'
 
@@ -125,6 +137,8 @@ def generate(n_gen,
     pop.lum_min = lum_dist_pars[0]
     pop.lum_max = lum_dist_pars[1]
     pop.lum_pow = lum_dist_pars[2]
+    pop.w_min = pulse[0]
+    pop.w_max = pulse[1]
     pop.f_min = emission_pars[0]
     pop.f_max = emission_pars[1]
     pop.si_mean = si_pars[0]
@@ -166,10 +180,11 @@ def generate(n_gen,
         src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
         # Give an random intrinsic pulse width [ms]
-        src.w_int = go.redshift_pulse(z=src.z)
+        src.w_int = go.redshift_pulse(z=src.z,
+                                      w_min=pop.w_min,
+                                      w_max=pop.w_max)
 
-        # Add bolometric luminosity [W]
-        #src.lum_bol = go.ergspers_to_watts(1e48)
+        # Add bolometric luminosity [erg/s]
         src.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add spectral index

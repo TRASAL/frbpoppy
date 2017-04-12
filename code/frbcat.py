@@ -58,7 +58,7 @@ def get_frbcat():
     db['si'] = db['Scattering Index']
     db['snr'] = db['SNR']
     db['w_eff'] = db['Width']
-    db['s_peak'] = 1e26*db['Flux']  # Convert to W/(m^2*Hz)
+    db['s_peak'] = db['Flux']
     db['fluence'] = db['Flux'] * db['Width']
     db['population'] = 'frbcat'
     db['z'] = db['Spectroscopic Redshift']

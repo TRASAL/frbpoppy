@@ -1,160 +1,312 @@
-import bokeh.io
-import pandas as pd
-import os
-from bokeh.layouts import layout, widgetbox
-from bokeh.models import ColumnDataSource, CustomJS
-from bokeh.models.widgets import Paragraph, Select
-from bokeh.palettes import Category10
-from bokeh.plotting import Figure, output_file
-from io import StringIO
+"""
+Plot FRB populations with a Bokeh server. Run script with:
 
+    $ bokeh serve --show code/plot.py --args <pop_example.csv>
+
+in which all csv-files with populations can be given after ``--args``, and as
+well as the optional arguments of ``-noshow`` and ``-nofrbcat``, to
+respectively not show the resulting plot, and to not overplot frbcat
+"""
+
+import numpy as np
+import os
+import pandas as pd
+import sys
+
+from bokeh.io import curdoc
+from bokeh.layouts import row, column, layout, widgetbox
+from bokeh.models import ColumnDataSource, HoverTool, Div
+from bokeh.models.widgets import Select
+from bokeh.palettes import Category10
+from bokeh.plotting import figure
+
+from frbcat import get_frbcat
 from log import pprint
 
 # Number of dataframes/populations
 num_df = 0
 
 
-def plot_pop(pops=[], files=[], show=True):
+def plot_pop(files=[], frbcat=True):
     """
     Function to plot populations in browser using Bokeh
 
     Args:
-        pops (list): List of population objects to plot
         files (list): List of population files to plot (currently only works
                       with csv files - file an issue if you would like more
                       options)
-        show (boolean): Show plot or not. Defaults to True
+        frbcat (bool): Whether to plot frbcat parameters. Defaults to True
     """
 
-    lp = len(pops)
-    lf = len(files)
-
     # Configure colours
-    ld = lp + lf
-    if ld < 3:
-        colours = Category10[3][0:ld]
-        colours = ['#1f77b4', '#ff7f0e']
-    else:
-        colours = Category10[ld]
+    mc = len(files)
+    if frbcat:
+        mc += 1
+    colours = Category10[10][:mc]
 
     # Dataframes
     dfs = []
 
-    def read(path=None,pop=None):
+    def read(path=None):
         '''
         Mini-function to read in data
 
         Args:
             path (str): Path to file to read
-            pop (str): Population input
         '''
+
         global num_df
 
-        if path:
-            if os.path.isfile(path):
+        if os.path.isfile(path):
+            try:
                 df = pd.read_csv(path)
-            else:
-                pprint('Skipping population {} - contains no sources'.format(f))
+            except ValueError:
                 return
+            name = f.split('_')[-1].split('.')[0]
+        else:
+            m = 'Skipping population {} - contains no sources'.format(f)
+            pprint(m)
+            return
 
-        if pop:
-            v = pop.values()
-            if v:
-                db = StringIO(v)
-                df = pd.read_csv(db)
-            else:
-                n = pop.name
-                pprint('Skipping population {} - contains no sources'.format(n))
-                return
+        # Reduce population size if they're too large
+        if df.shape[0] > 1000000:
+            df = df.iloc[::1000]
 
-
-        df['plot_num'] = num_df
-        df['plot_colour'] = colours[num_df]
-        df['plot_size'] = str((num_df+1)*5)
+        df['population'] = name
+        df['color'] = colours[num_df]
+        # Sidestepping issue in Bokeh
+        df['lum_bol'] = df['lum_bol'] / 1e30
         dfs.append(df)
         num_df += 1
 
-    # Check whether populations have been given as input
-    if lp == 0 and lf == 0:
-        print('Nothing to plot: plot arguments are empty')
-        return
-
-    # Get dataframe from populations
-    elif lp > 0:
-        for p in pops:
-            read(pop=p)
-
     # Get dataframe from files
-    elif lf > 0:
-        for f in files:
-            read(path=f)
+    for f in files:
+        read(path=f)
 
-    # Check which overlapping attributes the populations have
-    attrs = set(list(dfs[0]))
-    if lp + lf > 1:
-        for df in dfs[1:]:
-            attrs.intersection_update(list(df))
-    attrs = sorted(list(attrs))
+    # Import frbcat
+    if frbcat:
+        df = get_frbcat()
+        num = len(dfs)
+        df['color'] = colours[num]
+        dfs.append(df)
 
-    # Drop unhelpful attributes
-    if 'detected' in attrs:
-        attrs.remove('detected')
+    # Create Column Data Sources for interacting with the plot
+    props = dict(x=[], y=[], color=[], population=[])
+    sources = [ColumnDataSource(props) for df in dfs]
 
-    # Create a new plot
-    plot = Figure(title=None)
+    # Create axis options
+    axis_map = {
+        'Dispersion Measure - Host (pc/cm^3)': 'dm_host',
+        'Dispersion Measure - IGM (pc/cm^3)': 'dm_igm',
+        'Dispersion Measure - Milky Way (pc/cm^3)': 'dm_mw',
+        'Dispersion Measure (pc/cm^3)': 'dm',
+        'Distance (Gpc)': 'dist',
+        'Fluence (Jy*ms)': 'fluence',
+        'Galactic Latitude (degrees)': 'gb',
+        'Galactic Longitude (degrees)': 'gl',
+        'Galactic X (Gpc)': 'gx',
+        'Galactic Y (Gpc)': 'gy',
+        'Galactic Z (Gpc)': 'gz',
+        'Luminosity - Bolometric (10^30 ergs/s)': 'lum_bol',
+        'Peak Flux Density (Jy)': 's_peak',
+        'Pulse Width - Effective (ms)': 'w_eff',
+        'Pulse Width - Intrinsic (ms)': 'w_int',
+        'Redshift': 'z',
+        'Signal to Noise Ratio': 'snr',
+        'Spectral Index': 'si',
+        }
 
-    # Add databases together
-    df = pd.concat([d for d in dfs])
+    x_axis = Select(title='',
+                    options=sorted(axis_map.keys()),
+                    value='Galactic Latitude (degrees)')
 
-    # Convert data format
-    source = ColumnDataSource(df)
+    # Add histogram option
+    axis_map['Fraction'] = 'number'
 
-    # Plot the data
-    plot.scatter(x='gx',
-                 y='gy',
-                 color='plot_colour',
-                 size='plot_size',
-                 source=source)
+    y_axis = Select(title='',
+                    options=sorted(axis_map.keys()),
+                    #value='Number')
+                    value='Galactic Longitude (degrees)')
 
-    # Javascript to make the plot interactive
-    code = """
-           var data = source.get('data');
-           var r = data[cb_obj.get('value')];
-           var {var} = data[cb_obj.get('value')];
-           //window.alert( "{var} " + cb_obj.get('value') + {var}  );
-           for (i = 0; i < r.length; i++) {{
-               {var}[i] = r[i] ;
-               data['{var}'][i] = r[i];
-           }}
-           source.trigger('change');
-           """
+    # What to display while hovering
+    props = [("Pop", "@population"), ("X", "@x"), ("Y", "@y")]
+    hover = HoverTool(tooltips=props)
+
+    # Set up tools
+    tools_to_show = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
+
+    # Set up title
+    title = '|'
+    for df in dfs:
+        name = df['population'].iloc[0]
+        num = df.shape[0]
+        title += ' {}: {} |'.format(name, num)
+
+    # Create main plot
+    p = figure(plot_height=600,
+               plot_width=600,
+               title=title,
+               active_scroll='wheel_zoom',
+               toolbar_location='above',
+               tools=tools_to_show,
+               webgl=True)
+
+    for source in sources:
+
+        # Plot scatter plot for the populations
+        p.circle(x='x',
+                 y='y',
+                 source=source,
+                 size=7,
+                 alpha=0.7,
+                 color='color',
+                 legend='population')
+
+    # How to filter data
+    def filter_data(df, x_name, y_name, bin_edges):
+
+        # How to plot a histogram
+        if y_name == 'number':
+
+            # Initialise different histograms
+            xn = []
+            yn = []
+
+            # Find x-axis values in that population
+            dfx = df[x_name]
+
+            # Check there are values
+            dfx = pd.to_numeric(dfx, errors='coerce')
+            dfx.dropna(inplace=True)
+
+            # Ensure bins overlap if existing
+            if len(bin_edges) > 0:
+                be = bin_edges
+            else:
+                be = 15
+
+            hist, bin_edges = np.histogram(dfx, bins=be)
+
+            # Normalise
+            hist = [h/dfx.count() for h in hist]
+
+            # Ugly hack for plotting a histogram with points
+            m = 15
+            xn = []
+            yn = []
+            cn = []
+            pn = []
+
+            for i, v in enumerate(hist):
+
+                if i < (len(hist) - 1):
+                    upper_y = hist[i+1]
+                else:
+                    upper_y = 0
+
+                dy = upper_y - hist[i]
+                dx = bin_edges[i+1] - bin_edges[i]
+
+                xh = [bin_edges[i] + a*dx/m for a in range(m)]
+                xh.extend([bin_edges[i+1] for _ in range(m)])
+                yh = [v for _ in range(m)]
+                yh.extend([v + a*dy/m for a in range(m)])
+
+                xn.extend(xh)
+                yn.extend(yh)
+                cn.extend(df['color'].iloc[0] for i in range(len(xh)))
+                pn.extend(df['population'].iloc[0] for i in range(len(xh)))
+
+            props = {x_name: xn, 'number': yn, 'color': cn, 'population': pn}
+
+            df = pd.DataFrame(props)
+
+        # Only return relevant values
+        df = df[[x_name, y_name, 'color', 'population']]
+        df = pd.to_numeric(df, errors='coerce')
+        df = df.dropna()
+
+        return df, bin_edges
 
     # Interactive goodness
-    callbackx = CustomJS(args=dict(source=source),
-                         code=code.format(var='gx'))
-    callbacky = CustomJS(args=dict(source=source),
-                         code=code.format(var='gy'))
+    def update():
+        x_name = axis_map[x_axis.value]
+        y_name = axis_map[y_axis.value]
 
-    # Add list boxes for selecting which columns to plot on the x and y axis
-    xaxis_select = Select(title='X-axis:',
-                          value='gx',
-                          options=attrs,
-                          callback=callbackx)
-    yaxis_select = Select(title='Y-axis:',
-                          value='gy',
-                          options=attrs,
-                          callback=callbacky)
+        p.xaxis.axis_label = x_axis.value
+        p.yaxis.axis_label = y_axis.value
 
-    # Setup layout plot window
-    title = Paragraph(text='frbpoppy')
-    text = Paragraph(text='Please select options')
-    inputs = widgetbox(title, text, xaxis_select, yaxis_select)
-    panel = layout([[inputs, plot]])
+        bins = []
 
-    # Show the plot!
-    loc = '../data/results/plot.html'
-    out = os.path.join(os.path.dirname(__file__), loc)
-    output_file(out, title='frbpoppy plot', mode='inline')
+        for i, source in enumerate(sources):
 
-    if show:
-        bokeh.io.show(panel)
+            # Create an empty data set
+            cols = [x_name, y_name, 'color', 'population']
+            empty = pd.DataFrame(np.nan, index=[0], columns=cols)
+
+            # Ensure columns are present in each population
+            if x_name not in dfs[i]:
+                df = empty
+            elif y_name not in dfs[i] and y_name != 'number':
+                df = empty
+            else:
+                # Apply filtering
+                df, bins = filter_data(dfs[i], x_name, y_name, bins)
+
+            # Don't plot if empty
+            #if df.shape[0] > 0:
+
+            # Update data
+            source.data = dict(
+                x=df[x_name],
+                y=df[y_name],
+                color=df['color'],
+                population=df['population']
+            )
+
+    # What to interact with
+    controls = [x_axis, y_axis]
+
+    for control in controls:
+        control.on_change('value', lambda attr, old, new: update())
+
+    # Layout options
+    sizing_mode = 'fixed'
+
+    cwd = os.path.dirname(__file__)
+
+    def path(p):
+        d = os.path.join(cwd, 'plot_config/{}.html'.format(p))
+        return open(d).read()
+
+    text_top = Div(text=path('text_top'))
+    text_bottom = Div(text=path('text_bottom'))
+
+    sidebar = [text_top, x_axis, y_axis, text_bottom]
+    s = widgetbox(sidebar, width=350)
+    L = layout([[s, p]], sizing_mode=sizing_mode)
+
+    update()  # initial load of the data
+    curdoc().add_root(L)
+    curdoc().title = 'frbpoppy'
+
+
+# Parse system arguments
+# I know ArgumentParser is nicer, but bokeh only works with argv
+
+args = sys.argv
+
+frbcat = True
+if '-nofrbcat' in args:
+    frbcat = False
+
+files = []
+for a in args:
+    if a.endswith('.csv'):
+        files.append(a)
+
+# Check whether populations have been given as input
+if len(files) == 0:
+    pprint('Nothing to plot: plot arguments are empty')
+else:
+    plot_pop(files=files, frbcat=frbcat)

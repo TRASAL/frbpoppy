@@ -4,9 +4,9 @@ import unittest
 import distributions as ds
 import galacticops as go
 from population import Population as pop
-from populate import generate
-from dosurvey import observe
-from bokeh_server import plot
+from do_populate import generate
+from do_survey import observe
+from do_plot import plot
 
 
 class TestFullRun(unittest.TestCase):
@@ -25,16 +25,16 @@ class TestDistributions(unittest.TestCase):
     def test_powerlaw(self):
 
         # Check normal usage
-        r1 = ds.powerlaw(1, 2, 2, y=1)
-        self.assertEqual(r1, 2.0)
+        r1 = ds.powerlaw(1, 2, 2)
+        self.assertTrue(1 <= r1 <= 2)
 
         # Check inverted input
-        r2 = ds.powerlaw(2, 1, 2, y=1)
-        self.assertEqual(r2, r1)
+        r2 = ds.powerlaw(2, 1, 2)
+        self.assertTrue(1 <= r1 <= 2)
 
         # Check what happens when zero is raised to a negative power
         with self.assertRaises(ValueError):
-            ds.powerlaw(0, 5, -2, y=0)
+            ds.powerlaw(0, 5, -2)
 
 
 class TestPopulate(unittest.TestCase):

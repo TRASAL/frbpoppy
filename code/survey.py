@@ -218,24 +218,36 @@ class Survey:
                 Defaults to 10e6
 
         Return:
-            s_peak (float): Mean spectral flux density [W/(m**2*Hz)]
+            s_peak (float): Mean spectral flux density [Jy]
         """
 
-        # Limits observing bandwidth
-        f_1 = self.central_freq - 0.5*self.bw
+        # Limits observing bandwidth (as seen in rest frame source)
+        f_1 = (self.central_freq - 0.5*self.bw)
         f_1 *= 1e6  # MHz -> Hz
-        f_2 = self.central_freq + 0.5*self.bw
+        f_2 = (self.central_freq + 0.5*self.bw)
         f_2 *= 1e6  # MHz -> Hz
+
         # Spectral index
         sp = src.si + 1
         sm = src.si - 1
+
         # Convert distance to metres
-        dist = src.dist*3.08567758149137e25
+        dist = src.dist * 3.08567758149137e25
+
+        # Convert luminosity to Watts
+        lum = src.lum_bol * 1e-7
+
+        # Set normalisation
+        # (s_peak must be ~1 Jy at a luminosity of 8e44 ergs/s)
+        norm = 1/10339369.717529655
 
         freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
-        nom = src.lum_bol * (1+src.z)**sm * freq_frac
+        nom = lum * (1+src.z)**sm * freq_frac
         den = 4*math.pi*dist**2 * (f_high**sp - f_low**sp)
         s_peak = nom/den
+
+        # Convert to Janskys
+        s_peak *= 1e26
 
         return s_peak
 
@@ -294,8 +306,7 @@ class Survey:
                 in survey region
             w_eff (float): Observed pulse width [ms]. Will return 0. if source
                 not in survey region
-            s_peak (float): Mean spectral flux density per observed source
-                [W/m**2]
+            s_peak (float): Mean spectral flux density per observed source [Jy]
             fluence (float): Fluence of the observed pulse [Jy*ms]
         """
 
@@ -358,7 +369,7 @@ class Survey:
         snr /= (T_tot * self.beta)
 
         # Calculate fluence [Jy*ms]
-        fluence = s_peak * 1e26 * w_eff
+        fluence = s_peak * w_eff
 
         # Account for offset in beam
         snr *= int_pro
