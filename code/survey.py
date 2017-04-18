@@ -365,7 +365,7 @@ class Survey:
                                   f_high=population.f_max)
 
         # Radiometer equation for single pulse (Dewey et al., 1984)
-        snr = s_peak * self.gain * math.sqrt(self.n_pol*self.bw_chan*w_eff)
+        snr = s_peak * self.gain * math.sqrt(self.n_pol*self.bw*w_eff*1e3)
         snr /= (T_tot * self.beta)
 
         # Calculate fluence [Jy*ms]

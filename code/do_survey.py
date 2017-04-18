@@ -32,7 +32,7 @@ def observe(pop,
         # Calculate observing properties such as the signal to noise ratio,
         # effective pulse width etc.
         snr, w_eff, s_peak, fluence = s.obs_prop(src, pop, scat=scat)
-        #print(s_peak, snr)
+
         # Check whether source is outside survey region
         if snr == -2.0:
             s.n_out += 1

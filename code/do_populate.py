@@ -27,8 +27,8 @@ def generate(n_gen,
         cosmology (bool, optional): Whether to use cosmology in all
             calculations. Defaults to True.
         cosmo_pars (list, optional): Three values, the first being the Hubble
-            constant, the second the density parameter Omega_m and the third
-            being the cosmological constant Omega_Lambda (referred to as W_m
+            constant, the second the density parameter Ω_m and the third
+            being the cosmological constant Ω_Lambda (referred to as W_m
             in the rest of the code). These parameters default to those
             determined with Planck [69.6, 0.286, 0.714]
         electron_model (str, optional): Model for the free electron density in
