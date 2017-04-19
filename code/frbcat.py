@@ -45,6 +45,7 @@ def get_frbcat():
     db = pd.read_csv(f)
 
     # Only keep rows with the largest number of parameters
+    # so that only one row per FRB remains
     db['count'] = db.count(axis=1)
     db = db.sort_values('count', ascending=False).drop_duplicates('UTC')
     db = db.sort_index()

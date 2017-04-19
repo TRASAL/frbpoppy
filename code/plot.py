@@ -14,7 +14,7 @@ import pandas as pd
 import sys
 
 from bokeh.io import curdoc
-from bokeh.layouts import row, column, layout, widgetbox
+from bokeh.layouts import layout, widgetbox
 from bokeh.models import ColumnDataSource, HoverTool, Div
 from bokeh.models.widgets import Select
 from bokeh.palettes import Category10
@@ -68,7 +68,7 @@ def plot_pop(files=[], frbcat=True):
             pprint(m)
             return
 
-        # Reduce population size if they're too large
+        # Reduce population size if it's too large
         if df.shape[0] > 1000000:
             df = df.iloc[::1000]
 
@@ -96,10 +96,10 @@ def plot_pop(files=[], frbcat=True):
 
     # Create axis options
     axis_map = {
+        'Dispersion Measure (pc/cm^3)': 'dm',
         'Dispersion Measure - Host (pc/cm^3)': 'dm_host',
         'Dispersion Measure - IGM (pc/cm^3)': 'dm_igm',
         'Dispersion Measure - Milky Way (pc/cm^3)': 'dm_mw',
-        'Dispersion Measure (pc/cm^3)': 'dm',
         'Distance (Gpc)': 'dist',
         'Fluence (Jy*ms)': 'fluence',
         'Galactic Latitude (degrees)': 'gb',
@@ -125,7 +125,6 @@ def plot_pop(files=[], frbcat=True):
 
     y_axis = Select(title='',
                     options=sorted(axis_map.keys()),
-                    #value='Number')
                     value='Galactic Longitude (degrees)')
 
     # What to display while hovering
@@ -252,9 +251,6 @@ def plot_pop(files=[], frbcat=True):
             else:
                 # Apply filtering
                 df, bins = filter_data(dfs[i], x_name, y_name, bins)
-
-            # Don't plot if empty
-            #if df.shape[0] > 0:
 
             # Update data
             source.data = dict(

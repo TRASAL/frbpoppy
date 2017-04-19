@@ -66,4 +66,3 @@ def plot(*pops, files=[], frbcat=True, show=True):
     except KeyboardInterrupt:
         print(' ')
         sys.exit()
-

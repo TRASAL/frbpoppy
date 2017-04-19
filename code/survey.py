@@ -5,6 +5,21 @@ import random
 import galacticops as go
 from log import pprint
 
+
+class Rates:
+    """Class to hold detection rate counters"""
+
+    def __init__(self):
+        self.det = 0  # Number detected
+        self.faint = 0  # Number too faint to detect
+        self.out = 0  # Number outside detection region
+        self.vol = 0
+        self.sky = 0
+
+    def tot(self):
+        return self.det + self.out + self.faint
+
+
 class Survey:
     """
     Method containing survey parameters and functions
@@ -42,11 +57,11 @@ class Survey:
         self.T_sky_list = go.load_T_sky()
         self.gain_pattern = pattern
         self.aa = False  # Whether aperture array
+        self.int_pro = self.intensity_profile()
 
         # Counters
-        self.n_det = 0  # Number of detected sources
-        self.n_faint = 0  # Number of sources too faint to detect
-        self.n_out = 0  # Number of sources outside detection region
+        self.frb_rates = Rates()
+        self.src_rates = Rates()
 
     def __str__(self):
         """Define how to print a survey object to a console"""
@@ -62,17 +77,25 @@ class Survey:
 
         return s
 
-    def result(self):
-        """Print survey numbers, such as the number of detected sources etc"""
+    def rates(self):
+        """Print survey rates, such as the number of detected sources etc"""
 
-        m = self.survey_name + ':'
-        n = self.n_det+self.n_out+self.n_faint
-        nt = '   {:15.14} {}'.format('Input', n)
-        nd = '   {:15.14} {}'.format('Detected', self.n_det)
-        no = '   {:15.14} {}'.format('Outside region', self.n_out)
-        nf = '   {:15.14} {}'.format('Too faint', self.n_faint)
+        t = self.survey_name + ':\n'
 
-        for n in [m,nt,nd,no,nf]:
+        f = self.frb_rates
+        s = self.src_rates
+
+        r = '   {:15.14} {:>10} {:>10}\n'
+        t += r.format('Number of', 'FRBs', 'Sources')
+        t += '   ' + '-'*len(t.split('\n')[-2].strip()) + '\n'
+        t += r.format('in population', f.tot(), s.tot())
+        t += r.format('detected', f.det, s.det)
+        t += r.format('too faint', f.faint, s.faint)
+        t += r.format('outside region', f.out, s.out)
+        t += r.format('/sky (>= 1 Jy)', f.sky, s.sky)
+        t += r.format('/Gpc^3', f.vol, s.vol)
+
+        for n in t.split('\n')[:-1]:
             pprint(n)
 
     def parse(self, f):
@@ -134,7 +157,7 @@ class Survey:
             elif p.count('maximum abs'):
                 self.gb_max = float(v)  # max(abs(galactic latitude)) [deg]
             elif p.count('coverage'):
-                self.coverage = float(v)  # coverage % of sky survey area
+                self.coverage = float(v)  # % of time in use
                 if self.coverage > 1.0:
                     self.coverage = 1.0
             elif p.count('signal-to-noise'):
@@ -148,29 +171,29 @@ class Survey:
 
         f.close()
 
-    def in_region(self, source):
+    def in_region(self, src):
         """
         Check if a given source is within the survey region
 
         Args:
-            source (Source): Source of which to check whether in survey region
+            src (Source): Source of which to check whether in survey region
 
         Returns:
             True: If source is within survey region
             False: If source is outside survey region
         """
 
-        if source.gl > 180.:
-            source.gl -= 360.
+        if src.gl > 180.:
+            src.gl -= 360.
 
-        if source.gl > self.gl_max or source.gl < self.gl_min:
+        if src.gl > self.gl_max or src.gl < self.gl_min:
             return False
 
-        abs_gb = math.fabs(source.gb)
+        abs_gb = math.fabs(src.gb)
         if abs_gb > self.gb_max or abs_gb < self.gb_min:
             return False
 
-        ra, dec = go.lb_to_radec(source.gl, source.gb)
+        ra, dec = go.lb_to_radec(src.gl, src.gb)
 
         if ra > self.ra_max or ra < self.ra_min:
             return False
@@ -183,135 +206,8 @@ class Survey:
 
         return True
 
-    def dm_smear(self, source, dm_err=0.2):
-        """
-        Calculate delay in pulse across a channel due to dm smearing. Formula's
-        based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
-        Kramer, section A2.4. Note the power of the forefactor has changed due
-        to the central frequency being given in MHz.
-
-        Args:
-            source (Source): Source object with a dm attribute
-            dm_err (float): Error on dispersion measure. Defaults to 0.2
-
-        Returns:
-            t_dm, t_dm_err (float): Time of delay [ms] at central band
-                frequency, with its error assuming a
-                20% uncertainty in the dispersion measure
-        """
-
-        t_dm = 8.297616e6 * self.bw_chan * source.dm * (self.central_freq)**-3
-        t_dm_err = (t_dm / source.dm) *(dm_err*source.dm)
-
-        return t_dm, t_dm_err
-
-    def calc_s_peak(self, src, f_low=10e6, f_high=10e9):
-        """
-        Calculate the mean spectral flux density following Lorimer et al (2013),
-        eq. 9., at the central frequency of the survey.
-
-        Args:
-            src (class): Source method
-            f_low (float): Source emission lower frequency limit [Hz]. Defaults
-                to 10e6
-            f_high (float): Source emission higher frequency limit [Hz].
-                Defaults to 10e6
-
-        Return:
-            s_peak (float): Mean spectral flux density [Jy]
-        """
-
-        # Limits observing bandwidth (as seen in rest frame source)
-        f_1 = (self.central_freq - 0.5*self.bw)
-        f_1 *= 1e6  # MHz -> Hz
-        f_2 = (self.central_freq + 0.5*self.bw)
-        f_2 *= 1e6  # MHz -> Hz
-
-        # Spectral index
-        sp = src.si + 1
-        sm = src.si - 1
-
-        # Convert distance to metres
-        dist = src.dist * 3.08567758149137e25
-
-        # Convert luminosity to Watts
-        lum = src.lum_bol * 1e-7
-
-        # Set normalisation
-        # (s_peak must be ~1 Jy at a luminosity of 8e44 ergs/s)
-        norm = 1/10339369.717529655
-
-        freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
-        nom = lum * (1+src.z)**sm * freq_frac
-        den = 4*math.pi*dist**2 * (f_high**sp - f_low**sp)
-        s_peak = nom/den
-
-        # Convert to Janskys
-        s_peak *= 1e26
-
-        return s_peak
-
-    def calc_T_sky(self, source):
-        """
-        Calculate the sky temperature from the Haslam table, before scaling to
-        the survey frequency. The temperature sky map is given in the weird
-        units of HealPix and despite looking up info on this coordinate system,
-        I don't have the foggiest idea of how to transform these to galactic
-        coordinates. I have therefore directly copied the following code from
-        psrpoppy in the assumption Sam Bates managed to figure it out.
-
-        Args:
-            source (class): Needed for coordinates
-        Returns:
-            T_sky (float): Sky temperature [K]
-        """
-
-        # ensure l is in range 0 -> 360
-        B = source.gb
-        if source.gl < 0.:
-            L = 360 + source.gl
-        else:
-            L = source.gl
-
-        # convert from l and b to list indices
-        j = B + 90.5
-        if j > 179:
-            j = 179
-
-        nl = L - 0.5
-        if L < 0.5:
-            nl = 359
-        i = float(nl) / 4.
-
-        T_sky_haslam = self.T_sky_list[180*int(i) + int(j)]
-
-        # scale temperature
-        # Assuming dominated by syncrotron radiation
-        T_sky = T_sky_haslam * (self.central_freq/408.0)**(-2.6)
-
-        return T_sky
-
-    def obs_prop(self, source, population, scat=False):
-        """
-        Calculate the signal to noise ratio of a source in the survey
-
-        Args:
-            source (class): Source of which to calculate the signal to noise
-            population (class): Population to which the source belongs
-            scat (bool): Including scattering or not. Defaults to False
-
-        Returns:
-            snr (float): Signal to noise ratio based on the radiometer equation
-                for a single pulse. Will return -2.0 if source is not
-                in survey region
-            w_eff (float): Observed pulse width [ms]. Will return 0. if source
-                not in survey region
-            s_peak (float): Mean spectral flux density per observed source [Jy]
-            fluence (float): Fluence of the observed pulse [Jy*ms]
-        """
-
-        if not self.in_region(source):
-            return -2.0, 0.0, 0.0, 0.0
+    def intensity_profile(self):
+        """Calculate intensity profile"""
 
         if self.gain_pattern == 'gaussian':
 
@@ -331,67 +227,186 @@ class Survey:
             alpha = 2*math.sqrt(math.log(2))
             int_pro = math.exp(-(alpha*xi/self.fwhm)**2)
 
-        # Dispersion measure across single channel, with error
-        t_dm, t_dm_err = self.dm_smear(source)
+        return int_pro
 
-        # Intrinsic pulse width (modified by redshift)
-        w_int = source.w_int
+    def dm_smear(self, src, dm_err=0.2):
+        """
+        Calculate delay in pulse across a channel due to dm smearing. Formula's
+        based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
+        Kramer, section A2.4. Note the power of the forefactor has changed due
+        to the central frequency being given in MHz.
 
-        # Initialize scattering timescale [ms]
-        t_scat = 0.
+        Args:
+            src (Source): Source object with a dm attribute
+            dm_err (float): Error on dispersion measure. Defaults to 0.2
 
-        if scat:
-            # Offset according to Lorimer et al.
-            # (2013, doi:10.1093/mnrasl/slt098)
-            t_scat = go.scatter_bhat(source.dm,
+        Returns:
+            t_dm, t_dm_err (float): Time of delay [ms] at central band
+                frequency, with its error assuming a
+                20% uncertainty in the dispersion measure
+        """
+
+        t_dm = 8.297616e6 * self.bw_chan * src.dm * (self.central_freq)**-3
+        t_dm_err = (t_dm/src.dm)*(dm_err*src.dm)
+
+        src.t_dm = t_dm
+        src.t_dm_err = t_dm_err
+
+    def scat(self, src):
+        """
+        Set scattering timescale for source
+        """
+        # Offset according to Lorimer et al. (doi:10.1093/mnrasl/slt098)
+        src.t_scat = go.scatter_bhat(src.dm,
                                      offset=-9.5,
                                      freq=self.central_freq)
 
+    def calc_Ts(self, src):
+        """Set temperatures for source"""
+        self.calc_T_sky(src)
+        src.T_tot = self.T_sys + src.T_sky
+
+    def calc_T_sky(self, src):
+        """
+        Calculate the sky temperature from the Haslam table, before scaling to
+        the survey frequency. The temperature sky map is given in the weird
+        units of HealPix and despite looking up info on this coordinate system,
+        I don't have the foggiest idea of how to transform these to galactic
+        coordinates. I have therefore directly copied the following code from
+        psrpoppy in the assumption Sam Bates managed to figure it out.
+
+        Args:
+            src (class): Needed for coordinates
+        Returns:
+            src.T_sky (float): Sky temperature [K]
+        """
+
+        # ensure l is in range 0 -> 360
+        B = src.gb
+        if src.gl < 0.:
+            L = 360 + src.gl
+        else:
+            L = src.gl
+
+        # convert from l and b to list indices
+        j = B + 90.5
+        if j > 179:
+            j = 179
+
+        nl = L - 0.5
+        if L < 0.5:
+            nl = 359
+        i = float(nl) / 4.
+
+        T_sky_haslam = self.T_sky_list[180*int(i) + int(j)]
+
+        # scale temperature
+        # Assuming dominated by syncrotron radiation
+        T_sky = T_sky_haslam * (self.central_freq/408.0)**(-2.6)
+
+        src.T_sky = T_sky
+
+    def calc_s_peak(self, frb, src, f_low=10e6, f_high=10e9):
+        """
+        Calculate the mean spectral flux density following Lorimer et al, 2013,
+        eq. 9., at the central frequency of the survey.
+
+        Args:
+            frb (class): FRB
+            src (class): Source of FRB
+            f_low (float): Source emission lower frequency limit [Hz]. Defaults
+                to 10e6
+            f_high (float): Source emission higher frequency limit [Hz].
+                Defaults to 10e6
+
+        Returns:
+            frb.s_peak (float): Mean spectral flux density [Jy]
+        """
+
+        # Limits observing bandwidth (as seen in rest frame source)
+        f_1 = (self.central_freq - 0.5*self.bw)
+        f_1 *= 1e6  # MHz -> Hz
+        f_2 = (self.central_freq + 0.5*self.bw)
+        f_2 *= 1e6  # MHz -> Hz
+
+        # Spectral index
+        sp = frb.si + 1
+        sm = frb.si - 1
+
+        # Convert distance to metres
+        dist = src.dist * 3.08567758149137e25
+
+        # Convert luminosity to Watts
+        lum = frb.lum_bol * 1e-7
+
+        freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
+        nom = lum * (1+src.z)**sm * freq_frac
+        den = 4*math.pi*dist**2 * (f_high**sp - f_low**sp)
+        s_peak = nom/den
+
+        # Convert to Janskys
+        s_peak *= 1e26
+
+        frb.s_peak = s_peak
+
+    def obs_prop(self, frb, src, pop):
+        """
+        Set various observation properties of an FRB
+
+        Args:
+            frb (class): FRB of which to calculate the signal to noise
+            src (class): Source to which the FRB belongs
+            pop (class): Population to which the source belongs
+
+        Returns:
+            frb.snr (float): Signal to noise ratio based on the radiometer
+                equation for a single pulse. Will return -2.0 if src is not
+                in survey region
+            frb.w_eff (float): Observed pulse width [ms]. Will return 0. if
+                source not in survey region
+            frb.s_peak (float): Mean spectral flux density per observed
+                source [Jy]
+            frb.fluence (float): Fluence of the observed pulse [Jy*ms]
+        """
         # Effective pulse width [ms]
         # From Narayan (1987, DOI: 10.1086/165442)
         # Also Cordes & McLaughlin (2003, DOI: 10.1086/378231)
         # For details see p. 30 of Emily Petroff's thesis (2016), found here:
         # http://hdl.handle.net/1959.3/417307
-        w_eff = math.sqrt(w_int**2 + t_dm**2 + t_dm_err**2 +
-                          t_scat**2 + self.t_samp**2)
-
-        # Calculate total temperature
-        T_sky = self.calc_T_sky(source)
-        T_tot = self.T_sys + T_sky
+        frb.w_eff = math.sqrt(frb.w_int**2 + src.t_dm**2 + src.t_dm_err**2 +
+                              src.t_scat**2 + self.t_samp**2)
 
         # Calculate flux density
-        s_peak = self.calc_s_peak(source,
-                                  f_low=population.f_min,
-                                  f_high=population.f_max)
+        self.calc_s_peak(frb, src, f_low=pop.f_min, f_high=pop.f_max)
 
         # Radiometer equation for single pulse (Dewey et al., 1984)
-        snr = s_peak * self.gain * math.sqrt(self.n_pol*self.bw*w_eff*1e3)
-        snr /= (T_tot * self.beta)
+        sp = frb.s_peak
+        frb.snr = sp*self.gain*math.sqrt(self.n_pol*self.bw*frb.w_eff*1e3)
+        frb.snr /= (src.T_tot * self.beta)
 
         # Calculate fluence [Jy*ms]
-        fluence = s_peak * w_eff
+        frb.fluence = frb.s_peak * frb.w_eff
 
         # Account for offset in beam
-        snr *= int_pro
+        frb.snr *= self.int_pro
 
-        return snr, w_eff, s_peak, fluence
-
-    def scint(self, source, snr):
+    def scint(self, frb, src):
         """
-        Calculate scintillation effect on the signal to noise ratio (rather than
-        adapting the flux, as the snr can change per survey attempt). Formula's
-        based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
-        Kramer, section 4.2.
+        Calculate scintillation effect on the signal to noise ratio (rather
+        than adapting the flux, as the snr can change per survey attempt).
+        Formulas based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer &
+        Michael Kramer, section 4.2.
 
         Args:
-            src (class): Source object
-            snr (float): Signal to noise ratio
+            frb (class): FRB
+            src (class): Source of FRB
         Returns:
-            snr (float): Signal to noise ratio modulated by scintillation
+            frb.snr (float): Signal to noise ratio modulated by scintillation
         """
         # Calculate scattering
-        t_scat = go.scatter_bhat(source.dm, freq=self.central_freq)
+        self.scat(src)
         # Convert to seconds
+        t_scat = src.t_scat
         t_scat /= 1000.
 
         # Decorrelation bandwidth (eq. 4.39)
@@ -416,9 +431,9 @@ class Survey:
             # Taking the average kappa value
             kappa = 0.15
 
-            t_diss, decorr_bw = go.ne2001_scint_time_bw(source.dist,
-                                                        source.gl,
-                                                        source.gb,
+            t_diss, decorr_bw = go.ne2001_scint_time_bw(src.dist,
+                                                        src.gl,
+                                                        src.gb,
                                                         self.central_freq)
 
             # Following Cordes and Lazio (1991) (eq. 4.43)
@@ -432,7 +447,6 @@ class Survey:
             else:
                 n_f = 1 + kappa * self.bw / decorr_bw
 
-
             # Diffractive scintillation (eq. 4.41)
             m_diss = 1 / math.sqrt(n_t * n_f)
 
@@ -440,7 +454,4 @@ class Survey:
             m = math.sqrt(m_diss**2 + m_riss**2 + m_diss*m_riss)
 
         # Distribute the scintillation according to gaussian distribution
-        snr = random.gauss(snr, m*snr)
-
-        return snr
-
+        frb.snr = random.gauss(frb.snr, m*frb.snr)

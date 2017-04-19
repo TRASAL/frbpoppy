@@ -1,27 +1,32 @@
+import copy
+
 from population import Population
 from survey import Survey
 
 
-def observe(pop,
+def observe(population,
             survey_name,
             return_pop=True,
             scat=False,
-            scint=False,):
+            scint=False):
     """Run survey to detect FRB sources
 
     Args:
-        pop (Population): Population class of FRB sources to observe
+        population (Population): Population class of FRB sources to observe
         survey_name (str): Name of survey file with which to observe
-        return_pop (bool): Whether to return a population or survey class.
-            Primarily intended for debugging. Defaults to True
-        scat (bool): Whether to include scattering in signal to noise
+        return_pop (bool, optional): Whether to return a population or survey
+            class. Primarily intended for debugging. Defaults to True
+        scat (bool, optional): Whether to include scattering in signal to noise
             calculations. Defaults to False
-        scint (bool): Whether to apply scintillation to observations. Defaults
-            to False
+        scint (bool, optional): Whether to apply scintillation to observations.
+            Defaults to False
 
     Returns:
         surv_pop (Population): Observed survey population
     """
+
+    # Copy population so that it can be observed multiple times
+    pop = copy.deepcopy(population)
 
     s = Survey(survey_name)
     surv_pop = Population()
@@ -29,33 +34,50 @@ def observe(pop,
 
     for src in pop.sources:
 
-        # Calculate observing properties such as the signal to noise ratio,
-        # effective pulse width etc.
-        snr, w_eff, s_peak, fluence = s.obs_prop(src, pop, scat=scat)
-
-        # Check whether source is outside survey region
-        if snr == -2.0:
-            s.n_out += 1
+        # Check whether source is in region
+        if not s.in_region(src):
+            s.src_rates.out += 1
+            s.frb_rates.out += src.n_frbs
             continue
 
-        # Add scintillation
-        if scint:
-            snr = s.scint(src, snr)
+        # Calculate dispersion measure across single channel, with error
+        s.dm_smear(src)
 
-        if snr > s.snr_limit:
-            # Note that source has been detected
-            s.n_det += 1
-            src.detected = True
-            src.snr = snr
-            src.w_eff = w_eff
-            src.s_peak = s_peak
-            src.fluence = fluence
-            surv_pop.sources.append(src)
+        # Set scattering timescale
+        if scat:
+            s.scat(src)
+
+        # Calculate total temperature
+        s.calc_Ts(src)
+
+        for frb in src.frbs:
+
+            # Calculate observing properties such as the signal to noise ratio
+            s.obs_prop(frb, src, pop)
+
+            # Add scintillation
+            if scint:
+                s.scint(frb, src)
+
+            if frb.snr > s.snr_limit:
+                # Note that frb has been detected
+                s.frb_rates.det += 1
+
+                if not src.detected:
+                    s.src_rates.det += 1
+                    src.detected = True
+
+            else:
+                s.frb_rates.faint += 1
+
+        if src.detected:
+            surv_pop.add(src)
         else:
-            s.n_faint += 1
+            s.src_rates.faint += 1
 
-    s.result()
+    s.rates()
 
+    # Return population or survey
     if return_pop:
         return surv_pop
     else:

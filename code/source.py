@@ -1,4 +1,6 @@
-import math
+import random
+import distributions as dis
+from frb import FRB
 
 
 class Source:
@@ -10,25 +12,25 @@ class Source:
         self.dm_mw = None
         self.dm_igm = None
         self.dm_host = None
-        self.w_int = None  # Intrinsic pulse width [ms]
-        self.lum_bol = None
-        self.si = None  # Spectral index
-
-        # Galactic coordinates
         self.gl = None
         self.gb = None
         self.gx = None
         self.gy = None
         self.gz = None
-        self.dist = None  # Distance source to Sun [Gpc]
+        self.dist = None
         self.z = None
 
-        # Detection properties
-        self.snr = None
+        # Collect all FRB bursts
+        self.frbs = []
+        self.n_frbs = 0
+
+        # Observing properties
+        self.t_dm = 0
+        self.t_dm_err = 0
+        self.t_scat = 0
+        self.T_sky = 0
+        self.T_tot = 0
         self.detected = False
-        self.w_eff = None
-        self.s_peak = None
-        self.fluence = None
 
     def __str__(self):
         """Define how to print an FRB source to a console"""
@@ -43,3 +45,31 @@ class Source:
         s += ''.join(attributes)
 
         return s
+
+    def add(self, frb):
+        """Add an FRB to the source"""
+        self.frbs.append(frb)
+        self.n_frbs += 1
+
+    def create_frb(self, pop):
+        """
+        Create an frb to add to source
+
+        Args:
+            pop (Population): Population parameters
+        """
+
+        # Initialise an FRB
+        frb = FRB()
+
+        # Give an redshifted random intrinsic pulse width [ms]
+        frb.w_int = dis.redshift_w(z=self.z, w_min=pop.w_min, w_max=pop.w_max)
+
+        # Add bolometric luminosity [erg/s]
+        frb.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+
+        # Add spectral index
+        frb.si = random.gauss(pop.si_mean, pop.si_sigma)
+
+        # Add FRB to source
+        self.add(frb)

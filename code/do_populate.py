@@ -3,7 +3,6 @@
 import math
 import random
 
-import distributions as dis
 import galacticops as go
 from population import Population
 from source import Source
@@ -16,8 +15,9 @@ def generate(n_gen,
              emission_pars=[10e6, 10e9],
              lum_dist_pars=[1e40, 1e50, 1],
              name=None,
-             pulse=[0.1,5],
-             si_pars=[1, 1],
+             pulse=[0.1, 5],
+             repeat=0.0,
+             si_pars=[-1.4, 0.],
              z_max=2.5):
 
     """Generate a population of FRB sources
@@ -44,8 +44,9 @@ def generate(n_gen,
             'initial'
         pulse (str, optional): Values between which the intrinsic pulse width
             should be [ms]. Defaults to [0.5, 5]
+        repeat (float, optional): Fraction of sources which repeat
         si_pars (list, optional): Spectral index parameters, being the mean
-            index and the standard deviation thereof. Defaults to [1, 1]
+            index and the standard deviation thereof. Defaults to [-1.4, 0.]
         z_max (float, optional): The maximum redshift out to which to
             distribute FRBs
 
@@ -110,6 +111,14 @@ def generate(n_gen,
         m = 'Please provide a string as input for the name of the population'
         raise ValueError(m)
 
+    if type(repeat) != float:
+        m = 'Please ensure fraction of sources which repeat is a float'
+        raise ValueError(m)
+
+    if repeat > 1:
+        m = 'The repeat fraction can not be more than 1.0'
+        raise ValueError(m)
+
     if not all(isinstance(par, (float, int)) for par in si_pars):
         m = 'Please ensure all spectral index parameters are '
         m += 'floats or integers'
@@ -125,32 +134,32 @@ def generate(n_gen,
 
     # Set up population
     pop = Population()
+    pop.cosmology = cosmology
+    pop.electron_model = electron_model
+    pop.f_max = emission_pars[1]
+    pop.f_min = emission_pars[0]
+    pop.H_0 = cosmo_pars[0]
+    pop.lum_max = lum_dist_pars[1]
+    pop.lum_min = lum_dist_pars[0]
+    pop.lum_pow = lum_dist_pars[2]
     pop.name = name
     pop.n_gen = n_gen
-    pop.electron_model = electron_model
-    pop.cosmology = cosmology
-    pop.H_0 = cosmo_pars[0]
-    pop.W_m = cosmo_pars[1]
-    pop.W_v = cosmo_pars[2]
-    pop.z_max = z_max
-    pop.v_max = go.z_to_v(z_max)
-    pop.lum_min = lum_dist_pars[0]
-    pop.lum_max = lum_dist_pars[1]
-    pop.lum_pow = lum_dist_pars[2]
-    pop.w_min = pulse[0]
-    pop.w_max = pulse[1]
-    pop.f_min = emission_pars[0]
-    pop.f_max = emission_pars[1]
+    pop.repeat = repeat
     pop.si_mean = si_pars[0]
     pop.si_sigma = si_pars[1]
+    pop.v_max = go.z_to_v(z_max)
+    pop.w_max = pulse[1]
+    pop.W_m = cosmo_pars[1]
+    pop.w_min = pulse[0]
+    pop.W_v = cosmo_pars[2]
+    pop.z_max = z_max
 
     # Create a comoving distance to redshift lookup table
     ds, zs = go.dist_lookup(cosmology=pop.cosmology,
                             H_0=pop.H_0,
                             W_m=pop.W_m,
                             W_v=pop.W_v,
-                            z_max=pop.z_max
-                            )
+                            z_max=pop.z_max)
 
     while pop.n_srcs < pop.n_gen:
 
@@ -161,38 +170,37 @@ def generate(n_gen,
         src.gb = math.degrees(math.asin(random.random()))
         if random.random() < 0.5:
             src.gb *= -1
-        src.gl = random.random() * 360.0
+        src.gl = random.random() * 360.0 - 180
 
         # Calculate comoving distance [Gpc]
         src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
+
         # Calculate redshift
         src.z = go.interpolate_z(src.dist, ds, zs, H_0=pop.H_0)
+
         # Convert into galactic coordinates
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
         # Dispersion measure of the Milky Way
         src.dm_mw = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
+
         # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z)
+
         # Dispersion measure of the host
         src.dm_host = 100.  # Thornton et al. (2013)
+
         # Total dispersion measure
         src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
-        # Give an random intrinsic pulse width [ms]
-        src.w_int = go.redshift_pulse(z=src.z,
-                                      w_min=pop.w_min,
-                                      w_max=pop.w_max)
+        # Add initial frb
+        src.create_frb(pop)
 
-        # Add bolometric luminosity [erg/s]
-        src.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+        # If repeating add another FRB
+        if random.random() < pop.repeat:
+            src.create_frb(pop)
 
-        # Add spectral index
-        src.si = -1.4
-        # src.si = random.gauss(pop.si_mean, pop.si_sigma)
-
-        # Add to population
-        pop.sources.append(src)
-        pop.n_srcs += 1
+        # Add source to population
+        pop.add(src)
 
     return pop

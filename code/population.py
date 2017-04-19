@@ -7,48 +7,30 @@ from log import pprint
 class Population:
     """Class to hold a population of FRBs"""
 
-    def __init__(self,
-                 cosmology=None,
-                 electron_model=None,
-                 f_max=None,
-                 f_min=None,
-                 H_0=None,
-                 lum_max=None,
-                 lum_min=None,
-                 lum_pow=None,
-                 name=None,
-                 si_mean=None,
-                 si_sigma=None,
-                 v_max=None,
-                 W_m=None,
-                 W_v=None,
-                 z_max=None,
-                 w_min=None,
-                 w_max=None):
+    def __init__(self):
 
         # Population properties
-        self.cosmology = cosmology
-        self.electron_model = electron_model
-        self.f_max = f_max
-        self.f_min = f_min
-        self.H_0 = H_0
-        self.lum_max = lum_max
-        self.lum_min = lum_min
-        self.lum_pow = lum_pow
-        self.name = name
-        self.si_mean = si_mean
-        self.si_sigma = si_sigma
-        self.v_max = v_max
-        self.W_m = W_m
-        self.W_v = W_v
-        self.z_max = z_max
-        self.w_min = w_min
-        self.w_max = w_max
+        self.cosmology = None
+        self.electron_model = None
+        self.f_max = None
+        self.f_min = None
+        self.H_0 = None
+        self.lum_max = None
+        self.lum_min = None
+        self.lum_pow = None
+        self.name = None
+        self.repeat = None
+        self.si_mean = None
+        self.si_sigma = None
+        self.v_max = None
+        self.w_max = None
+        self.w_min = None
+        self.W_m = None
+        self.W_v = None
+        self.z_max = None
 
         # Store FRB sources
         self.sources = []
-
-        # Counter
         self.n_srcs = 0
 
     def __str__(self):
@@ -64,6 +46,11 @@ class Population:
         s += ''.join(attributes)
 
         return s
+
+    def add(self, source):
+        """Add a source to the population"""
+        self.sources.append(source)
+        self.n_srcs += 1
 
     def save(self, out=None, sep=','):
         """Write out source properties as data file
@@ -118,13 +105,26 @@ class Population:
 
         # Find all source properties
         a = self.sources[0].__dict__
-        attrs = OD(sorted(a.items()))
+        src_attrs = sorted(list(a.keys()), key=lambda v: v.upper())
+        src_attrs.remove('detected')
+        src_attrs.remove('frbs')
+
+        # Add frb properties
+        a = self.sources[0].frbs[0].__dict__
+        frb_attrs = sorted(list(a.keys()), key=lambda v: v.upper())
+        frb_attrs.remove('detected')
 
         # Create header
-        data = sep.join(attrs.keys()) + '\n'
+        attrs = src_attrs + frb_attrs
+        data = sep.join(attrs) + '\n'
 
         # Print values per source
         for src in self.sources:
-            data += sep.join([str(src.__dict__[k]) for k in attrs]) + '\n'
+
+            src_data = [str(src.__dict__[k]) for k in src_attrs]
+
+            for frb in src.frbs:
+                frb_data = [str(frb.__dict__[k]) for k in frb_attrs]
+                data += sep.join(src_data + frb_data) + '\n'
 
         return data
