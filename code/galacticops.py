@@ -155,6 +155,53 @@ def radec_to_lb(ra, dec):
 
     return gl, gb
 
+def sky_frac(beam_size):
+    """
+    Calculate which fraction of the sky a beam covers
+
+    Args:
+        beam_size (float): In square degrees
+    Returns:
+        frac (float): Fraction of the sky that the beam covers
+    """
+    full_sky = (360)**2 / math.pi
+    frac = beam_size/full_sky
+    return frac
+
+def sky_area(d_min, d_max, r_min, r_max):
+    """
+    Calculate the area of a patch in the sky
+
+    Args:
+        d_min (float): Minimum declination [deg]
+        d_max (float): Maximum declination [deg]
+        r_min (float): Minimum right ascension [deg]
+        r_max (float): Maximum right ascension [deg]
+    Returns:
+        area (float): Size of area [deg**2]
+    """
+
+    d_min = math.radians(d_min)
+    d_max = math.radians(d_max)
+    r_min = math.radians(r_min)
+    r_max = math.radians(r_max)
+
+    # Calculate fractional surface area
+    def frac(d_min, d_max, r_min, r_max):
+        return (-math.cos(d_max)+math.cos(d_min))*(r_max-r_min)/(4*math.pi)
+
+    if d_min < 0:
+        top = frac(0, d_max, r_min, r_max)
+        bottom = frac(0, abs(d_min), r_min, r_max)
+        f = top + bottom
+    else:
+        f = frac(d_min, d_max, r_min, r_max)
+
+    # Covert to square degrees
+    full_sky = (360)**2 / math.pi
+    area = f * full_sky
+
+    return area
 
 def ergspers_to_watts(e):
     """Quick converstion from luminosity given in ergs/s to Watts"""

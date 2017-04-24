@@ -7,18 +7,40 @@ from log import pprint
 
 
 class Rates:
-    """Class to hold detection rate counters"""
+    """
+    Class to hold rate counters
+
+    Args:
+        det (int, optional): Number detected
+        faint (int, optional): Number to faint to detect
+        jy (int, optional): Number arrived within survey > 1 Jy
+        out (int, optional): Number outside survey, space or timewise
+        sky (int, optional): Number per sky above > 1 Jy
+        vol (int, optional): Number per Gpc^3
+    """
 
     def __init__(self):
-        self.det = 0  # Number detected
-        self.faint = 0  # Number too faint to detect
-        self.out = 0  # Number outside detection region
-        self.vol = 0
+        self.det = 0
+        self.faint = 0
+        self.jy = 0
+        self.out = 0
         self.sky = 0
+        self.vol = 0
+
+        self.s_det = 0
+        self.s_faint = 0
+        self.s_jy = 0
+        self.s_out = 0
+        self.s_sky = 0
+        self.s_vol = 0
 
     def tot(self):
+        """Calculate the total number of rates"""
         return self.det + self.out + self.faint
 
+    def s_tot(self):
+        """Calculate the total number of scaled rates"""
+        return self.s_det + self.s_out + self.s_faint
 
 class Survey:
     """
@@ -77,27 +99,6 @@ class Survey:
 
         return s
 
-    def rates(self):
-        """Print survey rates, such as the number of detected sources etc"""
-
-        t = self.survey_name + ':\n'
-
-        f = self.frb_rates
-        s = self.src_rates
-
-        r = '   {:15.14} {:>10} {:>10}\n'
-        t += r.format('Number of', 'FRBs', 'Sources')
-        t += '   ' + '-'*len(t.split('\n')[-2].strip()) + '\n'
-        t += r.format('in population', f.tot(), s.tot())
-        t += r.format('detected', f.det, s.det)
-        t += r.format('too faint', f.faint, s.faint)
-        t += r.format('outside region', f.out, s.out)
-        t += r.format('/sky (>= 1 Jy)', f.sky, s.sky)
-        t += r.format('/Gpc^3', f.vol, s.vol)
-
-        for n in t.split('\n')[:-1]:
-            pprint(n)
-
     def parse(self, f):
         """
         Attempt to parse an already opened survey file
@@ -138,8 +139,8 @@ class Survey:
                 self.bw_chan = float(v)  # [MHz]
             elif p.count('polarizations'):
                 self.n_pol = float(v)  # number of polarizations
-            elif p.count('half maximum'):
-                self.fwhm = float(v)  # [arcmin]
+            elif p.count('beam size'):
+                self.beam_size = float(v)  # [deg**2]
             elif p.count('minimum RA'):
                 self.ra_min = float(v)  # [deg]
             elif p.count('maximum RA'):
@@ -156,10 +157,10 @@ class Survey:
                 self.gb_min = float(v)  # min(abs(galactic latitude)) [deg]
             elif p.count('maximum abs'):
                 self.gb_max = float(v)  # max(abs(galactic latitude)) [deg]
-            elif p.count('coverage'):
-                self.coverage = float(v)  # % of time in use
-                if self.coverage > 1.0:
-                    self.coverage = 1.0
+            elif p.count('uptime'):
+                self.uptime = float(v)  # % of time in use
+                if self.uptime > 1.0:
+                    self.uptime = 1.0
             elif p.count('signal-to-noise'):
                 self.snr_limit = float(v)  # Minimum snr required for detection
             elif p.count('gain pattern'):
@@ -200,10 +201,6 @@ class Survey:
         if dec > self.dec_max or dec < self.dec_min:
             return False
 
-        # Randomly decide if pulsar is in completed area of survey
-        if random.random() > self.coverage:
-            return False
-
         return True
 
     def intensity_profile(self):
@@ -220,12 +217,13 @@ class Survey:
             # a random number to ensure the distribution of variables on the
             # sky remains uniform, not that it increases towards the centre
             # (uniform random point within circle). You could see this as
-            # the calculated offset from the centre of the beam.
-            xi = self.fwhm * math.sqrt(random.random()) / 2.
+            # the calculated offset from the centre of the beam. The fwhm
+            # has been dropped as it is also present in the intensity profile
+            xi = math.sqrt(random.random()) / 2.
 
             # Intensity profile
             alpha = 2*math.sqrt(math.log(2))
-            int_pro = math.exp(-(alpha*xi/self.fwhm)**2)
+            int_pro = math.exp(-(alpha*xi)**2)
 
         return int_pro
 
@@ -455,3 +453,50 @@ class Survey:
 
         # Distribute the scintillation according to gaussian distribution
         frb.snr = random.gauss(frb.snr, m*frb.snr)
+
+    def scale_rates(self, pop):
+        """
+        Scale all rates according to intergration time and uptime
+
+        Args:
+            pop (Population): Population class
+        """
+
+        for r in (self.frb_rates, self.src_rates):
+
+            f = (self.t_obs/pop.time)
+            det = r.det * self.uptime * f
+            faint = r.faint * self.uptime * f
+            out = r.out + r.det - det + r.faint - faint
+
+            vol = r.tot() / pop.v_max / (pop.time/86400)
+
+            r.s_det = round(det)
+            r.s_faint = round(faint)
+            r.s_out = round(out)
+            r.s_vol = round(vol)
+
+    def rates(self, pop):
+        """
+        Print survey rates, such as the number of detected sources etc
+
+        Args:
+            pop (Population): Population class
+        """
+
+        t = self.survey_name + ':\n'
+
+        f = self.frb_rates
+        s = self.src_rates
+
+        r = '   {:15.14} {:>10} {:>10}\n'
+        t += r.format('Number of', 'FRBs', 'Sources')
+        t += '   ' + '-'*len(t.split('\n')[-2].strip()) + '\n'
+        t += r.format('in population', f.s_tot(), s.s_tot())
+        t += r.format('detected', f.s_det, s.s_det)
+        t += r.format('too faint', f.s_faint, s.s_faint)
+        t += r.format('outside survey', f.s_out, s.s_out)
+        t += r.format('/Gpc^3/day', f.s_vol, s.s_vol)
+
+        for n in t.split('\n')[:-1]:
+            pprint(n)

@@ -1,5 +1,6 @@
 ##############################################################################
 # APERTIF survey parameters - chiefly thanks to Sarah Burke Spolaor
+# WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
      1.2 ! survey degradation factor
      1.0 ! antenna gain (K/Jy)
@@ -10,7 +11,7 @@
    300.0 ! bandwidth (MHz)
  0.78125 ! channel bandwidth (MHz)
      2.0 ! number of polarizations
-    15.0 ! full-width half maximum (arcmin)
+     8.7 ! beam size
      0.0 ! minimum RA (deg)
     90.0 ! maximum RA (deg)
      0.0 ! minimum DEC (deg)
@@ -19,5 +20,5 @@
    360.0 ! maximum Galactic longitude (deg)
    -90.0 ! minimum abs(Galactic latitude) (deg)
     90.0 ! maximum abs(Galactic latitude) (deg)
-     0.8 ! fractional survey coverage (0-1)
+     0.8 ! fractional uptime (0-1)
      8.0 ! signal-to-noise ratio

@@ -34,6 +34,9 @@ def observe(population,
 
     for src in pop.sources:
 
+        # Detection flag
+        det = False
+
         # Check whether source is in region
         if not s.in_region(src):
             s.src_rates.out += 1
@@ -59,23 +62,32 @@ def observe(population,
             if scint:
                 s.scint(frb, src)
 
+            # Check whether it has been detected
             if frb.snr > s.snr_limit:
-                # Note that frb has been detected
                 s.frb_rates.det += 1
-
                 if not src.detected:
                     s.src_rates.det += 1
-                    src.detected = True
-
+                    det = True
             else:
                 s.frb_rates.faint += 1
+
+            # If above 1 Jy
+            if frb.s_peak > 1.0:
+                s.frb_rates.jy += 1
+                if not src.detected:
+                    s.src_rates.jy += 1
+
+            if det:
+                src.detected = True
 
         if src.detected:
             surv_pop.add(src)
         else:
             s.src_rates.faint += 1
 
-    s.rates()
+    # Scale rates according to length of survey etc
+    s.scale_rates(pop)
+    s.rates(pop)
 
     # Return population or survey
     if return_pop:

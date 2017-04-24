@@ -1,5 +1,6 @@
 ##############################################################################
-# Survey parameters for testing
+# WHOLESKY survey parameters - chiefly thanks to Sarah Burke Spolaor
+# WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
      1.2 ! survey degradation factor
      0.6 ! antenna gain (K/Jy)
@@ -10,7 +11,7 @@
    288.0 ! bandwidth (MHz)
      1.0 ! channel bandwidth (MHz)
      2.0 ! number of polarizations
-    14.0 ! full-width half maximum (arcmin)
+    10.0 ! beam size
      0.0 ! minimum RA (deg)
    360.0 ! maximum RA (deg)
    -90.0 ! minimum DEC (deg)
@@ -19,5 +20,5 @@
    180.0 ! maximum Galactic longitude (deg)
    -90.0 ! minimum abs(Galactic latitude) (deg)
     90.0 ! maximum abs(Galactic latitude) (deg)
-     1.0 ! fractional survey coverage (0-1)
+     1.0 ! fractional uptime (0-1)
      9.0 ! signal-to-noise ratio

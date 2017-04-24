@@ -97,7 +97,7 @@ class TestSurvey(unittest.TestCase):
         self.pop = generate(10)
         self.bright_pop = generate(10, lum_dist_pars=[1e80, 1e90, 1])
 
-    def testobserve(self):
+    def test_observe(self):
 
         # Check different input values
         with self.assertRaises(IOError):
@@ -112,8 +112,8 @@ class TestSurvey(unittest.TestCase):
         self.assertIsInstance(s1, pop)
 
         # Check bright FRBs are always found
-        s2 = observe(self.bright_pop, 'WHOLESKY')
-        self.assertEqual(len(s2.sources), len(self.pop.sources))
+        s2 = observe(self.bright_pop, 'WHOLESKY', return_pop=False)
+        self.assertEqual(s2.frb_rates.tot(), s2.frb_rates.det)
 
         # Not the best tests for scat and scint, but will have to do
         # Check scattering works
@@ -147,6 +147,9 @@ class TestGalacticops(unittest.TestCase):
         self.assertTrue(abs(gl + (360 - 302.9319)) <= 1.5)
         self.assertTrue(abs(gb + 27.1283) <= 1.5)
 
+    def test_sky_frac(self):
+        frac = go.sky_frac(41253)
+        self.assertTrue(abs(frac-1) < 0.01)
 
 if __name__ == '__main__':
     unittest.main()

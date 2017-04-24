@@ -65,7 +65,3 @@ def get_frbcat():
     db['z'] = db['Spectroscopic Redshift']
 
     return db
-
-
-if __name__ == '__main__':
-    get_frbcat()

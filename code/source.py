@@ -8,6 +8,7 @@ class Source:
 
     def __init__(self):
 
+        # "Intrinsic properties"
         self.dm = None
         self.dm_mw = None
         self.dm_igm = None
@@ -62,7 +63,7 @@ class Source:
         # Initialise an FRB
         frb = FRB()
 
-        # Give an redshifted random intrinsic pulse width [ms]
+        # Give a redshifted random intrinsic pulse width [ms]
         frb.w_int = dis.redshift_w(z=self.z, w_min=pop.w_min, w_max=pop.w_max)
 
         # Add bolometric luminosity [erg/s]

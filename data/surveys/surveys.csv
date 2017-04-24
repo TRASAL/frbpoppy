@@ -8,7 +8,7 @@ centre frequency (MHz),1400,1374.0,1374.0
 bandwidth (MHz),300,288.0,288.0
 channel bandwidth (MHz),0.78125,3.0,1.0
 number of polarizations,2,2.0,2.0
-full-width half maximum (arcmin),15,14.0,14.0
+beam size,8.7,0.6,10.
 minimum RA (deg),0.0,0.0,0.0
 maximum RA (deg),90.0,360.0,360.0
 minimum DEC (deg),0.0,-90.0,-90.0
@@ -17,5 +17,5 @@ minimum Galactic longitude (deg),0.0,-100.0,-180.0
 maximum Galactic longitude (deg),360.0,50.0,180.0
 minimum abs(Galactic latitude) (deg),-90.0,0.0,-90.0
 maximum abs(Galactic latitude) (deg),90.0,5.0,90.0
-fractional survey coverage (0-1),0.8,1.0,1.0
+fractional uptime (0-1),0.8,1.0,1.0
 signal-to-noise ratio,8.0,9.0,9.0
