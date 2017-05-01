@@ -124,6 +124,10 @@ class TestSurvey(unittest.TestCase):
         s4 = observe(self.bright_pop, 'WHOLESKY', scint=True)
         self.assertIsInstance(s4, pop)
 
+        # Check Airy works
+        s5 = observe(self.pop, 'WHOLESKY', pattern='airy')
+        self.assertIsInstance(s5, pop)
+
         # Test printing of sources
         self.assertTrue(s3.sources[0].__str__())
 
@@ -147,9 +151,6 @@ class TestGalacticops(unittest.TestCase):
         self.assertTrue(abs(gl + (360 - 302.9319)) <= 1.5)
         self.assertTrue(abs(gb + 27.1283) <= 1.5)
 
-    def test_sky_frac(self):
-        frac = go.sky_frac(41253)
-        self.assertTrue(abs(frac-1) < 0.01)
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,7 +5,7 @@ import sys
 
 from log import pprint
 
-def plot(*pops, files=[], frbcat=True, show=True):
+def plot(*pops, files=[], frbcat=True, show=True, mute=True):
     """
     Plot populations with bokeh. Has to save populations before plotting.
 
@@ -62,7 +62,11 @@ def plot(*pops, files=[], frbcat=True, show=True):
     # Add method to gracefully quit plotting
     try:
         with open(os.devnull, 'w') as f:
-            subprocess.run(command.split(' '), stderr=f, stdout=f)
+            if mute:
+                out = f
+            else:
+                out = None
+            subprocess.run(command.split(' '), stderr=out, stdout=out)
     except KeyboardInterrupt:
         print(' ')
         sys.exit()

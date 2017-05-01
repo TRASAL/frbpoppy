@@ -1,6 +1,7 @@
 import math
 import os
 import random
+from scipy.special import j1
 
 import galacticops as go
 from log import pprint
@@ -20,6 +21,8 @@ class Rates:
     """
 
     def __init__(self):
+
+        # Rates
         self.det = 0
         self.faint = 0
         self.jy = 0
@@ -27,20 +30,10 @@ class Rates:
         self.sky = 0
         self.vol = 0
 
-        self.s_det = 0
-        self.s_faint = 0
-        self.s_jy = 0
-        self.s_out = 0
-        self.s_sky = 0
-        self.s_vol = 0
-
     def tot(self):
         """Calculate the total number of rates"""
         return self.det + self.out + self.faint
 
-    def s_tot(self):
-        """Calculate the total number of scaled rates"""
-        return self.s_det + self.s_out + self.s_faint
 
 class Survey:
     """
@@ -51,7 +44,8 @@ class Survey:
             either be a predefined survey present in frbpoppy
             (see data/surveys/) or a path name to a new survey
             filename
-        pattern (str): Set gain pattern. Defaults to 'gaussian'
+        pattern (str): Set gain pattern to be either 'gaussian' or 'airy'.
+            Defaults to 'gaussian'
     """
 
     def __init__(self, survey_name, pattern='gaussian'):
@@ -149,14 +143,14 @@ class Survey:
                 self.dec_min = float(v)  # [deg]
             elif p.count('maximum DEC'):
                 self.dec_max = float(v)  # [deg]
-            elif p.count('minimum Galactic'):
+            elif p.count('minimum Galactic longitude'):
                 self.gl_min = float(v)  # [deg]
-            elif p.count('maximum Galactic'):
+            elif p.count('maximum Galactic longitude'):
                 self.gl_max = float(v)  # [deg]
-            elif p.count('minimum abs'):
-                self.gb_min = float(v)  # min(abs(galactic latitude)) [deg]
-            elif p.count('maximum abs'):
-                self.gb_max = float(v)  # max(abs(galactic latitude)) [deg]
+            elif p.count('minimum Galactic latitude'):
+                self.gb_min = float(v)  # [deg]
+            elif p.count('maximum Galactic latitude'):
+                self.gb_max = float(v)  # [deg]
             elif p.count('uptime'):
                 self.uptime = float(v)  # % of time in use
                 if self.uptime > 1.0:
@@ -189,16 +183,12 @@ class Survey:
 
         if src.gl > self.gl_max or src.gl < self.gl_min:
             return False
-
-        abs_gb = math.fabs(src.gb)
-        if abs_gb > self.gb_max or abs_gb < self.gb_min:
+        if src.gb > self.gb_max or src.gb < self.gb_min:
             return False
 
-        ra, dec = go.lb_to_radec(src.gl, src.gb)
-
-        if ra > self.ra_max or ra < self.ra_min:
+        if src.ra > self.ra_max or src.ra < self.ra_min:
             return False
-        if dec > self.dec_max or dec < self.dec_min:
+        if src.dec > self.dec_max or src.dec < self.dec_min:
             return False
 
         return True
@@ -206,24 +196,35 @@ class Survey:
     def intensity_profile(self):
         """Calculate intensity profile"""
 
+        # Angular variable on sky, defined so that at fwhm/2, the
+        # intensity profile is exactly 0.5. It's multiplied by the sqrt of
+        # a random number to ensure the distribution of variables on the
+        # sky remains uniform, not that it increases towards the centre
+        # (uniform random point within circle). You could see this as
+        # the offset from the centre of the beam.
+
+        self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
+
+        offset = self.fwhm * math.sqrt(random.random()) / 2.0
+
         if self.gain_pattern == 'gaussian':
 
             # Formula's based on 'Interferometry and Synthesis in Radio
             # Astronomy' by A. Richard Thompson, James. M. Moran and
             # George W. Swenson, JR. (Second edition), around p. 15
 
-            # Angular variable on sky, defined so that at fwhm/2, the
-            # intensity profile is exactly 0.5. It's multiplied by the sqrt of
-            # a random number to ensure the distribution of variables on the
-            # sky remains uniform, not that it increases towards the centre
-            # (uniform random point within circle). You could see this as
-            # the calculated offset from the centre of the beam. The fwhm
-            # has been dropped as it is also present in the intensity profile
-            xi = math.sqrt(random.random()) / 2.
-
             # Intensity profile
             alpha = 2*math.sqrt(math.log(2))
-            int_pro = math.exp(-(alpha*xi)**2)
+            int_pro = math.exp(-(alpha*offset/self.fwhm)**2)
+
+        if self.gain_pattern == 'airy':
+            c = 299792458
+            conv = math.pi/(60*180.)  # Conversion arcmins -> radians
+            eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
+            a = eff_diam/2  # Effective radius of telescope
+            lamda = c/(self.central_freq*1e6)
+            kasin = (2*math.pi*a/lamda)*math.sin(offset*conv)
+            int_pro = 4*(j1(kasin)/kasin)**2
 
         return int_pro
 
@@ -256,6 +257,7 @@ class Survey:
         """
         # Offset according to Lorimer et al. (doi:10.1093/mnrasl/slt098)
         src.t_scat = go.scatter_bhat(src.dm,
+                                     scindex=-3.86,
                                      offset=-9.5,
                                      freq=self.central_freq)
 
@@ -462,41 +464,71 @@ class Survey:
             pop (Population): Population class
         """
 
-        for r in (self.frb_rates, self.src_rates):
+        rates = (self.frb_rates, self.src_rates)
+        n = 0
+
+        for r in rates:
 
             f = (self.t_obs/pop.time)
             det = r.det * self.uptime * f
             faint = r.faint * self.uptime * f
             out = r.out + r.det - det + r.faint - faint
 
-            vol = r.tot() / pop.v_max / (pop.time/86400)
+            vol = r.tot() / pop.v_max * (365.25*86400/pop.time)
 
-            r.s_det = round(det)
-            r.s_faint = round(faint)
-            r.s_out = round(out)
-            r.s_vol = round(vol)
+            s_rates = Rates()
+            s_rates.det = det
+            s_rates.faint = faint
+            s_rates.out = out
+            s_rates.vol = vol
 
-    def rates(self, pop):
+            if n == 0:
+                self.s_frb_rates = s_rates
+                n += 1
+            else:
+                self.s_src_rates = s_rates
+
+    def rates(self, pop, scaled=True):
         """
         Print survey rates, such as the number of detected sources etc
 
         Args:
-            pop (Population): Population class
+            scaled (bool, optional): Print scaled (default) or normal rates
         """
 
-        t = self.survey_name + ':\n'
+        f = self.s_frb_rates
+        s = self.s_src_rates
+        if not scaled:
+            f = self.frb_rates
+            s = self.src_rates
 
-        f = self.frb_rates
-        s = self.src_rates
+        r = '{:20.19} {:>10} {:>10} {:>10}\n'
 
-        r = '   {:15.14} {:>10} {:>10}\n'
-        t += r.format('Number of', 'FRBs', 'Sources')
-        t += '   ' + '-'*len(t.split('\n')[-2].strip()) + '\n'
-        t += r.format('in population', f.s_tot(), s.s_tot())
-        t += r.format('detected', f.s_det, s.s_det)
-        t += r.format('too faint', f.s_faint, s.s_faint)
-        t += r.format('outside survey', f.s_out, s.s_out)
-        t += r.format('/Gpc^3/day', f.s_vol, s.s_vol)
+        # Set up title
+        days = (pop.time/86400)
+
+        t = r.format(self.survey_name, 'Days', 'FRBs', 'Sources')
+        line = '-'*len(t.split('\n')[-2].strip()) + '\n'
+        t += line
+
+        tot = ('In population', round(days), round(f.tot()), round(s.tot()))
+        det = ('Detected', round(days), round(f.det), round(s.det))
+        faint = ('Too faint', round(days), round(f.faint), round(s.faint))
+        out = ('Outside survey', round(days), round(f.out), round(s.out))
+        vol = ('/Gpc^3', 365, round(f.vol), round(s.vol))
+        if f.det > 0:
+            exp = round(days/f.det,3)
+        else:
+            exp = '?'
+        exp_frb = ('Expected', exp, 1, '-')
+
+        t += r.format(*tot)
+        t += r.format(*det)
+        t += r.format(*faint)
+        t += r.format(*out)
+        t += r.format(*vol)
+        t += r.format(*exp_frb)
+        t += line
 
         for n in t.split('\n')[:-1]:
             pprint(n)

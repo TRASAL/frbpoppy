@@ -6,6 +6,7 @@ from survey import Survey
 
 def observe(population,
             survey_name,
+            pattern='gaussian',
             return_pop=True,
             scat=False,
             scint=False):
@@ -14,6 +15,7 @@ def observe(population,
     Args:
         population (Population): Population class of FRB sources to observe
         survey_name (str): Name of survey file with which to observe
+        pattern (str): Gain pattern, either 'gaussian' (default) or 'airy'
         return_pop (bool, optional): Whether to return a population or survey
             class. Primarily intended for debugging. Defaults to True
         scat (bool, optional): Whether to include scattering in signal to noise
@@ -28,7 +30,7 @@ def observe(population,
     # Copy population so that it can be observed multiple times
     pop = copy.deepcopy(population)
 
-    s = Survey(survey_name)
+    s = Survey(survey_name, pattern=pattern)
     surv_pop = Population()
     surv_pop.name = survey_name
 

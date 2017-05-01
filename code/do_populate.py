@@ -9,7 +9,7 @@ from source import Source
 
 
 def generate(n_gen,
-             time=1,
+             days=1,
              cosmology=True,
              cosmo_pars=[69.6, 0.286, 0.714],
              electron_model='ne2001',
@@ -25,7 +25,8 @@ def generate(n_gen,
 
     Args:
         n_gen (int): Number of FRB sources/sky/time to generate
-        time (int): Number of days over which FRBs are generated. Defaults to 1
+        days (float): Number of days over which FRBs are generated.
+            Defaults to 1
         cosmology (bool, optional): Whether to use cosmology in all
             calculations. Defaults to True.
         cosmo_pars (list, optional): Three values, the first being the Hubble
@@ -66,7 +67,7 @@ def generate(n_gen,
         raise ValueError(m)
 
     # Check input
-    if type(time) != int:
+    if type(days) != int:
         m = 'Please ensure the number of days is an integer'
         raise ValueError(m)
 
@@ -154,7 +155,7 @@ def generate(n_gen,
     pop.repeat = repeat
     pop.si_mean = si_pars[0]
     pop.si_sigma = si_pars[1]
-    pop.time = time * 86400  # Convert to seconds
+    pop.time = days * 86400  # Convert to seconds
     pop.v_max = go.z_to_v(z_max)
     pop.w_max = pulse[1]
     pop.W_m = cosmo_pars[1]
@@ -175,10 +176,12 @@ def generate(n_gen,
         src = Source()
 
         # Add random directional coordinates
+        src.gl = random.random() * 360.0 - 180
         src.gb = math.degrees(math.asin(random.random()))
         if random.random() < 0.5:
             src.gb *= -1
-        src.gl = random.random() * 360.0 - 180
+        # Convert
+        src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
 
         # Calculate comoving distance [Gpc]
         src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)

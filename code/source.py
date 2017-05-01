@@ -18,6 +18,8 @@ class Source:
         self.gx = None
         self.gy = None
         self.gz = None
+        self.ra = None
+        self.dec = None
         self.dist = None
         self.z = None
 

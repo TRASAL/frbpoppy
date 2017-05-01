@@ -15,9 +15,9 @@ import sys
 
 from bokeh.io import curdoc
 from bokeh.layouts import layout, widgetbox
-from bokeh.models import ColumnDataSource, HoverTool, Div
+from bokeh.models import ColumnDataSource, HoverTool, Div, Panel, Tabs
 from bokeh.models.widgets import Select
-from bokeh.palettes import Category10
+from bokeh.palettes import Category10, viridis
 from bokeh.plotting import figure
 
 from frbcat import get_frbcat
@@ -25,6 +25,84 @@ from log import pprint
 
 # Number of dataframes/populations
 num_df = 0
+
+
+def histogram(dfs):
+    """
+    Quick function to 'histogram' each column of each dataframes
+
+    Args:
+        dfs (list): List of dataframes
+    Returns:
+        hists (list): List of histogramed dataframes
+    """
+    # Determine all column names
+    columns = [df.columns.values for df in dfs]
+    cols = min(columns, key=len)
+
+    # Determine bin limits
+    limits = {}
+
+    for c in cols:
+
+        low = 1e99
+        high = -1e99
+
+        for df in dfs:
+            if c not in df:
+                continue
+
+            dlow = df[c].min()
+            dhigh = df[c].max()
+
+            if isinstance(dlow,str) or isinstance(dhigh,str):
+                continue
+
+            if dlow < low:
+                low = dlow
+
+            if dhigh > high:
+                high = dhigh
+
+        limits[c] = (low, high)
+
+    hists = []
+
+    # Bin each dataframe
+    for df in dfs:
+
+        hist = pd.DataFrame(np.nan, index=np.arange(14), columns=['empty'])
+        hist['color'] = df['color'][0]
+        hist['population'] = df['population'][0]
+        hist['bottom'] = 0.
+        for c in cols:
+
+            low = limits[c][0]
+            high = limits[c][1]
+
+            if low == 1e99 or high == -1e99:
+                continue
+
+            if c not in df:
+                continue
+
+            if df[c].nunique() == 1 and df[c][0] == 'None':
+                continue
+
+            bins = np.linspace(low, high, 15)
+            h, _ = np.histogram(df[c].dropna(), bins=bins)
+
+            # Normalise
+            h = [e/h.sum() for e in h]
+
+            hist[c] = pd.Series(h)
+            hist[c+'_left'] = pd.Series(bins[:-1])
+            hist[c+'_right'] = pd.Series(bins[1:])
+
+        del hist['empty']
+        hists.append(hist)
+
+    return hists
 
 
 def plot_pop(files=[], frbcat=True):
@@ -42,7 +120,10 @@ def plot_pop(files=[], frbcat=True):
     mc = len(files)
     if frbcat:
         mc += 1
-    colours = Category10[10][:mc]
+    if mc > 10:
+        colours = viridis(mc)
+    else:
+        colours = Category10[10][:mc]
 
     # Dataframes
     dfs = []
@@ -90,10 +171,6 @@ def plot_pop(files=[], frbcat=True):
         df['color'] = colours[num]
         dfs.append(df)
 
-    # Create Column Data Sources for interacting with the plot
-    props = dict(x=[], y=[], color=[], population=[])
-    sources = [ColumnDataSource(props) for df in dfs]
-
     # Create axis options
     axis_map = {
         'Dispersion Measure (pc/cm^3)': 'dm',
@@ -112,150 +189,133 @@ def plot_pop(files=[], frbcat=True):
         'Pulse Width - Effective (ms)': 'w_eff',
         'Pulse Width - Intrinsic (ms)': 'w_int',
         'Redshift': 'z',
+        'Right Ascension (°)': 'ra',
+        'Declination (°)': 'dec',
         'Signal to Noise Ratio': 'snr',
-        'Spectral Index': 'si',
         }
 
     x_axis = Select(title='',
                     options=sorted(axis_map.keys()),
-                    value='Galactic Latitude (degrees)')
-
-    # Add histogram option
-    axis_map['Fraction'] = 'number'
+                    value='Galactic Longitude (degrees)')
 
     y_axis = Select(title='',
                     options=sorted(axis_map.keys()),
-                    value='Galactic Longitude (degrees)')
-
-    # What to display while hovering
-    props = [("Pop", "@population"), ("X", "@x"), ("Y", "@y")]
-    hover = HoverTool(tooltips=props)
+                    value='Galactic Latitude (degrees)')
 
     # Set up tools
-    tools_to_show = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
+    props = [("pop", "@population"), ("x", "@x"), ("y", "@y")]
+    hover = HoverTool(tooltips=props)
+    sc_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
-    # Set up title
-    title = '|'
-    for df in dfs:
-        name = df['population'].iloc[0]
-        num = df.shape[0]
-        title += ' {}: {} |'.format(name, num)
+    # Create scatter plot
+    sp = figure(plot_height=600,
+                plot_width=600,
+                active_scroll='wheel_zoom',
+                toolbar_location='right',
+                tools=sc_tools,
+                webgl=True)
 
-    # Create main plot
-    p = figure(plot_height=600,
-               plot_width=600,
-               title=title,
-               active_scroll='wheel_zoom',
-               toolbar_location='above',
-               tools=tools_to_show,
-               webgl=True)
+    # Create Column Data Sources for interacting with the plot
+    props = dict(x=[], y=[], color=[], population=[])
+    sp_sources = [ColumnDataSource(props) for df in dfs]
 
-    for source in sources:
+    # Plot scatter plot for the populations
+    for source in sp_sources:
+        sp.circle(x='x',
+                  y='y',
+                  source=source,
+                  size=7,
+                  alpha=0.6,
+                  color='color',
+                  legend='population')
 
-        # Plot scatter plot for the populations
-        p.circle(x='x',
-                 y='y',
-                 source=source,
-                 size=7,
-                 alpha=0.7,
-                 color='color',
-                 legend='population')
+    # Set up tools
+    props = [("pop", "@population"), ("frac", "@top")]
+    hover = HoverTool(tooltips=props)
+    hp_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
-    # How to filter data
-    def filter_data(df, x_name, y_name, bin_edges):
+    # Create histogram plot
+    hp = figure(plot_height=600,
+                plot_width=600,
+                active_scroll='wheel_zoom',
+                toolbar_location='right',
+                tools=hp_tools,
+                webgl=True)
 
-        # How to plot a histogram
-        if y_name == 'number':
+    # Create Column Data Sources for interacting with the plot
+    hists = histogram(dfs)
+    props = dict(top=[], left=[], right=[], bottom=[], color=[], population=[])
+    hp_sources = [ColumnDataSource(props) for hist in hists]
 
-            # Initialise different histograms
-            xn = []
-            yn = []
-
-            # Find x-axis values in that population
-            dfx = df[x_name]
-
-            # Check there are values
-            dfx = pd.to_numeric(dfx, errors='coerce')
-            dfx.dropna(inplace=True)
-
-            # Ensure bins overlap if existing
-            if len(bin_edges) > 0:
-                be = bin_edges
-            else:
-                be = 15
-
-            hist, bin_edges = np.histogram(dfx, bins=be)
-
-            # Normalise
-            hist = [h/dfx.count() for h in hist]
-
-            # Ugly hack for plotting a histogram with points
-            m = 15
-            xn = []
-            yn = []
-            cn = []
-            pn = []
-
-            for i, v in enumerate(hist):
-
-                if i < (len(hist) - 1):
-                    upper_y = hist[i+1]
-                else:
-                    upper_y = 0
-
-                dy = upper_y - hist[i]
-                dx = bin_edges[i+1] - bin_edges[i]
-
-                xh = [bin_edges[i] + a*dx/m for a in range(m)]
-                xh.extend([bin_edges[i+1] for _ in range(m)])
-                yh = [v for _ in range(m)]
-                yh.extend([v + a*dy/m for a in range(m)])
-
-                xn.extend(xh)
-                yn.extend(yh)
-                cn.extend(df['color'].iloc[0] for i in range(len(xh)))
-                pn.extend(df['population'].iloc[0] for i in range(len(xh)))
-
-            props = {x_name: xn, 'number': yn, 'color': cn, 'population': pn}
-
-            df = pd.DataFrame(props)
-
-        # Only return relevant values
-        df = df[[x_name, y_name, 'color', 'population']]
-        df = pd.to_numeric(df, errors='coerce')
-        df = df.dropna()
-
-        return df, bin_edges
+    # Plot histogram values
+    for source in hp_sources:
+        hp.quad(bottom='bottom',
+                left='left',
+                right='right',
+                top='top',
+                color='color',
+                line_color='color',
+                legend='population',
+                alpha=0.4,
+                source=source)
 
     # Interactive goodness
     def update():
         x_name = axis_map[x_axis.value]
         y_name = axis_map[y_axis.value]
 
-        p.xaxis.axis_label = x_axis.value
-        p.yaxis.axis_label = y_axis.value
+        sp.xaxis.axis_label = x_axis.value
+        sp.yaxis.axis_label = y_axis.value
+        hp.xaxis.axis_label = x_axis.value
+        hp.yaxis.axis_label = 'Fraction'
 
-        bins = []
-
-        for i, source in enumerate(sources):
+        for i, source in enumerate(sp_sources):
 
             # Create an empty data set
             cols = [x_name, y_name, 'color', 'population']
             empty = pd.DataFrame(np.nan, index=[0], columns=cols)
 
             # Ensure columns are present in each population
-            if x_name not in dfs[i]:
-                df = empty
-            elif y_name not in dfs[i] and y_name != 'number':
+            if x_name not in dfs[i] or y_name not in dfs[i]:
                 df = empty
             else:
-                # Apply filtering
-                df, bins = filter_data(dfs[i], x_name, y_name, bins)
+                df = dfs[i][cols]
+                df = pd.to_numeric(df, errors='coerce')
+                df = df.dropna()
 
             # Update data
             source.data = dict(
                 x=df[x_name],
                 y=df[y_name],
+                color=df['color'],
+                population=df['population']
+            )
+
+        for i, source in enumerate(hp_sources):
+            # Create an empty data set
+            cols = [x_name,
+                    x_name + '_left',
+                    x_name + '_right',
+                    'bottom',
+                    'color',
+                    'population']
+            empty = pd.DataFrame(np.nan, index=[0], columns=cols)
+
+            # Ensure columns are present in each population
+            if x_name not in hists[i]:
+                df = empty
+            else:
+                df = hists[i]
+                df = df[cols]
+                df = pd.to_numeric(df, errors='coerce')
+                df = df.dropna()
+
+            # Update data
+            source.data = dict(
+                top=df[x_name],
+                left=df[x_name + '_left'],
+                right=df[x_name + '_right'],
+                bottom=df['bottom'],
                 color=df['color'],
                 population=df['population']
             )
@@ -280,8 +340,13 @@ def plot_pop(files=[], frbcat=True):
 
     sidebar = [text_top, x_axis, y_axis, text_bottom]
     s = widgetbox(sidebar, width=350)
-    L = layout([[s, p]], sizing_mode=sizing_mode)
+    tab1 = Panel(child=sp, title='scatter')
+    tab2 = Panel(child=hp, title='histogram')
+    tabs = Tabs(tabs=[tab1, tab2])
+    L = layout([[s, tabs]], sizing_mode=sizing_mode)
 
+    sp.legend.click_policy = 'hide'
+    hp.legend.click_policy = 'hide'
     update()  # initial load of the data
     curdoc().add_root(L)
     curdoc().title = 'frbpoppy'

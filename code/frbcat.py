@@ -21,6 +21,11 @@ def transform_coords(db):
     db['gl'] = gl
     db['gb'] = gb
 
+    ra, dec = go.lb_to_radec(db['gl'], db['gb'])
+
+    db['ra'] = ra
+    db['dec'] = dec
+
     return db
 
 
@@ -56,7 +61,6 @@ def get_frbcat():
     # Change some names
     db['dm'] = db['DM']
     db['dm_mw'] = db['NE2001 DM Limit']
-    db['si'] = db['Scattering Index']
     db['snr'] = db['SNR']
     db['w_eff'] = db['Width']
     db['s_peak'] = db['Flux']
