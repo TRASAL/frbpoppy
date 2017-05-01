@@ -9,7 +9,7 @@ install:
 before_script:
   - "python3 setup.py"
 script:
-  - "coverage-3.5 run ./code/test.py"
+  - "coverage-3.5 run --source=. ./code/test.py"
 branches:
   only:
     - master
