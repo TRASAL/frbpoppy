@@ -48,6 +48,12 @@ class TestPopulate(unittest.TestCase):
         # Check printing a population works
         self.assertTrue(r1.__str__())
 
+        # Check printing a source works
+        self.assertTrue(r1.sources[0].__str__())
+
+        # Check printing an FRB works
+        self.assertTrue(r1.sources[0].frbs[0].__str__())
+
         # Check saving works
         r1.save()
 
