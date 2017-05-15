@@ -57,6 +57,12 @@ def observe(population,
 
         for frb in src.frbs:
 
+            # Check if repeat FRBs are within an integration time
+            if frb.time:
+                if frb.time > s.t_obs:
+                    s.frb_rates.out += 1
+                    continue
+
             # Calculate observing properties such as the signal to noise ratio
             s.obs_prop(frb, src, pop)
 

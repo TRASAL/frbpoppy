@@ -54,12 +54,13 @@ class Source:
         self.frbs.append(frb)
         self.n_frbs += 1
 
-    def create_frb(self, pop):
+    def create_frb(self, pop, time=None):
         """
         Create an frb to add to source
 
         Args:
             pop (Population): Population parameters
+            time (float): Time of burst [s]
         """
 
         # Initialise an FRB
@@ -73,6 +74,9 @@ class Source:
 
         # Add spectral index
         frb.si = random.gauss(pop.si_mean, pop.si_sigma)
+
+        # Add time
+        frb.time = time
 
         # Add FRB to source
         self.add(frb)

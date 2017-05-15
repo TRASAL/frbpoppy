@@ -34,7 +34,7 @@ surveys = [ 'WHOLESKY',
 
 results = []
 
-for s in surveys[:4]:
+for s in surveys:
     results.append(observe(population, s))
 # wholesky = observe(population, 'WHOLESKY')
 # test = observe(population, 'TEST')

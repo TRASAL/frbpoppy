@@ -4,6 +4,7 @@ import math
 import random
 
 import galacticops as go
+import distributions as dis
 from population import Population
 from source import Source
 
@@ -209,7 +210,11 @@ def generate(n_gen,
 
         # If repeating add another FRB
         if random.random() < pop.repeat:
-            src.create_frb(pop)
+
+            ts = dis.pink_noise()
+
+            for t in ts:
+                src.create_frb(pop, time=t)
 
         # Add source to population
         pop.add(src)
