@@ -6,6 +6,7 @@ class FRB:
         self.w_int = None
         self.lum_bol = None
         self.si = None
+        self.time = None
 
         # Detection properties
         self.snr = None

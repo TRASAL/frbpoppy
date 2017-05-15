@@ -90,7 +90,9 @@ def histogram(dfs):
                 continue
 
             bins = np.linspace(low, high, 15)
-            h, _ = np.histogram(df[c].dropna(), bins=bins)
+            col = df[c].convert_objects(convert_numeric=True)
+            col = col.dropna()
+            h, _ = np.histogram(col, bins=bins)
 
             # Normalise
             h = [e/h.sum() for e in h]
@@ -150,8 +152,8 @@ def plot_pop(files=[], frbcat=True):
             return
 
         # Reduce population size if it's too large
-        if df.shape[0] > 1000000:
-            df = df.iloc[::1000]
+        if df.shape[0] > 30000:
+            df = df.iloc[::10]
 
         df['population'] = name
         df['color'] = colours[num_df]

@@ -1,5 +1,6 @@
-import os
 from collections import OrderedDict as OD
+import pickle
+import os
 
 from log import pprint
 
@@ -129,3 +130,46 @@ class Population:
                 data += sep.join(src_data + frb_data) + '\n'
 
         return data
+
+    def pickle_pop(self, out=None):
+        """Allow the population to be pickled for future use"""
+
+        # Check if an output file has been given
+        if out is None:
+            loc = '../data/results/population_{}.p'.format(self.name.lower())
+            out = os.path.join(os.path.dirname(__file__), loc)
+
+        output = open(out, 'wb')
+        pickle.dump(self, output, 2)
+        output.close()
+
+
+def unpickle(filename=None):
+    """Quick function to unpickle a population
+
+    Args:
+        filename (str, optional): Define the path to the pickled population,
+            or give the population name
+
+    Returns:
+        pop (Population): Population class
+    """
+
+    # Find population file
+    if os.path.isfile(filename):
+        f = open(filename, 'rb')
+    else:
+        # Find standard population files
+        try:
+            p = '../data/results/population_{}.p'.format(filename.lower())
+            path = os.path.join(os.path.dirname(__file__), p)
+            f = open(path, 'rb')
+        except FileNotFoundError:
+            s = 'Pickled population file "{0}" does not exist'.format(filename)
+            raise FileNotFoundError(s)
+
+    # Unpickle
+    pop = pickle.load(f)
+    f.close()
+
+    return pop

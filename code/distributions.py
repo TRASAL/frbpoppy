@@ -1,3 +1,5 @@
+import numpy as np
+import numpy.fft as fft
 import random
 
 
@@ -33,9 +35,9 @@ def redshift_w(z=0, cosmology=True, w_min=0.1, w_max=5):
 
     Args:
         z (float): Redshift. Defaults to 0
-        cosmology (boolean): Whether to use cosmology. Default to True
-        w_min (float): Minimum pulse width [ms]. Defaults to 0.1
-        w_max (float): Maximum pulse width [ms]. Defaults to 5
+        cosmology (boolean): Whether to use cosmology
+        w_min (float): Minimum pulse width [ms]
+        w_max (float): Maximum pulse width [ms]
     Returns:
         w_int (float): A pulse width drawn from a uniform distribution, and
                        redshifted if cosmology was used.
@@ -44,3 +46,38 @@ def redshift_w(z=0, cosmology=True, w_min=0.1, w_max=5):
     if cosmology:
         w *= (1+z)
     return w
+
+
+def pink_noise():
+    """
+    Simluate burst times using pink noise
+
+    Returns:
+        ts (list): A list of burst times
+    """
+    # Assume FRBs can repeat at max once per 20s, and that
+    # would be observable for a maximum of 12h
+    length = round(86400 / 2 / 20)
+
+    # Create gaussion noise
+    signal = np.random.normal(0, 1, size=length)
+    time = [i for i in range(length)]
+
+    # Fast Fourier Transform it
+    freq = np.fft.rfftfreq(length)
+    four_trans = np.fft.rfft(signal)
+
+    # Turn into pink noise
+    pn = [e[0]*e[1]**-1 for e in zip(four_trans[1:], freq[1:])]
+
+    # Revert to time domain
+    ns = np.fft.irfft(pn)
+
+    # If above limit, then frb
+    limit = max(ns) - 2
+    ts = [e[1] for e in zip(ns, time[:-2]) if e[0] > limit]
+
+    # Revert to normal timescale
+    ts *= 20
+
+    return ts
