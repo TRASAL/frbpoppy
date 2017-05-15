@@ -4,6 +4,7 @@ import unittest
 import distributions as ds
 import galacticops as go
 from population import Population as pop
+from population import unpickle
 from do_populate import generate
 from do_survey import observe
 from do_plot import plot
@@ -57,6 +58,10 @@ class TestPopulate(unittest.TestCase):
         # Check saving works
         r1.save()
 
+        # Check pickling works
+        r1.pickle_pop()
+        r1 = unpickle('temp')
+
         # Check different input values
         with self.assertRaises(ValueError):
             generate(0)
@@ -91,9 +96,11 @@ class TestPopulate(unittest.TestCase):
 
     def tearDown(self):
         """Clean up temp files"""
-        loc = '../data/results/population_temp.csv'
-        out = os.path.join(os.path.dirname(__file__), loc)
-        os.remove(out)
+
+        for e in ['.csv', '.p']:
+            loc = '../data/results/population_temp{}'.format(e)
+            out = os.path.join(os.path.dirname(__file__), loc)
+            os.remove(out)
 
 
 class TestSurvey(unittest.TestCase):
