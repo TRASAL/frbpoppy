@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import numpy.fft as fft
 import random
@@ -81,3 +82,25 @@ def pink_noise():
     ts *= 20
 
     return ts
+
+def oppermann_pen():
+    """
+    Following Oppermann & Pen (2017), simulate repeat times
+
+    Returns:
+        ts (list): List of burst times
+    """
+    r = 5.7
+    k = 0.34
+
+    ts = []
+    t_tot = 0.5  # Assuming a maximum of 12 hours on one spot
+    t_sum = 0.0
+
+    # Get time of bursts
+    while t_sum < t_tot:
+        t = r*np.random.weibull(k)
+        t_sum += t
+        ts.append(t_sum)
+
+    return ts[:-1]
