@@ -211,7 +211,7 @@ def generate(n_gen,
         # If repeating add another FRB
         if random.random() < pop.repeat:
 
-            ts = dis.pink_noise()
+            ts = dis.oppermann_pen()
 
             for t in ts:
                 src.create_frb(pop, time=t)
