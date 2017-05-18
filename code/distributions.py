@@ -103,4 +103,7 @@ def oppermann_pen():
         t_sum += t
         ts.append(t_sum)
 
-    return ts[:-1]
+    # Convert to seconds
+    ts = [t*86400 for t in ts[:-1]]
+
+    return ts
