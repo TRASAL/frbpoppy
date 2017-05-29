@@ -2,23 +2,23 @@
 # WHOLESKY survey parameters - chiefly thanks to Sarah Burke Spolaor
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
-     1.2 ! survey degradation factor
-     0.6 ! antenna gain (K/Jy)
- 86400.0 ! integration time (s)
-     0.3 ! sampling time (ms)
-    25.0 ! system temperature (K)
-  1374.0 ! centre frequency (MHz)
-   288.0 ! bandwidth (MHz)
-     1.0 ! channel bandwidth (MHz)
-     2.0 ! number of polarizations
-     8.7 ! beam size (deg^2)
-     0.0 ! minimum RA (deg)
-   360.0 ! maximum RA (deg)
-   -90.0 ! minimum DEC (deg)
-    90.0 ! maximum DEC (deg)
-  -180.0 ! minimum Galactic longitude (deg)
-   180.0 ! maximum Galactic longitude (deg)
-   -90.0 ! minimum Galactic latitude (deg)
-    90.0 ! maximum Galactic latitude (deg)
-     1.0 ! fractional uptime [0-1]
-     9.0 ! signal-to-noise ratio [0-1]
+1.2      ! survey degradation factor
+0.6      ! antenna gain (K/Jy)
+86400.0  ! integration time (s)
+0.3      ! sampling time (ms)
+25.0     ! system temperature (K)
+1374.0   ! centre frequency (MHz)
+288.0    ! bandwidth (MHz)
+1.0      ! channel bandwidth (MHz)
+2        ! number of polarizations
+8.7      ! beam size (deg^2)
+0.0      ! minimum RA (deg)
+360.0    ! maximum RA (deg)
+-90.0    ! minimum DEC (deg)
+90.0     ! maximum DEC (deg)
+-180.0   ! minimum Galactic longitude (deg)
+180.0    ! maximum Galactic longitude (deg)
+-90.0    ! minimum Galactic latitude (deg)
+90.0     ! maximum Galactic latitude (deg)
+1.0      ! fractional uptime [0-1]
+9.0      ! signal-to-noise ratio [0-1]

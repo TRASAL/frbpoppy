@@ -17,7 +17,8 @@ for c in df:
 
     # Parameters
     for i, r in df[c].iteritems():
-        text.append('{:8} ! {}'.format(r, i))
+        if r != '#':
+            text.append('{:8} ! {}'.format(r, i))
 
     # Output
     with open(path + '/' + c, 'w') as f:

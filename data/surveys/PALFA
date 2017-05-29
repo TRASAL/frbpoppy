@@ -4,7 +4,7 @@
 ##############################################################################
      1.2 ! survey degradation factor
      1.0 ! antenna gain (K/Jy)
-  1000.0 ! integration time (s)
+   204.0 ! integration time (s)
   0.0655 ! sampling time (ms)
      3.4 ! system temperature (K)
   1375.0 ! centre frequency (MHz)
@@ -16,9 +16,11 @@
    360.0 ! maximum RA (deg)
  -71.656 ! minimum DEC (deg)
     90.0 ! maximum DEC (deg)
-  -180.0 ! minimum Galactic longitude (deg)
-   180.0 ! maximum Galactic longitude (deg)
-   -90.0 ! minimum Galactic latitude (deg)
-    90.0 ! maximum Galactic latitude (deg)
+    30.0 ! minimum Galactic longitude (deg)
+    78.0 ! maximum Galactic longitude (deg)
+   162.0 ! minimum 2 Galactic longitude (deg)
+   214.0 ! maximum 2 Galactic longitude (deg)
+    -5.0 ! minimum Galactic latitude (deg)
+     5.0 ! maximum Galactic latitude (deg)
     0.02 ! fractional uptime [0-1]
      8.0 ! signal-to-noise ratio [0-1]

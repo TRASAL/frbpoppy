@@ -64,6 +64,8 @@ class Survey:
                 raise IOError(s)
 
         # Parse survey file
+        self.gl2_min = None
+        self.gl2_max = None
         self.parse(f)
         self.discoveries = 0
         self.survey_name = survey_name
@@ -147,6 +149,10 @@ class Survey:
                 self.gl_min = float(v)  # [deg]
             elif p.count('maximum Galactic longitude'):
                 self.gl_max = float(v)  # [deg]
+            elif p.count('minimum 2 Galactic longitude'):
+                self.gl2_min = float(v)  # [deg]
+            elif p.count('maximum 2 Galactic longitude'):
+                self.gl2_max = float(v)  # [deg]
             elif p.count('minimum Galactic latitude'):
                 self.gb_min = float(v)  # [deg]
             elif p.count('maximum Galactic latitude'):
@@ -182,7 +188,11 @@ class Survey:
             src.gl -= 360.
 
         if src.gl > self.gl_max or src.gl < self.gl_min:
-            return False
+            if self.gl2_min:
+                if src.gl > self.gl2_max or src.gl < self.gl2_min:
+                    return False
+            else:
+                return False
         if src.gb > self.gb_max or src.gb < self.gb_min:
             return False
 
