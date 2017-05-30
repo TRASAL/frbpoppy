@@ -494,6 +494,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
 
     return ds, zs
 
+
 def interpolate_z(d, ds, zs, H_0=69.6):
     """
     Interpolate between two comoving distances to obtain an approximate
@@ -553,4 +554,4 @@ def ioka_dm_igm(z):
     Returns:
         dm_igm (float): Dispersion measure of the intergalactic medium [pc/cm^3]
     """
-    return 1200 * z
+    return random.gauss(1200*z, 0.2*1200*z)
