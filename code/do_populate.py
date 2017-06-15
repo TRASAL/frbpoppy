@@ -5,10 +5,11 @@ import random
 
 import galacticops as go
 import distributions as dis
+import precalc as pc
 from population import Population
 from source import Source
 
-@profile
+
 def generate(n_gen,
              days=1,
              cosmology=True,
@@ -56,6 +57,7 @@ def generate(n_gen,
 
     Returns:
         pop (Population): A population of generated sources
+
     """
 
     # Check input
@@ -181,6 +183,7 @@ def generate(n_gen,
         src.gb = math.degrees(math.asin(random.random()))
         if random.random() < 0.5:
             src.gb *= -1
+
         # Convert
         src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
 
@@ -194,7 +197,7 @@ def generate(n_gen,
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
         # Dispersion measure of the Milky Way
-        src.dm_mw = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
+        src.dm_mw = pc.ne2001_table(src.gl, src.gb)
 
         # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z)

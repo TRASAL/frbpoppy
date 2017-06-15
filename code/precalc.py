@@ -1,4 +1,4 @@
-"""Create a lookup table for various galactic operations."""
+"""Create a lookup table for the NE2001 dispersion measure."""
 
 import os
 import numpy as np
@@ -89,6 +89,3 @@ def ne2001_table(gal, gab):
     conn.close()
 
     return dm_mw
-
-
-ne2001_table()

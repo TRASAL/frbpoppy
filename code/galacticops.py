@@ -499,9 +499,11 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
 
 def interpolate_z(d, ds, zs, H_0=69.6):
     """
-    Interpolate between two comoving distances to obtain an approximate
-    redshift, unless dzs is none (i.e. cosmology has been set to False in the
-    function dist_lookup), in which case use an approximation that works to z<2.
+    Interpolate between two comoving distances.
+
+    Obtain an approximate redshift, unless dzs is none (i.e. cosmology has
+    been set to False in the function dist_lookup), in which case use an
+    approximation that works to z<2.
 
     Args:
         d (float): Comoving distance [Gpc]
@@ -511,6 +513,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
             when using a non-cosmology approximation. Defaults to 69.6
     Returns:
         z (float): Redshift
+
     """
     z = 0
 
