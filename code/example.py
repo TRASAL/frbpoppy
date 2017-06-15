@@ -11,26 +11,28 @@ population = generate(30000,
                       repeat=0.05)
 
 # Observe FRB populations
-surveys = [ 'WHOLESKY',
-            'APERTIF',
-            'PMSURV',
-            'HTRU',
-            'VLA-L-BAND',
-            'ASKAP-INCOH',
-            'ASKAP-FLY',
-            'GBT',
-            'PALFA',
-            'ARECIBO-SPF',
-            'ALFABURST',
-            'UTMOST-1D',
-            'UTMOST-2D',
-            'MWA',
-            'LWA',
-            'MEERKAT',
-            'CHIME',
-            'DSA10',
-            'EMERLIN',
-            'VFASTR']
+surveys = ['WHOLESKY',
+           'APERTIF',
+           'PMSURV',
+           'HTRU',
+           'ASKAP-INCOH',
+           'GBT',
+           'PALFA',
+           'ARECIBO-SPF',
+           'ALFABURST',
+           'UTMOST-1D']
+
+# Other options
+# 'ASKAP-FLY',
+# 'VLA-L-BAND',
+# 'UTMOST-2D',
+# 'MWA',
+# 'LWA',
+# 'MEERKAT',
+# 'CHIME',
+# 'DSA10',
+# 'EMERLIN',
+# 'VFASTR',
 
 results = []
 
@@ -40,4 +42,4 @@ for s in surveys:
 # test = observe(population, 'TEST')
 
 # Plot populations
-plot(population, *results)
+# plot(population, *results)

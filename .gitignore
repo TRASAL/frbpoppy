@@ -98,3 +98,4 @@ misc/
 *.so  # Shared libraries
 *.coverage
 *.ipynb
+*.lprof

@@ -1,4 +1,4 @@
-"""Code for generating a population of FRBs"""
+"""Code for generating a population of FRBs."""
 
 import math
 import random
@@ -8,7 +8,7 @@ import distributions as dis
 from population import Population
 from source import Source
 
-
+@profile
 def generate(n_gen,
              days=1,
              cosmology=True,
