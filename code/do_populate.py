@@ -9,7 +9,7 @@ import precalc as pc
 from population import Population
 from source import Source
 
-@profile
+
 def generate(n_gen,
              days=1,
              cosmology=True,
@@ -214,5 +214,8 @@ def generate(n_gen,
 
         # Add source to population
         pop.add(src)
+
+    # Save population
+    pop.pickle_pop()
 
     return pop

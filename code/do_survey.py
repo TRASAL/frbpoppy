@@ -1,6 +1,6 @@
 import copy
 
-from population import Population
+from population import Population, unpickle
 from survey import Survey
 
 
@@ -28,7 +28,7 @@ def observe(population,
     """
 
     # Copy population so that it can be observed multiple times
-    pop = copy.deepcopy(population)
+    pop = unpickle(population.name)
 
     s = Survey(survey_name, pattern=pattern)
     surv_pop = Population()
