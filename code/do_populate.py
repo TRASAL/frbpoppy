@@ -1,10 +1,11 @@
-"""Code for generating a population of FRBs"""
+"""Code for generating a population of FRBs."""
 
 import math
 import random
 
 import galacticops as go
 import distributions as dis
+import precalc as pc
 from population import Population
 from source import Source
 
@@ -56,6 +57,7 @@ def generate(n_gen,
 
     Returns:
         pop (Population): A population of generated sources
+
     """
 
     # Check input
@@ -164,13 +166,6 @@ def generate(n_gen,
     pop.W_v = cosmo_pars[2]
     pop.z_max = z_max
 
-    # Create a comoving distance to redshift lookup table
-    ds, zs = go.dist_lookup(cosmology=pop.cosmology,
-                            H_0=pop.H_0,
-                            W_m=pop.W_m,
-                            W_v=pop.W_v,
-                            z_max=pop.z_max)
-
     while pop.n_srcs < pop.n_gen:
 
         # Initialise
@@ -181,6 +176,7 @@ def generate(n_gen,
         src.gb = math.degrees(math.asin(random.random()))
         if random.random() < 0.5:
             src.gb *= -1
+
         # Convert
         src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
 
@@ -188,13 +184,13 @@ def generate(n_gen,
         src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
 
         # Calculate redshift
-        src.z = go.interpolate_z(src.dist, ds, zs, H_0=pop.H_0)
+        src.z = pc.dist_table(src.dist, H_0=pop.H_0)
 
         # Convert into galactic coordinates
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
         # Dispersion measure of the Milky Way
-        src.dm_mw = go.ne2001_dist_to_dm(src.dist, src.gl, src.gb)
+        src.dm_mw = pc.ne2001_table(src.gl, src.gb)
 
         # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z)
@@ -218,5 +214,8 @@ def generate(n_gen,
 
         # Add source to population
         pop.add(src)
+
+    # Save population
+    pop.pickle_pop()
 
     return pop

@@ -167,7 +167,7 @@ def ne2001_dist_to_dm(dist, gl, gb):
     fortran)
 
     Args:
-        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc,
+        dist (float): Distance to source [Gpc]. Distance will be cut at 100kpc,
                       as NE2001 can not cope with larger distances. This value
                       should be more than enough to clear the Milky Way.
         gl (float): Galactic longitude [fractional degrees]
@@ -395,7 +395,7 @@ def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
     dcmt = ratio*dcmr
     da = az*dcmt
     dl = da/(az*az)
-    dl_mpc = (c/H_0)*dl # Luminosity distance [Mpc]
+    dl_mpc = (c/H_0)*dl  # Luminosity distance [Mpc]
 
     # Calculate comoving volume
     ratio = 1.00
@@ -427,8 +427,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
     the table for later runs.
 
     Args:
-        cosmology (boolean, optional): Whether to use cosmology or not. Defaults
-                                       to True
+        cosmology (boolean, optional): Whether to use cosmology or not.
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
@@ -451,7 +450,10 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
         return str(value).replace('.','d')
 
     # Filename
-    paras = ['h0', cvt(H_0), 'wm', cvt(W_m), 'wv', cvt(W_v), 'zmax', cvt(z_max)]
+    paras = ['h0', cvt(H_0),
+             'wm', cvt(W_m),
+             'wv', cvt(W_v),
+             'zmax', cvt(z_max)]
     f = '-'.join(paras) + '.csv'
 
     # Check whether frbpoppy can avoid creating new tables
@@ -494,11 +496,14 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
 
     return ds, zs
 
+
 def interpolate_z(d, ds, zs, H_0=69.6):
     """
-    Interpolate between two comoving distances to obtain an approximate
-    redshift, unless dzs is none (i.e. cosmology has been set to False in the
-    function dist_lookup), in which case use an approximation that works to z<2.
+    Interpolate between two comoving distances.
+
+    Obtain an approximate redshift, unless dzs is none (i.e. cosmology has
+    been set to False in the function dist_lookup), in which case use an
+    approximation that works to z<2.
 
     Args:
         d (float): Comoving distance [Gpc]
@@ -508,6 +513,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
             when using a non-cosmology approximation. Defaults to 69.6
     Returns:
         z (float): Redshift
+
     """
     z = 0
 
@@ -553,4 +559,4 @@ def ioka_dm_igm(z):
     Returns:
         dm_igm (float): Dispersion measure of the intergalactic medium [pc/cm^3]
     """
-    return 1200 * z
+    return random.gauss(1200*z, 0.2*1200*z)

@@ -132,8 +132,7 @@ class Population:
         return data
 
     def pickle_pop(self, out=None):
-        """Allow the population to be pickled for future use"""
-
+        """Allow the population to be pickled for future use."""
         # Check if an output file has been given
         if out is None:
             loc = '../data/results/population_{}.p'.format(self.name.lower())
