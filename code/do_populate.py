@@ -9,7 +9,7 @@ import precalc as pc
 from population import Population
 from source import Source
 
-
+@profile
 def generate(n_gen,
              days=1,
              cosmology=True,
@@ -166,13 +166,6 @@ def generate(n_gen,
     pop.W_v = cosmo_pars[2]
     pop.z_max = z_max
 
-    # Create a comoving distance to redshift lookup table
-    ds, zs = go.dist_lookup(cosmology=pop.cosmology,
-                            H_0=pop.H_0,
-                            W_m=pop.W_m,
-                            W_v=pop.W_v,
-                            z_max=pop.z_max)
-
     while pop.n_srcs < pop.n_gen:
 
         # Initialise
@@ -191,7 +184,7 @@ def generate(n_gen,
         src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
 
         # Calculate redshift
-        src.z = go.interpolate_z(src.dist, ds, zs, H_0=pop.H_0)
+        src.z = pc.dist_table(src.dist, H_0=pop.H_0)
 
         # Convert into galactic coordinates
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
