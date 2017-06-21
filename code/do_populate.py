@@ -9,7 +9,7 @@ import precalc as pc
 from population import Population
 from source import Source
 
-
+@profile
 def generate(n_gen,
              days=1,
              cosmology=True,
