@@ -22,8 +22,8 @@ def generate(n_gen,
              repeat=0.0,
              si_pars=[-1.4, 0.],
              z_max=2.5):
-
-    """Generate a population of FRB sources
+    """
+    Generate a population of FRB sources.
 
     Args:
         n_gen (int): Number of FRB sources/sky/time to generate
@@ -59,7 +59,6 @@ def generate(n_gen,
         pop (Population): A population of generated sources
 
     """
-
     # Check input
     if type(n_gen) != int:
         m = 'Please ensure the number of generated sources is an integer'
