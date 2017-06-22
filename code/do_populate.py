@@ -21,7 +21,8 @@ def generate(n_gen,
              pulse=[0.1, 5],
              repeat=0.0,
              si_pars=[-1.4, 0.],
-             z_max=2.5):
+             z_max=2.5,
+             test=False):
 
     """Generate a population of FRB sources
 
@@ -54,6 +55,7 @@ def generate(n_gen,
             index and the standard deviation thereof. Defaults to [-1.4, 0.]
         z_max (float, optional): The maximum redshift out to which to
             distribute FRBs
+        test (float, optional): Flag to help testing
 
     Returns:
         pop (Population): A population of generated sources
@@ -184,13 +186,13 @@ def generate(n_gen,
         src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
 
         # Calculate redshift
-        src.z = pc.dist_table(src.dist, H_0=pop.H_0)
+        src.z = pc.dist_table(src.dist, H_0=pop.H_0, test=test)
 
         # Convert into galactic coordinates
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
         # Dispersion measure of the Milky Way
-        src.dm_mw = pc.ne2001_table(src.gl, src.gb)
+        src.dm_mw = pc.ne2001_table(src.gl, src.gb, test=test)
 
         # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z)
