@@ -40,7 +40,7 @@ for f in all_fortran:
              folder + fortran + '.o',
              ]
 
-    run(setup)
+    #run(setup)
 
 # Convert .o file to something with which python can interact
 gf = ['gfortran',
@@ -57,4 +57,4 @@ gf = ['gfortran',
       loc('./data/models/dm/glun.o'),
       ]
 
-run(gf)
+#run(gf)
