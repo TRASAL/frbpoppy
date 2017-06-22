@@ -16,7 +16,7 @@ class TestFullRun(unittest.TestCase):
         # Test a full run of frbpoppy
         # Should be the equivalent to a bucket load of rainbows, unicorns and
         # puppies. All other tests just check the weird cases work.
-        population = generate(10)
+        population = generate(10, test=True)
         survey_population = observe(population, 'WHOLESKY')
         plot(population, survey_population, show=False)
 
@@ -43,7 +43,7 @@ class TestPopulate(unittest.TestCase):
     def testgenerate(self):
 
         # Check generating a population works
-        r1 = generate(2, name='temp')
+        r1 = generate(2, name='temp', test=True)
         self.assertIsInstance(r1, pop)
 
         # Check printing a population works
@@ -64,35 +64,35 @@ class TestPopulate(unittest.TestCase):
 
         # Check different input values
         with self.assertRaises(ValueError):
-            generate(0)
+            generate(0, test=True)
         with self.assertRaises(ValueError):
-            generate(1.5)
+            generate(1.5, test=True)
         with self.assertRaises(ValueError):
-            generate(1, 'string')
+            generate(1, 'string', test=True)
         with self.assertRaises(ValueError):
-            generate(1, cosmology=1)
+            generate(1, cosmology=1, test=True)
         with self.assertRaises(ValueError):
-            generate(1, cosmo_pars=[1, 2])
+            generate(1, cosmo_pars=[1, 2], test=True)
         with self.assertRaises(ValueError):
-            generate(1, cosmo_pars=[True, '1'])
+            generate(1, cosmo_pars=[True, '1'], test=True)
         with self.assertRaises(ValueError):
-            generate(1, emission_pars=[2])
+            generate(1, emission_pars=[2], test=True)
         with self.assertRaises(ValueError):
-            generate(1, emission_pars=[2, 'test'])
+            generate(1, emission_pars=[2, 'test'], test=True)
         with self.assertRaises(ValueError):
-            generate(1, lum_dist_pars=[True, '1'])
+            generate(1, lum_dist_pars=[True, '1'], test=True)
         with self.assertRaises(ValueError):
-            generate(1, lum_dist_pars=[1, 2])
+            generate(1, lum_dist_pars=[1, 2], test=True)
         with self.assertRaises(ValueError):
-            generate(1, name=1.5)
+            generate(1, name=1.5, test=True)
         with self.assertRaises(ValueError):
-            generate(1, si_pars=[True])
+            generate(1, si_pars=[True], test=True)
         with self.assertRaises(ValueError):
-            generate(1, si_pars=[1.2, True, 'test'])
+            generate(1, si_pars=[1.2, True, 'test'], test=True)
         with self.assertRaises(ValueError):
-            generate(1, z_max=[0, 0])
+            generate(1, z_max=[0, 0], test=True)
         with self.assertRaises(ValueError):
-            generate(1, electron_model='unsupported')
+            generate(1, electron_model='unsupported', test=True)
 
     def tearDown(self):
         """Clean up temp files"""
@@ -107,8 +107,9 @@ class TestSurvey(unittest.TestCase):
 
     def setUp(self):
 
-        self.pop = generate(10)
-        self.bright_pop = generate(10, lum_dist_pars=[1e80, 1e90, 1])
+        self.pop = generate(10, test=True)
+        self.bright_pop = generate(10, lum_dist_pars=[1e80, 1e90, 1],
+                                   test=True)
 
     def test_observe(self):
 
