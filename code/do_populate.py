@@ -9,7 +9,7 @@ import precalc as pc
 from population import Population
 from source import Source
 
-@profile
+
 def generate(n_gen,
              days=1,
              cosmology=True,
@@ -22,7 +22,7 @@ def generate(n_gen,
              repeat=0.0,
              si_pars=[-1.4, 0.],
              test=False):
-
+    """
     Args:
         n_gen (int): Number of FRB sources/sky/time to generate
         days (float): Number of days over which FRBs are generated.
