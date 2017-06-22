@@ -15,22 +15,31 @@ uni_mods = os.path.join(mods, 'universe/')
 dm_mods = os.path.join(mods, 'dm/')
 
 
-def ne2001_table(gal, gab):
+def ne2001_table(gal, gab, test=False):
     """
     Create/use a NE2001 lookup table for dispersion measure.
 
     Args:
         gl (float): Galactic longitude [fractional degrees]
         gb (float): Galactic latitude [fractional degrees]
-        df (DataFrame): Lookup table (see coords_table())
+        test (bool): Flag for coarser resolution
 
     Returns:
         dm_mw (float): Galactic dispersion measure [pc*cm^-3]
 
     """
+    # Set up for testing
+    if test:
+        step = 10
+        rounding = -1
+        path = uni_mods + 'dm_mw_test.db'
+    else:
+        step = 0.1
+        rounding = 2
+        path = uni_mods + 'dm_mw.db'
+
     # Setup database
     db = False
-    path = uni_mods + 'dm_mw.db'
     if os.path.exists(path):
         db = True
 
@@ -41,7 +50,6 @@ def ne2001_table(gal, gab):
     # Create db
     if not db:
         # Set array of coordinates
-        step = 0.1
         gls = np.arange(-180., 180. + step, step)
         gbs = np.arange(-90., 90. + step, step)
         dist = 0.1  # [Gpc]
@@ -76,7 +84,7 @@ def ne2001_table(gal, gab):
         conn.commit()
 
     # Round values
-    def frac_round(x, prec=2, base=1):
+    def frac_round(x, prec=rounding, base=1):
         return round(base * round(float(x)/base), prec)
 
     # Round to 0.05 fractional degree
@@ -93,7 +101,7 @@ def ne2001_table(gal, gab):
     return dm_mw
 
 
-def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=2.5):
+def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=2.5, test=False):
     """
     Create/use a lookup table for distance to redshift.
 
@@ -110,6 +118,7 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=2.5):
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
         z_max (float, optional): Maximum redshift. Defaults to 2.5
+        test (bool): Flag for coarser resolution
     Returns:
         z (float): Redshift
 
@@ -126,11 +135,17 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=2.5):
              'wm', cvt(W_m),
              'wv', cvt(W_v),
              'zmax', cvt(z_max)]
-    f = '-'.join(paras) + '.db'
+    f = '-'.join(paras)
+
+    if test:
+        step = 0.1
+        path = uni_mods + f + '_test.db'
+    else:
+        step = 0.0001
+        path = uni_mods + f + '.db'
 
     # Setup database
     db = False
-    path = uni_mods + f
     if os.path.exists(path):
         db = True
 
@@ -141,7 +156,6 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=2.5):
     # Create db
     if not db:
 
-        step = 0.0001
         W_k = 1.0 - W_m - W_v  # Omega curvature
 
         if W_k != 0.0:

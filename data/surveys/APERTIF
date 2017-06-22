@@ -9,7 +9,7 @@
 70       ! system temperature (K)
 1400     ! centre frequency (MHz)
 300      ! bandwidth (MHz)
-0.78125  ! channel bandwidth (MHz)
+0.19531  ! channel bandwidth (MHz)
 2        ! number of polarizations
 8.7      ! beam size (deg^2)
 0.0      ! minimum RA (deg)
