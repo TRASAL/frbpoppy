@@ -43,7 +43,7 @@ def generate(n_gen,
         lum_dist_pars (list, optional): Bolometric luminosity distribution
             parameters being: the minimum luminosity [erg/s], the maximum
             luminosity [erg/s] and the powerlaw index of the distribution.
-            Defaults to [1e50, 1e90, 1]
+            Defaults to [1e40, 1e50, 1]
         name (str, optional): Name to be given to the population. Defaults to
             'initial'
         pulse (str, optional): Values between which the intrinsic pulse width
