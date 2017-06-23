@@ -21,6 +21,7 @@ def generate(n_gen,
              pulse=[0.1, 5],
              repeat=0.0,
              si_pars=[-1.4, 0.],
+             z_max=2.5,
              test=False):
     """
     Args:
