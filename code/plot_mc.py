@@ -63,16 +63,10 @@ class Plot():
         self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
                          'w_eff', 'z']
 
-        # Output file
-        output_file('test.html')
-
         # Import goodness-of-fit data
         df = self.import_df()
+        df = df[(df.survey != 'APERTIF') & (df.survey != 'WHOLESKY')]
         self.surveys = df.survey.unique().tolist()
-
-        # Setup survey choice
-        sel = self.surveys + ['All']
-        survey_sel = Select(title="Survey:", value=sel[1], options=sel)
 
         # Setup observed parameter choice
         out_opt = [self.pars[o] for o in self.out_pars]
@@ -83,16 +77,13 @@ class Plot():
         # Setup input parameter choice
         in_opt = [self.pars[o] for o in self.in_pars]
         in_sel = Select(title="In parameter:",
-                         value=in_opt[0],
-                         options=in_opt)
+                        value=in_opt[0],
+                        options=in_opt)
 
         # Setup input parameters
         sliders = []
         for p in self.in_pars:
             # TODO convert min and max to values obtained from table
-            # r_min = min(table)
-            # r_max = max(table)
-            # r_step = table[1] - table[0]
             t = self.pars[p]
             r = RangeSlider(start=0, end=10, range=(0, 9), step=.1, title=t)
             sliders.append(r)
@@ -108,49 +99,57 @@ class Plot():
                     active_scroll='wheel_zoom',
                     toolbar_location='right',
                     tools=sc_tools,
-                    webgl=True,
-                    y_axis_type="log")
+                    y_axis_type="log"
+                    )
 
         # Create a Column Data Source for interacting with the plot
-        props = dict(xs=[], ys=[], color=[], survey=[])
-        sp_source = ColumnDataSource(props)
+        props = dict(x=[], y=[], survey=[])
+        sp_sources = [ColumnDataSource(props) for s in self.surveys]
 
         # Set colours
         colours = Spectral11[:len(self.surveys)]
 
-        # Plot scatter plot for the populations
-        sp.multi_line(xs='xs',
-                      ys='ys',
-                      source=sp_source,
-                      alpha=0.6,
-                      line_width=5,
-                      line_color='color',
-                      legend='survey')
+        # Plot ks values various surveys
+        for i, source in enumerate(sp_sources):
+            sp.line(x='x',
+                    y='y',
+                    source=source,
+                    line_width=5,
+                    line_color=colours[i],
+                    alpha=0.7,
+                    legend='survey')
 
         # Interactive goodness
         def update():
+
+            # Update axes
             x_name = self.inv_pars[in_sel.value]
             y_name = self.inv_pars[out_sel.value]
-
             sp.xaxis.axis_label = in_sel.value
-            sp.yaxis.axis_label = 'P-value ' + out_sel.value
+            sp.yaxis.axis_label = 'P-value ({})'.format(out_sel.value)
 
             # Update data
-            xs = [df[(df.survey == s)][x_name + '_max'] for s in self.surveys]
-            ys = [df[(df.survey == s)]['ks_' + y_name] for s in self.surveys]
-            cs = [c for c in colours]
-            ss = [s for s in self.surveys]
-            sp_source.data = dict(xs=xs, ys=ys, color=cs, survey=ss)
+            for i, source in enumerate(sp_sources):
+
+                # Refilter data
+                name = self.surveys[i]
+                test = (df.survey == name)
+                length = df[test].shape[0]
+                x = df[test][x_name + '_max'].tolist()
+                y = df[test]['ks_' + y_name].tolist()
+                s = [name for j in range(length)]
+
+                source.data = dict(x=x, y=y, survey=s)
 
         # What to interact with
-        controls = [survey_sel, out_sel, in_sel]
+        controls = [out_sel, in_sel]
 
         for control in controls:
             control.on_change('value', lambda attr, old, new: update())
 
         # Layout options
         sizing_mode = 'fixed'
-        sidebar = [survey_sel, in_sel, out_sel, *sliders]
+        sidebar = [in_sel, out_sel, *sliders]
         s = widgetbox(sidebar, width=350)
         tab1 = Panel(child=sp, title='scatter')
         tabs = Tabs(tabs=[tab1])
@@ -159,7 +158,7 @@ class Plot():
         # Make legend clickable
         sp.legend.click_policy = 'hide'
 
-        update()  # initial load of the data
+        update()  # Initial load of the data
         curdoc().add_root(L)
         curdoc().title = 'frbpoppy'
 
