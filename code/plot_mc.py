@@ -4,6 +4,7 @@ from bokeh.io import curdoc, output_file
 from bokeh.layouts import layout, widgetbox
 from bokeh.models import ColumnDataSource, HoverTool, Panel, Tabs
 from bokeh.models.widgets import RangeSlider, Select
+from bokeh.palettes import Spectral11
 from bokeh.plotting import figure
 import os
 import pandas as pd
@@ -67,10 +68,11 @@ class Plot():
 
         # Import goodness-of-fit data
         df = self.import_df()
+        self.surveys = df.survey.unique().tolist()
 
         # Setup survey choice
-        sel = ['All'] + self.surveys
-        survey_sel = Select(title="Survey:", value=sel[0], options=sel)
+        sel = self.surveys + ['All']
+        survey_sel = Select(title="Survey:", value=sel[1], options=sel)
 
         # Setup observed parameter choice
         out_opt = [self.pars[o] for o in self.out_pars]
@@ -96,7 +98,7 @@ class Plot():
             sliders.append(r)
 
         # Set up tools
-        props = [("pop", "@survey"), ("x", "@x"), ("y", "@y")]
+        props = [("survey", "@survey")]
         hover = HoverTool(tooltips=props)
         sc_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
@@ -106,33 +108,40 @@ class Plot():
                     active_scroll='wheel_zoom',
                     toolbar_location='right',
                     tools=sc_tools,
-                    webgl=True)
+                    webgl=True,
+                    y_axis_type="log")
 
         # Create a Column Data Source for interacting with the plot
-        props = dict(x=[], y=[], survey=[])
+        props = dict(xs=[], ys=[], color=[], survey=[])
         sp_source = ColumnDataSource(props)
 
+        # Set colours
+        colours = Spectral11[:len(self.surveys)]
+
         # Plot scatter plot for the populations
-        sp.circle(x='x',
-                  y='y',
-                  source=sp_source,
-                  size=7,
-                  alpha=0.6)
+        sp.multi_line(xs='xs',
+                      ys='ys',
+                      source=sp_source,
+                      alpha=0.6,
+                      line_width=5,
+                      line_color='color',
+                      legend='survey')
 
         # Interactive goodness
         def update():
             x_name = self.inv_pars[in_sel.value]
             y_name = self.inv_pars[out_sel.value]
-            print(x_name, y_name)
+
             sp.xaxis.axis_label = in_sel.value
             sp.yaxis.axis_label = 'P-value ' + out_sel.value
 
             # Update data
-            sp_source.data = dict(
-                x=df[x_name + '_max'],
-                y=df['ks_' + y_name],
-                survey=df['survey']
-            )
+            xs = [df[(df.survey == s)][x_name + '_max'] for s in self.surveys]
+            ys = [df[(df.survey == s)]['ks_' + y_name] for s in self.surveys]
+            cs = [c for c in colours]
+            ss = [s for s in self.surveys]
+            sp_source.data = dict(xs=xs, ys=ys, color=cs, survey=ss)
+
         # What to interact with
         controls = [survey_sel, out_sel, in_sel]
 
@@ -141,12 +150,14 @@ class Plot():
 
         # Layout options
         sizing_mode = 'fixed'
-
-        sidebar = [survey_sel, out_sel, *sliders]
+        sidebar = [survey_sel, in_sel, out_sel, *sliders]
         s = widgetbox(sidebar, width=350)
         tab1 = Panel(child=sp, title='scatter')
         tabs = Tabs(tabs=[tab1])
         L = layout([[s, tabs]], sizing_mode=sizing_mode)
+
+        # Make legend clickable
+        sp.legend.click_policy = 'hide'
 
         update()  # initial load of the data
         curdoc().add_root(L)
