@@ -1,6 +1,8 @@
 from collections import OrderedDict as OD
-import pickle
+from io import StringIO
 import os
+import pickle
+import pandas as pd
 
 from log import pprint
 
@@ -130,6 +132,12 @@ class Population:
                 data += sep.join(src_data + frb_data) + '\n'
 
         return data
+
+    def to_df(self):
+        """Gather source values into a pandas dataframe"""
+        data = StringIO(self.values())
+        df = pd.read_csv(data)
+        return df
 
     def pickle_pop(self, out=None):
         """Allow the population to be pickled for future use."""
