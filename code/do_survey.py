@@ -11,7 +11,8 @@ def observe(population,
             return_pop=True,
             scat=False,
             scint=False):
-    """Run survey to detect FRB sources
+    """
+    Run survey to detect FRB sources.
 
     Args:
         population (Population): Population class of FRB sources to observe

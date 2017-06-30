@@ -8,6 +8,7 @@ from do_populate import generate
 from do_survey import observe
 from frbcat import get_frbcat
 from monte_carlo import MonteCarlo
+import distributions as dis
 
 surveys = {'WHOLESKY': 'WHOLESKY',
            'APERTIF': 'APERTIF',
@@ -33,22 +34,34 @@ cat = get_frbcat()
 # Set up dictionary for results
 d = defaultdict(list)
 
+# Generate initial population
+r = df.iloc[0]
+
+# Create population
+pop = generate(int(r.n_day),
+               days=1,
+               emission_pars=[r.freq_min, r.freq_max],
+               lum_dist_pars=[r.lum_bol_min,
+                              r.lum_bol_max,
+                              r.lum_bol_slope],
+               pulse=[r.w_int_min, r.w_int_max],
+               repeat=float(r.rep),
+               si_pars=[r.si_mean, r.si_sigma])
+
 # Iterate over each set of parameters
 for i, r in df.iterrows():
 
     # Save each set of parameters
     sett = r.to_dict()
 
-    # Create population
-    pop = generate(r.n_day,
-                   days=1,
-                   emission_pars=[r.freq_min, r.freq_max],
-                   lum_dist_pars=[r.lum_bol_min,
-                                  r.lum_bol_max,
-                                  r.lum_bol_slope],
-                   pulse=[r.w_int_min, r.w_int_max],
-                   repeat=r.rep,
-                   si_pars=[r.si_mean, r.si_sigma])
+    # Adapt just the intrinsic pulse width
+    for source in pop.sources:
+        for frb in source.frbs:
+            frb.w_int = dis.redshift_w(z=source.z,
+                                       w_min=r.w_int_min,
+                                       w_max=r.w_int_max)
+    # Save the population
+    pop.pickle_pop()
 
     for s in surveys:
         # Survey population

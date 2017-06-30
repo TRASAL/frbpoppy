@@ -3,7 +3,7 @@
 from bokeh.io import curdoc, output_file
 from bokeh.layouts import layout, widgetbox
 from bokeh.models import ColumnDataSource, HoverTool, Panel, Tabs
-from bokeh.models.widgets import RangeSlider, Select
+from bokeh.models.widgets import RangeSlider, Select, Slider
 from bokeh.palettes import Spectral11
 from bokeh.plotting import figure
 import os
@@ -58,15 +58,15 @@ class Plot():
 
     def mc(self):
         """Plot the results of a Monte Carlo run."""
-        # Group parameters
-        self.in_pars = ['w_int']
-        self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
-                         'w_eff', 'z']
-
         # Import goodness-of-fit data
         df = self.import_df()
         df = df[(df.survey != 'APERTIF') & (df.survey != 'WHOLESKY')]
         self.surveys = df.survey.unique().tolist()
+
+        # Group parameters
+        self.in_pars = ['w_int']
+        self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
+                         'w_eff', 'z']
 
         # Setup observed parameter choice
         out_opt = [self.pars[o] for o in self.out_pars]
@@ -82,10 +82,29 @@ class Plot():
 
         # Setup input parameters
         sliders = []
-        for p in self.in_pars:
-            # TODO convert min and max to values obtained from table
-            t = self.pars[p]
-            r = RangeSlider(start=0, end=10, range=(0, 9), step=.1, title=t)
+        single_opt = []
+        dual_opt = []
+        exempt = ['index', 'survey', 'telescope', 'path']
+        for c in df:
+            if c.endswith('min'):
+                dual_opt.append(c[:-4])
+            elif c.endswith('max'):
+                continue
+            elif c.startswith('ks_'):
+                exempt.append(c)
+            elif c not in exempt:
+                single_opt.append(c)
+
+        for p in single_opt:
+            mi = min(df[p])
+            ma = max(df[p])
+            r = Slider(start=mi, end=ma, step=1, title=p)
+            sliders.append(r)
+
+        for p in dual_opt:
+            mi = min(df[p + '_min'])
+            ma = max(df[p + '_max'])
+            r = RangeSlider(start=mi, end=ma, range=(mi, ma), step=1, title=p)
             sliders.append(r)
 
         # Set up tools
@@ -94,7 +113,7 @@ class Plot():
         sc_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
         # Create scatter plot
-        sp = figure(plot_height=600,
+        lp = figure(plot_height=600,
                     plot_width=600,
                     active_scroll='wheel_zoom',
                     toolbar_location='right',
@@ -104,14 +123,14 @@ class Plot():
 
         # Create a Column Data Source for interacting with the plot
         props = dict(x=[], y=[], survey=[])
-        sp_sources = [ColumnDataSource(props) for s in self.surveys]
+        lp_sources = [ColumnDataSource(props) for s in self.surveys]
 
         # Set colours
         colours = Spectral11[:len(self.surveys)]
 
-        # Plot ks values various surveys
-        for i, source in enumerate(sp_sources):
-            sp.line(x='x',
+        # Plot ks values for various surveys
+        for i, source in enumerate(lp_sources):
+            lp.line(x='x',
                     y='y',
                     source=source,
                     line_width=5,
@@ -125,11 +144,11 @@ class Plot():
             # Update axes
             x_name = self.inv_pars[in_sel.value]
             y_name = self.inv_pars[out_sel.value]
-            sp.xaxis.axis_label = in_sel.value
-            sp.yaxis.axis_label = 'P-value ({})'.format(out_sel.value)
+            lp.xaxis.axis_label = in_sel.value
+            lp.yaxis.axis_label = 'P-value ({})'.format(out_sel.value)
 
             # Update data
-            for i, source in enumerate(sp_sources):
+            for i, source in enumerate(lp_sources):
 
                 # Refilter data
                 name = self.surveys[i]
@@ -151,12 +170,12 @@ class Plot():
         sizing_mode = 'fixed'
         sidebar = [in_sel, out_sel, *sliders]
         s = widgetbox(sidebar, width=350)
-        tab1 = Panel(child=sp, title='scatter')
+        tab1 = Panel(child=lp, title='scatter')
         tabs = Tabs(tabs=[tab1])
         L = layout([[s, tabs]], sizing_mode=sizing_mode)
 
         # Make legend clickable
-        sp.legend.click_policy = 'hide'
+        lp.legend.click_policy = 'hide'
 
         update()  # Initial load of the data
         curdoc().add_root(L)
