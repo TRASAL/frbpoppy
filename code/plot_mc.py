@@ -1,8 +1,14 @@
 """Use Bokeh to plot a population or the results of a Monte Carlo."""
 
-from bokeh.io import output_file, show
-from bokeh.layouts import widgetbox
-from bokeh.models.widgets import RadioButtonGroup, RangeSlider, Select
+from bokeh.io import curdoc, output_file
+from bokeh.layouts import layout, widgetbox
+from bokeh.models import ColumnDataSource, HoverTool, Panel, Tabs
+from bokeh.models.widgets import RangeSlider, Select, Slider
+from bokeh.palettes import Spectral11
+from bokeh.plotting import figure
+import os
+import pandas as pd
+import sqlite3
 
 
 class Plot():
@@ -32,39 +38,148 @@ class Plot():
                      'w_int': 'Pulse Width - Intrinsic (ms)',
                      'z': 'Redshift'}
 
+        self.inv_pars = {v: k for k, v in self.pars.items()}
+
     def pop(self):
         """Plot a populations."""
         return 'TODO'
 
+    def path(self, s):
+        """Return the path to a file in the results folder."""
+        return os.path.join(os.path.dirname(__file__), '../data/results/' + s)
+
+    def import_df(self):
+        """Import a sql database into a pandas dataframe."""
+        conn = sqlite3.connect(self.path('ks.db'))
+        df = pd.read_sql_query("select * from pars;", conn)
+        cols = [c for c in df.columns if c.startswith('level')]
+        df = df.drop(cols, axis=1)
+        return df
+
     def mc(self):
         """Plot the results of a Monte Carlo run."""
+        # Import goodness-of-fit data
+        df = self.import_df()
+        df = df[(df.survey != 'APERTIF') & (df.survey != 'WHOLESKY')]
+        self.surveys = df.survey.unique().tolist()
+
+        # Group parameters
         self.in_pars = ['w_int']
         self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
                          'w_eff', 'z']
-        # Output file
-        output_file('test.html')
-
-        # Setup survey choice
-        sel = ['All'] + self.surveys
-        survey_sel = RadioButtonGroup(labels=sel, active=0)
 
         # Setup observed parameter choice
-        opt = [self.pars[o] for o in self.out_pars]
-        obs_sel = Select(title="Observed parameter:",
-                         value=opt[-2],
-                         options=opt)
+        out_opt = [self.pars[o] for o in self.out_pars]
+        out_sel = Select(title="Observed parameter:",
+                         value=out_opt[-2],
+                         options=out_opt)
+
+        # Setup input parameter choice
+        in_opt = [self.pars[o] for o in self.in_pars]
+        in_sel = Select(title="In parameter:",
+                        value=in_opt[0],
+                        options=in_opt)
 
         # Setup input parameters
         sliders = []
-        for p in self.in_pars:
-            # TODO convert min and max to values obtained from table
-            # r_min = min(table)
-            # r_max = max(table)
-            # r_step = table[1] - table[0]
-            t = self.pars[p]
-            r = RangeSlider(start=0, end=10, range=(0,9), step=.1, title=t)
+        single_opt = []
+        dual_opt = []
+        exempt = ['index', 'survey', 'telescope', 'path']
+        for c in df:
+            if c.endswith('min'):
+                dual_opt.append(c[:-4])
+            elif c.endswith('max'):
+                continue
+            elif c.startswith('ks_'):
+                exempt.append(c)
+            elif c not in exempt:
+                single_opt.append(c)
+
+        for p in single_opt:
+            mi = min(df[p])
+            ma = max(df[p])
+            r = Slider(start=mi, end=ma, step=1, title=p)
             sliders.append(r)
 
-        show(widgetbox(survey_sel, obs_sel, *sliders))
+        for p in dual_opt:
+            mi = min(df[p + '_min'])
+            ma = max(df[p + '_max'])
+            r = RangeSlider(start=mi, end=ma, range=(mi, ma), step=1, title=p)
+            sliders.append(r)
+
+        # Set up tools
+        props = [("survey", "@survey")]
+        hover = HoverTool(tooltips=props)
+        sc_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
+
+        # Create scatter plot
+        lp = figure(plot_height=600,
+                    plot_width=600,
+                    active_scroll='wheel_zoom',
+                    toolbar_location='right',
+                    tools=sc_tools,
+                    y_axis_type="log"
+                    )
+
+        # Create a Column Data Source for interacting with the plot
+        props = dict(x=[], y=[], survey=[])
+        lp_sources = [ColumnDataSource(props) for s in self.surveys]
+
+        # Set colours
+        colours = Spectral11[:len(self.surveys)]
+
+        # Plot ks values for various surveys
+        for i, source in enumerate(lp_sources):
+            lp.line(x='x',
+                    y='y',
+                    source=source,
+                    line_width=5,
+                    line_color=colours[i],
+                    alpha=0.7,
+                    legend='survey')
+
+        # Interactive goodness
+        def update():
+
+            # Update axes
+            x_name = self.inv_pars[in_sel.value]
+            y_name = self.inv_pars[out_sel.value]
+            lp.xaxis.axis_label = in_sel.value
+            lp.yaxis.axis_label = 'P-value ({})'.format(out_sel.value)
+
+            # Update data
+            for i, source in enumerate(lp_sources):
+
+                # Refilter data
+                name = self.surveys[i]
+                test = (df.survey == name)
+                length = df[test].shape[0]
+                x = df[test][x_name + '_max'].tolist()
+                y = df[test]['ks_' + y_name].tolist()
+                s = [name for j in range(length)]
+
+                source.data = dict(x=x, y=y, survey=s)
+
+        # What to interact with
+        controls = [out_sel, in_sel]
+
+        for control in controls:
+            control.on_change('value', lambda attr, old, new: update())
+
+        # Layout options
+        sizing_mode = 'fixed'
+        sidebar = [in_sel, out_sel, *sliders]
+        s = widgetbox(sidebar, width=350)
+        tab1 = Panel(child=lp, title='scatter')
+        tabs = Tabs(tabs=[tab1])
+        L = layout([[s, tabs]], sizing_mode=sizing_mode)
+
+        # Make legend clickable
+        lp.legend.click_policy = 'hide'
+
+        update()  # Initial load of the data
+        curdoc().add_root(L)
+        curdoc().title = 'frbpoppy'
+
 
 Plot().mc()

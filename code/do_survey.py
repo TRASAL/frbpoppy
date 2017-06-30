@@ -7,15 +7,19 @@ from survey import Survey
 def observe(population,
             survey_name,
             pattern='gaussian',
+            output=True,
             return_pop=True,
             scat=False,
             scint=False):
-    """Run survey to detect FRB sources
+    """
+    Run survey to detect FRB sources.
 
     Args:
         population (Population): Population class of FRB sources to observe
         survey_name (str): Name of survey file with which to observe
-        pattern (str): Gain pattern, either 'gaussian' (default) or 'airy'
+        pattern (str, optional): Gain pattern, either 'gaussian' (default) or
+            'airy'
+        output (bool, optional): Whether to print the rates or not
         return_pop (bool, optional): Whether to return a population or survey
             class. Primarily intended for debugging. Defaults to True
         scat (bool, optional): Whether to include scattering in signal to noise
@@ -95,7 +99,7 @@ def observe(population,
 
     # Scale rates according to length of survey etc
     s.scale_rates(pop)
-    s.rates(pop)
+    s.rates(pop, output=output)
 
     # Return population or survey
     if return_pop:
