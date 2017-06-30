@@ -1,6 +1,8 @@
 from collections import OrderedDict as OD
-import pickle
+from io import StringIO
 import os
+import pickle
+import pandas as pd
 
 from log import pprint
 
@@ -36,7 +38,7 @@ class Population:
         self.n_srcs = 0
 
     def __str__(self):
-        """Define how to print a population object to a console"""
+        """Define how to print a population object to a console."""
 
         s = 'Population properties:'
 
@@ -50,12 +52,13 @@ class Population:
         return s
 
     def add(self, source):
-        """Add a source to the population"""
+        """Add a source to the population."""
         self.sources.append(source)
         self.n_srcs += 1
 
     def save(self, out=None, sep=','):
-        """Write out source properties as data file
+        """
+        Write out source properties as data file.
 
         Args:
             out (str): Outfile location. Defaults to
@@ -64,7 +67,6 @@ class Population:
             sep (str): Define seperator in file, which also changes the file
                        type between .dat and .csv. Defaults to csv
         """
-
         # Set default file locations
         if out is None:
 
@@ -130,6 +132,12 @@ class Population:
                 data += sep.join(src_data + frb_data) + '\n'
 
         return data
+
+    def to_df(self):
+        """Gather source values into a pandas dataframe"""
+        data = StringIO(self.values())
+        df = pd.read_csv(data)
+        return df
 
     def pickle_pop(self, out=None):
         """Allow the population to be pickled for future use."""

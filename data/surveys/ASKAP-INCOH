@@ -3,7 +3,7 @@
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
 1.2      ! survey degradation factor
-1.0      ! antenna gain (K/Jy)
+0.1      ! antenna gain (K/Jy)
 3600     ! integration time (s)
 1.2      ! sampling time (ms)
 3800     ! system temperature (K)

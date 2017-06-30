@@ -498,14 +498,14 @@ class Survey:
             else:
                 self.s_src_rates = s_rates
 
-    def rates(self, pop, scaled=True):
+    def rates(self, pop, output=True, scaled=True):
         """
-        Print survey rates, such as the number of detected sources etc
+        Print survey rates, such as the number of detected sources etc.
 
         Args:
+            output (bool, optional): Whether to print out the rates or not
             scaled (bool, optional): Print scaled (default) or normal rates
         """
-
         f = self.s_frb_rates
         s = self.s_src_rates
         if not scaled:
@@ -527,7 +527,7 @@ class Survey:
         out = ('Outside survey', round(days), round(f.out), round(s.out))
         vol = ('/Gpc^3', 365, round(f.vol), round(s.vol))
         if f.det > 0:
-            exp = round(days/f.det,3)
+            exp = round(days/f.det, 3)
         else:
             exp = '?'
         exp_frb = ('Expected', exp, 1, '-')
@@ -541,4 +541,5 @@ class Survey:
         t += line
 
         for n in t.split('\n')[:-1]:
-            pprint(n)
+            if output:
+                pprint(n)
