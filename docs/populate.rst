@@ -4,5 +4,5 @@ Populate
 
 |
 
-.. automodule:: populate
+.. automodule:: do_populate
     :members:

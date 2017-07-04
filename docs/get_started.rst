@@ -18,16 +18,22 @@ How can I install it?
 ****************
 How do I use it?
 ****************
-Population synthesis always involves three steps: 
+Population synthesis always involves three steps:
 
 1. **Model population**
 
-   Constructing a population in ``frbpoppy`` can be done in a variety of ways. 
+   Generating a population in ``frbpoppy`` can be done using the ``generate`` function:
+   ::
+
+    from frbpoppy.do_populate import generate
+    pop = generate()
+
+   The generate function takes a number of parameters, allowing you generate the exact
 
 2. **Survey modeled population**
 
-   In ``frbpoppy``, a population can be observed with a number of different surveys. While many current survey parameters have been included within ``frbpoppy``, it is possible to define your own survey parameters. 
-   
+   In ``frbpoppy``, a population can be observed with a number of different surveys. While many current survey parameters have been included within ``frbpoppy``, it is possible to define your own survey parameters.
+
 3. **Compare obtained results with actual survey results**
 
    This is left as an exercise for the reader

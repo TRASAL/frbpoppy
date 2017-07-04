@@ -46,22 +46,51 @@
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<span class="target" id="module-populate"></span><p>Code for generating a population of FRBs</p>
+<span class="target" id="module-do_populate"></span><p>Code for generating a population of FRBs.</p>
 <dl class="function">
-<dt id="populate.generate">
-<code class="descclassname">populate.</code><code class="descname">generate</code><span class="sig-paren">(</span><em>n_gen</em>, <em>log_loc=None</em>, <em>no_log=False</em>, <em>quiet=False</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#populate.generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a population of FRB sources</p>
-<table class="docutils field-list" frame="void" rules="none">
+<dt id="do_populate.generate">
+<code class="descclassname">do_populate.</code><code class="descname">generate</code><span class="sig-paren">(</span><em>n_gen, days=1, cosmology=True, cosmo_pars=[69.6, 0.286, 0.714], electron_model='ne2001', emission_pars=[10000000.0, 10000000000.0], lum_dist_pars=[1e+40, 1e+50, 1], name=None, pulse=[0.1, 5], repeat=0.0, si_pars=[-1.4, 0.0], z_max=2.5, test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#do_populate.generate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ngen</strong> (<em>int</em>) &#8211; Number of FRB sources to generate</li>
-<li><strong>no_log</strong> (<em>boolean</em>) &#8211; Don&#8217;t save a log of this run</li>
-<li><strong>log_loc</strong> (<em>str</em>) &#8211; Location of log filename</li>
-<li><strong>verbose</strong> (<em>boolean</em>) &#8211; Up the verbosity</li>
-<li><strong>quiet</strong> (<em>boolean</em>) &#8211; Turn off piping output to console</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_gen</strong> (<em>int</em>) &#8211; Number of FRB sources/sky/time to generate</li>
+<li><strong>days</strong> (<em>float</em>) &#8211; Number of days over which FRBs are generated.
+Defaults to 1</li>
+<li><strong>cosmology</strong> (<em>bool, optional</em>) &#8211; Whether to use cosmology in all
+calculations. Defaults to True.</li>
+<li><strong>cosmo_pars</strong> (<em>list, optional</em>) &#8211; Three values, the first being the Hubble
+constant, the second the density parameter Ω_m and the third
+being the cosmological constant Ω_Lambda (referred to as W_m
+in the rest of the code). These parameters default to those
+determined with Planck [69.6, 0.286, 0.714]</li>
+<li><strong>electron_model</strong> (<em>str, optional</em>) &#8211; Model for the free electron density in
+the Milky Way. Defaults to &#8216;ne2001&#8217;</li>
+<li><strong>emission_pars</strong> (<em>list, optional</em>) &#8211; The minimum and maximum frequency [Hz]
+between which FRB sources should emit the given bolometric
+luminosity. Defaults to [10e6,10e9]</li>
+<li><strong>lum_dist_pars</strong> (<em>list, optional</em>) &#8211; Bolometric luminosity distribution
+parameters being: the minimum luminosity [erg/s], the maximum
+luminosity [erg/s] and the powerlaw index of the distribution.
+Defaults to [1e40, 1e50, 1]</li>
+<li><strong>name</strong> (<em>str, optional</em>) &#8211; Name to be given to the population. Defaults to
+&#8216;initial&#8217;</li>
+<li><strong>pulse</strong> (<em>str, optional</em>) &#8211; Values between which the intrinsic pulse width
+should be [ms]. Defaults to [0.5, 5]</li>
+<li><strong>repeat</strong> (<em>float, optional</em>) &#8211; Fraction of sources which repeat</li>
+<li><strong>si_pars</strong> (<em>list, optional</em>) &#8211; Spectral index parameters, being the mean
+index and the standard deviation thereof. Defaults to [-1.4, 0.]</li>
+<li><strong>z_max</strong> (<em>float, optional</em>) &#8211; The maximum redshift out to which to
+distribute FRBs</li>
+<li><strong>test</strong> (<em>float, optional</em>) &#8211; Flag to help testing</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pop</strong> &#8211; A population of generated sources</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Population</p>
 </td>
 </tr>
 </tbody>
