@@ -2,7 +2,7 @@
 
 from bokeh.io import curdoc, output_file
 from bokeh.layouts import layout, widgetbox
-from bokeh.models import ColumnDataSource, HoverTool, Panel, Tabs
+from bokeh.models import ColumnDataSource, HoverTool, Div, Panel, Tabs
 from bokeh.models.widgets import RangeSlider, Select, Slider
 from bokeh.palettes import Spectral11
 from bokeh.plotting import figure
@@ -11,12 +11,11 @@ import pandas as pd
 import sqlite3
 
 
-class Plot():
+class Plot:
     """Class to plot a population or the output of a Monte Carlo."""
 
     def __init__(self, files=[]):
         """Initializing."""
-        self.surveys = ['A', 'B']
 
         self.pars = {'dec': 'Declination (°)',
                      'dist': 'Distance (Gpc)',
@@ -36,21 +35,29 @@ class Plot():
                      'snr': 'Signal to Noise Ratio',
                      'w_eff': 'Pulse Width - Effective (ms)',
                      'w_int': 'Pulse Width - Intrinsic (ms)',
+                     'w_int_min': 'Pulse Width - Intrinsic - Minimum (ms)',
+                     'w_int_max': 'Pulse Width - Intrinsic - Maximum (ms)',
                      'z': 'Redshift'}
 
         self.inv_pars = {v: k for k, v in self.pars.items()}
 
-    def pop(self):
-        """Plot a populations."""
+    def pop(self, files=[]):
+        """Plot a population."""
         return 'TODO'
 
-    def path(self, s):
+    def path(self, s, where='results'):
         """Return the path to a file in the results folder."""
-        return os.path.join(os.path.dirname(__file__), '../data/results/' + s)
+        if where == 'results':
+            r = os.path.join(os.path.dirname(__file__), '../data/results/' + s)
+        if where == 'html':
+            cwd = os.path.dirname(__file__)
+            d = os.path.join(cwd, 'plot_config/{}.html'.format(s))
+            r = open(d).read()
+        return r
 
     def import_df(self):
         """Import a sql database into a pandas dataframe."""
-        conn = sqlite3.connect(self.path('ks.db'))
+        conn = sqlite3.connect(self.path('ks_2.db'))
         df = pd.read_sql_query("select * from pars;", conn)
         cols = [c for c in df.columns if c.startswith('level')]
         df = df.drop(cols, axis=1)
@@ -62,9 +69,10 @@ class Plot():
         df = self.import_df()
         df = df[(df.survey != 'APERTIF') & (df.survey != 'WHOLESKY')]
         self.surveys = df.survey.unique().tolist()
+        df = df.fillna('')
 
         # Group parameters
-        self.in_pars = ['w_int']
+        self.in_pars = ['w_int_min', 'w_int_max', 'dm_host']
         self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
                          'w_eff', 'z']
 
@@ -84,7 +92,7 @@ class Plot():
         sliders = []
         single_opt = []
         dual_opt = []
-        exempt = ['index', 'survey', 'telescope', 'path']
+        exempt = ['index', 'survey', 'telescope', 'path', 'loop']
         for c in df:
             if c.endswith('min'):
                 dual_opt.append(c[:-4])
@@ -147,30 +155,46 @@ class Plot():
             lp.xaxis.axis_label = in_sel.value
             lp.yaxis.axis_label = 'P-value ({})'.format(out_sel.value)
 
+            # TODO Sliders
+            # # Use sliders to set data
+            # for sli in sliders:
+            #     if sli.title == x_name:
+            #         print(sli.range)
+            #         print(sli.__dict__)
+
             # Update data
             for i, source in enumerate(lp_sources):
 
                 # Refilter data
                 name = self.surveys[i]
-                test = (df.survey == name)
+                test = ((df.survey == name) & (df.loop == x_name))
                 length = df[test].shape[0]
-                x = df[test][x_name + '_max'].tolist()
+                x = df[test][x_name].tolist()
                 y = df[test]['ks_' + y_name].tolist()
                 s = [name for j in range(length)]
 
                 source.data = dict(x=x, y=y, survey=s)
 
-        # What to interact with
-        controls = [out_sel, in_sel]
+                print(source.data)
 
-        for control in controls:
+        # What to interact with
+        for control in [out_sel, in_sel]:
             control.on_change('value', lambda attr, old, new: update())
+        # What to interact with
+        # TODO Work out what property of a Range Slider hanges
+        # for sli in sliders:
+        #     print(sli.__dict__)
+            #   sli.on_change('range', lambda attr, old, new: update())
+
+        # Get text
+        text_top = Div(text=self.path('mc_top', where='html'))
+        text_bottom = Div(text=self.path('mc_bottom', where='html'))
 
         # Layout options
         sizing_mode = 'fixed'
-        sidebar = [in_sel, out_sel, *sliders]
+        sidebar = [text_top, in_sel, out_sel, *sliders]
         s = widgetbox(sidebar, width=350)
-        tab1 = Panel(child=lp, title='scatter')
+        tab1 = Panel(child=lp, title='p-value')
         tabs = Tabs(tabs=[tab1])
         L = layout([[s, tabs]], sizing_mode=sizing_mode)
 
