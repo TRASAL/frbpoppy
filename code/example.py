@@ -4,7 +4,7 @@ from do_plot import plot
 
 # Generate FRB population
 population = generate(60000,
-                      days=3,
+                      days=6,
                       lum_dist_pars=[1e41, 1e45, -1.4],
                       z_max=2.5,
                       pulse=[0.1, 10],
@@ -13,6 +13,8 @@ population = generate(60000,
 # Observe FRB populations
 surveys = ['WHOLESKY',
            'APERTIF',
+           'APERTIF-IAB-10',
+           'APERTIF-IAB-12',
            'PMSURV',
            'HTRU',
            'ASKAP-INCOH',
@@ -43,4 +45,4 @@ for s in surveys:
 # test = observe(population, 'TEST')
 
 # Plot populations
-# plot(population, *results)
+plot(population, *results)

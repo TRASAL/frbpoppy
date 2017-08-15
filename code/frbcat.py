@@ -1,3 +1,6 @@
+"""Import frbcat."""
+
+from numpy import loadtxt
 import io
 import glob
 import os
@@ -8,8 +11,7 @@ import galacticops as go
 
 
 def transform_coords(db):
-    """Apply coordinate transformations to frbcat"""
-
+    """Apply coordinate transformations to frbcat."""
     # Fixing error in frbcat
     if db['DECJ'].count(':') < 2:
         db['DECJ'] = db['DECJ'].replace('.', ':')
@@ -29,8 +31,14 @@ def transform_coords(db):
     return db
 
 
-def get_frbcat():
+def match_surveys(db, surveys):
+    """Match frbcat entries with a survey."""
+    db['survey'] = surveys[db['Name']]
+    return db
 
+
+def get_frbcat():
+    """Get frbcat as a Pandas DataFrame."""
     # Try using the most recently published frbcat
     try:
         url = 'http://www.astronomy.swin.edu.au/pulsar/frbcat/'
@@ -45,7 +53,7 @@ def get_frbcat():
         folder = '../data/frbcat/'
         catdir = os.path.join(cwd, folder)
         # Find latest version of frbcat
-        f = min(glob.glob(catdir + '/*.csv'), key=os.path.getctime)
+        f = min(glob.glob(catdir + '/frbcat*.csv'), key=os.path.getctime)
 
     db = pd.read_csv(f)
 
@@ -67,5 +75,13 @@ def get_frbcat():
     db['fluence'] = db['Flux'] * db['Width']
     db['population'] = 'frbcat'
     db['z'] = db['Spectroscopic Redshift']
+
+    # Match up with surveys
+    cwd = os.path.dirname(__file__)
+    folder = '../data/frbcat/'
+    surdir = os.path.join(cwd, folder, 'frb_survey.csv')
+    key_value = loadtxt(surdir, dtype=str, delimiter=",")
+    surveys = {k: v for k, v in key_value}
+    db = db.apply(match_surveys, args=(surveys,), axis=1)
 
     return db

@@ -45,6 +45,41 @@
             
   <div class="section" id="get-started">
 <h1>Get Started<a class="headerlink" href="#get-started" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-can-i-install-it">
+<h2>How can I install it?<a class="headerlink" href="#how-can-i-install-it" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Get the files from the github repository:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/davidgardenier/frbpoppy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Install it on your system:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python setup.py install
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="how-do-i-use-it">
+<h2>How do I use it?<a class="headerlink" href="#how-do-i-use-it" title="Permalink to this headline">¶</a></h2>
+<p>Population synthesis always involves three steps:</p>
+<ol class="arabic">
+<li><p class="first"><strong>Model population</strong></p>
+<p>Generating a population in <code class="docutils literal"><span class="pre">frbpoppy</span></code> can be done using the <code class="docutils literal"><span class="pre">generate</span></code> function:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy.do_populate</span> <span class="k">import</span> <span class="n">generate</span>
+<span class="n">pop</span> <span class="o">=</span> <span class="n">generate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The generate function takes a number of parameters, allowing you generate the exact</p>
+</li>
+<li><p class="first"><strong>Survey modeled population</strong></p>
+<p>In <code class="docutils literal"><span class="pre">frbpoppy</span></code>, a population can be observed with a number of different surveys. While many current survey parameters have been included within <code class="docutils literal"><span class="pre">frbpoppy</span></code>, it is possible to define your own survey parameters.</p>
+</li>
+<li><p class="first"><strong>Compare obtained results with actual survey results</strong></p>
+<p>This is left as an exercise for the reader</p>
+</li>
+</ol>
+</div>
 <div class="section" id="oops">
 <h2>Oops!<a class="headerlink" href="#oops" title="Permalink to this headline">¶</a></h2>
 <p>It seems this page is still under construction...</p>
