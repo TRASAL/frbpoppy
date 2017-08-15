@@ -1,9 +1,9 @@
 ##############################################################################
-# APERTIF survey parameters - chiefly thanks to Sarah Burke Spolaor
+# APERTIF-IAB-12 survey parameters - chiefly thanks to Sarah Burke Spolaor
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
 1.2      ! survey degradation factor
-1.0      ! antenna gain (K/Jy)
+0.346    ! antenna gain (K/Jy)
 10800    ! integration time (s)
 0.04096  ! sampling time (ms)
 70       ! system temperature (K)

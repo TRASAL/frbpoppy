@@ -14,6 +14,7 @@ def generate(n_gen,
              days=1,
              cosmology=True,
              cosmo_pars=[69.6, 0.286, 0.714],
+             dm_pars=[100, 1200],
              electron_model='ne2001',
              emission_pars=[10e6, 10e9],
              lum_dist_pars=[1e40, 1e50, 1],
@@ -24,6 +25,8 @@ def generate(n_gen,
              z_max=2.5,
              test=False):
     """
+    Generate a population of FRBs.
+
     Args:
         n_gen (int): Number of FRB sources/sky/time to generate
         days (float): Number of days over which FRBs are generated.
@@ -35,6 +38,9 @@ def generate(n_gen,
             being the cosmological constant Ω_Lambda (referred to as W_m
             in the rest of the code). These parameters default to those
             determined with Planck [69.6, 0.286, 0.714]
+        dm_pars (list, optional): Two values, the first being the dispersion
+            measure of the host, and the second being the slope of the
+            intergalactic dispersion measure. Defaults to [100, 1200]
         electron_model (str, optional): Model for the free electron density in
             the Milky Way. Defaults to 'ne2001'
         emission_pars (list, optional): The minimum and maximum frequency [Hz]
@@ -82,6 +88,10 @@ def generate(n_gen,
 
     if len(cosmo_pars) != 3:
         m = 'Please ensure there are three cosmology parameters'
+        raise ValueError(m)
+
+    if len(dm_pars) != 2:
+        m = 'Please ensure there are two dispersion measure parameters'
         raise ValueError(m)
 
     if electron_model not in ['ne2001']:
@@ -145,6 +155,8 @@ def generate(n_gen,
     # Set up population
     pop = Population()
     pop.cosmology = cosmology
+    pop.dm_host = dm_pars[0]
+    pop.dm_igm = dm_pars[1]
     pop.electron_model = electron_model
     pop.f_max = emission_pars[1]
     pop.f_min = emission_pars[0]
@@ -192,10 +204,10 @@ def generate(n_gen,
         src.dm_mw = pc.ne2001_table(src.gl, src.gb, test=test)
 
         # Dispersion measure of the intergalactic medium
-        src.dm_igm = go.ioka_dm_igm(src.z)
+        src.dm_igm = go.ioka_dm_igm(src.z, slope=pop.dm_igm)
 
         # Dispersion measure of the host
-        src.dm_host = 100.  # Thornton et al. (2013)
+        src.dm_host = pop.dm_host  # Thornton et al. (2013)
 
         # Total dispersion measure
         src.dm = src.dm_mw + src.dm_igm + src.dm_host

@@ -14,6 +14,8 @@ class Population:
 
         # Population properties
         self.cosmology = None
+        self.dm_host = None
+        self.dm_igm = None
         self.electron_model = None
         self.f_max = None
         self.f_min = None
