@@ -2,12 +2,14 @@
 
 from collections import defaultdict
 from scipy.stats import ks_2samp
+from datetime import datetime
 import numpy as np
 import os
 import pandas as pd
 import sqlite3
 
 from adapt_pop import Adapt
+from do_hist import histogram
 from do_populate import generate
 from do_survey import observe
 from frbcat import get_frbcat
@@ -163,7 +165,7 @@ class MonteCarlo:
         """
         inputs = {k: [] for k in self.pars}
         # inputs['path'] = []
-        inputs['loop'] = []
+        inputs['in_par'] = []
 
         # For each parameter
         for name, p in self.pars.items():
@@ -183,7 +185,7 @@ class MonteCarlo:
                 if dual is False:
                     # Add values
                     inputs[name].append(i)
-                    inputs['loop'].append(name)
+                    inputs['in_par'].append(name)
 
                     # Get defaults for all other values
                     for w, v in self.pars.items():
@@ -200,7 +202,7 @@ class MonteCarlo:
                         # Add values
                         inputs[name].append(i)
                         inputs[name_max].append(j)
-                        inputs['loop'].append(name)
+                        inputs['in_par'].append(name)
 
                         # Get defaults for all other values
                         for w, v in self.pars.items():
@@ -211,6 +213,8 @@ class MonteCarlo:
         return df
 
     def run(self):
+        """Run a Monte Carlo."""
+        # Mercy on anyone trying to understand this code
 
         # Get the range of parameters over which to loop
         pos_pars = self.possible_pars()
@@ -221,8 +225,11 @@ class MonteCarlo:
         # Set up dictionary for results
         d = defaultdict(list)
 
+        # Set up list for binned data
+        hists = []
+
         # Iterate over each parameter
-        for name, group in pos_pars.groupby('loop'):
+        for name, group in pos_pars.groupby('in_par'):
 
             print(name)
 
@@ -244,6 +251,10 @@ class MonteCarlo:
 
                 # Save the values each parameter has been set to
                 defaults = r.to_dict()
+                # Get an id
+                iden = str(datetime.now())
+                # Gather survey populations
+                sur_pops = []
 
                 # Adapt population
                 if name == 'dm_host':
@@ -281,7 +292,7 @@ class MonteCarlo:
                     # KS-test each parameter
                     for c in cols:
                         obs_cat = cat[(cat.survey == s)][c]
-                        obs_cat = pd.to_numeric(obs_cat)
+                        obs_cat = pd.to_numeric(obs_cat, errors='coerce')
                         obs_pop = pd.to_numeric(sur_pop[c], errors='coerce')
 
                         ks['ks_' + c] = ks_2samp(obs_pop, obs_cat)[1]
@@ -293,5 +304,26 @@ class MonteCarlo:
                         d[k].append(ks[k])
                     d['telescope'].append(self.surveys[s])
                     d['survey'].append(s)
+                    d['id'].append(iden)
 
-        self.save(df=pd.DataFrame(d), filename='ks_2.db')
+                    # Gather populations to bin
+                    if sur_pop.shape[0] > 0:
+                        sur_pop['survey'] = s
+                        sur_pop['in_par'] = name
+                        sur_pop['id'] = iden
+                        sur_pop['frbcat'] = False
+                        sur_pops.append(sur_pop)
+
+                    # Gather respective frbcat populations to bin
+                    cat_pop = cat[(cat.survey == s)].copy()
+                    if cat_pop.shape[0] > 0:
+                        cat_pop['in_par'] = name
+                        cat_pop['id'] = iden
+                        cat_pop['frbcat'] = True
+                        sur_pops.append(cat_pop)
+
+                if sur_pops:
+                    hists.append(histogram(sur_pops))
+
+        self.save(df=pd.concat(hists), filename='hists.db')
+        self.save(df=pd.DataFrame(d), filename='ks_3.db')

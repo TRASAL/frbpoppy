@@ -55,7 +55,7 @@ def histogram(dfs):
             dlow = df[c].min()
             dhigh = df[c].max()
 
-            if isinstance(dlow,str) or isinstance(dhigh,str):
+            if isinstance(dlow, str) or isinstance(dhigh, str):
                 continue
 
             if dlow < low:
@@ -109,15 +109,15 @@ def histogram(dfs):
 
 def plot_pop(files=[], frbcat=True):
     """
-    Function to plot populations in browser using Bokeh
+    Plot populations in browser using Bokeh.
 
     Args:
         files (list): List of population files to plot (currently only works
                       with csv files - file an issue if you would like more
                       options)
         frbcat (bool): Whether to plot frbcat parameters. Defaults to True
-    """
 
+    """
     # Configure colours
     mc = len(files)
     if frbcat:
