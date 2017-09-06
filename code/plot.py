@@ -90,7 +90,7 @@ def histogram(dfs):
                 continue
 
             bins = np.linspace(low, high, 15)
-            col = df[c].convert_objects(convert_numeric=True)
+            col = df[c].apply(pd.to_numeric, errors='coerce')
             col = col.dropna()
             h, _ = np.histogram(col, bins=bins)
 
@@ -215,7 +215,7 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=sc_tools,
-                webgl=True)
+                output_backend="webgl")
 
     # Create Column Data Sources for interacting with the plot
     props = dict(x=[], y=[], color=[], population=[])
@@ -242,7 +242,7 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=hp_tools,
-                webgl=True)
+                output_backend="webgl")
 
     # Create Column Data Sources for interacting with the plot
     hists = histogram(dfs)
@@ -282,7 +282,8 @@ def plot_pop(files=[], frbcat=True):
                 df = empty
             else:
                 df = dfs[i][cols]
-                df = pd.to_numeric(df, errors='coerce')
+                df[x_name].apply(pd.to_numeric)
+                df[y_name].apply(pd.to_numeric)
                 df = df.dropna()
 
             # Update data
@@ -309,7 +310,8 @@ def plot_pop(files=[], frbcat=True):
             else:
                 df = hists[i]
                 df = df[cols]
-                df = pd.to_numeric(df, errors='coerce')
+                for e in cols[:4]:
+                    df[e].apply(pd.to_numeric)
                 df = df.dropna()
 
             # Update data
