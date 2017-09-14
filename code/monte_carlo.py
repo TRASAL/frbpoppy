@@ -139,6 +139,7 @@ class MonteCarlo:
             filename = 'pars.db'
         conn = sqlite3.connect(self.path(filename))
         df.to_sql('pars', conn, if_exists='replace')
+        conn.cursor().execute("CREATE UNIQUE INDEX ix ON pars (id);")
         conn.close()
 
     def read(self, filename=None):

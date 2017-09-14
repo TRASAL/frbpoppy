@@ -23,17 +23,27 @@ class Plot:
                      'dist': 'Distance (Gpc)',
                      'dm_host': 'Dispersion Measure - Host (pc/cm^3)',
                      'dm_igm': 'Dispersion Measure - IGM (pc/cm^3)',
+                     'dm_igm_slope': 'Dispersion Measure - IGM - Slope (pc/cm^3)',
                      'dm_mw': 'Dispersion Measure - Milky Way (pc/cm^3)',
                      'dm': 'Dispersion Measure (pc/cm^3)',
                      'fluence': 'Fluence (Jy*ms)',
+                     'freq_min': 'Minimum source frequency (Hz)',
+                     'freq_max': 'Maximum source frequency (Hz)',
                      'gb': 'Galactic Latitude (degrees)',
                      'gl': 'Galactic Longitude (degrees)',
                      'gx': 'Galactic X (Gpc)',
                      'gy': 'Galactic Y (Gpc)',
                      'gz': 'Galactic Z (Gpc)',
                      'lum_bol': 'Luminosity - Bolometric (10^30 ergs/s)',
+                     'lum_bol_min': 'Luminosity - Bolometric - Minimum (10^30 ergs/s)',
+                     'lum_bol_max': 'Luminosity - Bolometric - Maximum (10^30 ergs/s)',
+                     'lum_bol_slope': 'Luminosity - Bolometric - Slope (10^30 ergs/s)',
+                     'n_day': 'Number of seed sources (#/day)',
                      'ra': 'Right Ascension (°)',
+                     'rep': 'Repeater Fraction',
                      's_peak': 'Peak Flux Density (Jy)',
+                     'si_mean': 'Spectral Index - Mean',
+                     'si_sigma': 'Spectral Index - Sigma',
                      'snr': 'Signal to Noise Ratio',
                      'w_eff': 'Pulse Width - Effective (ms)',
                      'w_int': 'Pulse Width - Intrinsic (ms)',
@@ -57,16 +67,19 @@ class Plot:
             r = open(d).read()
         return r
 
-    def import_df(self, query=None):
+    def import_df(self, query=None, loc=None):
         """Import a sql database into a pandas dataframe."""
         # Options DataFrame
-        if query:
-            p = self.path('hists.db')
-        else:
+        if not query:
             query = 'select * from pars;'
-            p = self.path('ks_3.db')
+        if not loc:
+            loc = 'ks_large.db'
+        elif loc == 'ks':
+            loc = 'ks_large.db'
+        elif loc == 'hist':
+            loc = 'hists_large.db'
 
-        # Get DataFrame
+        p = self.path(loc)
         conn = sqlite3.connect(p)
         df = pd.read_sql_query(query, conn)
 
@@ -84,10 +97,16 @@ class Plot:
         """Plot the results of a Monte Carlo run."""
         # Import goodness-of-fit data
         df = self.import_df()
-        self.surveys = df.survey.unique().tolist()
+        # Ugly fix due to rouuding errors
+        df['w_int_max'] = round(df['w_int_max'], 8)
+        self.surveys = sorted(df.survey.unique().tolist())
 
         # Group parameters
-        self.in_pars = ['w_int_min', 'w_int_max', 'dm_host']
+        self.in_pars = df['in_par'].unique().tolist()
+        self.in_pars.append('w_int_max')
+        self.in_pars.append('freq_max')
+        self.in_pars.append('lum_bol_max')
+
         self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
                          'w_eff', 'z']
 
@@ -96,7 +115,7 @@ class Plot:
         # Optional frbcat plotting
         cat_sel = CheckboxButtonGroup(labels=['frbcat'], active=[0])
         # Optional survey plotting
-        sur_sel = CheckboxButtonGroup(labels=self.surveys, active=[-1])
+        sur_sel = CheckboxButtonGroup(labels=self.surveys, active=[6, 7])
 
         # Setup observed parameter choice
         out_opt = [self.pars[o] for o in self.out_pars]
@@ -107,7 +126,7 @@ class Plot:
         # Setup input parameter choice
         in_opt = [self.pars[o] for o in self.in_pars]
         in_sel = Select(title="In parameter:",
-                        value=in_opt[0],
+                        value=in_opt[9],
                         options=in_opt)
 
         # Setup input parameters
@@ -140,28 +159,46 @@ class Plot:
             # Set standard value
             v = df[p].value_counts().idxmax()
 
-            r = Slider(start=mi, end=ma, step=st, value=v, title=p)
+            r = Slider(start=mi,
+                       end=ma,
+                       step=st,
+                       value=v,
+                       title=p,
+                       callback_policy="mouseup")
             single_sel.append(r)
 
         for p in dual_opt:
 
+            title = p
+
+            # For the logrithmic sliders
+            if p == 'freq' or p == 'lum_bol':
+                p_min = np.log10(df[p + '_min'])
+                p_max = np.log10(df[p + '_max'])
+            else:
+                p_min = df[p + '_min']
+                p_max = df[p + '_max']
+
+                # title += ' (10^x)'
+
             # Minimum and maximum values
-            mi = min(df[p + '_min'])
-            ma = max(df[p + '_max'])
+            mi = min(p_min)
+            ma = max(p_max)
 
             # Stepsize
-            s = np.sort(df[p + '_min'].unique())
+            s = np.sort(p_min.unique())
             st = s[1] - s[0]
 
             # Set standard values
-            mi_v = df[p + '_min'].value_counts().idxmax()
-            ma_v = df[p + '_max'].value_counts().idxmax()
+            mi_v = p_min.value_counts().idxmax()
+            ma_v = p_max.value_counts().idxmax()
 
             r = RangeSlider(start=mi,
                             end=ma,
                             range=(mi_v, ma_v),
                             step=st,
-                            title=p)
+                            title=title,
+                            callback_policy="mouseup")
             dual_sel.append(r)
 
         #  ----- Set plot options -----
@@ -204,7 +241,7 @@ class Plot:
         lp.add_layout(span)
 
         # Set up tools
-        props = [("survey", "@survey")]
+        props = [("survey", "@survey"), ("frbs", "@frbs")]
         hover = HoverTool(tooltips=props)
         hp_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
@@ -216,7 +253,7 @@ class Plot:
                     tools=hp_tools)
 
         # Create Column Data Sources for interacting with the plot
-        props = dict(top=[], left=[], right=[], bottom=[], survey=[])
+        props = dict(top=[], left=[], right=[], bottom=[], survey=[], frbs=[])
         opt = [*self.surveys].append('frbcat')
         hp_sources = [ColumnDataSource(props) for s in self.surveys]
         cat_sources = [ColumnDataSource(props) for s in self.surveys]
@@ -259,6 +296,9 @@ class Plot:
                 val[s.title + '_min'] = s.range[0]
                 val[s.title + '_max'] = s.range[1]
 
+            # Get active surveys
+            act_sur = [self.surveys[i] for i in sur_sel.active]
+
             # Update axes
             x_name = self.inv_pars[in_sel.value]
             y_name = self.inv_pars[out_sel.value]
@@ -273,17 +313,33 @@ class Plot:
                 survey = self.surveys[i]
                 filt = val.copy()
                 filt['survey'] = survey
-                filt['in_par'] = x_name
+                # filt['in_par'] = x_name
+
+                # For the logarithmic sliders
+                for f in filt:
+                    if ('freq' in f or 'lum_bol' in f) and 'slope' not in f:
+                        filt[f] = float(10**filt[f])
+
                 del filt[x_name]
 
-                t = [df[f] == filt[f] for f in filt]
-                df['test'] = pd.DataFrame(t).all()
+                query = 'SELECT * FROM pars WHERE '
+                for f in filt:
+                    query += "{}='{}' AND ".format(f, filt[f])
+                query = query[:-4]
+                print(query)
 
-                x = df[(df.test == True)][x_name].tolist()
-                y = df[(df.test == True)]['ks_' + y_name].tolist()
+                dk = self.import_df(query=query)
 
-                length = df[(df.test == True)].shape[0]
+                x = dk[x_name].tolist()
+                y = dk['ks_' + y_name].tolist()
+                length = dk.shape[0]
                 s = [survey for j in range(length)]
+
+                # Prevent superfluous graphs
+                if all(e == '' for e in y) or survey not in act_sur:
+                    x = []
+                    y = []
+                    s = []
 
                 source.data = dict(x=x, y=y, survey=s)
 
@@ -291,21 +347,36 @@ class Plot:
             hp.xaxis.axis_label = out_sel.value
 
             # Get the id of the set of input values
-            test = ((df.test == True) & (df[x_name] == val[x_name]))
-            iden = df[test].iloc[0]['id']
+            val_test = (dk[x_name] == val[x_name])
+            par_test = (dk['in_par'] == x_name)
+            test = (val_test & par_test)
+            try:
+                iden = dk[test].iloc[0]['id']
+                x = dk.loc[(val_test & par_test)]['w_int_max'].iloc[-1]
+                print(repr(x), type(x))
+                print('Good!')
+            except IndexError:
+                print(x_name)
+                print(df[((df.test == True))])
+                iden = ''
+                print('Bad...')
 
             # Update histogram data
             for i, source in enumerate(hp_sources):
 
                 # Import data
                 name = self.surveys[i]
-                query = "SELECT * FROM pars WHERE id='{}' and in_par='{}'"
-                query += " and out_par='{}' and survey='{}';"
+                query = "SELECT * FROM pars WHERE id='{}' and "
+                query += "in_par='{}' and out_par='{}' and "
+                query += "survey='{}';"
                 query = query.format(iden, x_name, y_name, name)
-                dh = self.import_df(query=query)
-                # 1: frbcat population (solid), 0: virtual population (dashed)
-                dc = dh[(dh.frbcat == 1)]
-                dh = dh[(dh.frbcat == 0)]
+                dh = self.import_df(query=query, loc='hist')
+
+                if 'frbs' not in dh:
+                    dh['frbs'] = '?'
+
+                dc = dh[(dh.frbcat == 1)]  # 1: frbcat population (dashed)
+                dh = dh[(dh.frbcat == 0)]  # 0: virtual population (solid)
 
                 # Prepare data for plotting
                 top = dh.top.tolist()
@@ -314,30 +385,52 @@ class Plot:
                 right = dh.right.tolist()
                 length = dh.shape[0]
                 s = [name for j in range(length)]
+                frbs = dh.frbs.tolist()
+
+                # Prevent superfluous graphs
+                if name not in act_sur:
+                    top = []
+                    bottom = []
+                    left = []
+                    right = []
+                    s = []
+                    frbs = []
 
                 # Plot data
                 source.data = dict(top=top,
                                    bottom=bottom,
                                    left=left,
                                    right=right,
-                                   survey=s)
+                                   survey=s,
+                                   frbs=frbs)
 
                 cat_source = cat_sources[i]
 
-                # Prepare data for plotting
+                # Prepare frbcat data for plotting
                 top = dc.top.tolist()
                 bottom = dc.bottom.tolist()
                 left = dc.left.tolist()
                 right = dc.right.tolist()
                 length = dc.shape[0]
                 s = [name + ' (🐱)' for j in range(length)]
+                frbs = dc.frbs.tolist()
+
+                # Prevent superfluous graphs
+                if name not in act_sur or not cat_sel.active:
+                    top = []
+                    bottom = []
+                    left = []
+                    right = []
+                    s = []
+                    frbs = []
 
                 # Plot data
                 cat_source.data = dict(top=top,
                                        bottom=bottom,
                                        left=left,
                                        right=right,
-                                       survey=s)
+                                       survey=s,
+                                       frbs=frbs)
 
         # What to interact with
         for control in [in_sel, out_sel, *single_sel]:

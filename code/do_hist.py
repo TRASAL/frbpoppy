@@ -85,6 +85,7 @@ def histogram(dfs):
             hist['left'] = pd.Series(bins[:-1])
             hist['right'] = pd.Series(bins[1:])
             hist['survey'] = df['survey'].iloc[0]
+            hist['frbs'] = len(col)  # number of frbs in population
             hist['frbcat'] = df['frbcat'].iloc[0]
 
             del hist['empty']
