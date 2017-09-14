@@ -67,21 +67,21 @@ class Plot:
             r = open(d).read()
         return r
 
-    def import_df(self, query=None):
+    def import_df(self, query=None, loc=None):
         """Import a sql database into a pandas dataframe."""
         # Options DataFrame
-        if query:
-            p = self.path('hists_large.db')
-            # Get DataFrame
-            conn = sqlite3.connect(p)
-            df = pd.read_sql_query(query, conn)
-        else:
+        if not query:
             query = 'select * from pars;'
-            p = self.path('ks_large.db')
+        if not loc:
+            loc = 'ks_large.db'
+        elif loc == 'ks':
+            loc = 'ks_large.db'
+        elif loc == 'hist':
+            loc = 'hists_large.db'
 
-            # Get DataFrame
-            conn = sqlite3.connect(p)
-            df = pd.read_sql_query(query, conn)
+        p = self.path(loc)
+        conn = sqlite3.connect(p)
+        df = pd.read_sql_query(query, conn)
 
         # Clean up DataFrame
         cols = [c for c in df.columns if c.startswith('level')]
@@ -286,7 +286,6 @@ class Plot:
                     source=source)
 
         # Interactive goodness
-        @profile
         def update():
 
             # Get values from sliders
@@ -323,13 +322,17 @@ class Plot:
 
                 del filt[x_name]
 
-                t = [df[f] == filt[f] for f in filt]
-                print(len(filt), print(len(df)))
-                df['test'] = pd.DataFrame(t).all()
+                query = 'SELECT * FROM pars WHERE '
+                for f in filt:
+                    query += "{}='{}' AND ".format(f, filt[f])
+                query = query[:-4]
+                print(query)
 
-                x = df[(df.test == True)][x_name].tolist()
-                y = df[(df.test == True)]['ks_' + y_name].tolist()
-                length = df[(df.test == True)].shape[0]
+                dk = self.import_df(query=query)
+
+                x = dk[x_name].tolist()
+                y = dk['ks_' + y_name].tolist()
+                length = dk.shape[0]
                 s = [survey for j in range(length)]
 
                 # Prevent superfluous graphs
@@ -344,12 +347,12 @@ class Plot:
             hp.xaxis.axis_label = out_sel.value
 
             # Get the id of the set of input values
-            val_test = (df[x_name] == val[x_name])
-            par_test = (df['in_par'] == x_name)
-            test = ((df.test == True) & val_test & par_test)
+            val_test = (dk[x_name] == val[x_name])
+            par_test = (dk['in_par'] == x_name)
+            test = (val_test & par_test)
             try:
-                iden = df[test].iloc[0]['id']
-                x = df.loc[((df.test == True) & val_test & par_test)]['w_int_max'].iloc[-1]
+                iden = dk[test].iloc[0]['id']
+                x = dk.loc[(val_test & par_test)]['w_int_max'].iloc[-1]
                 print(repr(x), type(x))
                 print('Good!')
             except IndexError:
@@ -367,7 +370,7 @@ class Plot:
                 query += "in_par='{}' and out_par='{}' and "
                 query += "survey='{}';"
                 query = query.format(iden, x_name, y_name, name)
-                dh = self.import_df(query=query)
+                dh = self.import_df(query=query, loc='hist')
 
                 if 'frbs' not in dh:
                     dh['frbs'] = '?'
