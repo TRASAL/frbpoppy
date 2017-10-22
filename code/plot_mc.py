@@ -103,9 +103,6 @@ class Plot:
 
         # Group parameters
         self.in_pars = df['in_par'].unique().tolist()
-        self.in_pars.append('w_int_max')
-        self.in_pars.append('freq_max')
-        self.in_pars.append('lum_bol_max')
 
         self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
                          'w_eff', 'z']
@@ -226,13 +223,13 @@ class Plot:
 
         # Plot ks values for various surveys
         for i, source in enumerate(lp_sources):
-            lp.line(x='x',
-                    y='y',
-                    source=source,
-                    line_width=5,
-                    line_color=colours[i],
-                    alpha=0.7,
-                    legend='survey')
+            lp.circle(x='x',
+                      y='y',
+                      source=source,
+                      size=5,
+                      color=colours[i],
+                      alpha=0.7,
+                      legend='survey')
 
         # Add a line to link to the histogram plots
         span = Span(location=0,
@@ -306,6 +303,11 @@ class Plot:
             lp.yaxis.axis_label = 'P-value ({})'.format(out_sel.value)
             span.location = val[x_name]
 
+            # For the logarithmic sliders
+            for v in val:
+                if ('freq' in v or 'lum_bol' in v) and 'slope' not in v:
+                    val[v] = float(10**val[v])
+
             # Update data
             for i, source in enumerate(lp_sources):
 
@@ -314,11 +316,6 @@ class Plot:
                 filt = val.copy()
                 filt['survey'] = survey
                 # filt['in_par'] = x_name
-
-                # For the logarithmic sliders
-                for f in filt:
-                    if ('freq' in f or 'lum_bol' in f) and 'slope' not in f:
-                        filt[f] = float(10**filt[f])
 
                 del filt[x_name]
 
@@ -329,6 +326,8 @@ class Plot:
                 print(query)
 
                 dk = self.import_df(query=query)
+                for c in dk:
+                    print('UPDATE pars SET {}=ROUND({},5)'.format(c,c))
 
                 x = dk[x_name].tolist()
                 y = dk['ks_' + y_name].tolist()
@@ -352,14 +351,12 @@ class Plot:
             test = (val_test & par_test)
             try:
                 iden = dk[test].iloc[0]['id']
-                x = dk.loc[(val_test & par_test)]['w_int_max'].iloc[-1]
-                print(repr(x), type(x))
                 print('Good!')
             except IndexError:
-                print(x_name)
-                print(df[((df.test == True))])
-                iden = ''
                 print('Bad...')
+                print(dk[par_test])
+                print(val[x_name])
+                iden = ''
 
             # Update histogram data
             for i, source in enumerate(hp_sources):

@@ -138,6 +138,7 @@ class MonteCarlo:
         if filename is None:
             filename = 'pars.db'
         conn = sqlite3.connect(self.path(filename))
+            # TODO NEED TO DEFINE DTYPES!
         df.to_sql('pars', conn, if_exists='replace')
         conn.cursor().execute("CREATE UNIQUE INDEX ix ON pars (id);")
         conn.close()
@@ -327,4 +328,4 @@ class MonteCarlo:
                     hists.append(histogram(sur_pops))
 
         self.save(df=pd.concat(hists), filename='hists.db')
-        self.save(df=pd.DataFrame(d), filename='ks_3.db')
+        self.save(df=pd.DataFrame(d), filename='ks.db')
