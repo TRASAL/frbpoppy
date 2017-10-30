@@ -103,9 +103,6 @@ class Plot:
 
         # Group parameters
         self.in_pars = df['in_par'].unique().tolist()
-        self.in_pars.append('w_int_max')
-        self.in_pars.append('freq_max')
-        self.in_pars.append('lum_bol_max')
 
         self.out_pars = ['dec', 'dist', 'dm', 'fluence', 'ra', 'snr', 's_peak',
                          'w_eff', 'z']
@@ -195,7 +192,7 @@ class Plot:
 
             r = RangeSlider(start=mi,
                             end=ma,
-                            range=(mi_v, ma_v),
+                            value=(mi_v, ma_v),
                             step=st,
                             title=title,
                             callback_policy="mouseup")
@@ -226,13 +223,13 @@ class Plot:
 
         # Plot ks values for various surveys
         for i, source in enumerate(lp_sources):
-            lp.line(x='x',
-                    y='y',
-                    source=source,
-                    line_width=5,
-                    line_color=colours[i],
-                    alpha=0.7,
-                    legend='survey')
+            lp.circle(x='x',
+                      y='y',
+                      source=source,
+                      size=5,
+                      color=colours[i],
+                      alpha=0.7,
+                      legend='survey')
 
         # Add a line to link to the histogram plots
         span = Span(location=0,
@@ -293,8 +290,8 @@ class Plot:
             for s in single_sel:
                 val[s.title] = s.value
             for s in dual_sel:
-                val[s.title + '_min'] = s.range[0]
-                val[s.title + '_max'] = s.range[1]
+                val[s.title + '_min'] = s.value[0]
+                val[s.title + '_max'] = s.value[1]
 
             # Get active surveys
             act_sur = [self.surveys[i] for i in sur_sel.active]
@@ -306,6 +303,11 @@ class Plot:
             lp.yaxis.axis_label = 'P-value ({})'.format(out_sel.value)
             span.location = val[x_name]
 
+            # For the logarithmic sliders
+            for v in val:
+                if ('freq' in v or 'lum_bol' in v) and 'slope' not in v:
+                    val[v] = float(10**val[v])
+
             # Update data
             for i, source in enumerate(lp_sources):
 
@@ -315,18 +317,30 @@ class Plot:
                 filt['survey'] = survey
                 # filt['in_par'] = x_name
 
-                # For the logarithmic sliders
-                for f in filt:
-                    if ('freq' in f or 'lum_bol' in f) and 'slope' not in f:
-                        filt[f] = float(10**filt[f])
-
                 del filt[x_name]
 
                 query = 'SELECT * FROM pars WHERE '
+
+                # A completely ridiculous way to solve a bug with decimals
                 for f in filt:
-                    query += "{}='{}' AND ".format(f, filt[f])
+                    value = str(filt[f])
+                    if '.' not in value:
+                        if 'e' in value:
+                            n, p = value.split('e')
+                            value = n + '.0e' + p
+                        if f in ['w_int_max', 'w_int_min']:
+                            value += '.0'
+                    if f == 'si_sigma':
+                        if value != '0.0' and len(value.split('.')[-1]) != 2:
+                            value += '0'
+                    if f == 'si_mean':
+                        if len(value.split('.')[-1]) == 2:
+                            value  = value[:-1]
+
+
+                    query += "{} LIKE '{}' AND ".format(f, value)
+
                 query = query[:-4]
-                print(query)
 
                 dk = self.import_df(query=query)
 
@@ -337,9 +351,7 @@ class Plot:
 
                 # Prevent superfluous graphs
                 if all(e == '' for e in y) or survey not in act_sur:
-                    x = []
-                    y = []
-                    s = []
+                    x = y = s = []
 
                 source.data = dict(x=x, y=y, survey=s)
 
@@ -347,19 +359,22 @@ class Plot:
             hp.xaxis.axis_label = out_sel.value
 
             # Get the id of the set of input values
-            val_test = (dk[x_name] == val[x_name])
+            err = 0.000001
+            val_up = val[x_name] + err
+            val_down = val[x_name] - err
+            val_test = ((val_down <= dk[x_name]) & (dk[x_name] <= val_up))
             par_test = (dk['in_par'] == x_name)
             test = (val_test & par_test)
             try:
                 iden = dk[test].iloc[0]['id']
-                x = dk.loc[(val_test & par_test)]['w_int_max'].iloc[-1]
-                print(repr(x), type(x))
                 print('Good!')
             except IndexError:
-                print(x_name)
-                print(df[((df.test == True))])
-                iden = ''
                 print('Bad...')
+                print('SQL constraints:', query)
+                print('Looking for:', x_name)
+                print('With value:', val[x_name])
+                print('Finding:', *[repr(r) for r in dk[x_name].values])
+                iden = ''
 
             # Update histogram data
             for i, source in enumerate(hp_sources):
@@ -417,12 +432,7 @@ class Plot:
 
                 # Prevent superfluous graphs
                 if name not in act_sur or not cat_sel.active:
-                    top = []
-                    bottom = []
-                    left = []
-                    right = []
-                    s = []
-                    frbs = []
+                    top = bottom = left = right = s = frbs = []
 
                 # Plot data
                 cat_source.data = dict(top=top,
@@ -433,10 +443,8 @@ class Plot:
                                        frbs=frbs)
 
         # What to interact with
-        for control in [in_sel, out_sel, *single_sel]:
+        for control in [in_sel, out_sel, *single_sel, *dual_sel]:
             control.on_change('value', lambda attr, old, new: update())
-        for control in dual_sel:
-            control.on_change('range', lambda attr, old, new: update())
         for checkbox in [cat_sel, sur_sel]:
             checkbox.on_change('active', lambda attr, old, new: update())
 

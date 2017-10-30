@@ -7,19 +7,21 @@ import numpy as np
 import os
 import pandas as pd
 import sqlite3
+import sqlalchemy.types as sqltype
 
 from adapt_pop import Adapt
 from do_hist import histogram
 from do_populate import generate
 from do_survey import observe
 from frbcat import get_frbcat
+from log import pprint
 import distributions as dis
 
 
 class Parameter:
     """Class to hold attributes of a parameter."""
 
-    def __init__(self,  mi, ma, sp, st, log=False):
+    def __init__(self, mi, ma, sp, st, log=False):
         """
         Initialisation.
 
@@ -42,8 +44,6 @@ class Parameter:
         self.max = ma
         self.step = sp
         self.set = st
-
-        # Flag for different behaviour
         self.log = log
 
     def __setattr__(self, attrname, val):
@@ -131,20 +131,25 @@ class MonteCarlo:
         """Return the path to a file in the results folder."""
         return os.path.join(os.path.dirname(__file__), '../data/results/' + s)
 
-    def save(self, df=None, filename=None):
+    def save(self, df=None, filename=None, dtypes=None):
         """Save database to SQL database."""
         if df is None:
             df = self.df
         if filename is None:
             filename = 'pars.db'
+
         conn = sqlite3.connect(self.path(filename))
-        df.to_sql('pars', conn, if_exists='replace')
-        conn.cursor().execute("CREATE UNIQUE INDEX ix ON pars (id);")
+
+        if dtypes is None:
+            df.to_sql('pars', conn, if_exists='replace')
+        else:
+            df.to_sql('pars', conn, if_exists='replace', dtype=dtypes)
+        # conn.cursor().execute("CREATE UNIQUE INDEX ix ON pars (id);")
         conn.close()
 
     def read(self, filename=None):
         """Read in parameter database."""
-        if filename is None:
+        if not filename:
             filename = 'pars.db'
         conn = sqlite3.connect(self.path(filename))
         df = pd.read_sql_query("select * from pars;", conn)
@@ -165,7 +170,6 @@ class MonteCarlo:
 
         """
         inputs = {k: [] for k in self.pars}
-        # inputs['path'] = []
         inputs['in_par'] = []
 
         # For each parameter
@@ -232,7 +236,7 @@ class MonteCarlo:
         # Iterate over each parameter
         for name, group in pos_pars.groupby('in_par'):
 
-            print(name)
+            pprint(name)
 
             # Generate initial population
             r = group.iloc[0]
@@ -326,5 +330,33 @@ class MonteCarlo:
                 if sur_pops:
                     hists.append(histogram(sur_pops))
 
-        self.save(df=pd.concat(hists), filename='hists.db')
-        self.save(df=pd.DataFrame(d), filename='ks_3.db')
+        db_hists = pd.concat(hists)
+        db_ks = pd.DataFrame(d)
+        pprint(db_ks.info())
+
+        # Manually define dtypes to avoid rounding bugs
+        ks_dtypes = {}
+        for col in db_ks:
+
+            if col.startswith('ks'):
+                dtype = sqltype.FLOAT
+
+            elif db_ks[col].dtype == np.int64:
+                if abs(db_ks[col].iloc[0]) < 32760:
+                    dtype = sqltype.SMALLINT
+                else:
+                    dtype = sqltype.INT
+
+            elif db_ks[col].dtype == np.float64:
+                decimals = str(db_ks[col].iloc[0])[::-1].find('.')
+                dtype = sqltype.DECIMAL
+
+            else:
+                dtype = sqltype.TEXT
+
+            ks_dtypes[col] = dtype
+
+        pprint(ks_dtypes)
+
+        self.save(df=db_hists, filename='hists_temp.db')
+        self.save(df=db_ks, filename='ks_temp.db', dtypes=ks_dtypes)
