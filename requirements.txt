@@ -2,3 +2,4 @@ bokeh==0.12.6
 numpy==1.13.0
 pandas==0.17.1
 scipy==0.18.1
+SQLAlchemy==1.1.14
