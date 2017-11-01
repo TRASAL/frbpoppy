@@ -73,11 +73,11 @@ class Plot:
         if not query:
             query = 'select * from pars;'
         if not loc:
-            loc = 'ks_large.db'
+            loc = 'ks_temp.db'
         elif loc == 'ks':
-            loc = 'ks_large.db'
+            loc = 'ks_temp.db'
         elif loc == 'hist':
-            loc = 'hists_large.db'
+            loc = 'hists_temp.db'
 
         p = self.path(loc)
         conn = sqlite3.connect(p)
@@ -337,7 +337,6 @@ class Plot:
                         if len(value.split('.')[-1]) == 2:
                             value  = value[:-1]
 
-
                     query += "{} LIKE '{}' AND ".format(f, value)
 
                 query = query[:-4]
@@ -359,7 +358,7 @@ class Plot:
             hp.xaxis.axis_label = out_sel.value
 
             # Get the id of the set of input values
-            err = 0.000001
+            err = 0.0000001
             val_up = val[x_name] + err
             val_down = val[x_name] - err
             val_test = ((val_down <= dk[x_name]) & (dk[x_name] <= val_up))
@@ -374,6 +373,7 @@ class Plot:
                 print('Looking for:', x_name)
                 print('With value:', val[x_name])
                 print('Finding:', *[repr(r) for r in dk[x_name].values])
+                print('Looking in:\n', dk)
                 iden = ''
 
             # Update histogram data

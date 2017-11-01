@@ -468,7 +468,7 @@ class Survey:
 
     def scale_rates(self, pop):
         """
-        Scale all rates according to intergration time and uptime
+        Scale all rates according to integration time and uptime
 
         Args:
             pop (Population): Population class
@@ -479,9 +479,11 @@ class Survey:
 
         for r in rates:
 
-            f = (self.t_obs/pop.time)
-            det = r.det * self.uptime * f
-            faint = r.faint * self.uptime * f
+            area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
+            f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
+            f_time = pop.time/self.t_obs
+            det = r.det * f_area * f_time
+            faint = r.faint * f_area * f_time
             out = r.out + r.det - det + r.faint - faint
 
             vol = r.tot() / pop.v_max * (365.25*86400/pop.time)
@@ -525,7 +527,7 @@ class Survey:
         det = ('Detected', round(days), round(f.det), round(s.det))
         faint = ('Too faint', round(days), round(f.faint), round(s.faint))
         out = ('Outside survey', round(days), round(f.out), round(s.out))
-        vol = ('/Gpc^3', 365, round(f.vol), round(s.vol))
+        vol = ('/Gpc^3', 365.25, round(f.vol), round(s.vol))
         if f.det > 0:
             exp = round(days/f.det, 3)
         else:

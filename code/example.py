@@ -46,4 +46,4 @@ for s in surveys:
 # test = observe(population, 'TEST')
 
 # Plot populations
-plot(population, *results, mute=False)
+# plot(population, *results, mute=False)
