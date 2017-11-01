@@ -1,4 +1,3 @@
-from collections import OrderedDict as OD
 from io import StringIO
 import os
 import pickle
@@ -27,7 +26,7 @@ class Population:
         self.repeat = None
         self.si_mean = None
         self.si_sigma = None
-        self.time = None
+        self.time = None  # seconds
         self.v_max = None
         self.w_max = None
         self.w_min = None

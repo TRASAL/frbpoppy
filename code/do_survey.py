@@ -1,5 +1,3 @@
-import copy
-
 from population import Population, unpickle
 from survey import Survey
 
@@ -9,6 +7,7 @@ def observe(population,
             pattern='gaussian',
             output=True,
             return_pop=True,
+            return_survey=False,
             scat=False,
             scint=False):
     """
@@ -20,8 +19,10 @@ def observe(population,
         pattern (str, optional): Gain pattern, either 'gaussian' (default) or
             'airy'
         output (bool, optional): Whether to print the rates or not
-        return_pop (bool, optional): Whether to return a population or survey
-            class. Primarily intended for debugging. Defaults to True
+        return_pop (bool, optional): Whether to return a population. Primarily
+            intended for debugging. Defaults to True
+        return_survey (bool, optional): Whether to return a survey. Primarily
+            intended for debugging. Defaults to False
         scat (bool, optional): Whether to include scattering in signal to noise
             calculations. Defaults to False
         scint (bool, optional): Whether to apply scintillation to observations.
@@ -101,8 +102,10 @@ def observe(population,
     s.scale_rates(pop)
     s.rates(pop, output=output)
 
-    # Return population or survey
-    if return_pop:
+    # Return population or survey classes
+    if return_pop and not return_survey:
         return surv_pop
-    else:
+    if return_pop and return_survey:
+        return s, surv_pop
+    if return_survey and not return_pop:
         return s

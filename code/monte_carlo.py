@@ -7,7 +7,6 @@ import numpy as np
 import os
 import pandas as pd
 import sqlite3
-import sqlalchemy.types as sqltype
 
 from adapt_pop import Adapt
 from do_hist import histogram
@@ -15,7 +14,6 @@ from do_populate import generate
 from do_survey import observe
 from frbcat import get_frbcat
 from log import pprint
-import distributions as dis
 
 
 class Parameter:
@@ -140,11 +138,20 @@ class MonteCarlo:
 
         conn = sqlite3.connect(self.path(filename))
 
+        # Allow for dtypes to be specified
         if dtypes is None:
             df.to_sql('pars', conn, if_exists='replace')
         else:
             df.to_sql('pars', conn, if_exists='replace', dtype=dtypes)
-        # conn.cursor().execute("CREATE UNIQUE INDEX ix ON pars (id);")
+
+        # Make index for faster searching
+        try:
+            index = "CREATE UNIQUE INDEX ix ON pars (id);"
+            conn.cursor().execute(index)
+        except sqlite3.IntegrityError:
+            index = "CREATE INDEX ix ON pars (id);"
+            conn.cursor().execute(index)
+
         conn.close()
 
     def read(self, filename=None):
@@ -233,6 +240,9 @@ class MonteCarlo:
         # Set up list for binned data
         hists = []
 
+        # Set up dictionary for rates
+        rates = defaultdict(list)
+
         # Iterate over each parameter
         for name, group in pos_pars.groupby('in_par'):
 
@@ -241,7 +251,7 @@ class MonteCarlo:
             # Generate initial population
             r = group.iloc[0]
             pop = generate(int(r.n_day),
-                           days=1,
+                           days=7,
                            dm_pars=[r.dm_host, r.dm_igm_slope],
                            emission_pars=[r.freq_min, r.freq_max],
                            lum_dist_pars=[r.lum_bol_min,
@@ -278,11 +288,17 @@ class MonteCarlo:
                     pop = Adapt(pop).w_int(r.w_int_min, r.w_int_max)
 
                 for s in self.surveys:
-                    # Survey population
-                    sur_pop = observe(pop, s, output=False)
+                    # Survey, survey population
+                    sur, sur_pop = observe(pop,
+                                           s,
+                                           output=False,
+                                           return_survey=True)
 
                     if sur_pop.n_srcs == 0:
                         continue
+
+                    # Save survey time for rates
+                    time = pop.time
 
                     # Create a pandas dataframe
                     sur_pop = sur_pop.to_df()
@@ -327,36 +343,28 @@ class MonteCarlo:
                         cat_pop['frbcat'] = True
                         sur_pops.append(cat_pop)
 
+                    # Gather rates
+                    if sur_pop.shape[0] > 0:
+
+                        frbs_per_day = sur.s_frb_rates.det*86400/time
+                        srcs_per_day = sur.s_src_rates.det*86400/time
+
+                        rates['survey'].append(s)
+                        rates['in_par'].append(name)
+                        rates['id'].append(iden)
+                        rates['frbs'].append(sur.s_frb_rates.det)
+                        rates['sources'].append(sur.s_src_rates.det)
+                        rates['days'].append(time/86400)
+                        rates['frbs_per_day'].append(frbs_per_day)
+                        rates['srcs_per_day'].append(srcs_per_day)
+
                 if sur_pops:
                     hists.append(histogram(sur_pops))
 
         db_hists = pd.concat(hists)
         db_ks = pd.DataFrame(d)
-        pprint(db_ks.info())
-
-        # Manually define dtypes to avoid rounding bugs
-        ks_dtypes = {}
-        for col in db_ks:
-
-            if col.startswith('ks'):
-                dtype = sqltype.FLOAT
-
-            elif db_ks[col].dtype == np.int64:
-                if abs(db_ks[col].iloc[0]) < 32760:
-                    dtype = sqltype.SMALLINT
-                else:
-                    dtype = sqltype.INT
-
-            elif db_ks[col].dtype == np.float64:
-                decimals = str(db_ks[col].iloc[0])[::-1].find('.')
-                dtype = sqltype.DECIMAL
-
-            else:
-                dtype = sqltype.TEXT
-
-            ks_dtypes[col] = dtype
-
-        pprint(ks_dtypes)
+        db_rates = pd.DataFrame(rates)
 
         self.save(df=db_hists, filename='hists_temp.db')
-        self.save(df=db_ks, filename='ks_temp.db', dtypes=ks_dtypes)
+        self.save(df=db_ks, filename='ks_temp.db')
+        self.save(df=db_rates, filename='rates_temp.db')
