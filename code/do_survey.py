@@ -38,6 +38,8 @@ def observe(population,
     s = Survey(survey_name, pattern=pattern)
     surv_pop = Population()
     surv_pop.name = survey_name
+    surv_pop.time = pop.time
+    surv_pop.v_max = pop.v_max
 
     for src in pop.sources:
 
@@ -99,8 +101,8 @@ def observe(population,
             s.src_rates.faint += 1
 
     # Scale rates according to length of survey etc
-    s.scale_rates(pop)
-    s.rates(pop, output=output)
+    s.scale_rates(surv_pop)
+    s.rates(surv_pop, output=output)
 
     # Return population or survey classes
     if return_pop and not return_survey:

@@ -558,6 +558,6 @@ def ioka_dm_igm(z, slope=1200):
         z (float): Redshift of source
         slope (int, optional): Slope of relationship
     Returns:
-        dm_igm (float): Dispersion measure of the intergalactic medium [pc/cm^3]
+        dm_igm (float): Dispersion measure of intergalactic medium [pc/cm^3]
     """
     return random.gauss(slope*z, 0.2*slope*z)
