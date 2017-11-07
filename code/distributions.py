@@ -20,11 +20,12 @@ def powerlaw(low, high, power):
 
     p1 = power + 1
     if (low == 0. or high == 0.) and p1 < 0:
-        raise ValueError('Power laws are not defined at 0 if power is negative')
+        raise ValueError('Power law not defined at 0 if power is negative')
+    # Not completely kosher, but hey...
     if p1 == 0:
-        raise ValueError('Power law distribution undefined at -1')
+        p1 = 0.00000001
 
-    y=random.random()
+    y = random.random()
 
     a = ((high**p1 - low**p1)*y + low**p1)**(1/p1)
 

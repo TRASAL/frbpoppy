@@ -59,6 +59,11 @@ class Parameter:
         self.set = st
         self.log = log
 
+    def seq(self, start, stop, step):
+        """Generate a range of numbers (even if using decimal steps)."""
+        n = abs(int(round((stop - start)/float(step))))
+        return [start + step*i for i in range(n+1)]
+
     def par_range(self, mi=None):
         """Quick range generator."""
         # Set lower limit (convenient for double for-loops)
@@ -70,9 +75,9 @@ class Parameter:
             mi = np.log10(mi)
             ma = np.log10(self.max)
             st = self.step
-            r = [10**n for n in np.arange(mi, ma+st, st)]
+            r = [10**n for n in self.seq(mi, ma, st)]
         else:
-            r = np.arange(mi, self.max+self.step, self.step)
+            r = self.seq(mi, self.max, self.step)
 
         return r
 
@@ -124,6 +129,9 @@ class MonteCarlo:
                         'ARECIBO-SPF': 'arecibo',
                         'ALFABURST': 'arecibo',
                         'UTMOST-1D': 'UTMOST'}
+
+        # Set number of days over which to run the virtual surveys
+        self.days = 14
 
     def path(self, s):
         """Return the path to a file in the results folder."""
@@ -230,7 +238,7 @@ class MonteCarlo:
 
         # Get the range of parameters over which to loop
         pos_pars = self.possible_pars()
-
+        pos_pars.to_csv('temp.csv')
         # Get the actual observations with which to compare
         cat = get_frbcat()
 
@@ -250,8 +258,8 @@ class MonteCarlo:
 
             # Generate initial population
             r = group.iloc[0]
-            pop = generate(int(r.n_day),
-                           days=7,
+            pop = generate(int(r.n_day)*self.days,
+                           days=self.days,
                            dm_pars=[r.dm_host, r.dm_igm_slope],
                            emission_pars=[r.freq_min, r.freq_max],
                            lum_dist_pars=[r.lum_bol_min,
@@ -295,6 +303,7 @@ class MonteCarlo:
                                            return_survey=True)
 
                     if sur_pop.n_srcs == 0:
+                        pprint('Woah, no population')
                         continue
 
                     # Save survey time for rates
@@ -361,10 +370,13 @@ class MonteCarlo:
                 if sur_pops:
                     hists.append(histogram(sur_pops))
 
-        db_hists = pd.concat(hists)
+        try:
+            db_hists = pd.concat(hists)
+        except ValueError:
+            raise ValueError('No FRBs seem to have been detected')
         db_ks = pd.DataFrame(d)
         db_rates = pd.DataFrame(rates)
 
-        self.save(df=db_hists, filename='hists_temp.db')
-        self.save(df=db_ks, filename='ks_temp.db')
-        self.save(df=db_rates, filename='rates_temp.db')
+        self.save(df=db_hists, filename='hists_temp2.db')
+        self.save(df=db_ks, filename='ks_temp2.db')
+        self.save(df=db_rates, filename='rates_temp2.db')

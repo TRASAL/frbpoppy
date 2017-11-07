@@ -1,8 +1,8 @@
 """Use Bokeh to plot a population or the results of a Monte Carlo."""
 
-from bokeh.io import curdoc
+from bokeh.io import curdoc, show
 from bokeh.layouts import layout, widgetbox
-from bokeh.models import ColumnDataSource, HoverTool, Div, Panel, Span, Tabs
+from bokeh.models import ColumnDataSource, HoverTool, Div, Span
 from bokeh.models.widgets import CheckboxButtonGroup, RangeSlider
 from bokeh.models.widgets import Select, Slider
 from bokeh.palettes import Spectral11
@@ -27,8 +27,8 @@ class Plot:
                      'dm_mw': 'Dispersion Measure - Milky Way (pc/cm^3)',
                      'dm': 'Dispersion Measure (pc/cm^3)',
                      'fluence': 'Fluence (Jy*ms)',
-                     'freq_min': 'Minimum source frequency (Hz)',
-                     'freq_max': 'Maximum source frequency (Hz)',
+                     'freq_min': 'Source frequency - minimum (Hz)',
+                     'freq_max': 'Source frequency - maximum (Hz)',
                      'gb': 'Galactic Latitude (degrees)',
                      'gl': 'Galactic Longitude (degrees)',
                      'gx': 'Galactic X (Gpc)',
@@ -55,7 +55,8 @@ class Plot:
 
     def pop(self, files=[]):
         """Plot a population."""
-        return 'TODO'
+        # TODO Merge with the other plot file
+        pass
 
     def path(self, s, where='results'):
         """Return the path to a file in the results folder."""
@@ -73,11 +74,13 @@ class Plot:
         if not query:
             query = 'select * from pars;'
         if not loc:
-            loc = 'ks_temp.db'
+            loc = 'ks_temp2.db'
         elif loc == 'ks':
-            loc = 'ks_temp.db'
+            loc = 'ks_temp2.db'
         elif loc == 'hist':
-            loc = 'hists_temp.db'
+            loc = 'hists_temp2.db'
+        elif loc == 'rate':
+            loc = 'rates_temp2.db'
 
         p = self.path(loc)
         conn = sqlite3.connect(p)
@@ -89,6 +92,7 @@ class Plot:
         df = df.fillna('')
 
         # Only return entries if present in frbcat
+        # TODO Check whether this is still relevant
         df = df[(df.survey != 'APERTIF') & (df.survey != 'WHOLESKY')]
 
         return df
@@ -123,7 +127,7 @@ class Plot:
         # Setup input parameter choice
         in_opt = [self.pars[o] for o in self.in_pars]
         in_sel = Select(title="In parameter:",
-                        value=in_opt[9],
+                        value=in_opt[-1],
                         options=in_opt)
 
         # Setup input parameters
@@ -151,7 +155,11 @@ class Plot:
 
             # Stepsize
             s = np.sort(df[p].unique())
-            st = s[1] - s[0]
+            if len(s) > 1:
+                st = s[1] - s[0]
+            else:
+                st = 0.00001
+                ma += st
 
             # Set standard value
             v = df[p].value_counts().idxmax()
@@ -162,6 +170,7 @@ class Plot:
                        value=v,
                        title=p,
                        callback_policy="mouseup")
+
             single_sel.append(r)
 
         for p in dual_opt:
@@ -200,6 +209,8 @@ class Plot:
 
         #  ----- Set plot options -----
 
+        # Left most plot with ks-test
+        # --------------------------
         # Set up tools
         props = [("survey", "@survey")]
         hover = HoverTool(tooltips=props)
@@ -237,6 +248,8 @@ class Plot:
                     line_dash='dashed', line_width=3)
         lp.add_layout(span)
 
+        # Centre plot with Histograms
+        # ---------------------------
         # Set up tools
         props = [("survey", "@survey"), ("frbs", "@frbs")]
         hover = HoverTool(tooltips=props)
@@ -251,7 +264,6 @@ class Plot:
 
         # Create Column Data Sources for interacting with the plot
         props = dict(top=[], left=[], right=[], bottom=[], survey=[], frbs=[])
-        opt = [*self.surveys].append('frbcat')
         hp_sources = [ColumnDataSource(props) for s in self.surveys]
         cat_sources = [ColumnDataSource(props) for s in self.surveys]
 
@@ -281,6 +293,37 @@ class Plot:
                     line_alpha=0.6,
                     alpha=0,
                     source=source)
+
+        # Right most plot with rates
+        # --------------------------
+        # Set up tools
+        props = [("Survey", '@surveys'), ("Value", '@frbs_day')]
+        hover = HoverTool(tooltips=props)
+        rp_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
+
+        # Create bar plot
+        rp = figure(plot_height=600,
+                    plot_width=600,
+                    active_scroll='wheel_zoom',
+                    toolbar_location='right',
+                    tools=rp_tools,
+                    y_range=self.surveys,
+                    x_axis_type="log"
+                    )
+
+        # Create a Column Data Source for interacting with the plot
+        props = dict(surveys=[], srcs_day=[], frbs_day=[], baseline=[])
+        rp_source = ColumnDataSource(props)
+
+        rp.hbar(y='surveys',
+                left='baseline',
+                right='frbs_day',
+                height=0.7,
+                source=rp_source)
+
+        rp.xaxis.axis_label = 'FRBs per day'
+        rp.y_range.range_padding = 0.1
+        rp.ygrid.grid_line_color = None
 
         # Interactive goodness
         def update():
@@ -315,7 +358,6 @@ class Plot:
                 survey = self.surveys[i]
                 filt = val.copy()
                 filt['survey'] = survey
-                # filt['in_par'] = x_name
 
                 del filt[x_name]
 
@@ -335,7 +377,7 @@ class Plot:
                             value += '0'
                     if f == 'si_mean':
                         if len(value.split('.')[-1]) == 2:
-                            value  = value[:-1]
+                            value = value[:-1]
 
                     query += "{} LIKE '{}' AND ".format(f, value)
 
@@ -386,6 +428,7 @@ class Plot:
                 query += "survey='{}';"
                 query = query.format(iden, x_name, y_name, name)
                 dh = self.import_df(query=query, loc='hist')
+
 
                 if 'frbs' not in dh:
                     dh['frbs'] = '?'
@@ -442,6 +485,22 @@ class Plot:
                                        survey=s,
                                        frbs=frbs)
 
+            # Update rate plot
+            # Construct query to import sql database
+            query = "SELECT * FROM pars WHERE id='{}' and in_par='{}';"
+            query = query.format(iden, x_name)
+            dr = self.import_df(query=query, loc='rate')
+
+            frb_rates = dr.frbs_per_day.tolist()
+            survs = dr.survey.tolist()
+            min_frbs = min(dr.frbs_per_day.tolist()) / 10.
+            baseline = [min_frbs for r in frb_rates]
+
+            # Update source
+            rp_source.data = dict(surveys=survs,
+                                  frbs_day=frb_rates,
+                                  baseline=baseline)
+
         # What to interact with
         for control in [in_sel, out_sel, *single_sel, *dual_sel]:
             control.on_change('value', lambda attr, old, new: update())
@@ -454,18 +513,19 @@ class Plot:
 
         # Layout options
         sizing_mode = 'fixed'
-        sidebar = [cat_sel, sur_sel, in_sel, out_sel, *single_sel, *dual_sel]
-        s = widgetbox(sidebar, width=350)
-        tab1 = Tabs(tabs=[Panel(child=lp, title='p-value')])
-        tab2 = Tabs(tabs=[Panel(child=hp, title='Histograms')])
-        L = layout([[s, lp, hp]], sizing_mode=sizing_mode)
+        left_sb = widgetbox([cat_sel, sur_sel, in_sel, out_sel], width=600)
+        centre_sb = widgetbox(single_sel, width=600)
+        right_sb = widgetbox(dual_sel, width=600)
+
+        grid = [[lp, hp, rp], [left_sb, centre_sb, right_sb]]
+        page = layout(grid, sizing_mode=sizing_mode)
 
         # Make legend clickable
         lp.legend.click_policy = 'hide'
         hp.legend.click_policy = 'hide'
 
         update()  # Initial load of the data
-        curdoc().add_root(L)
+        curdoc().add_root(page)
         curdoc().title = 'frbpoppy'
 
 
