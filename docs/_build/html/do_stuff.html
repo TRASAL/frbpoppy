@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Populate &#8212; frbpoppy by David Gardenier</title>
+    <title>Do populate &#8212; frbpoppy by David Gardenier</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -39,8 +39,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="populate">
-<h1>Populate<a class="headerlink" href="#populate" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="do-populate">
+<h1>Do populate<a class="headerlink" href="#do-populate" title="Permalink to this headline">¶</a></h1>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
@@ -93,6 +93,86 @@ distribute FRBs</li>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pop (Population)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="do-survey">
+<h1>Do survey<a class="headerlink" href="#do-survey" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<span class="target" id="module-do_survey"></span><dl class="function">
+<dt id="do_survey.observe">
+<code class="descclassname">do_survey.</code><code class="descname">observe</code><span class="sig-paren">(</span><em>population</em>, <em>survey_name</em>, <em>pattern='gaussian'</em>, <em>output=True</em>, <em>return_pop=True</em>, <em>return_survey=False</em>, <em>scat=False</em>, <em>scint=False</em><span class="sig-paren">)</span><a class="headerlink" href="#do_survey.observe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run survey to detect FRB sources.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>population</strong> (<em>Population</em>) – Population class of FRB sources to observe</li>
+<li><strong>survey_name</strong> (<em>str</em>) – Name of survey file with which to observe</li>
+<li><strong>pattern</strong> (<em>str</em><em>, </em><em>optional</em>) – Gain pattern, either ‘gaussian’ (default) or
+‘airy’</li>
+<li><strong>output</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print the rates or not</li>
+<li><strong>return_pop</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return a population. Primarily
+intended for debugging. Defaults to True</li>
+<li><strong>return_survey</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return a survey. Primarily
+intended for debugging. Defaults to False</li>
+<li><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include scattering in signal to noise
+calculations. Defaults to False</li>
+<li><strong>scint</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply scintillation to observations.
+Defaults to False</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Observed survey population</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">surv_pop (Population)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="do-monte-carlo">
+<h1>Do Monte Carlo<a class="headerlink" href="#do-monte-carlo" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<span class="target" id="module-do_monte_carlo"></span><p>Run Monte Carlo over frbpoppy input parameters.</p>
+</div>
+<div class="section" id="do-plot">
+<h1>Do plot<a class="headerlink" href="#do-plot" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<span class="target" id="module-do_plot"></span><p>Start up Bokeh server</p>
+<dl class="function">
+<dt id="do_plot.plot">
+<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>mute=True</em><span class="sig-paren">)</span><a class="headerlink" href="#do_plot.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot populations with bokeh. Has to save populations before plotting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>*pops</strong> (<em>Population</em><em>, </em><em>optional</em>) – Add the populations you would like to
+see plotted</li>
+<li><strong>files</strong> (<em>list</em><em>, </em><em>optional</em>) – List of population files to plot (currently
+only works with csv files - file an issue if you would like more
+options)</li>
+<li><strong>frbcat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot frbcat parameters. Defaults to
+True</li>
+<li><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to display the plot or not. Mainly used
+for debugging purposes. Defaults to True</li>
+</ul>
 </td>
 </tr>
 </tbody>
