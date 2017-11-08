@@ -56,7 +56,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'frbpoppy'
-copyright = '2017, David Gardenier'
+copyright = '2018, David Gardenier'
 author = 'David Gardenier'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -334,7 +334,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'frbpoppy', 'frbpoppy Documentation',
-     author, 'frbpoppy', 'One line description of project.',
+     author, 'frbpoppy', 'Fast Radio Burst Population Synthesis',
      'Miscellaneous'),
 ]
 
