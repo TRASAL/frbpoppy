@@ -36,7 +36,7 @@ Spotted a bug, or want to add some functionality? Simply `open an issue <https:/
 Who are the authors?
 ********************
 * **David Gardenier**
-   As a PhD student at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), I'm working with the APERTIF/ALERT team to establish the properties of FRBs. Get in touch with me via `email <gardenier@astron.nl>`_, drop past my `office <http://www.astro.uva.nl/people/david-gardenier/>`_ or say hello at any `FRB conferences <http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/meetings/index.html>`_!
+   As a PhD student at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), I'm working with the APERTIF/ALERT team to establish the properties of FRBs. Get in touch with me via `email <gardenier@astron.nl>`_, drop past my `office <http://davidgardenier.com/#slide=4>`_ or say hello at any `FRB conferences <http://davidgardenier.com/activities.html#slide=3>`_!
 
 *****************
 Looking for more?

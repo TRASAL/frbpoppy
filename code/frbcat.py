@@ -62,7 +62,7 @@ def get_frbcat():
     db['count'] = db.count(axis=1)
     db = db.sort_values('count', ascending=False).drop_duplicates('UTC')
     # Only keeps one detection of the repeater
-    df = df.drop_duplicates('Name')
+    db = db.drop_duplicates('Name')
     db = db.sort_index()
 
     # Apply coordinate transformations
