@@ -1,5 +1,5 @@
 ##############################################################################
-# APERTIF-IAB-10 survey parameters - chiefly thanks to Sarah Burke Spolaor
+# APERTIF-IAB-10 survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
 1.2      ! survey degradation factor
@@ -22,3 +22,5 @@
 90       ! maximum Galactic latitude (deg)
 1        ! fractional uptime [0-1]
 8        ! signal-to-noise ratio [0-1]
+     nan ! reference
+     nan ! colour

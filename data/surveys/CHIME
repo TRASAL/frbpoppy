@@ -1,9 +1,9 @@
 ##############################################################################
-# CHIME survey parameters - chiefly thanks to Sarah Burke Spolaor
+# CHIME survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
 1.2      ! survey degradation factor
-0.64     ! antenna gain (K/Jy)
+1.4      ! antenna gain (K/Jy)
 1000     ! integration time (s)
 1        ! sampling time (ms)
 50       ! system temperature (K)
@@ -22,3 +22,5 @@
 90       ! maximum Galactic latitude (deg)
 0.7      ! fractional uptime [0-1]
 8        ! signal-to-noise ratio [0-1]
+     nan ! reference
+#83230A  ! colour

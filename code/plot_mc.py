@@ -74,13 +74,13 @@ class Plot:
         if not query:
             query = 'select * from pars;'
         if not loc:
-            loc = 'ks_temp2.db'
+            loc = 'ks_temp4.db'
         elif loc == 'ks':
-            loc = 'ks_temp2.db'
+            loc = 'ks_temp4.db'
         elif loc == 'hist':
-            loc = 'hists_temp2.db'
+            loc = 'hists_temp4.db'
         elif loc == 'rate':
-            loc = 'rates_temp2.db'
+            loc = 'rates_temp4.db'
 
         p = self.path(loc)
         conn = sqlite3.connect(p)
@@ -116,7 +116,11 @@ class Plot:
         # Optional frbcat plotting
         cat_sel = CheckboxButtonGroup(labels=['frbcat'], active=[0])
         # Optional survey plotting
-        sur_sel = CheckboxButtonGroup(labels=self.surveys, active=[6, 7])
+        if len(self.surveys) >= 7:
+            selection = [6, 7]
+        else:
+            selection = [0]
+        sur_sel = CheckboxButtonGroup(labels=self.surveys, active=selection)
 
         # Setup observed parameter choice
         out_opt = [self.pars[o] for o in self.out_pars]
@@ -363,7 +367,8 @@ class Plot:
 
                 query = 'SELECT * FROM pars WHERE '
 
-                # A completely ridiculous way to solve a bug with decimals
+                # An utterly and completely ridiculous way to solve SQL
+                # rounding bugs with decimals
                 for f in filt:
                     value = str(filt[f])
                     if '.' not in value:
@@ -378,10 +383,13 @@ class Plot:
                     if f == 'si_mean':
                         if len(value.split('.')[-1]) == 2:
                             value = value[:-1]
+                    if f in ['freq_max']:
+                        pre, post = value.split('.')
+                        value = str(round(float(value[:18]), 15-len(pre)))
 
                     query += "{} LIKE '{}' AND ".format(f, value)
 
-                query = query[:-4]
+                query = query[:-4]  # Remove the last AND
 
                 dk = self.import_df(query=query)
 
@@ -408,9 +416,9 @@ class Plot:
             test = (val_test & par_test)
             try:
                 iden = dk[test].iloc[0]['id']
-                print('Good!')
+                print('Parameters found')
             except IndexError:
-                print('Bad...')
+                print('No parameters found')
                 print('SQL constraints:', query)
                 print('Looking for:', x_name)
                 print('With value:', val[x_name])
@@ -428,7 +436,6 @@ class Plot:
                 query += "survey='{}';"
                 query = query.format(iden, x_name, y_name, name)
                 dh = self.import_df(query=query, loc='hist')
-
 
                 if 'frbs' not in dh:
                     dh['frbs'] = '?'

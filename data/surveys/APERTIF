@@ -1,9 +1,9 @@
 ##############################################################################
-# APERTIF survey parameters - chiefly thanks to Sarah Burke Spolaor
+# APERTIF survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
 1.2      ! survey degradation factor
-1        ! antenna gain (K/Jy)
+1.1      ! antenna gain (K/Jy)
 10800    ! integration time (s)
 0.04096  ! sampling time (ms)
 70       ! system temperature (K)
@@ -22,3 +22,5 @@
 90       ! maximum Galactic latitude (deg)
 1        ! fractional uptime [0-1]
 8        ! signal-to-noise ratio [0-1]
+leon-oostrum ! reference
+#FF7F0E  ! colour

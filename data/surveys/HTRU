@@ -1,17 +1,17 @@
 ##############################################################################
-# HTRU survey parameters - chiefly thanks to Sarah Burke Spolaor
+# HTRU survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
 1.2      ! survey degradation factor
-0.64     ! antenna gain (K/Jy)
+0.69     ! antenna gain (K/Jy)
 270      ! integration time (s)
 0.064    ! sampling time (ms)
-23       ! system temperature (K)
+28       ! system temperature (K)
 1352     ! centre frequency (MHz)
 340      ! bandwidth (MHz)
 0.390625 ! channel bandwidth (MHz)
 2        ! number of polarizations
-0.043    ! beam size (deg^2)
+0.5551   ! beam size (deg^2)
 0        ! minimum RA (deg)
 360      ! maximum RA (deg)
 -90      ! minimum DEC (deg)
@@ -22,3 +22,5 @@
 15       ! maximum Galactic latitude (deg)
 0.5      ! fractional uptime [0-1]
 8        ! signal-to-noise ratio [0-1]
+https://academic.oup.com/mnras/article/409/2/619/1037409 ! reference
+#17BECF  ! colour

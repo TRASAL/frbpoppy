@@ -11,7 +11,7 @@ for c in df:
 
     # Header
     text = ['#'*78]
-    text.append('# {} survey parameters - chiefly thanks to Sarah Burke Spolaor'.format(c))
+    text.append('# {} survey parameters'.format(c))
     text.append('# WARNING: Values must be taken with a grain of salt - guesses abound!')
     text.append('#'*78)
 

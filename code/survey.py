@@ -167,6 +167,10 @@ class Survey:
                 self.gain_pat = v  # Gain pattern of telescope
             elif p.count('Aperture Array'):
                 self.aa = True
+            elif p.count('reference'):
+                pass
+            elif p.count('colour'):
+                pass
             else:
                 pprint('Parameter {0} not recognised'.format(p))
 
