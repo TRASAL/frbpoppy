@@ -57,4 +57,4 @@ gf = ['gfortran',
       loc('./data/models/dm/glun.o'),
       ]
 
-#run(gf)
+run(gf)

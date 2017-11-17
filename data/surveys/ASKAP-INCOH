@@ -1,16 +1,16 @@
 ##############################################################################
-# ASKAP-INCOH survey parameters - chiefly thanks to Sarah Burke Spolaor
+# ASKAP-INCOH survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
 1.2      ! survey degradation factor
 1        ! antenna gain (K/Jy)
 3600     ! integration time (s)
-1.2      ! sampling time (ms)
-3800     ! system temperature (K)
-1420     ! centre frequency (MHz)
+1.265    ! sampling time (ms)
+333.333  ! system temperature (K)
+1320     ! centre frequency (MHz)
 336      ! bandwidth (MHz)
 1        ! channel bandwidth (MHz)
-2        ! number of polarizations
+1        ! number of polarizations
 30       ! beam size (deg^2)
 0        ! minimum RA (deg)
 360      ! maximum RA (deg)
@@ -21,4 +21,6 @@
 -90      ! minimum Galactic latitude (deg)
 90       ! maximum Galactic latitude (deg)
 0.5      ! fractional uptime [0-1]
-8        ! signal-to-noise ratio [0-1]
+9        ! signal-to-noise ratio [0-1]
+http://proceedings.spiedigitallibrary.org/pdfaccess.ashx?url=/data/conferences/spiep/67835/84442a.pdf ! reference
+#C5B0D5  ! colour

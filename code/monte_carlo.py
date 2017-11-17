@@ -89,8 +89,8 @@ class MonteCarlo:
         # Initialise parameters
         self.dm_host = Parameter(0, 200, 10, 100)
         self.dm_igm_slope = Parameter(1000, 1400, 20, 1200)
-        self.freq_max = Parameter(10e5, 10e10, 0.5, 10e9, log=True)
-        self.freq_min = Parameter(10e5, 10e10, 0.5, 10e6, log=True)
+        self.freq_max = Parameter(1e6, 1e11, 0.5, 1e10, log=True)
+        self.freq_min = Parameter(1e6, 1e11, 0.5, 1e7, log=True)
         self.lum_bol_max = Parameter(1e30, 1e60, 1, 1e50, log=True)
         self.lum_bol_min = Parameter(1e30, 1e60, 1, 1e40, log=True)
         self.lum_bol_slope = Parameter(0.5, 1.5, 0.1, 1.)
@@ -303,7 +303,7 @@ class MonteCarlo:
                                            return_survey=True)
 
                     if sur_pop.n_srcs == 0:
-                        pprint('Woah, no population')
+                        pprint('No {} population'.format(sur_pop.name))
                         continue
 
                     # Save survey time for rates
@@ -377,6 +377,6 @@ class MonteCarlo:
         db_ks = pd.DataFrame(d)
         db_rates = pd.DataFrame(rates)
 
-        self.save(df=db_hists, filename='hists_temp2.db')
-        self.save(df=db_ks, filename='ks_temp2.db')
-        self.save(df=db_rates, filename='rates_temp2.db')
+        self.save(df=db_hists, filename='hists_temp4.db')
+        self.save(df=db_ks, filename='ks_temp4.db')
+        self.save(df=db_rates, filename='rates_temp4.db')

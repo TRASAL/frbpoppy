@@ -39,21 +39,24 @@ def match_surveys(db, surveys):
 
 def get_frbcat():
     """Get frbcat as a Pandas DataFrame."""
-    # Try using the most recently published frbcat
-    try:
-        url = 'http://www.astronomy.swin.edu.au/pulsar/frbcat/'
-        url += 'table.php?format=text&sep=comma'
 
-        s = requests.get(url).content
-        f = io.StringIO(s.decode('utf-8'))
+    # # BROKEN AS OF 13/11/2017
+    # # Try using the most recently published frbcat
+    # try:
+    #     url = 'http://www.astronomy.swin.edu.au/pulsar/frbcat/'
+    #     url += 'table.php?format=text&sep=comma'
+    #
+    #     s = requests.get(url).content
+    #     f = io.StringIO(s.decode('utf-8'))
+    #
+    # # Unless there's no internet
+    # except requests.ConnectionError:
 
-    # Unless there's no internet
-    except requests.ConnectionError:
-        cwd = os.path.dirname(__file__)
-        folder = '../data/frbcat/'
-        catdir = os.path.join(cwd, folder)
-        # Find latest version of frbcat
-        f = min(glob.glob(catdir + '/frbcat*.csv'), key=os.path.getctime)
+    cwd = os.path.dirname(__file__)
+    folder = '../data/frbcat/'
+    catdir = os.path.join(cwd, folder)
+    # Find latest version of frbcat
+    f = max(glob.glob(catdir + '/frbcat*.csv'), key=os.path.getctime)
 
     db = pd.read_csv(f)
 
