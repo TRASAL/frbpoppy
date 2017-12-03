@@ -74,13 +74,13 @@ class Plot:
         if not query:
             query = 'select * from pars;'
         if not loc:
-            loc = 'ks_temp4.db'
+            loc = 'ks_temp5.db'
         elif loc == 'ks':
-            loc = 'ks_temp4.db'
+            loc = 'ks_temp5.db'
         elif loc == 'hist':
-            loc = 'hists_temp4.db'
+            loc = 'hists_temp5.db'
         elif loc == 'rate':
-            loc = 'rates_temp4.db'
+            loc = 'rates_temp5.db'
 
         p = self.path(loc)
         conn = sqlite3.connect(p)
@@ -119,7 +119,7 @@ class Plot:
         if len(self.surveys) >= 7:
             selection = [6, 7]
         else:
-            selection = [0]
+            selection = [i for i in range(len(self.surveys))]
         sur_sel = CheckboxButtonGroup(labels=self.surveys, active=selection)
 
         # Setup observed parameter choice
@@ -165,6 +165,8 @@ class Plot:
                 st = 0.00001
                 ma += st
 
+            print(p, mi, ma, st)
+
             # Set standard value
             v = df[p].value_counts().idxmax()
 
@@ -197,7 +199,11 @@ class Plot:
 
             # Stepsize
             s = np.sort(p_min.unique())
-            st = s[1] - s[0]
+            if len(s) > 1:
+                st = s[1] - s[0]
+            else:
+                st = 0.00001
+                ma += st
 
             # Set standard values
             mi_v = p_min.value_counts().idxmax()

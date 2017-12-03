@@ -8,21 +8,28 @@ mc.surveys = {'APERTIF': 'APERTIF',
               'PMSURV': 'parkes',
               'HTRU': 'parkes',
               'UTMOST-1D': 'UTMOST'}
+            #   'PMSURV': 'parkes',
+            #   'ASKAP-INCOH': 'ASKAP',
+            #   'ASKAP-FLY': 'ASKAP',
+            #   'GBT': 'GBT',
+            #   'PALFA': 'arecibo',
+            #   'ARECIBO-SPF': 'arecibo',
+            #   'ALFABURST': 'arecibo'
 
 # Set a limited run
-mc.days = 30
-mc.dm_host.limits(0, 100, 10, 100)
-mc.dm_igm_slope.limits(1000, 1400, 50, 1200)
-mc.freq_max.limits(1e6, 1e11, 0.5, 1e10, log=True)
-mc.freq_min.limits(1e6, 1e11, 0.5, 1e7, log=True)
-mc.lum_bol_max.limits(1e30, 1e60, 10, 1e60, log=True)
-mc.lum_bol_min.limits(1e10, 1e30, 10, 1e20, log=True)
-mc.lum_bol_slope.limits(-0.9, -1.3, 0.1, -1.1)
+mc.days = 60
+mc.dm_host.limits(0, 100, 50, 100)
+mc.dm_igm_slope.limits(1000, 1400, 100, 1200)
+mc.freq_max.limits(1e7, 1e10, 1, 1e10, log=True)
+mc.freq_min.limits(1e7, 1e10, 1, 1e7, log=True)
+mc.lum_bol_max.limits(1e30, 1e60, 10, 1e50, log=True)
+mc.lum_bol_min.limits(1e30, 1e60, 10, 1e40, log=True)
+mc.lum_bol_slope.limits(-1.7, -1.3, 0.1, -1.5)
 mc.n_day.limits(4000, 6000, 1000, 5000)
-mc.rep.limits(0.0, 0.05, 0.01, 0)
-mc.si_mean.limits(-2.0, -1.5, 0.1, -1.6)
-mc.si_sigma.limits(0.0, 0.5, 0.1, 0.0)
-mc.w_int_max.limits(0, 2, 0.2, 2)
-mc.w_int_min.limits(0, 2, 0.2, 1)
+mc.rep.limits(0.0, 0.01, 0.01, 0)
+mc.si_mean.limits(-1.6, -1.4, 0.1, -1.5)
+mc.si_sigma.limits(0.0, 0.1, 0.1, 0.0)
+mc.w_int_max.limits(0, 10, 0.5, 5)
+mc.w_int_min.limits(0, 10, 0.5, 1)
 
 mc.run()

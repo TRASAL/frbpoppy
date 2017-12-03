@@ -90,6 +90,9 @@ def histogram(dfs):
                 continue
 
             bins = np.linspace(low, high, 15)
+
+            if high - low > 1000:
+                bins = np.geomspace(low, high, num=15)
             col = df[c].apply(pd.to_numeric, errors='coerce')
             col = col.dropna()
             h, _ = np.histogram(col, bins=bins)
@@ -242,7 +245,8 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=hp_tools,
-                output_backend="webgl")
+                output_backend="webgl",
+                x_axis_type="log")
 
     # Create Column Data Sources for interacting with the plot
     hists = histogram(dfs)
@@ -282,6 +286,7 @@ def plot_pop(files=[], frbcat=True):
                 df = empty
             else:
                 df = dfs[i][cols]
+                df = df.replace('None', np.nan)
                 df[x_name].apply(pd.to_numeric)
                 df[y_name].apply(pd.to_numeric)
                 df = df.dropna()

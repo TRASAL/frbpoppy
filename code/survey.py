@@ -244,10 +244,11 @@ class Survey:
 
     def dm_smear(self, src, dm_err=0.2):
         """
-        Calculate delay in pulse across a channel due to dm smearing. Formula's
-        based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
-        Kramer, section A2.4. Note the power of the forefactor has changed due
-        to the central frequency being given in MHz.
+        Calculate delay in pulse across a channel due to dm smearing.
+
+        Formula's based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer
+        & Michael Kramer, section A2.4. Note the power of the forefactor has
+        changed due to the central frequency being given in MHz.
 
         Args:
             src (Source): Source object with a dm attribute
@@ -257,8 +258,8 @@ class Survey:
             t_dm, t_dm_err (float): Time of delay [ms] at central band
                 frequency, with its error assuming a
                 20% uncertainty in the dispersion measure
-        """
 
+        """
         t_dm = 8.297616e6 * self.bw_chan * src.dm * (self.central_freq)**-3
         t_dm_err = (t_dm/src.dm)*(dm_err*src.dm)
 
@@ -322,8 +323,10 @@ class Survey:
 
     def calc_s_peak(self, frb, src, f_low=10e6, f_high=10e9):
         """
-        Calculate the mean spectral flux density following Lorimer et al, 2013,
-        eq. 9., at the central frequency of the survey.
+        Calculate the mean spectral flux density.
+
+        Following Lorimer et al, 2013, eq. 9., at the central frequency
+        of the survey.
 
         Args:
             frb (class): FRB
@@ -335,8 +338,8 @@ class Survey:
 
         Returns:
             frb.s_peak (float): Mean spectral flux density [Jy]
-        """
 
+        """
         # Limits observing bandwidth (as seen in rest frame source)
         f_1 = (self.central_freq - 0.5*self.bw)
         f_1 *= 1e6  # MHz -> Hz
@@ -485,7 +488,7 @@ class Survey:
 
             area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
             f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
-            f_time = pop.time/self.t_obs
+            f_time = 86400 /self.t_obs  #pop.time
             det = r.det * f_area * f_time
             faint = r.faint * f_area * f_time
             out = r.out + r.det - det + r.faint - faint
@@ -533,7 +536,7 @@ class Survey:
         out = ('Outside survey', round(days), round(f.out), round(s.out))
         vol = ('/Gpc^3', 365.25, round(f.vol), round(s.vol))
         if f.det > 0:
-            exp = round(days/f.det, 3)
+            exp = round(days/f.det, 4)
         else:
             exp = '?'
         exp_frb = ('Expected', exp, 1, '-')
