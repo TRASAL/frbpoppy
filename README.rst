@@ -16,6 +16,13 @@ How can I install it?
 
     $ git clone https://github.com/davidgardenier/frbpoppy
 
+
+.. note:: The following step is still under construction. Currently frbpoppy can be installed on Ubuntu by running
+   ::
+
+    $ python3 setup.py
+
+
 2. Install it on your system:
    ::
 
