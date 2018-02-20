@@ -97,3 +97,7 @@ misc/
 *.coverage
 *.ipynb
 *.lprof
+tests/*.p
+tests/*.csv
+tests/*.csv
+tests/*.png

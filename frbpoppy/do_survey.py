@@ -9,7 +9,8 @@ def observe(population,
             return_pop=True,
             return_survey=False,
             scat=False,
-            scint=False):
+            scint=False,
+            pop_path=''):
     """
     Run survey to detect FRB sources.
 
@@ -27,13 +28,18 @@ def observe(population,
             calculations. Defaults to False
         scint (bool, optional): Whether to apply scintillation to observations.
             Defaults to False
+        pop_path (str): Give filename for a pickled population rather than
+            using a population class
 
     Returns:
         surv_pop (Population): Observed survey population
     """
 
     # Copy population so that it can be observed multiple times
-    pop = unpickle(population.name)
+    if not pop_path:
+        pop = unpickle(population.name)
+    else:
+        pop = unpickle(filename=pop_path)
 
     s = Survey(survey_name, pattern=pattern)
     surv_pop = Population()

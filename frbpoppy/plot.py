@@ -71,10 +71,10 @@ def histogram(dfs):
     # Bin each dataframe
     for df in dfs:
 
-        hist = pd.DataFrame(np.nan, index=np.arange(14), columns=['empty'])
+        hist = pd.DataFrame(np.nan, index=np.arange(49), columns=['empty'])
         hist['color'] = df['color'][0]
         hist['population'] = df['population'][0]
-        hist['bottom'] = 0.
+        hist['bottom'] = 0.0000001
         for c in cols:
 
             low = limits[c][0]
@@ -89,7 +89,10 @@ def histogram(dfs):
             if df[c].nunique() == 1 and df[c][0] == 'None':
                 continue
 
-            bins = np.linspace(low, high, 15)
+            bins = np.linspace(low, high, 50)
+
+            if high - low > 1000:
+                bins = np.geomspace(low, high, num=50)
             col = df[c].apply(pd.to_numeric, errors='coerce')
             col = col.dropna()
             h, _ = np.histogram(col, bins=bins)
@@ -210,12 +213,14 @@ def plot_pop(files=[], frbcat=True):
     sc_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
     # Create scatter plot
-    sp = figure(plot_height=600,
-                plot_width=600,
+    sp = figure(plot_height=700,
+                plot_width=700,
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
-                tools=sc_tools,
-                output_backend="webgl")
+                tools=sc_tools)
+                # output_backend="webgl")
+    # Stop labels falling off
+    sp.min_border_left = 80
 
     # Create Column Data Sources for interacting with the plot
     props = dict(x=[], y=[], color=[], population=[])
@@ -237,12 +242,14 @@ def plot_pop(files=[], frbcat=True):
     hp_tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
     # Create histogram plot
-    hp = figure(plot_height=600,
-                plot_width=600,
+    hp = figure(plot_height=700,
+                plot_width=700,
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=hp_tools,
-                output_backend="webgl")
+                # output_backend="webgl",
+                # x_axis_type="log",
+                y_axis_type="log")
 
     # Create Column Data Sources for interacting with the plot
     hists = histogram(dfs)
@@ -282,8 +289,8 @@ def plot_pop(files=[], frbcat=True):
                 df = empty
             else:
                 df = dfs[i][cols]
-                df[x_name].apply(pd.to_numeric)
-                df[y_name].apply(pd.to_numeric)
+                df[x_name].apply(pd.to_numeric, errors='coerce')
+                df[y_name].apply(pd.to_numeric, errors='coerce')
                 df = df.dropna()
 
             # Update data

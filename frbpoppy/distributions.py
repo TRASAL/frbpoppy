@@ -6,7 +6,10 @@ import random
 
 def powerlaw(low, high, power):
     """
-    Return random variable distributed according to power law
+    Return random variable distributed according to power law.
+
+    The power law distribution power is simply the power, not including a minus
+    sign (P scales with x^n with n the power).
 
     Args:
         low (float): Lower limit of distribution
