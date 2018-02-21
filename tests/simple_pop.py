@@ -1,10 +1,12 @@
 """Test whether distributions for simple populations hold true."""
 import os
+
 import sys
 sys.path.append("..")
-from do_plot import plot
-from do_populate import generate
-from do_survey import observe
+
+from frbpoppy.do_plot import plot
+from frbpoppy.do_populate import generate
+from frbpoppy.do_survey import observe
 
 folder = os.path.dirname(os.path.realpath(__file__)) + '/'
 

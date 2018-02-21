@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append("..")
-from population import Population, unpickle
+from frbpoppy.population import Population, unpickle
 
 pop_path = './simple_pop.p'
 

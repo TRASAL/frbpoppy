@@ -7,8 +7,8 @@ import sqlite3
 import sys
 from scipy.integrate import quad as integrate
 
-import galacticops as go
-from log import pprint
+import frbpoppy.galacticops as go
+from frbpoppy.log import pprint
 
 mods = os.path.join(os.path.dirname(__file__), '../data/models/')
 uni_mods = os.path.join(mods, 'universe/')

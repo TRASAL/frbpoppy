@@ -1,5 +1,5 @@
-from population import Population, unpickle
-from survey import Survey
+from frbpoppy.population import Population, unpickle
+from frbpoppy.survey import Survey
 
 
 def observe(population,

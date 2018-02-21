@@ -3,11 +3,11 @@
 import math
 import random
 
-import galacticops as go
-import distributions as dis
-import precalc as pc
-from population import Population
-from source import Source
+import frbpoppy.galacticops as go
+import frbpoppy.distributions as dis
+import frbpoppy.precalc as pc
+from frbpoppy.population import Population
+from frbpoppy.source import Source
 
 
 def generate(n_gen,

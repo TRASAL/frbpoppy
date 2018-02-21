@@ -12,6 +12,7 @@ import numpy as np
 import os
 import pandas as pd
 import sys
+sys.path.append("..")
 
 from bokeh.io import curdoc
 from bokeh.layouts import layout, widgetbox
@@ -20,8 +21,8 @@ from bokeh.models.widgets import Select
 from bokeh.palettes import Category10, viridis
 from bokeh.plotting import figure
 
-from frbcat import get_frbcat
-from log import pprint
+from frbpoppy.log import pprint
+from frbpoppy.frbcat import get_frbcat
 
 # Number of dataframes/populations
 num_df = 0

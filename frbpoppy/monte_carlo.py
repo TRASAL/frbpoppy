@@ -8,12 +8,12 @@ import os
 import pandas as pd
 import sqlite3
 
-from adapt_pop import Adapt
-from do_hist import histogram
-from do_populate import generate
-from do_survey import observe
-from frbcat import get_frbcat
-from log import pprint
+from frbpoppy.adapt_pop import Adapt
+from frbpoppy.do_hist import histogram
+from frbpoppy.do_populate import generate
+from frbpoppy.do_survey import observe
+from frbpoppy.frbcat import get_frbcat
+from frbpoppy.log import pprint
 
 
 class Parameter:

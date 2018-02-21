@@ -1,5 +1,5 @@
-from do_populate import generate
-from do_survey import observe
+from frbpoppy.do_populate import generate
+from frbpoppy.do_survey import observe
 from do_plot import plot
 
 # Generate FRB population

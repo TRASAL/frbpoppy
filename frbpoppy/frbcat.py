@@ -7,7 +7,7 @@ import os
 import pandas as pd
 import requests
 
-import galacticops as go
+import frbpoppy.galacticops as go
 
 
 def transform_coords(db):

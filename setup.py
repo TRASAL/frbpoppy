@@ -1,3 +1,22 @@
+# from setuptools import setup
+#
+# setup(name='frbpoppy',
+#       version='0.0.1',
+#       description='Fast Radio Burst Population Synthesis',
+#       long_description=open('README.rst').read(),
+#       url='http://github.com/davidgardenier/frbpoppy',
+#       author='David Gardenier',
+#       author_email='gardenier@astron.nl',
+#       license='MIT',
+#       packages=['frbworld'],
+#       include_package_data=True,
+#       zip_safe=False,
+#       install_requires=['bokeh == 0.12.6',
+#                         'numpy >= 1.13.0',
+#                         'pandas >= 0.17.1',
+#                         'scipy >= 0.18.1',
+#                         'SQLAlchemy >= 1.1.14'])
+
 import glob
 import os
 import subprocess
