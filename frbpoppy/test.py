@@ -2,11 +2,11 @@ import os
 import unittest
 
 import distributions as ds
-import galacticops as go
-from population import Population as pop
+import frbpoppy.galacticops as go
+from frbpoppy.population import Population as pop
 from population import unpickle
-from do_populate import generate
-from do_survey import observe
+from frbpoppy.do_populate import generate
+from frbpoppy.do_survey import observe
 from do_plot import plot
 
 

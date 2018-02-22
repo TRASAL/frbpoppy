@@ -7,8 +7,8 @@ import sqlite3
 import sys
 from scipy.integrate import quad as integrate
 
-import galacticops as go
-from log import pprint
+import frbpoppy.galacticops as go
+from frbpoppy.log import pprint
 
 mods = os.path.join(os.path.dirname(__file__), '../data/models/')
 uni_mods = os.path.join(mods, 'universe/')
@@ -101,7 +101,7 @@ def ne2001_table(gal, gab, test=False):
     return dm_mw
 
 
-def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=2.5, test=False):
+def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0, test=False):
     """
     Create/use a lookup table for distance to redshift.
 
@@ -117,7 +117,7 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=2.5, test=False):
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
-        z_max (float, optional): Maximum redshift. Defaults to 2.5
+        z_max (float, optional): Maximum redshift. Defaults to 5.0
         test (bool): Flag for coarser resolution
     Returns:
         z (float): Redshift

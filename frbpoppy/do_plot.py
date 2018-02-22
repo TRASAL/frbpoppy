@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-from log import pprint
+from frbpoppy.log import pprint
 
 def plot(*pops, files=[], frbcat=True, show=True, mute=True):
     """
