@@ -115,11 +115,17 @@ class Plot:
 
         # Optional frbcat plotting
         cat_sel = CheckboxButtonGroup(labels=['frbcat'], active=[0])
+        cat_sel = CheckboxButtonGroup(labels=['frbcat'], active=[])   # SYDNET ADDITION
+
         # Optional survey plotting
         if len(self.surveys) >= 7:
             selection = [6, 7]
         else:
             selection = [i for i in range(len(self.surveys))]
+<<<<<<< HEAD:code/plot_mc.py
+=======
+            selection = [0]  # SYDNET ADDITION
+>>>>>>> develop:frbpoppy/plot_mc.py
         sur_sel = CheckboxButtonGroup(labels=self.surveys, active=selection)
 
         # Setup observed parameter choice

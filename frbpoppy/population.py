@@ -3,7 +3,7 @@ import os
 import pickle
 import pandas as pd
 
-from log import pprint
+from frbpoppy.log import pprint
 
 
 class Population:

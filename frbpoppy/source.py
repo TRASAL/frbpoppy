@@ -1,6 +1,6 @@
 import random
-import distributions as dis
-from frb import FRB
+import frbpoppy.distributions as dis
+from frbpoppy.frb import FRB
 
 
 class Source:

@@ -2,8 +2,8 @@
 
 import random
 
-import galacticops as go
-import distributions as dis
+import frbpoppy.galacticops as go
+import frbpoppy.distributions as dis
 
 
 class Adapt:

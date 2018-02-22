@@ -97,5 +97,12 @@ misc/
 *.coverage
 *.ipynb
 *.lprof
+tests/*.p
+tests/*.csv
+tests/*.csv
+tests/*.png
+*.egg-info/
+*.o
+*.so
 
 data/models/dm/libne2001\.so

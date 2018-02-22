@@ -3,11 +3,11 @@
 import math
 import random
 
-import galacticops as go
-import distributions as dis
-import precalc as pc
-from population import Population
-from source import Source
+import frbpoppy.galacticops as go
+import frbpoppy.distributions as dis
+import frbpoppy.precalc as pc
+from frbpoppy.population import Population
+from frbpoppy.source import Source
 
 
 def generate(n_gen,
@@ -23,7 +23,8 @@ def generate(n_gen,
              repeat=0.0,
              si_pars=[-1.4, 0.],
              z_max=2.5,
-             test=False):
+             test=False,
+             save_path=''):
     """
     Generate a population of FRBs.
 
@@ -60,6 +61,7 @@ def generate(n_gen,
         z_max (float, optional): The maximum redshift out to which to
             distribute FRBs
         test (float, optional): Flag to help testing
+        save_path (str): path for saving population. Defaults to results folder
 
     Returns:
         pop (Population): A population of generated sources
@@ -96,7 +98,7 @@ def generate(n_gen,
 
     if electron_model not in ['ne2001']:
         m = 'Unsupported electron model: {}'.format(electron_model)
-        raise ValueError(m)
+        print(m)
 
     if not all(isinstance(par, (float, int)) for par in emission_pars):
         m = 'Please ensure all emission parameters are floats or integeters'
@@ -201,7 +203,10 @@ def generate(n_gen,
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
 
         # Dispersion measure of the Milky Way
-        src.dm_mw = pc.ne2001_table(src.gl, src.gb, test=test)
+        if electron_model == 'ne2001':
+            src.dm_mw = pc.ne2001_table(src.gl, src.gb, test=test)
+        else:
+            src.dm_mw = 0.
 
         # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z, slope=pop.dm_igm)
@@ -227,6 +232,9 @@ def generate(n_gen,
         pop.add(src)
 
     # Save population
-    pop.pickle_pop()
+    if not save_path:
+        pop.pickle_pop()
+    else:
+        pop.pickle_pop(out=save_path)
 
     return pop

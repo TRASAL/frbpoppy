@@ -3,8 +3,8 @@ import os
 import random
 from scipy.special import j1
 
-import galacticops as go
-from log import pprint
+import frbpoppy.galacticops as go
+from frbpoppy.log import pprint
 
 
 class Rates:
