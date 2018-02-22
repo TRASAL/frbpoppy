@@ -43,6 +43,8 @@ class PostDevelopCommand(develop):
             flag = '-dynamiclib'
         if os.name == 'nt':  # Linux
             flag = '-shared'
+        else:  # Linux
+            flag = '-shared'
 
         # Convert .o file to something with which python can interact
         gf = ['gfortran',
@@ -72,7 +74,7 @@ setup(name='frbpoppy',
       author='David Gardenier',
       author_email='gardenier@astron.nl',
       license='MIT',
-      packages=['frbworld'],
+      packages=['frbpoppy'],
       zip_safe=False,
       python_requires='>=3.0',
       install_requires=['bokeh == 0.12.6',
