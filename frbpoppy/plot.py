@@ -90,17 +90,11 @@ def histogram(dfs):
             if df[c].nunique() == 1 and df[c][0] == 'None':
                 continue
 
-<<<<<<< HEAD:code/plot.py
-            bins = np.linspace(low, high, 15)
-
-            if high - low > 1000:
-                bins = np.geomspace(low, high, num=15)
-=======
             bins = np.linspace(low, high, 50)
 
             if high - low > 1000:
                 bins = np.geomspace(low, high, num=50)
->>>>>>> develop:frbpoppy/plot.py
+
             col = df[c].apply(pd.to_numeric, errors='coerce')
             col = col.dropna()
             h, _ = np.histogram(col, bins=bins)
@@ -255,14 +249,9 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=hp_tools,
-<<<<<<< HEAD:code/plot.py
-                output_backend="webgl",
-                x_axis_type="log")
-=======
                 # output_backend="webgl",
                 # x_axis_type="log",
                 y_axis_type="log")
->>>>>>> develop:frbpoppy/plot.py
 
     # Create Column Data Sources for interacting with the plot
     hists = histogram(dfs)
@@ -302,14 +291,9 @@ def plot_pop(files=[], frbcat=True):
                 df = empty
             else:
                 df = dfs[i][cols]
-<<<<<<< HEAD:code/plot.py
                 df = df.replace('None', np.nan)
-                df[x_name].apply(pd.to_numeric)
-                df[y_name].apply(pd.to_numeric)
-=======
                 df[x_name].apply(pd.to_numeric, errors='coerce')
                 df[y_name].apply(pd.to_numeric, errors='coerce')
->>>>>>> develop:frbpoppy/plot.py
                 df = df.dropna()
 
             # Update data

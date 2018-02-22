@@ -12,7 +12,6 @@ class PostDevelopCommand(develop):
 
     def run(self):
         """Compile fortran libraries for NE2001."""
-        check_call('sudo apt-get install gfortran'.split())
 
         def loc(f):
             """Full location path to file."""
@@ -77,7 +76,7 @@ setup(name='frbpoppy',
       packages=['frbpoppy'],
       zip_safe=False,
       python_requires='>=3.0',
-      install_requires=['bokeh == 0.12.6',
+      install_requires=['bokeh == 0.12.14',
                         'numpy >= 1.13.0',
                         'pandas >= 0.17.1',
                         'scipy >= 0.18.1',
