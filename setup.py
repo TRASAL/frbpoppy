@@ -40,7 +40,7 @@ class PostDevelopCommand(develop):
 
         if os.name == 'mac':  # Mac
             flag = '-dynamiclib'
-        if os.name == 'nt':  # Linux
+        if os.name == 'nt':  # Windows
             flag = '-shared'
         else:  # Linux
             flag = '-shared'
