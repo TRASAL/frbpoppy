@@ -9,10 +9,7 @@ from scipy.integrate import quad as integrate
 
 import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
-
-mods = os.path.join(os.path.dirname(__file__), '../data/models/')
-uni_mods = os.path.join(mods, 'universe/')
-dm_mods = os.path.join(mods, 'dm/')
+from frbpoppy.paths import paths
 
 
 def ne2001_table(gal, gab, test=False):
@@ -28,6 +25,8 @@ def ne2001_table(gal, gab, test=False):
         dm_mw (float): Galactic dispersion measure [pc*cm^-3]
 
     """
+    uni_mods = os.path.join(paths.models(), 'universe/')
+
     # Set up for testing
     if test:
         step = 10
@@ -123,6 +122,8 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0, test=False):
         z (float): Redshift
 
     """
+    uni_mods = os.path.join(paths.models(), 'universe/')
+
     # Initializing
     cl = 299792.458  # Velocity of light [km/sec]
 

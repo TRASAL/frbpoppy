@@ -3,11 +3,12 @@
 import math
 import random
 
-import frbpoppy.galacticops as go
-import frbpoppy.distributions as dis
-import frbpoppy.precalc as pc
+from frbpoppy.log import pprint
 from frbpoppy.population import Population
 from frbpoppy.source import Source
+import frbpoppy.distributions as dis
+import frbpoppy.galacticops as go
+import frbpoppy.precalc as pc
 
 
 def generate(n_gen,
@@ -23,8 +24,7 @@ def generate(n_gen,
              repeat=0.0,
              si_pars=[-1.4, 0.],
              z_max=2.5,
-             test=False,
-             save_path=''):
+             test=False):
     """
     Generate a population of FRBs.
 
@@ -61,7 +61,6 @@ def generate(n_gen,
         z_max (float, optional): The maximum redshift out to which to
             distribute FRBs
         test (float, optional): Flag to help testing
-        save_path (str): path for saving population. Defaults to results folder
 
     Returns:
         pop (Population): A population of generated sources
@@ -98,7 +97,7 @@ def generate(n_gen,
 
     if electron_model not in ['ne2001']:
         m = 'Unsupported electron model: {}'.format(electron_model)
-        print(m)
+        pprint(m)
 
     if not all(isinstance(par, (float, int)) for par in emission_pars):
         m = 'Please ensure all emission parameters are floats or integeters'
@@ -223,18 +222,14 @@ def generate(n_gen,
         # If repeating add another FRB
         if random.random() < pop.repeat:
 
-            ts = dis.oppermann_pen()
-
-            for t in ts:
+            times = dis.oppermann_pen()
+            for t in times:
                 src.create_frb(pop, time=t)
 
         # Add source to population
         pop.add(src)
 
     # Save population
-    if not save_path:
-        pop.pickle_pop()
-    else:
-        pop.pickle_pop(out=save_path)
+    pop.pickle_pop()
 
     return pop

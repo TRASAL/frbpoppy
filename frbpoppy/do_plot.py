@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from frbpoppy.log import pprint
+from frbpoppy.paths import paths
 
 def plot(*pops, files=[], frbcat=True, show=True, mute=True):
     """
@@ -29,8 +30,8 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True):
             pop.save()
 
             # Save location
-            loc = '../data/results/population_' + pop.name.lower() + '.csv'
-            out = os.path.join(folder, loc)
+            file_name = 'population_' + pop.name.lower() + '.csv'
+            out = os.path.join(paths.populations(), file_name)
             files.append(out)
 
     # Command for starting up server

@@ -4,6 +4,7 @@ import pickle
 import pandas as pd
 
 from frbpoppy.log import pprint
+from frbpoppy.paths import paths
 
 
 class Population:
@@ -57,35 +58,29 @@ class Population:
         self.sources.append(source)
         self.n_srcs += 1
 
-    def save(self, out=None, sep=','):
+    def save(self, sep=','):
         """
         Write out source properties as data file.
 
         Args:
-            out (str): Outfile location. Defaults to
-                data/results/population.csv or
-                data/results/population_<survey_name>.csv if survey
             sep (str): Define seperator in file, which also changes the file
                        type between .dat and .csv. Defaults to csv
         """
-        # Set default file locations
-        if out is None:
+        # Check if a population has been a survey name
+        if not self.name:
+            file_name = 'population'
+        else:
+            file_name = 'population_' + self.name.lower()
 
-            # Check if a population has been a survey name
-            if self.name is None:
-                loc = '../data/results/population'
-                out = os.path.join(os.path.dirname(__file__), loc)
-            else:
-                loc = '../data/results/population_' + self.name.lower()
-                out = os.path.join(os.path.dirname(__file__), loc)
+        # Set file types
+        if sep == ',':
+            file_name += '.csv'
+        elif sep == ' ':
+            file_name += '.dat'
 
-            # Set file types
-            if sep == ',':
-                out += '.csv'
-            elif sep == ' ':
-                out += '.dat'
+        path = paths.populations() + file_name
 
-        with open(out, 'w') as f:
+        with open(path, 'w') as f:
             v = self.values(sep=sep)
             if not v:
                 v = ' '
@@ -140,14 +135,13 @@ class Population:
         df = pd.read_csv(data)
         return df
 
-    def pickle_pop(self, out=None):
+    def pickle_pop(self):
         """Allow the population to be pickled for future use."""
-        # Check if an output file has been given
-        if out is None:
-            loc = '../data/results/population_{}.p'.format(self.name.lower())
-            out = os.path.join(os.path.dirname(__file__), loc)
 
-        output = open(out, 'wb')
+        file_name = 'population_{}.p'.format(self.name.lower())
+        file_path = paths.populations() + file_name
+
+        output = open(file_path, 'wb')
         pickle.dump(self, output, 2)
         output.close()
 
@@ -170,8 +164,8 @@ def unpickle(filename=None):
         # Find standard population files
         try:
             p = '../data/results/population_{}.p'.format(filename.lower())
-            path = os.path.join(os.path.dirname(__file__), p)
-            f = open(path, 'rb')
+            loc = os.path.join(os.path.dirname(__file__), p)
+            f = open(loc, 'rb')
         except FileNotFoundError:
             s = 'Pickled population file "{0}" does not exist'.format(filename)
             raise FileNotFoundError(s)

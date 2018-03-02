@@ -5,6 +5,7 @@ from scipy.special import j1
 
 import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
+from frbpoppy.paths import paths
 
 
 class Rates:
@@ -56,8 +57,7 @@ class Survey:
         else:
             # Find standard survey files
             try:
-                survey_dir = os.path.dirname(__file__) + '/../data/surveys/'
-                path = os.path.join(survey_dir, survey_name)
+                path = os.path.join(paths.surveys(), survey_name)
                 f = open(path, 'r')
             except IOError:
                 s = 'Survey file {0} does not exist'.format(survey_name)
@@ -475,12 +475,11 @@ class Survey:
 
     def scale_rates(self, pop):
         """
-        Scale all rates according to integration time and uptime
+        Scale all rates according to integration time and uptime.
 
         Args:
             pop (Population): Population class
         """
-
         rates = (self.frb_rates, self.src_rates)
         n = 0
 
@@ -488,7 +487,7 @@ class Survey:
 
             area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
             f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
-            f_time = 86400 /self.t_obs  #pop.time
+            f_time = 86400 / self.t_obs  # pop.time
             det = r.det * f_area * f_time
             faint = r.faint * f_area * f_time
             out = r.out + r.det - det + r.faint - faint

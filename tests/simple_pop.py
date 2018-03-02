@@ -1,9 +1,6 @@
 """Test whether distributions for simple populations hold true."""
 import os
 
-import sys
-sys.path.append("..")
-
 from frbpoppy.do_plot import plot
 from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe

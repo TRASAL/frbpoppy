@@ -11,21 +11,21 @@ Establishing the origin and properties of Fast Radio Bursts (FRBs) is one of the
 *********************
 How can I install it?
 *********************
-1. Get the files from the github repository:
+1. Ensure ``gfortran`` is installed on your system (used for NE2001).
+2. Get the files from the github repository:
    ::
 
     $ git clone https://github.com/davidgardenier/frbpoppy
 
 
-*The following step is still under construction*
-
-2. Currently frbpoppy can be installed on Ubuntu by going to the downloaded directory and running:
-
+3. Install frbpoppy locally on Ubuntu by going to the downloaded directory and running:
    ::
 
     $ sudo python3 setup.py develop
 
-   Mac should also be supported. If receiving an ASCII error please contact me.
+   Macs should also be supported, however no tests have been done on Windows.
+
+   *If receiving an ASCII error, this is an error from upstream plotting library: contact me on how to fix it.*
 
 
 ******************
