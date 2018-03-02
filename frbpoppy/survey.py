@@ -75,7 +75,6 @@ class Survey:
         self.T_sky_list = go.load_T_sky()
         self.gain_pattern = pattern
         self.aa = False  # Whether aperture array
-        self.int_pro = self.intensity_profile()
 
         # Counters
         self.frb_rates = Rates()
@@ -239,6 +238,11 @@ class Survey:
             lamda = c/(self.central_freq*1e6)
             kasin = (2*math.pi*a/lamda)*math.sin(offset*conv)
             int_pro = 4*(j1(kasin)/kasin)**2
+
+        if self.gain_pattern == 'tophat':
+            int_pro = 1
+            if random.random() > 0.5:
+                int_pro = 0
 
         return int_pro
 
@@ -405,7 +409,7 @@ class Survey:
         frb.fluence = frb.s_peak * frb.w_eff
 
         # Account for offset in beam
-        frb.snr *= self.int_pro
+        frb.snr *= self.intensity_profile()
 
     def scint(self, frb, src):
         """
@@ -484,7 +488,6 @@ class Survey:
         n = 0
 
         for r in rates:
-
             area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
             f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
             f_time = 86400 / self.t_obs  # pop.time

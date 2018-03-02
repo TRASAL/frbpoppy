@@ -95,7 +95,7 @@ def generate(n_gen,
         m = 'Please ensure there are two dispersion measure parameters'
         raise ValueError(m)
 
-    if electron_model not in ['ne2001']:
+    if electron_model not in ['ne2001', 'zero']:
         m = 'Unsupported electron model: {}'.format(electron_model)
         pprint(m)
 
