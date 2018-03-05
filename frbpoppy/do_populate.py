@@ -171,12 +171,17 @@ def generate(n_gen,
     pop.si_mean = si_pars[0]
     pop.si_sigma = si_pars[1]
     pop.time = days * 86400  # Convert to seconds
-    pop.v_max = go.z_to_v(z_max)
     pop.w_max = pulse[1]
     pop.W_m = cosmo_pars[1]
     pop.w_min = pulse[0]
     pop.W_v = cosmo_pars[2]
     pop.z_max = z_max
+
+    if pop.cosmology:
+        pop.v_max = go.z_to_v(z_max)
+    else:
+        d_max = go.z_to_dist(z_max, H_0=pop.H_0)
+        pop.v_max = 4/3*math.pi*d_max**3
 
     while pop.n_srcs < pop.n_gen:
 
@@ -192,11 +197,14 @@ def generate(n_gen,
         # Convert
         src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
 
-        # Calculate comoving distance [Gpc]
+        # Calculate distance [Gpc]
         src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
 
         # Calculate redshift
-        src.z = pc.dist_table(src.dist, H_0=pop.H_0, test=test)
+        if pop.cosmology:
+            src.z = pc.dist_table(src.dist, H_0=pop.H_0, test=test)
+        else:
+            src.z = go.dist_to_z(src.dist)
 
         # Convert into galactic coordinates
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)

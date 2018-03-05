@@ -67,7 +67,10 @@ class Source:
         frb = FRB()
 
         # Give a redshifted random intrinsic pulse width [ms]
-        frb.w_int = dis.redshift_w(z=self.z, w_min=pop.w_min, w_max=pop.w_max)
+        frb.w_int = dis.redshift_w(z=self.z,
+                                   w_min=pop.w_min,
+                                   w_max=pop.w_max,
+                                   cosmology=pop.cosmology)
 
         # Add bolometric luminosity [erg/s]
         frb.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)

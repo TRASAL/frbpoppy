@@ -34,9 +34,10 @@ def powerlaw(low, high, power):
 
     return a
 
+
 def redshift_w(z=0, cosmology=True, w_min=0.1, w_max=5):
     """
-    A random value from a uniform distribution redshifted by z
+    Random value from a uniform distribution redshifted by z.
 
     Args:
         z (float): Redshift. Defaults to 0
@@ -46,6 +47,7 @@ def redshift_w(z=0, cosmology=True, w_min=0.1, w_max=5):
     Returns:
         w_int (float): A pulse width drawn from a uniform distribution, and
                        redshifted if cosmology was used.
+
     """
     w = random.uniform(w_min, w_max)
     if cosmology:

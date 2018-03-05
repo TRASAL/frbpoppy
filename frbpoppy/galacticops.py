@@ -9,10 +9,11 @@ import math
 import os
 import random
 
+from frbpoppy.paths import paths
+
 # Import fortran libraries
-mods = os.path.join(os.path.dirname(__file__), '../data/models/')
-uni_mods = os.path.join(mods,'universe/')
-dm_mods = os.path.join(mods, 'dm/')
+uni_mods = os.path.join(paths.models(), 'universe/')
+dm_mods = os.path.join(paths.models(), 'dm/')
 loc = os.path.join(dm_mods, 'libne2001.so')
 ne2001lib = C.CDLL(loc)
 ne2001lib.dm_.restype = C.c_float
@@ -417,6 +418,49 @@ def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
     return v_gpc
 
 
+def z_to_dist(z, H_0=69.6):
+    """
+    Calculate distance in Gpc from a redshift.
+
+    Only holds for z <= 2. Formulas from 'An Introduction to Modern
+    Astrophysics (2nd Edition)' by Bradley W. Carroll, Dale A. Ostlie.
+    (Eq. 27.7)
+
+    Args:
+        z (float): Redshift
+        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+    Returns:
+        dist (float): Associated distance [Gpc]
+    """
+    c = 299792.458  # Velocity of light [km/sec]
+    zsq = (z+1)**2
+    dist = c/H_0 * (zsq - 1)/(zsq + 1)
+    dist /= 1e3  # Mpc -> Gpc
+    return dist
+
+
+def dist_to_z(dist, H_0=69.6):
+    """
+    Calculate redshift from a distance in Gpc.
+
+    Only holds for z <= 2. Formulas from 'An Introduction to Modern
+    Astrophysics (2nd Edition)' by Bradley W. Carroll, Dale A. Ostlie.
+    (Eq. 27.7)
+
+    Args:
+        dist (float): Distance [Gpc].
+        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+    Returns:
+        z (float): Associated redshift
+    """
+    c = 299792.458  # Velocity of light [km/sec]
+    dist *= 1e3  # Gpc -> Mpc
+    dhc = dist*H_0/c
+    det = math.sqrt(1 - dhc**2)
+    z = -(det + dhc - 1)/(dhc - 1)
+    return z
+
+
 def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
     """
     Create a list of tuples to lookup the corresponding redshift for a comoving
@@ -447,7 +491,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
 
     def cvt(value):
         """Convert a value to a string without a period"""
-        return str(value).replace('.','d')
+        return str(value).replace('.', 'd')
 
     # Filename
     paras = ['h0', cvt(H_0),
@@ -520,7 +564,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
     if not ds:
         # Convert distance in Gpc to z. Holds for z <= 2
         # Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)'
-        # by Bradley W. Carroll, Dale A. Ostlie.
+        # by Bradley W. Carroll, Dale A. Ostlie. (Eq. 27.7)
         c = 299792.458  # Velocity of light [km/sec]
         d *= 1e3
         dhc = d*H_0/c

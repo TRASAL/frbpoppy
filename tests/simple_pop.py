@@ -4,7 +4,7 @@ from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe
 
 days = 1
-n_per_day = 10000
+n_per_day = 20000
 
 # Generate FRB population
 pop = generate(n_per_day*days,
@@ -20,6 +20,6 @@ pop = generate(n_per_day*days,
 
 # Observe FRB population
 surv_pop = observe(pop, 'APERTIF', pattern='tophat')
-# print(surv_pop)
+
 # # Plot populations
 # plot(pop, surv_pop)
