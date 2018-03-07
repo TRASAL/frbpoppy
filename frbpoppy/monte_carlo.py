@@ -12,7 +12,7 @@ from frbpoppy.adapt_pop import Adapt
 from frbpoppy.do_hist import histogram
 from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe
-from frbpoppy.frbcat import get_frbcat
+from frbpoppy.frbcat import Frbcat
 from frbpoppy.log import pprint
 
 
@@ -240,7 +240,7 @@ class MonteCarlo:
         pos_pars = self.possible_pars()
         pos_pars.to_csv('temp.csv')
         # Get the actual observations with which to compare
-        cat = get_frbcat()
+        cat = Frbcat().df
 
         # Set up dictionary for results
         d = defaultdict(list)

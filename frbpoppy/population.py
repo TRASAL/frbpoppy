@@ -163,9 +163,9 @@ def unpickle(filename=None):
     else:
         # Find standard population files
         try:
-            p = '../data/results/population_{}.p'.format(filename.lower())
-            loc = os.path.join(os.path.dirname(__file__), p)
-            f = open(loc, 'rb')
+            name = filename.lower()
+            p = paths.populations() + f'population_{name}.p'
+            f = open(p, 'rb')
         except FileNotFoundError:
             s = 'Pickled population file "{0}" does not exist'.format(filename)
             raise FileNotFoundError(s)

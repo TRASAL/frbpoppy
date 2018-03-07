@@ -1,6 +1,6 @@
 from frbpoppy.population import Population, unpickle
 from frbpoppy.survey import Survey
-
+from frbpoppy.paths import paths
 
 def observe(population,
             survey_name,

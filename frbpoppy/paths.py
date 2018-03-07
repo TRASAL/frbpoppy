@@ -14,6 +14,7 @@ class Paths():
         self.downloads = os.path.expanduser("~/Downloads")
 
         self.subfolders = ['data',
+                           'frbcat',
                            'results',
                            'populations',
                            'surveys',
@@ -84,6 +85,10 @@ class Paths():
         default = self.data() + 'models/'
         return self.store('models', default, *args)
 
+    def frbcat(self, *args):
+        """Where all models are to be stored."""
+        default = self.data() + 'frbcat/'
+        return self.store('frbcat', default, *args)
 
 
 paths = Paths()

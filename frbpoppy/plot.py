@@ -22,7 +22,7 @@ from bokeh.palettes import Category10, viridis
 from bokeh.plotting import figure
 
 from frbpoppy.log import pprint
-from frbpoppy.frbcat import get_frbcat
+from frbpoppy.frbcat import Frbcat
 
 # Number of dataframes/populations
 num_df = 0
@@ -93,6 +93,8 @@ def histogram(dfs):
             bins = np.linspace(low, high, 50)
 
             if high - low > 1000:
+                if low == 0:
+                    low = 1e-3
                 bins = np.geomspace(low, high, num=50)
 
             col = df[c].apply(pd.to_numeric, errors='coerce')
@@ -173,7 +175,7 @@ def plot_pop(files=[], frbcat=True):
 
     # Import frbcat
     if frbcat:
-        df = get_frbcat()
+        df = Frbcat().df
         num = len(dfs)
         df['color'] = colours[num]
         dfs.append(df)
@@ -250,7 +252,7 @@ def plot_pop(files=[], frbcat=True):
                 toolbar_location='right',
                 tools=hp_tools,
                 # output_backend="webgl",
-                # x_axis_type="log",
+                x_axis_type="log",
                 y_axis_type="log")
 
     # Create Column Data Sources for interacting with the plot

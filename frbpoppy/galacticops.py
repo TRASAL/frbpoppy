@@ -19,6 +19,20 @@ ne2001lib = C.CDLL(loc)
 ne2001lib.dm_.restype = C.c_float
 
 
+def frac_deg(ra, dec):
+    """Convert coordinates expressed in hh:mm:ss to fractional degrees."""
+    # Inspired by Joe Filippazzo calculator
+    rh, rm, rs = [float(r) for r in ra.split(':')]
+    ra = rh*15 + rm/4 + rs/240
+    dd, dm, ds = [float(d) for d in dec.split(':')]
+    if dd < 0:
+        sign = -1
+    else:
+        sign = 1
+    dec = dd + sign*dm/60 + sign*ds/3600
+    return ra, dec
+
+
 def lb_to_xyz(gl, gb, dist):
     """
     Convert galactic coordinates to galactic XYZ
@@ -93,16 +107,16 @@ def lb_to_radec(l, b):
     return ra, dec
 
 
-def radec_to_lb(ra, dec):
+def radec_to_lb(ra, dec, frac=False):
     """
-    Convert from ra, dec to galactic coordinates
+    Convert from ra, dec to galactic coordinates.
 
     Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
     Bradley W. Carroll, Dale A. Ostlie (Eq. 24.16 onwards).
 
     NOTE: This function is not as accurate as the astropy conversion, nor as
     the Javascript calculators found online. However, as using astropy was
-    prohibitively slow while running over large populations, frbpoppy uses this
+    prohibitively slow while running over large populations, we use this
     function. While this function is not as accurate, the under/over
     estimations of the coordinates are equally distributed meaning the errors
     cancel each other in the limit of large populations.
@@ -110,21 +124,13 @@ def radec_to_lb(ra, dec):
     Args:
         ra (string): Right ascension given in the form '19:06:53'
         dec (string): Declination given in the form '-40:37:14'
-
+        frac (bool): Denote whether coordinates are already fractional or not
     Returns:
         gl, gb (float): Galactic longitude and latitude [fractional degrees]
-    """
 
-    # Convert to fractional degrees
-    # Inspired by Joe Filippazzo calculator
-    rh, rm, rs = [float(r) for r in ra.split(':')]
-    ra = rh*15 + rm/4 + rs/240
-    dd, dm, ds = [float(d) for d in dec.split(':')]
-    if dd < 0:
-        sign = -1
-    else:
-        sign = 1
-    dec = dd + sign*dm/60 + sign*ds/3600
+    """
+    if not frac:
+        ra, dec = frac_deg(ra, dec)
 
     a = math.radians(ra)
     d = math.radians(dec)
@@ -144,6 +150,7 @@ def radec_to_lb(ra, dec):
     x = cd_ngp*sd - sd_ngp*cd*math.cos(a - a_ngp)
     gl = - math.atan2(y, x) + l_ngp
     gl = math.degrees(gl) % 360
+
     # Shift so in range -180 to 180
     if gl > 180:
         gl = -(360 - gl)
@@ -158,7 +165,7 @@ def radec_to_lb(ra, dec):
 
 
 def ergspers_to_watts(e):
-    """Quick converstion from luminosity given in ergs/s to Watts"""
+    """Quick converstion from luminosity given in ergs/s to Watts."""
     return e*1e-7
 
 
