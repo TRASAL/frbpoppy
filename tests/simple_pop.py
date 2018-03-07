@@ -4,13 +4,13 @@ from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe
 
 days = 1
-n_per_day = 20000
+n_per_day = 10000
 
 # Generate FRB population
 pop = generate(n_per_day*days,
                days=days,
-               lum_dist_pars=[1e42, 1e42, -1.0],
-               z_max=0.1,
+               lum_dist_pars=[1e40, 1e40, -1.0],
+               z_max=0.01,
                dm_pars=[0, 1200],
                electron_model='zero',
                emission_pars=[10e6, 10e9],
@@ -18,8 +18,11 @@ pop = generate(n_per_day*days,
                si_pars=[0., 0.],
                repeat=0.0)
 
+# Save population for later examination
+pop.pickle_pop()
+
 # Observe FRB population
 surv_pop = observe(pop, 'APERTIF', pattern='tophat')
 
-# # Plot populations
-# plot(pop, surv_pop)
+# Save population for later examination
+surv_pop.pickle_pop()

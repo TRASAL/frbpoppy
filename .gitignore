@@ -88,21 +88,21 @@ ENV/
 .ropeproject
 
 # User set files
-data/logs/*
 !data/logs/*.gitignore
-*logo.png
-*screenshot*.png
-misc/
-*.profile
 *.coverage
+*.egg-info/
 *.ipynb
 *.lprof
-tests/*.p
-tests/*.csv
-tests/*.csv
-tests/*.png
-*.egg-info/
 *.o
+*.profile
 *.so
-
+*logo.png
+*screenshot*.png
+data/logs/*
 data/models/dm/libne2001\.so
+misc/
+tests/*.csv
+tests/*.csv
+tests/*.html
+tests/*.p
+tests/*.png
