@@ -39,7 +39,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -141,7 +141,7 @@ html_theme_options = {
     }
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['_templates/']
+html_theme_path = ['templates/']
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
