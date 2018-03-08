@@ -20,7 +20,7 @@
 /* -- page layout ----------------------------------------------------------- */
 
 body {
-    font-family: 'ubuntu';
+    font-family: 'goudy old style', 'minion pro', 'bell mt', Georgia, 'Hiragino Mincho Pro', serif;
     font-size: 17px;
     background-color: white;
     color: #000;
@@ -30,7 +30,7 @@ body {
 
 
 div.document {
-    width: 1024px;
+    width: 940px;
     margin: 30px auto 0 auto;
 }
 
@@ -107,32 +107,29 @@ div.sphinxsidebarwrapper p.logo {
 }
 
 div.sphinxsidebarwrapper h1.logo {
-    margin-top: 10px;
+    margin-top: -10px;
     text-align: center;
     margin-bottom: 5px;
-    text-align: center;
+    text-align: left;
 }
 
 div.sphinxsidebarwrapper h1.logo-name {
     margin-top: 0px;
-    text-align: center;
 }
 
 div.sphinxsidebarwrapper p.blurb {
     margin-top: 0;
     font-style: normal;
-    text-align: center;
 }
 
 div.sphinxsidebar h3,
 div.sphinxsidebar h4 {
-    font-family: 'ubuntu condensed', serif;
+    font-family: 'Garamond', 'Georgia', serif;
     color: #444;
     font-size: 24px;
     font-weight: normal;
-    margin: 25px 0 5px 0;
+    margin: 0 0 5px 0;
     padding: 0;
-    text-align: center; /* Change for sidebar alignment */
 }
 
 div.sphinxsidebar h4 {
@@ -152,31 +149,27 @@ div.sphinxsidebar h3 a:hover {
 
 div.sphinxsidebar p {
     color: #555;
-    margin: 30px 0;
+    margin: 10px 0;
 }
 
 div.sphinxsidebar ul {
-    margin: 5px 0;
+    margin: 10px 0;
     padding: 0;
     color: #000;
-    text-align: center;
 }
 
 div.sphinxsidebar ul li.toctree-l1 > a {
     font-size: 120%;
-    text-align: center;
 }
 
 div.sphinxsidebar ul li.toctree-l2 > a {
     font-size: 110%;
-    text-align: center;
 }
 
 div.sphinxsidebar input {
     border: 1px solid #CCC;
-    font-family: 'ubuntu condensed', serif;
+    font-family: 'goudy old style', 'minion pro', 'bell mt', Georgia, 'Hiragino Mincho Pro', serif;
     font-size: 1em;
-    text-align: center;
 }
 
 div.sphinxsidebar hr {
@@ -185,7 +178,7 @@ div.sphinxsidebar hr {
     color: #AAA;
     background: #AAA;
 
-    text-align: center;
+    text-align: left;
     margin-left: 0;
     width: 50%;
 }
@@ -208,16 +201,13 @@ div.body h3,
 div.body h4,
 div.body h5,
 div.body h6 {
-    font-family: 'ubuntu condensed', serif;
+    font-family: 'Garamond', 'Georgia', serif;
     font-weight: normal;
-    margin: 50px 0px 0px 0px;
+    margin: 30px 0px 10px 0px;
     padding: 0;
 }
 
-div.body h1 { margin-top: 0;
-              padding: 15px 0px 14px 0px;
-              margin-bottom: -37px;
-              font-size: 680%; }
+div.body h1 { margin-top: 0; padding-top: 0; font-size: 240%; }
 div.body h2 { font-size: 180%; }
 div.body h3 { font-size: 150%; }
 div.body h4 { font-size: 130%; }
@@ -256,7 +246,7 @@ dd div.admonition {
 }
 
 div.admonition p.admonition-title {
-    font-family: 'ubuntu condensed', serif;
+    font-family: 'Garamond', 'Georgia', serif;
     font-weight: normal;
     font-size: 24px;
     margin: 0 0 10px 0;
@@ -274,7 +264,6 @@ div.highlight {
 
 dt:target, .highlight {
     background: #FAF3E8;
-    margin-top: 50px;
 }
 
 div.note {
@@ -300,7 +289,7 @@ p.admonition-title:after {
 }
 
 pre, tt, code {
-    font-family: 'Ubuntu Mono', monospace;
+    font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
     font-size: 0.9em;
 }
 
@@ -402,7 +391,7 @@ ul, ol {
 }
 
 pre {
-    background:	#E0E0E0;
+    background: #EEE;
     padding: 7px 30px;
     margin: 15px 0px;
     line-height: 1.3em;
