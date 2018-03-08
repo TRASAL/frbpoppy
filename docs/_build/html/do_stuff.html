@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Do populate &#8212; frbpoppy by David Gardenier</title>
+    
+    <title>Oops! &#8212; frbpoppy by David Gardenier</title>
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -27,11 +30,10 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
-  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -39,146 +41,13 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="do-populate">
-<h1>Do populate<a class="headerlink" href="#do-populate" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line"><br /></div>
+  <div class="section" id="oops">
+<h1>Oops!<a class="headerlink" href="#oops" title="Permalink to this headline">¶</a></h1>
+<p>It seems this page is still under construction...</p>
 </div>
-<span class="target" id="module-do_populate"></span><p>Code for generating a population of FRBs.</p>
-<dl class="function">
-<dt id="do_populate.generate">
-<code class="descclassname">do_populate.</code><code class="descname">generate</code><span class="sig-paren">(</span><em>n_gen, days=1, cosmology=True, cosmo_pars=[69.6, 0.286, 0.714], dm_pars=[100, 1200], electron_model='ne2001', emission_pars=[10000000.0, 10000000000.0], lum_dist_pars=[1e+40, 1e+50, 1], name=None, pulse=[0.1, 5], repeat=0.0, si_pars=[-1.4, 0.0], z_max=2.5, test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#do_populate.generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a population of FRBs.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>n_gen</strong> (<em>int</em>) – Number of FRB sources/sky/time to generate</li>
-<li><strong>days</strong> (<em>float</em>) – Number of days over which FRBs are generated.
-Defaults to 1</li>
-<li><strong>cosmology</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to use cosmology in all
-calculations. Defaults to True.</li>
-<li><strong>cosmo_pars</strong> (<em>list</em><em>, </em><em>optional</em>) – Three values, the first being the Hubble
-constant, the second the density parameter Ω_m and the third
-being the cosmological constant Ω_Lambda (referred to as W_m
-in the rest of the code). These parameters default to those
-determined with Planck [69.6, 0.286, 0.714]</li>
-<li><strong>dm_pars</strong> (<em>list</em><em>, </em><em>optional</em>) – Two values, the first being the dispersion
-measure of the host, and the second being the slope of the
-intergalactic dispersion measure. Defaults to [100, 1200]</li>
-<li><strong>electron_model</strong> (<em>str</em><em>, </em><em>optional</em>) – Model for the free electron density in
-the Milky Way. Defaults to ‘ne2001’</li>
-<li><strong>emission_pars</strong> (<em>list</em><em>, </em><em>optional</em>) – The minimum and maximum frequency [Hz]
-between which FRB sources should emit the given bolometric
-luminosity. Defaults to [10e6,10e9]</li>
-<li><strong>lum_dist_pars</strong> (<em>list</em><em>, </em><em>optional</em>) – Bolometric luminosity distribution
-parameters being: the minimum luminosity [erg/s], the maximum
-luminosity [erg/s] and the powerlaw index of the distribution.
-Defaults to [1e40, 1e50, 1]</li>
-<li><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name to be given to the population. Defaults to
-‘initial’</li>
-<li><strong>pulse</strong> (<em>str</em><em>, </em><em>optional</em>) – Values between which the intrinsic pulse width
-should be [ms]. Defaults to [0.5, 5]</li>
-<li><strong>repeat</strong> (<em>float</em><em>, </em><em>optional</em>) – Fraction of sources which repeat</li>
-<li><strong>si_pars</strong> (<em>list</em><em>, </em><em>optional</em>) – Spectral index parameters, being the mean
-index and the standard deviation thereof. Defaults to [-1.4, 0.]</li>
-<li><strong>z_max</strong> (<em>float</em><em>, </em><em>optional</em>) – The maximum redshift out to which to
-distribute FRBs</li>
-<li><strong>test</strong> (<em>float</em><em>, </em><em>optional</em>) – Flag to help testing</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A population of generated sources</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pop (Population)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="do-survey">
-<h1>Do survey<a class="headerlink" href="#do-survey" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<span class="target" id="module-do_survey"></span><dl class="function">
-<dt id="do_survey.observe">
-<code class="descclassname">do_survey.</code><code class="descname">observe</code><span class="sig-paren">(</span><em>population</em>, <em>survey_name</em>, <em>pattern='gaussian'</em>, <em>output=True</em>, <em>return_pop=True</em>, <em>return_survey=False</em>, <em>scat=False</em>, <em>scint=False</em><span class="sig-paren">)</span><a class="headerlink" href="#do_survey.observe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run survey to detect FRB sources.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>population</strong> (<em>Population</em>) – Population class of FRB sources to observe</li>
-<li><strong>survey_name</strong> (<em>str</em>) – Name of survey file with which to observe</li>
-<li><strong>pattern</strong> (<em>str</em><em>, </em><em>optional</em>) – Gain pattern, either ‘gaussian’ (default) or
-‘airy’</li>
-<li><strong>output</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to print the rates or not</li>
-<li><strong>return_pop</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return a population. Primarily
-intended for debugging. Defaults to True</li>
-<li><strong>return_survey</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to return a survey. Primarily
-intended for debugging. Defaults to False</li>
-<li><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include scattering in signal to noise
-calculations. Defaults to False</li>
-<li><strong>scint</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply scintillation to observations.
-Defaults to False</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Observed survey population</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">surv_pop (Population)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</div>
-<div class="section" id="do-monte-carlo">
-<h1>Do Monte Carlo<a class="headerlink" href="#do-monte-carlo" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<span class="target" id="module-do_monte_carlo"></span><p>Run Monte Carlo over frbpoppy input parameters.</p>
-</div>
-<div class="section" id="do-plot">
-<h1>Do plot<a class="headerlink" href="#do-plot" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<span class="target" id="module-do_plot"></span><p>Start up Bokeh server</p>
-<dl class="function">
-<dt id="do_plot.plot">
-<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>mute=True</em><span class="sig-paren">)</span><a class="headerlink" href="#do_plot.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot populations with bokeh. Has to save populations before plotting.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>*pops</strong> (<em>Population</em><em>, </em><em>optional</em>) – Add the populations you would like to
-see plotted</li>
-<li><strong>files</strong> (<em>list</em><em>, </em><em>optional</em>) – List of population files to plot (currently
-only works with csv files - file an issue if you would like more
-options)</li>
-<li><strong>frbcat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot frbcat parameters. Defaults to
-True</li>
-<li><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to display the plot or not. Mainly used
-for debugging purposes. Defaults to True</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
+<div class="section" id="what-to-do">
+<h1>What to do?<a class="headerlink" href="#what-to-do" title="Permalink to this headline">¶</a></h1>
+<p>This website is being built to guide beginners in the use of frbpoppy. If you&#8217;ve come this far - you must be an expert! If you arrived here wanting to dig deeper into frbpoppy, you might find the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy">github repository</a> to be of help. All code should be well documented, and if there&#8217;s something amiss, just <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/issues/new">open an issue</a> or <a class="reference external" href="mailto:gardenier&#37;&#52;&#48;astron&#46;nl">drop me a note</a>!</p>
 </div>
 
 

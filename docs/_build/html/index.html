@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>frbpoppy &#8212; frbpoppy by David Gardenier</title>
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -28,11 +31,10 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
-  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -47,27 +49,65 @@
 </div>
 <p>Conduct Fast Radio Burst Population Synthesis | <strong>David Gardenier</strong> | ASTRON</p>
 <div class="section" id="what-s-frbpoppy">
-<h2>What’s frbpoppy?<a class="headerlink" href="#what-s-frbpoppy" title="Permalink to this headline">¶</a></h2>
+<h2>What&#8217;s frbpoppy?<a class="headerlink" href="#what-s-frbpoppy" title="Permalink to this headline">¶</a></h2>
 <p>Establishing the origin and properties of Fast Radio Bursts (FRBs) is one of the biggest goals in radio astronomy. <code class="docutils literal"><span class="pre">frbpoppy</span></code> was called into life to help astronomers determine which FRB properties to expect. Designed to be simple in use and easy to adapt, <code class="docutils literal"><span class="pre">frbpoppy</span></code> continues the work of <code class="docutils literal"><span class="pre">psrpop</span></code> and <code class="docutils literal"><span class="pre">psrpoppy</span></code> in the realm of FRBs.</p>
 </div>
 <div class="section" id="how-can-i-install-it">
 <h2>How can I install it?<a class="headerlink" href="#how-can-i-install-it" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic">
-<li><p class="first">Get the files from the github repository:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/davidgardenier/frbpoppy
+<div class="highlight-bash"><div class="highlight"><pre><span></span>git clone https://github.com/davidgardenier/frbpoppy
+<span class="nb">cd</span> ./frbpoppy/
+sudo python3 setup.py develop
 </pre></div>
 </div>
-</li>
-<li><p class="first">Install it on your system:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python setup.py install
-</pre></div>
-</div>
-</li>
-</ol>
+<p>Things not going quite as smoothly? Check the <a class="reference internal" href="get_started.html"><span class="doc">Get Started</span></a> guide for additional information on common installation problems.</p>
 </div>
 <div class="section" id="how-do-i-use-it">
 <h2>How do I use it?<a class="headerlink" href="#how-do-i-use-it" title="Permalink to this headline">¶</a></h2>
-<p>Well, that’s where things get more interesting.</p>
+<p>Feeling confident? Start off with this:</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Short example of how frbpoppy works.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">frbpoppy.do_populate</span> <span class="k">import</span> <span class="n">generate</span>
+<span class="kn">from</span> <span class="nn">frbpoppy.do_survey</span> <span class="k">import</span> <span class="n">observe</span>
+<span class="kn">from</span> <span class="nn">frbpoppy.do_plot</span> <span class="k">import</span> <span class="n">plot</span>
+
+<span class="n">days</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">n_per_day</span> <span class="o">=</span> <span class="mi">5000</span>
+
+<span class="c1"># Generate FRB population</span>
+<span class="n">population</span> <span class="o">=</span> <span class="n">generate</span><span class="p">(</span><span class="n">n_per_day</span><span class="o">*</span><span class="n">days</span><span class="p">,</span>
+                      <span class="n">days</span><span class="o">=</span><span class="n">days</span><span class="p">,</span>
+                      <span class="n">lum_dist_pars</span><span class="o">=</span><span class="p">[</span><span class="mf">1e40</span><span class="p">,</span> <span class="mf">1e50</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">],</span>
+                      <span class="n">z_max</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span>
+                      <span class="n">pulse</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+                      <span class="n">repeat</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+<span class="c1"># Observe FRB population</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">observe</span><span class="p">(</span><span class="n">population</span><span class="p">,</span> <span class="s1">&#39;APERTIF&#39;</span><span class="p">)</span>
+
+<span class="c1"># Plot populations</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">population</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>Curious about additional functionality in <code class="docutils literal"><span class="pre">frbpoppy</span></code>? Check the <a class="reference internal" href="get_started.html"><span class="doc">Get Started</span></a> guide, the <a class="reference internal" href="documentation.html"><span class="doc">Documentation</span></a>, or the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/tree/master/tests">tests</a> directory in <code class="docutils literal"><span class="pre">frbpoppy</span></code>.</p>
 </div>
 <div class="section" id="how-can-i-help">
 <h2>How can I help?<a class="headerlink" href="#how-can-i-help" title="Permalink to this headline">¶</a></h2>
@@ -78,7 +118,7 @@
 <ul class="simple">
 <li><dl class="first docutils">
 <dt><strong>David Gardenier</strong></dt>
-<dd>As a PhD student at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), I’m working with the APERTIF/ALERT team to establish the properties of FRBs. Get in touch with me via <a class="reference external" href="mailto:gardenier&#37;&#52;&#48;astron&#46;nl">email</a>, drop past my <a class="reference external" href="http://www.astro.uva.nl/people/david-gardenier/">office</a> or say hello at any <a class="reference external" href="http://www.cadc-ccda.hia-iha.nrc-cnrc.gc.ca/en/meetings/index.html">FRB conferences</a>!</dd>
+<dd>As a PhD student at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), I&#8217;m working with the APERTIF/ALERT team to establish the properties of FRBs. Get in touch with me via <a class="reference external" href="mailto:gardenier&#37;&#52;&#48;astron&#46;nl">email</a>, drop past my <a class="reference external" href="http://davidgardenier.com/#slide=4">office</a> or say hello at any <a class="reference external" href="http://davidgardenier.com/activities.html#slide=3">FRB conferences</a>!</dd>
 </dl>
 </li>
 </ul>

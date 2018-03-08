@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Get Started &#8212; frbpoppy by David Gardenier</title>
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -29,11 +32,10 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
-  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -46,15 +48,31 @@
 <div class="section" id="how-can-i-install-it">
 <h2>How can I install it?<a class="headerlink" href="#how-can-i-install-it" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
+<li><p class="first">Ensure <code class="docutils literal"><span class="pre">gfortran</span></code> is installed on your system (used for NE2001).</p>
+</li>
 <li><p class="first">Get the files from the github repository:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/davidgardenier/frbpoppy
 </pre></div>
 </div>
 </li>
-<li><p class="first">Install it on your system:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python setup.py install
+<li><p class="first">Install frbpoppy locally on Ubuntu by going to the downloaded directory</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd ./frbpoppy
 </pre></div>
 </div>
+</li>
+<li><p class="first">Run the following to get a local install - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo python3 setup.py develop
+</pre></div>
+</div>
+<p>Macs should also be supported, however no tests have been done on Windows.</p>
+<p><em>If receiving an ASCII error, this is</em> <a class="reference external" href="https://github.com/bokeh/bokeh/issues/7272">a bug</a> <em>in Bokeh.</em></p>
+</li>
+<li><p class="first">Test whether frbpoppy is working with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python3
+&gt;&gt;&gt; import frbpoppy
+</pre></div>
+</div>
+<p>If you don&#8217;t get any errors - hurray, all should be working!</p>
 </li>
 </ol>
 </div>
@@ -68,23 +86,27 @@
 <span class="n">pop</span> <span class="o">=</span> <span class="n">generate</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The generate function takes a number of parameters, allowing you generate the exact</p>
+<p>The generate function takes a number of parameters, allowing you generate the exact population you want, from a steep luminosity function to ultra-long intrinsic pulses. It&#8217;s all possible. The population you&#8217;ve just generated is called your initial population. The next step will be to observe it with whichever survey takes your fancy.</p>
 </li>
 <li><p class="first"><strong>Survey modeled population</strong></p>
-<p>In <code class="docutils literal"><span class="pre">frbpoppy</span></code>, a population can be observed with a number of different surveys. While many current survey parameters have been included within <code class="docutils literal"><span class="pre">frbpoppy</span></code>, it is possible to define your own survey parameters.</p>
+<p>In <code class="docutils literal"><span class="pre">frbpoppy</span></code>, a population can be observed with a number of different surveys. While many current surveys have been included within <code class="docutils literal"><span class="pre">frbpoppy</span></code>, it is possible to define your own survey, or adapt the ones available. To observe a population simply add the following lines</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy.do_survey</span> <span class="k">import</span> <span class="n">observe</span>
+<span class="n">surv_pop</span> <span class="o">=</span> <span class="n">observe</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="s1">&#39;APERTIF&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
-<li><p class="first"><strong>Compare obtained results with actual survey results</strong></p>
-<p>This is left as an exercise for the reader</p>
+<li><p class="first"><strong>Compare obtained results with actual survey results</strong>
+One of the easiest ways to compare the observed results to actual observations is to use the built in interactive viewer. Simply pass the populations as arguments in to the plot function, and explore away!</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy.do_plot</span> <span class="k">import</span> <span class="n">plot</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">surv_pop</span><span class="p">)</span>
+</pre></div>
+</div>
 </li>
 </ol>
 </div>
-<div class="section" id="oops">
-<h2>Oops!<a class="headerlink" href="#oops" title="Permalink to this headline">¶</a></h2>
-<p>It seems this page is still under construction…</p>
-</div>
-<div class="section" id="what-to-do">
-<h2>What to do?<a class="headerlink" href="#what-to-do" title="Permalink to this headline">¶</a></h2>
-<p>This website is being built to guide beginners in the use of frbpoppy. If you’ve come this far - you must be an expert! If you arrived here wanting to dig deeper into frbpoppy, you might find the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy">github repository</a> to be of help. All code should be well documented, and if there’s something amiss, just <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/issues/new">open an issue</a> or <a class="reference external" href="mailto:gardenier&#37;&#52;&#48;astron&#46;nl">drop me a note</a>!</p>
+<div class="section" id="what-now">
+<h2>What now?<a class="headerlink" href="#what-now" title="Permalink to this headline">¶</a></h2>
+<p>These are the basics, but <code class="docutils literal"><span class="pre">frbpoppy</span></code> offers much functionally than given in this brief guide. Feel free to pursue the <a class="reference internal" href="documentation.html"><span class="doc">Documentation</span></a>, the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/tree/master/tests">tests</a> directory in <code class="docutils literal"><span class="pre">frbpoppy</span></code>, or even the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy">code base</a> itself to find out more.</p>
 </div>
 </div>
 

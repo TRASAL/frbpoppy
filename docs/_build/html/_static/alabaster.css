@@ -215,7 +215,7 @@ div.body h6 {
 }
 
 div.body h1 { margin-top: 0;
-              padding: 15px 0px 14px 0px; 
+              padding: 15px 0px 14px 0px;
               margin-bottom: -37px;
               font-size: 680%; }
 div.body h2 { font-size: 180%; }
@@ -274,6 +274,7 @@ div.highlight {
 
 dt:target, .highlight {
     background: #FAF3E8;
+    margin-top: 50px;
 }
 
 div.note {

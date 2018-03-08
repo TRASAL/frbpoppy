@@ -1,0 +1,1698 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>All Modules &#8212; frbpoppy by David Gardenier</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo_small.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Documentation" href="documentation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="all-modules">
+<h1>All Modules<a class="headerlink" href="#all-modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-adapt_pop">
+<span id="adapt-pop"></span><h2>adapt_pop<a class="headerlink" href="#module-adapt_pop" title="Permalink to this headline">¶</a></h2>
+<p>Set of functions which adapt a population.</p>
+<dl class="class">
+<dt id="adapt_pop.Adapt">
+<em class="property">class </em><code class="descclassname">adapt_pop.</code><code class="descname">Adapt</code><span class="sig-paren">(</span><em>pop</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Adapt a population.</p>
+<dl class="method">
+<dt id="adapt_pop.Adapt.dm_host">
+<code class="descname">dm_host</code><span class="sig-paren">(</span><em>dm</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.dm_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt the default dispersion measure of an frb.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dm</strong> (<em>int</em>) &#8211; Dispersion measure host</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Population with new parameters</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="adapt_pop.Adapt.dm_igm">
+<code class="descname">dm_igm</code><span class="sig-paren">(</span><em>slope</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.dm_igm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt the slope of the intergalactic dispersion measure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>slope</strong> (<em>int</em>) &#8211; Dispersion measure slope</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Population with new parameters</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="adapt_pop.Adapt.freq">
+<code class="descname">freq</code><span class="sig-paren">(</span><em>freq_min</em>, <em>freq_max</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt the range of frequencies over which an frb emits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>freq_min</strong> (<em>int</em>) &#8211; Minimum frequency</li>
+<li><strong>freq_max</strong> (<em>int</em>) &#8211; Maximum frequency</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="adapt_pop.Adapt.lum_bol">
+<code class="descname">lum_bol</code><span class="sig-paren">(</span><em>lum_min</em>, <em>lum_max</em>, <em>lum_pow</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.lum_bol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt the range of luminosities over which an frb can be emitted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lum_min</strong> (<em>int</em>) &#8211; Minimum luminosity</li>
+<li><strong>lum_max</strong> (<em>int</em>) &#8211; Maximum luminosity</li>
+<li><strong>lum_pow</strong> (<em>int</em>) &#8211; Power of the luminosity slope</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="adapt_pop.Adapt.si">
+<code class="descname">si</code><span class="sig-paren">(</span><em>si_mean</em>, <em>si_sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.si" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt the population&#8217;s mean spectral index and the standard deviation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>si_mean</strong> (<em>float</em>) &#8211; Mean spectral index</li>
+<li><strong>si_sigma</strong> (<em>float</em>) &#8211; Mean standard deviation of the spectral index</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="adapt_pop.Adapt.w_int">
+<code class="descname">w_int</code><span class="sig-paren">(</span><em>w_int_min</em>, <em>w_int_max</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.w_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adapt the pulse width of a population.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>w_int_min</strong> (<em>float</em>) &#8211; Minimum pulse width [ms]</li>
+<li><strong>w_int_max</strong> (<em>float</em>) &#8211; Maximum pulse width [ms]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-distributions">
+<span id="distributions"></span><h2>distributions<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="distributions.oppermann_pen">
+<code class="descclassname">distributions.</code><code class="descname">oppermann_pen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#distributions.oppermann_pen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Following Oppermann &amp; Pen (2017), simulate repeat times</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of burst times</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ts (list)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="distributions.pink_noise">
+<code class="descclassname">distributions.</code><code class="descname">pink_noise</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#distributions.pink_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simluate burst times using pink noise</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of burst times</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ts (list)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="distributions.powerlaw">
+<code class="descclassname">distributions.</code><code class="descname">powerlaw</code><span class="sig-paren">(</span><em>low</em>, <em>high</em>, <em>power</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.powerlaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return random variable distributed according to power law.</p>
+<p>The power law distribution power is simply the power, not including a minus
+sign (P scales with x^n with n the power).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>low</strong> (<em>float</em>) &#8211; Lower limit of distribution</li>
+<li><strong>high</strong> (<em>float</em>) &#8211; Higher limit of distribution</li>
+<li><strong>power</strong> (<em>float</em>) &#8211; Power of power law distribution</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Random variable picked from power law distribution</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">x (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="distributions.redshift_w">
+<code class="descclassname">distributions.</code><code class="descname">redshift_w</code><span class="sig-paren">(</span><em>z=0</em>, <em>cosmology=True</em>, <em>w_min=0.1</em>, <em>w_max=5</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.redshift_w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Random value from a uniform distribution redshifted by z.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> (<em>float</em>) &#8211; Redshift. Defaults to 0</li>
+<li><strong>cosmology</strong> (<em>boolean</em>) &#8211; Whether to use cosmology</li>
+<li><strong>w_min</strong> (<em>float</em>) &#8211; Minimum pulse width [ms]</li>
+<li><strong>w_max</strong> (<em>float</em>) &#8211; Maximum pulse width [ms]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>A pulse width drawn from a uniform distribution, and</dt>
+<dd><p class="first last">redshifted if cosmology was used.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#adapt_pop.Adapt.w_int" title="adapt_pop.Adapt.w_int">w_int</a> (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-do_hist">
+<span id="do-hist"></span><h2>do_hist<a class="headerlink" href="#module-do_hist" title="Permalink to this headline">¶</a></h2>
+<p>Bin up Pandas DataFrames into histograms ready for Bokeh plotting.</p>
+<dl class="function">
+<dt id="do_hist.histogram">
+<code class="descclassname">do_hist.</code><code class="descname">histogram</code><span class="sig-paren">(</span><em>dfs</em><span class="sig-paren">)</span><a class="headerlink" href="#do_hist.histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quick function to &#8216;histogram&#8217; each column of each dataframe</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dfs</strong> (<em>list</em>) &#8211; List of dataframes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of histogramed dataframes</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">hists (list)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-do_monte_carlo">
+<span id="do-monte-carlo"></span><h2>do_monte_carlo<a class="headerlink" href="#module-do_monte_carlo" title="Permalink to this headline">¶</a></h2>
+<p>Run Monte Carlo over frbpoppy input parameters.</p>
+</div>
+<div class="section" id="module-do_plot">
+<span id="do-plot"></span><h2>do_plot<a class="headerlink" href="#module-do_plot" title="Permalink to this headline">¶</a></h2>
+<p>Start up Bokeh server</p>
+<dl class="function">
+<dt id="do_plot.plot">
+<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>mute=True</em><span class="sig-paren">)</span><a class="headerlink" href="#do_plot.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot populations with bokeh. Has to save populations before plotting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>*pops</strong> (<a class="reference internal" href="#population.Population" title="population.Population"><em>Population</em></a><em>, </em><em>optional</em>) &#8211; Add the populations you would like to
+see plotted</li>
+<li><strong>files</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; List of population files to plot (currently
+only works with csv files - file an issue if you would like more
+options)</li>
+<li><strong>frbcat</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to plot frbcat parameters. Defaults to
+True</li>
+<li><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to display the plot or not. Mainly used
+for debugging purposes. Defaults to True</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-do_populate">
+<span id="do-populate"></span><h2>do_populate<a class="headerlink" href="#module-do_populate" title="Permalink to this headline">¶</a></h2>
+<p>Code for generating a population of FRBs.</p>
+<dl class="function">
+<dt id="do_populate.generate">
+<code class="descclassname">do_populate.</code><code class="descname">generate</code><span class="sig-paren">(</span><em>n_gen, days=1, cosmology=True, cosmo_pars=[69.6, 0.286, 0.714], dm_pars=[100, 1200], electron_model='ne2001', emission_pars=[10000000.0, 10000000000.0], lum_dist_pars=[1e+40, 1e+50, 1], name=None, pulse=[0.1, 10], repeat=0.0, si_pars=[-1.4, 0.0], z_max=2.5, test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#do_populate.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a population of FRBs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_gen</strong> (<em>int</em>) &#8211; Number of FRB sources/sky/time to generate</li>
+<li><strong>days</strong> (<em>float</em>) &#8211; Number of days over which FRBs are generated.
+Defaults to 1</li>
+<li><strong>cosmology</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to use cosmology in all
+calculations. Defaults to True.</li>
+<li><strong>cosmo_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Three values, the first being the Hubble
+constant, the second the density parameter Ω_m and the third
+being the cosmological constant Ω_Lambda (referred to as W_m
+in the rest of the code). These parameters default to those
+determined with Planck [69.6, 0.286, 0.714]</li>
+<li><strong>dm_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Two values, the first being the dispersion
+measure of the host, and the second being the slope of the
+intergalactic dispersion measure. Defaults to [100, 1200]</li>
+<li><strong>electron_model</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Model for the free electron density in
+the Milky Way. Defaults to &#8216;ne2001&#8217;</li>
+<li><strong>emission_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; The minimum and maximum frequency [Hz]
+between which FRB sources should emit the given bolometric
+luminosity. Defaults to [10e6,10e9]</li>
+<li><strong>lum_dist_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Bolometric luminosity distribution
+parameters being: the minimum luminosity [erg/s], the maximum
+luminosity [erg/s] and the powerlaw index of the distribution.
+Defaults to [1e40, 1e50, 1]</li>
+<li><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Name to be given to the population. Defaults to
+&#8216;initial&#8217;</li>
+<li><strong>pulse</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Values between which the intrinsic pulse width
+should be [ms]. Defaults to [0.5, 5]</li>
+<li><strong>repeat</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Fraction of sources which repeat</li>
+<li><strong>si_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Spectral index parameters, being the mean
+index and the standard deviation thereof. Defaults to [-1.4, 0.]</li>
+<li><strong>z_max</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; The maximum redshift out to which to
+distribute FRBs</li>
+<li><strong>test</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Flag to help testing</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A population of generated sources</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-do_survey">
+<span id="do-survey"></span><h2>do_survey<a class="headerlink" href="#module-do_survey" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="do_survey.observe">
+<code class="descclassname">do_survey.</code><code class="descname">observe</code><span class="sig-paren">(</span><em>population</em>, <em>survey_name</em>, <em>pattern='gaussian'</em>, <em>output=True</em>, <em>return_pop=True</em>, <em>return_survey=False</em>, <em>scat=False</em>, <em>scint=False</em>, <em>pop_path=''</em><span class="sig-paren">)</span><a class="headerlink" href="#do_survey.observe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run survey to detect FRB sources.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>population</strong> (<a class="reference internal" href="#population.Population" title="population.Population"><em>Population</em></a>) &#8211; Population class of FRB sources to observe</li>
+<li><strong>survey_name</strong> (<em>str</em>) &#8211; Name of survey file with which to observe</li>
+<li><strong>pattern</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Gain pattern, either &#8216;gaussian&#8217; (default) or
+&#8216;airy&#8217;</li>
+<li><strong>output</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to print the rates or not</li>
+<li><strong>return_pop</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to return a population. Primarily
+intended for debugging. Defaults to True</li>
+<li><strong>return_survey</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to return a survey. Primarily
+intended for debugging. Defaults to False</li>
+<li><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to include scattering in signal to noise
+calculations. Defaults to False</li>
+<li><strong>scint</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to apply scintillation to observations.
+Defaults to False</li>
+<li><strong>pop_path</strong> (<em>str</em>) &#8211; Give filename for a pickled population rather than
+using a population class</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Observed survey population</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">surv_pop (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-frb">
+<span id="frb"></span><h2>frb<a class="headerlink" href="#module-frb" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="frb.FRB">
+<em class="property">class </em><code class="descclassname">frb.</code><code class="descname">FRB</code><a class="headerlink" href="#frb.FRB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class containing FRB properties</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-frbcat">
+<span id="frbcat"></span><h2>frbcat<a class="headerlink" href="#module-frbcat" title="Permalink to this headline">¶</a></h2>
+<p>Do things with frbcat.</p>
+<dl class="class">
+<dt id="frbcat.Frbcat">
+<em class="property">class </em><code class="descclassname">frbcat.</code><code class="descname">Frbcat</code><span class="sig-paren">(</span><em>frbpoppy=True</em>, <em>one_per_frb=False</em>, <em>repeat_bursts=True</em>, <em>repeater=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Do things with the frbcat.</p>
+<p>Mostly used for playing nicely with frbpoppy. Get the pandas dataframe
+with Frbcat().df</p>
+<dl class="method">
+<dt id="frbcat.Frbcat.clean">
+<code class="descname">clean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.clean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean up the data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.coor_trans">
+<code class="descname">coor_trans</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.coor_trans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply coordinate transformations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>one_per_frb=True</em>, <em>repeat_bursts=False</em>, <em>repeater=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter frbcat in various ways.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>internet=False</em>, <em>local=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get frbcat from online or from a local file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>internet</strong> (<em>bool</em>) &#8211; Whether to get a new version of frbcat</li>
+<li><strong>local</strong> (<em>bool</em>) &#8211; Whether to use a local version of frbcat</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.match_surveys">
+<code class="descname">match_surveys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.match_surveys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match up frbs with surveys.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-galacticops">
+<span id="galacticops"></span><h2>galacticops<a class="headerlink" href="#module-galacticops" title="Permalink to this headline">¶</a></h2>
+<p>Series of galactic operations (doesn&#8217;t that sound cool?!), as in converting
+coordinates, calculating DM etc.</p>
+<dl class="function">
+<dt id="galacticops.dist_lookup">
+<code class="descclassname">galacticops.</code><code class="descname">dist_lookup</code><span class="sig-paren">(</span><em>cosmology=True</em>, <em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em>, <em>z_max=8.0</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.dist_lookup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of tuples to lookup the corresponding redshift for a comoving
+distance [Gpc]. Uses formulas from Hoggs et al. (1999) for the cosmological
+calculations, assuming a flat universe. To avoid long calculation times,
+it will check if a previous run with the same parameters has been done,
+which it will then load it. If not, it will calculate a new table, and save
+the table for later runs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cosmology</strong> (<em>boolean</em><em>, </em><em>optional</em>) &#8211; Whether to use cosmology or not.</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Hubble parameter. Defaults to 69.6</li>
+<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Omega matter. Defaults to 0.286</li>
+<li><strong>W_k</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Omega vacuum. Defaults to 0.714</li>
+<li><strong>z_max</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Maximum redshift. Defaults to 8.0</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">If cosmology is not enabled
+ds (list): Comoving distances [Gpc]
+zs (list): Corresponding redshifts</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.dist_to_z">
+<code class="descclassname">galacticops.</code><code class="descname">dist_to_z</code><span class="sig-paren">(</span><em>dist</em>, <em>H_0=69.6</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.dist_to_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate redshift from a distance in Gpc.</p>
+<p>Only holds for z &lt;= 2. Formulas from &#8216;An Introduction to Modern
+Astrophysics (2nd Edition)&#8217; by Bradley W. Carroll, Dale A. Ostlie.
+(Eq. 27.7)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dist</strong> (<em>float</em>) &#8211; Distance [Gpc].</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Hubble parameter. Defaults to 69.6</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Associated redshift</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">z (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.ergspers_to_watts">
+<code class="descclassname">galacticops.</code><code class="descname">ergspers_to_watts</code><span class="sig-paren">(</span><em>e</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.ergspers_to_watts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quick converstion from luminosity given in ergs/s to Watts.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.frac_deg">
+<code class="descclassname">galacticops.</code><code class="descname">frac_deg</code><span class="sig-paren">(</span><em>ra</em>, <em>dec</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.frac_deg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert coordinates expressed in hh:mm:ss to fractional degrees.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.interpolate_z">
+<code class="descclassname">galacticops.</code><code class="descname">interpolate_z</code><span class="sig-paren">(</span><em>d</em>, <em>ds</em>, <em>zs</em>, <em>H_0=69.6</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.interpolate_z" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate between two comoving distances.</p>
+<p>Obtain an approximate redshift, unless dzs is none (i.e. cosmology has
+been set to False in the function dist_lookup), in which case use an
+approximation that works to z&lt;2.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>d</strong> (<em>float</em>) &#8211; Comoving distance [Gpc]</li>
+<li><strong>ds</strong> (<em>list</em>) &#8211; Comoving distances [Gpc]</li>
+<li><strong>zs</strong> (<em>list</em>) &#8211; Corresponding redshifts</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; The value of the Hubble expansion, only required
+when using a non-cosmology approximation. Defaults to 69.6</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Redshift</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">z (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.ioka_dm_igm">
+<code class="descclassname">galacticops.</code><code class="descname">ioka_dm_igm</code><span class="sig-paren">(</span><em>z</em>, <em>slope=1200</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.ioka_dm_igm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the contribution of the intergalactic electron density to the
+dispersion measure, following Ioka (2003) and Inoue (2004)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> (<em>float</em>) &#8211; Redshift of source</li>
+<li><strong>slope</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Slope of relationship</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Dispersion measure of intergalactic medium [pc/cm^3]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#adapt_pop.Adapt.dm_igm" title="adapt_pop.Adapt.dm_igm">dm_igm</a> (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.lb_to_radec">
+<code class="descclassname">galacticops.</code><code class="descname">lb_to_radec</code><span class="sig-paren">(</span><em>l</em>, <em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.lb_to_radec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert galactic coordinates to RA, Dec</p>
+<p>Formulas from &#8216;An Introduction to Modern Astrophysics (2nd Edition)&#8217; by
+Bradley W. Carroll, Dale A. Ostlie (Eq. 24.19 onwards).</p>
+<p>NOTE: This function is not as accurate as the astropy conversion, nor as
+the Javascript calculators found online. However, as using astropy was
+prohibitively slow while running over large populations, frbpoppy uses this
+function. While this function is not as accurate, the under/over
+estimations of the coordinates are equally distributed meaning the errors
+cancel each other in the limit of large populations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>l</strong> (<em>float</em>) &#8211; Galactic longitude [fractional degrees]</li>
+<li><strong>b</strong> (<em>float</em>) &#8211; Galactic latitude [fractional degrees]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Right ascension and declination [fractional degrees]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ra, dec (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.lb_to_xyz">
+<code class="descclassname">galacticops.</code><code class="descname">lb_to_xyz</code><span class="sig-paren">(</span><em>gl</em>, <em>gb</em>, <em>dist</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.lb_to_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert galactic coordinates to galactic XYZ</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>l</strong> (<em>float</em>) &#8211; Galactic longitude [fractional degrees]</li>
+<li><strong>b</strong> (<em>float</em>) &#8211; Galactic latitude [fractional degrees]</li>
+<li><strong>dist</strong> (<em>float</em>) &#8211; Distance to source [Gpc]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Galactic XYZ [Gpc]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">gx, gy, gz</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.load_T_sky">
+<code class="descclassname">galacticops.</code><code class="descname">load_T_sky</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.load_T_sky" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the Haslam sky temperature map into a list from which temperatures can
+be retrieved. The temperature sky map is given in the weird units of
+HealPix, and despite looking up info on this coordinate system, I don&#8217;t
+have the foggiest idea of how to transform these to galactic coordinates. I
+have therefore directly copied the following code from psrpoppy in the
+assumption Sam Bates managed to figure it out.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of sky temperatures in HealPix? coordinates?</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">t_sky_list (list)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.ne2001_dist_to_dm">
+<code class="descclassname">galacticops.</code><code class="descname">ne2001_dist_to_dm</code><span class="sig-paren">(</span><em>dist</em>, <em>gl</em>, <em>gb</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.ne2001_dist_to_dm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert position to a dispersion measure using NE2001 (compiled from
+fortran)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dist</strong> (<em>float</em>) &#8211; Distance to source [Gpc]. Distance will be cut at 100kpc,
+as NE2001 can not cope with larger distances. This value
+should be more than enough to clear the Milky Way.</li>
+<li><strong>gl</strong> (<em>float</em>) &#8211; Galactic longitude [fractional degrees]</li>
+<li><strong>gb</strong> (<em>float</em>) &#8211; Galactic latitude [fractional degrees]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Dispersion measure [pc*cm^-3]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dm (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.ne2001_get_smtau">
+<code class="descclassname">galacticops.</code><code class="descname">ne2001_get_smtau</code><span class="sig-paren">(</span><em>dist</em>, <em>gl</em>, <em>gb</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.ne2001_get_smtau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the NE2001 model to calculate scattering measure. Calculations based on
+work presented in Cordes &amp; Lazio (1991, DOI: 10.1086/170261)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dist</strong> (<em>float</em>) &#8211; Distance to source [kpc]. Distance will be cut at 100 kpc,
+as NE2001 can not cope with larger distances. Therefore
+the calculated scattering will only be that from the
+Milky Way.</li>
+<li><strong>gl</strong> (<em>float</em>) &#8211; Galactic longitude [fractional degrees]</li>
+<li><strong>gb</strong> (<em>float</em>) &#8211; Galactic latitude [fractional degrees]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Scattering measure
+smtau (float): Scattering measure, but unsure why different to sm</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">sm (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.ne2001_scint_time_bw">
+<code class="descclassname">galacticops.</code><code class="descname">ne2001_scint_time_bw</code><span class="sig-paren">(</span><em>dist</em>, <em>gl</em>, <em>gb</em>, <em>freq</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.ne2001_scint_time_bw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the NE2001 model to get the diffractive scintillation timescale</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dist</strong> (<em>float</em>) &#8211; Distance to source [Gpc]. Distance will be cut at 100 kpc,
+as NE2001 can not cope with larger distances. Therefore
+the calculated scintillation timescale will only be that
+from the Milky Way.</li>
+<li><strong>gl</strong> (<em>float</em>) &#8211; Galactic longitude [fractional degrees]</li>
+<li><strong>gb</strong> (<em>float</em>) &#8211; Galactic latitude [fractional degrees]</li>
+<li><strong>freq</strong> (<em>float</em>) &#8211; Observing frequency [MHz]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Diffractive scintillation timescale [Hz]
+scint_bw (float): Scintillation bandwidth [Hz]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">scint_time (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.radec_to_lb">
+<code class="descclassname">galacticops.</code><code class="descname">radec_to_lb</code><span class="sig-paren">(</span><em>ra</em>, <em>dec</em>, <em>frac=False</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.radec_to_lb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert from ra, dec to galactic coordinates.</p>
+<p>Formulas from &#8216;An Introduction to Modern Astrophysics (2nd Edition)&#8217; by
+Bradley W. Carroll, Dale A. Ostlie (Eq. 24.16 onwards).</p>
+<p>NOTE: This function is not as accurate as the astropy conversion, nor as
+the Javascript calculators found online. However, as using astropy was
+prohibitively slow while running over large populations, we use this
+function. While this function is not as accurate, the under/over
+estimations of the coordinates are equally distributed meaning the errors
+cancel each other in the limit of large populations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ra</strong> (<em>string</em>) &#8211; Right ascension given in the form &#8216;19:06:53&#8217;</li>
+<li><strong>dec</strong> (<em>string</em>) &#8211; Declination given in the form &#8216;-40:37:14&#8217;</li>
+<li><strong>frac</strong> (<em>bool</em>) &#8211; Denote whether coordinates are already fractional or not</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Galactic longitude and latitude [fractional degrees]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">gl, gb (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.scatter_bhat">
+<code class="descclassname">galacticops.</code><code class="descname">scatter_bhat</code><span class="sig-paren">(</span><em>dm</em>, <em>offset=-6.46</em>, <em>scindex=-3.86</em>, <em>freq=1400.0</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.scatter_bhat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate scattering timescale (values default to those from Bhat et al.
+(2004, DOI:10.1086/382680) and to simluate the scatter around this
+relationship, draw from a Gaussian around this value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dm</strong> (<em>float</em>) &#8211; Dispersion measure [pc*cm^-3]</li>
+<li><strong>offset</strong> (<em>float</em>) &#8211; Offset of scattering relationship. Defaults to -6.46</li>
+<li><strong>scindex</strong> (<em>float</em>) &#8211; Scattering index. Defaults to -3.86</li>
+<li><strong>freq</strong> (<em>float</em>) &#8211; Frequency at which to evaluate scattering time [MHz].
+Defaults to 1400 MHz</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Scattering timescale [ms]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">t_scat (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.z_to_dist">
+<code class="descclassname">galacticops.</code><code class="descname">z_to_dist</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=69.6</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.z_to_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate distance in Gpc from a redshift.</p>
+<p>Only holds for z &lt;= 2. Formulas from &#8216;An Introduction to Modern
+Astrophysics (2nd Edition)&#8217; by Bradley W. Carroll, Dale A. Ostlie.
+(Eq. 27.7)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> (<em>float</em>) &#8211; Redshift</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Hubble parameter. Defaults to 69.6</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Associated distance [Gpc]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dist (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.z_to_v">
+<code class="descclassname">galacticops.</code><code class="descname">z_to_v</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.z_to_v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert redshift to a comoving volume. Based on James Schombert&#8217;s python
+implementation of Edward L. Wright&#8217;s cosmology calculator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> (<em>float</em>) &#8211; Redshift</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Hubble parameter. Defaults to 69.6</li>
+<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Omega matter. Defaults to 0.286</li>
+<li><strong>W_k</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Omega vacuum. Defaults to 0.714</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Comoving volume from Earth to the source [Gpc^3]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">v_gpc (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-log">
+<span id="log"></span><h2>log<a class="headerlink" href="#module-log" title="Permalink to this headline">¶</a></h2>
+<p>Quick and dirty logging functions.</p>
+<dl class="function">
+<dt id="log.pprint">
+<code class="descclassname">log.</code><code class="descname">pprint</code><span class="sig-paren">(</span><em>*s</em><span class="sig-paren">)</span><a class="headerlink" href="#log.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hack to make for more informative print statements.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-monte_carlo">
+<span id="monte-carlo"></span><h2>monte_carlo<a class="headerlink" href="#module-monte_carlo" title="Permalink to this headline">¶</a></h2>
+<p>Monte Carlo over various frbpoppy parameters.</p>
+<dl class="class">
+<dt id="monte_carlo.MonteCarlo">
+<em class="property">class </em><code class="descclassname">monte_carlo.</code><code class="descname">MonteCarlo</code><a class="headerlink" href="#monte_carlo.MonteCarlo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="monte_carlo.MonteCarlo.path">
+<code class="descname">path</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.MonteCarlo.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the path to a file in the results folder.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="monte_carlo.MonteCarlo.possible_pars">
+<code class="descname">possible_pars</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.MonteCarlo.possible_pars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate all possible combinations of parameters.</p>
+<p>Mostly loops over a single parameter while keeping the others at their
+default value, but will do a dual loop over both possible combinations
+of minimum and maximum parameters if both parameters exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Table with all parameter combinations.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">df (DataFrame)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="monte_carlo.MonteCarlo.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.MonteCarlo.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in parameter database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="monte_carlo.MonteCarlo.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.MonteCarlo.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a Monte Carlo.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="monte_carlo.MonteCarlo.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>df=None</em>, <em>filename=None</em>, <em>dtypes=None</em><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.MonteCarlo.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save database to SQL database.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="monte_carlo.Parameter">
+<em class="property">class </em><code class="descclassname">monte_carlo.</code><code class="descname">Parameter</code><span class="sig-paren">(</span><em>mi</em>, <em>ma</em>, <em>sp</em>, <em>st</em>, <em>log=False</em><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.Parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to hold attributes of a parameter.</p>
+<dl class="method">
+<dt id="monte_carlo.Parameter.limits">
+<code class="descname">limits</code><span class="sig-paren">(</span><em>mi</em>, <em>ma</em>, <em>sp</em>, <em>st</em>, <em>log=False</em><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.Parameter.limits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set parameter range limits.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="monte_carlo.Parameter.par_range">
+<code class="descname">par_range</code><span class="sig-paren">(</span><em>mi=None</em><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.Parameter.par_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quick range generator.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="monte_carlo.Parameter.seq">
+<code class="descname">seq</code><span class="sig-paren">(</span><em>start</em>, <em>stop</em>, <em>step</em><span class="sig-paren">)</span><a class="headerlink" href="#monte_carlo.Parameter.seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a range of numbers (even if using decimal steps).</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-paths">
+<span id="paths"></span><h2>paths<a class="headerlink" href="#module-paths" title="Permalink to this headline">¶</a></h2>
+<p>Set all possible needed paths.</p>
+<dl class="class">
+<dt id="paths.Paths">
+<em class="property">class </em><code class="descclassname">paths.</code><code class="descname">Paths</code><a class="headerlink" href="#paths.Paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>All directory paths.</p>
+<dl class="method">
+<dt id="paths.Paths.check">
+<code class="descname">check</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform checks on path.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paths.Paths.data">
+<code class="descname">data</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where all results are to be stored.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paths.Paths.frbcat">
+<code class="descname">frbcat</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.frbcat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where all models are to be stored.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paths.Paths.models">
+<code class="descname">models</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where all models are to be stored.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paths.Paths.populations">
+<code class="descname">populations</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.populations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where all populations are to be stored.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paths.Paths.results">
+<code class="descname">results</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where all results are to be stored.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="paths.Paths.store">
+<code class="descname">store</code><span class="sig-paren">(</span><em>name</em>, <em>default</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where files are to be stored.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>str</em>) &#8211; Which group of files, populations, results etc</li>
+<li><strong>default</strong> (<em>str</em>) &#8211; Default path for the group</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The path of the group</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#monte_carlo.MonteCarlo.path" title="monte_carlo.MonteCarlo.path">path</a> (str)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="paths.Paths.surveys">
+<code class="descname">surveys</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.surveys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Where all surveys are to be stored.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-plot">
+<span id="plot"></span><h2>plot<a class="headerlink" href="#module-plot" title="Permalink to this headline">¶</a></h2>
+<p>Plot FRB populations with a Bokeh server. Run script with:</p>
+<blockquote>
+<div>$ bokeh serve &#8211;show code/plot.py &#8211;args &lt;pop_example.csv&gt;</div></blockquote>
+<p>in which all csv-files with populations can be given after <code class="docutils literal"><span class="pre">--args</span></code>, and as
+well as the optional arguments of <code class="docutils literal"><span class="pre">-noshow</span></code> and <code class="docutils literal"><span class="pre">-nofrbcat</span></code>, to
+respectively not show the resulting plot, and to not overplot frbcat</p>
+<dl class="function">
+<dt id="plot.histogram">
+<code class="descclassname">plot.</code><code class="descname">histogram</code><span class="sig-paren">(</span><em>dfs</em><span class="sig-paren">)</span><a class="headerlink" href="#plot.histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quick function to &#8216;histogram&#8217; each column of each dataframes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dfs</strong> (<em>list</em>) &#8211; List of dataframes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of histogramed dataframes</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">hists (list)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.plot_pop">
+<code class="descclassname">plot.</code><code class="descname">plot_pop</code><span class="sig-paren">(</span><em>files=[]</em>, <em>frbcat=True</em><span class="sig-paren">)</span><a class="headerlink" href="#plot.plot_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot populations in browser using Bokeh.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>files</strong> (<em>list</em>) &#8211; List of population files to plot (currently only works
+with csv files - file an issue if you would like more
+options)</li>
+<li><strong>frbcat</strong> (<em>bool</em>) &#8211; Whether to plot frbcat parameters. Defaults to True</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-plot_mc">
+<span id="plot-mc"></span><h2>plot_mc<a class="headerlink" href="#module-plot_mc" title="Permalink to this headline">¶</a></h2>
+<p>Use Bokeh to plot a population or the results of a Monte Carlo.</p>
+<dl class="class">
+<dt id="plot_mc.Plot">
+<em class="property">class </em><code class="descclassname">plot_mc.</code><code class="descname">Plot</code><span class="sig-paren">(</span><em>files=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_mc.Plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to plot a population or the output of a Monte Carlo.</p>
+<dl class="method">
+<dt id="plot_mc.Plot.import_df">
+<code class="descname">import_df</code><span class="sig-paren">(</span><em>query=None</em>, <em>loc=None</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_mc.Plot.import_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import a sql database into a pandas dataframe.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="plot_mc.Plot.mc">
+<code class="descname">mc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#plot_mc.Plot.mc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the results of a Monte Carlo run.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="plot_mc.Plot.path">
+<code class="descname">path</code><span class="sig-paren">(</span><em>s</em>, <em>where='results'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_mc.Plot.path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the path to a file in the results folder.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="plot_mc.Plot.pop">
+<code class="descname">pop</code><span class="sig-paren">(</span><em>files=[]</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_mc.Plot.pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot a population.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-population">
+<span id="population"></span><h2>population<a class="headerlink" href="#module-population" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="population.Population">
+<em class="property">class </em><code class="descclassname">population.</code><code class="descname">Population</code><a class="headerlink" href="#population.Population" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to hold a population of FRBs</p>
+<dl class="method">
+<dt id="population.Population.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>source</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a source to the population.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="population.Population.pickle_pop">
+<code class="descname">pickle_pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.pickle_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allow the population to be pickled for future use.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="population.Population.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>sep='</em>, <em>'</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out source properties as data file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sep</strong> (<em>str</em>) &#8211; Define seperator in file, which also changes the file
+type between .dat and .csv. Defaults to csv</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="population.Population.to_df">
+<code class="descname">to_df</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.to_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather source values into a pandas dataframe</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="population.Population.values">
+<code class="descname">values</code><span class="sig-paren">(</span><em>sep='</em>, <em>'</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather source values into table in string format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sep</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Define the seperator between values</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Data table with the values of all attributes, including</dt>
+<dd>a header at the top</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#paths.Paths.data" title="paths.Paths.data">data</a> (str)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="population.unpickle">
+<code class="descclassname">population.</code><code class="descname">unpickle</code><span class="sig-paren">(</span><em>filename=None</em><span class="sig-paren">)</span><a class="headerlink" href="#population.unpickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quick function to unpickle a population</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Define the path to the pickled population,
+or give the population name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Population class</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-precalc">
+<span id="precalc"></span><h2>precalc<a class="headerlink" href="#module-precalc" title="Permalink to this headline">¶</a></h2>
+<p>Create a lookup tables for redshift and the NE2001 dispersion measure.</p>
+<dl class="function">
+<dt id="precalc.dist_table">
+<code class="descclassname">precalc.</code><code class="descname">dist_table</code><span class="sig-paren">(</span><em>dist</em>, <em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em>, <em>z_max=5.0</em>, <em>test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.dist_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create/use a lookup table for distance to redshift.</p>
+<p>Create a list of tuples to lookup the corresponding redshift for a comoving
+distance [Gpc]. Uses formulas from Hoggs et al. (1999) for the cosmological
+calculations, assuming a flat universe. To avoid long calculation times,
+it will check if a previous run with the same parameters has been done,
+which it will then load it. If not, it will calculate a new table, and save
+the table for later runs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dist</strong> (<em>float</em>) &#8211; Comoving distance [Gpc]</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Hubble parameter. Defaults to 69.6</li>
+<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Omega matter. Defaults to 0.286</li>
+<li><strong>W_k</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Omega vacuum. Defaults to 0.714</li>
+<li><strong>z_max</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Maximum redshift. Defaults to 5.0</li>
+<li><strong>test</strong> (<em>bool</em>) &#8211; Flag for coarser resolution</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Redshift</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">z (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="precalc.ne2001_table">
+<code class="descclassname">precalc.</code><code class="descname">ne2001_table</code><span class="sig-paren">(</span><em>gal</em>, <em>gab</em>, <em>test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.ne2001_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create/use a NE2001 lookup table for dispersion measure.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>gl</strong> (<em>float</em>) &#8211; Galactic longitude [fractional degrees]</li>
+<li><strong>gb</strong> (<em>float</em>) &#8211; Galactic latitude [fractional degrees]</li>
+<li><strong>test</strong> (<em>bool</em>) &#8211; Flag for coarser resolution</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Galactic dispersion measure [pc*cm^-3]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dm_mw (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-source">
+<span id="source"></span><h2>source<a class="headerlink" href="#module-source" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="source.Source">
+<em class="property">class </em><code class="descclassname">source.</code><code class="descname">Source</code><a class="headerlink" href="#source.Source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class containing individual source properties</p>
+<dl class="method">
+<dt id="source.Source.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>frb</em><span class="sig-paren">)</span><a class="headerlink" href="#source.Source.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an FRB to the source</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="source.Source.create_frb">
+<code class="descname">create_frb</code><span class="sig-paren">(</span><em>pop</em>, <em>time=None</em><span class="sig-paren">)</span><a class="headerlink" href="#source.Source.create_frb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an frb to add to source</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pop</strong> (<a class="reference internal" href="#population.Population" title="population.Population"><em>Population</em></a>) &#8211; Population parameters</li>
+<li><strong>time</strong> (<em>float</em>) &#8211; Time of burst [s]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-survey">
+<span id="survey"></span><h2>survey<a class="headerlink" href="#module-survey" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="survey.Rates">
+<em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Rates</code><a class="headerlink" href="#survey.Rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to hold rate counters</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>det</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number detected</li>
+<li><strong>faint</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number to faint to detect</li>
+<li><strong>jy</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number arrived within survey &gt; 1 Jy</li>
+<li><strong>out</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number outside survey, space or timewise</li>
+<li><strong>sky</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number per sky above &gt; 1 Jy</li>
+<li><strong>vol</strong> (<em>int</em><em>, </em><em>optional</em>) &#8211; Number per Gpc^3</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="survey.Rates.tot">
+<code class="descname">tot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#survey.Rates.tot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the total number of rates</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="survey.Survey">
+<em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Survey</code><span class="sig-paren">(</span><em>survey_name</em>, <em>pattern='gaussian'</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Method containing survey parameters and functions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>survey_name</strong> (<em>str</em>) &#8211; Name of survey with which to observe population. Can
+either be a predefined survey present in frbpoppy
+(see data/surveys/) or a path name to a new survey
+filename</li>
+<li><strong>pattern</strong> (<em>str</em>) &#8211; Set gain pattern to be either &#8216;gaussian&#8217; or &#8216;airy&#8217;.
+Defaults to &#8216;gaussian&#8217;</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="survey.Survey.calc_T_sky">
+<code class="descname">calc_T_sky</code><span class="sig-paren">(</span><em>src</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.calc_T_sky" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the sky temperature from the Haslam table, before scaling to
+the survey frequency. The temperature sky map is given in the weird
+units of HealPix and despite looking up info on this coordinate system,
+I don&#8217;t have the foggiest idea of how to transform these to galactic
+coordinates. I have therefore directly copied the following code from
+psrpoppy in the assumption Sam Bates managed to figure it out.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>src</strong> (<em>class</em>) &#8211; Needed for coordinates</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Sky temperature [K]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">src.T_sky (float)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.calc_Ts">
+<code class="descname">calc_Ts</code><span class="sig-paren">(</span><em>src</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.calc_Ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set temperatures for source</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.calc_s_peak">
+<code class="descname">calc_s_peak</code><span class="sig-paren">(</span><em>frb</em>, <em>src</em>, <em>f_low=10000000.0</em>, <em>f_high=10000000000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.calc_s_peak" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the mean spectral flux density.</p>
+<p>Following Lorimer et al, 2013, eq. 9., at the central frequency
+of the survey.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frb</strong> (<em>class</em>) &#8211; FRB</li>
+<li><strong>src</strong> (<em>class</em>) &#8211; Source of FRB</li>
+<li><strong>f_low</strong> (<em>float</em>) &#8211; Source emission lower frequency limit [Hz]. Defaults
+to 10e6</li>
+<li><strong>f_high</strong> (<em>float</em>) &#8211; Source emission higher frequency limit [Hz].
+Defaults to 10e6</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Mean spectral flux density [Jy]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">frb.s_peak (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.dm_smear">
+<code class="descname">dm_smear</code><span class="sig-paren">(</span><em>src</em>, <em>dm_err=0.2</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.dm_smear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate delay in pulse across a channel due to dm smearing.</p>
+<p>Formula&#8217;s based on &#8216;Handbook of Pulsar Astronomy&#8221; by Duncan Lorimer
+&amp; Michael Kramer, section A2.4. Note the power of the forefactor has
+changed due to the central frequency being given in MHz.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>src</strong> (<a class="reference internal" href="#source.Source" title="source.Source"><em>Source</em></a>) &#8211; Source object with a dm attribute</li>
+<li><strong>dm_err</strong> (<em>float</em>) &#8211; Error on dispersion measure. Defaults to 0.2</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>Time of delay [ms] at central band</dt>
+<dd><p class="first last">frequency, with its error assuming a
+20% uncertainty in the dispersion measure</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">t_dm, t_dm_err (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.in_region">
+<code class="descname">in_region</code><span class="sig-paren">(</span><em>src</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.in_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a given source is within the survey region</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>src</strong> (<a class="reference internal" href="#source.Source" title="source.Source"><em>Source</em></a>) &#8211; Source of which to check whether in survey region</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">If source is within survey region
+False: If source is outside survey region</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">True</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.intensity_profile">
+<code class="descname">intensity_profile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.intensity_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate intensity profile</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.obs_prop">
+<code class="descname">obs_prop</code><span class="sig-paren">(</span><em>frb</em>, <em>src</em>, <em>pop</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.obs_prop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set various observation properties of an FRB</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frb</strong> (<em>class</em>) &#8211; FRB of which to calculate the signal to noise</li>
+<li><strong>src</strong> (<em>class</em>) &#8211; Source to which the FRB belongs</li>
+<li><strong>pop</strong> (<em>class</em>) &#8211; Population to which the source belongs</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>Signal to noise ratio based on the radiometer</dt>
+<dd><p class="first last">equation for a single pulse. Will return -2.0 if src is not
+in survey region</p>
+</dd>
+<dt>frb.w_eff (float): Observed pulse width [ms]. Will return 0. if</dt>
+<dd><p class="first last">source not in survey region</p>
+</dd>
+<dt>frb.s_peak (float): Mean spectral flux density per observed</dt>
+<dd><p class="first last">source [Jy]</p>
+</dd>
+</dl>
+<p>frb.fluence (float): Fluence of the observed pulse [Jy*ms]</p>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">frb.snr (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to parse an already opened survey file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<em>str</em>) &#8211; Filename, see Survey class</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Various attributes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.rates">
+<code class="descname">rates</code><span class="sig-paren">(</span><em>pop</em>, <em>output=True</em>, <em>scaled=True</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print survey rates, such as the number of detected sources etc.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to print out the rates or not</li>
+<li><strong>scaled</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Print scaled (default) or normal rates</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.scale_rates">
+<code class="descname">scale_rates</code><span class="sig-paren">(</span><em>pop</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.scale_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale all rates according to integration time and uptime.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pop</strong> (<a class="reference internal" href="#population.Population" title="population.Population"><em>Population</em></a>) &#8211; Population class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.scat">
+<code class="descname">scat</code><span class="sig-paren">(</span><em>src</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.scat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set scattering timescale for source</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.scint">
+<code class="descname">scint</code><span class="sig-paren">(</span><em>frb</em>, <em>src</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.scint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate scintillation effect on the signal to noise ratio (rather
+than adapting the flux, as the snr can change per survey attempt).
+Formulas based on &#8216;Handbook of Pulsar Astronomy&#8221; by Duncan Lorimer &amp;
+Michael Kramer, section 4.2.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frb</strong> (<em>class</em>) &#8211; FRB</li>
+<li><strong>src</strong> (<em>class</em>) &#8211; Source of FRB</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Signal to noise ratio modulated by scintillation</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">frb.snr (float)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo_150.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">frbpoppy</a></h1>
+
+
+
+<p class="blurb">Fast Radio Burst Population Synthesis in Python</p>
+
+
+
+
+
+
+
+
+<h3><a href="index.html">Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="documentation.html">Documentation</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="documentation.html">Documentation</a><ul>
+      <li>Previous: <a href="documentation.html" title="previous chapter">Documentation</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <!-- <div><input type="submit" value="Go" /></div> -->
+      <!-- <input type="hidden" name="check_keywords" value="yes" /> -->
+      <!-- <input type="hidden" name="area" value="default" /> -->
+    </form>
+</div>
+<script type="text/javascript" align="center">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

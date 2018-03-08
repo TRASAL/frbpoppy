@@ -19,7 +19,7 @@
 #
 import os
 import sys
-sys.path.insert(0,os.path.abspath('../code/'))
+sys.path.insert(0,os.path.abspath('../frbpoppy/'))
 #sys.path.insert(0, os.path.abspath('..'))
 
 # -- General configuration ------------------------------------------------
@@ -133,7 +133,7 @@ html_theme = 'alabaster'
 # documentation.
 #
 html_theme_options = {
-    "github_user": "davidgardenier", 
+    "github_user": "davidgardenier",
     "github_repo": "frbpoppy",
     "show_powered_by": "false",
     "description": 'Fast Radio Burst Population Synthesis in Python',
@@ -187,8 +187,8 @@ html_last_updated_fmt = "%b %d, %Y"
 
 # Custom sidebar templates, maps document names to template names.
 #
-html_sidebars = {'**':['about.html', 
-                       'globaltoc.html', 
+html_sidebars = {'**':['about.html',
+                       'globaltoc.html',
                        'relations.html',
                        'searchbox.html']}
 
