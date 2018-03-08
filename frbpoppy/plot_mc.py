@@ -543,4 +543,4 @@ class Plot:
         curdoc().title = 'frbpoppy'
 
 
-Plot().mc()
+# Plot().mc()

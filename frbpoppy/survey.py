@@ -19,6 +19,7 @@ class Rates:
         out (int, optional): Number outside survey, space or timewise
         sky (int, optional): Number per sky above > 1 Jy
         vol (int, optional): Number per Gpc^3
+
     """
 
     def __init__(self):

@@ -1,6 +1,7 @@
 """
-Series of galactic operations (doesn't that sound cool?!), as in converting
-coordinates, calculating DM etc.
+Series of galactic operations (doesn't that sound cool?!).
+
+...as in converting coordinates, calculating DM etc.
 """
 
 import ctypes as C
@@ -10,6 +11,7 @@ import os
 import random
 
 from frbpoppy.paths import paths
+from frbpoppy.log import pprint
 
 # Import fortran libraries
 uni_mods = os.path.join(paths.models(), 'universe/')
@@ -35,7 +37,7 @@ def frac_deg(ra, dec):
 
 def lb_to_xyz(gl, gb, dist):
     """
-    Convert galactic coordinates to galactic XYZ
+    Convert galactic coordinates to galactic XYZ.
 
     Args:
         l (float): Galactic longitude [fractional degrees]
@@ -44,6 +46,7 @@ def lb_to_xyz(gl, gb, dist):
 
     Returns:
         gx, gy, gz: Galactic XYZ [Gpc]
+
     """
     rsun = 8.5e-6  # Gpc
 
@@ -527,7 +530,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
         W_k = 1.0 - W_m - W_v  # Omega curvature
 
         if W_k != 0.0:
-            print('Careful - Your cosmological parameters do not sum to 1.0')
+            pprint('Careful - Your cosmological parameters do not sum to 1.0')
 
         # Numerically integrate the following function
         def d_c(x):
@@ -595,7 +598,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
 
             return z
 
-    print('Gone over your maximum redshift', d)
+    pprint('Gone over your maximum redshift', d)
     # Return highest z if beyond the largest redshift
     return zs[-1]
 

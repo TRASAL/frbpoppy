@@ -26,3 +26,5 @@ surv_pop = observe(pop, 'APERTIF', pattern='tophat')
 
 # Save population for later examination
 surv_pop.pickle_pop()
+
+plot(pop, surv_pop)

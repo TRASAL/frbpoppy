@@ -181,6 +181,7 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0, test=False):
             results.append((d, z))
 
             # Give an update on the progress
+            pprint('Creating a redshift table (only needs to happen once)')
             sys.stdout.write('\r{}'.format(z))
             sys.stdout.flush()
 
