@@ -377,6 +377,6 @@ class MonteCarlo:
         db_ks = pd.DataFrame(d)
         db_rates = pd.DataFrame(rates)
 
-        self.save(df=db_hists, filename='hists_temp5.db')
-        self.save(df=db_ks, filename='ks_temp5.db')
-        self.save(df=db_rates, filename='rates_temp5.db')
+        self.save(df=db_hists, filename='hists_20180308.db')
+        self.save(df=db_ks, filename='ks_20180308.db')
+        self.save(df=db_rates, filename='rates_20180308.db')

@@ -69,7 +69,13 @@ def histogram(dfs):
             if df[c].nunique() == 1 and df[c].iloc[0] == 'None':
                 continue
 
-            bins = np.linspace(low, high, 15)
+            if high - low > 1500:
+                if low == 0:
+                    low = 1e-3
+                bins = np.geomspace(low, high, num=15)
+            else:
+                bins = np.linspace(low, high, 15)
+
             col = df[c].convert_objects(convert_numeric=True)
             col = col.dropna()
             h, _ = np.histogram(col, bins=bins)

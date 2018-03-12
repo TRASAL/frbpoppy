@@ -9,7 +9,7 @@ class Paths():
     def __init__(self):
         """Initialise."""
         # Convenient paths to have
-        self.here = os.path.dirname(__file__)
+        self.code = os.path.dirname(__file__)
         self.home = os.path.expanduser("~")
         self.downloads = os.path.expanduser("~/Downloads")
 
@@ -62,7 +62,7 @@ class Paths():
 
     def data(self, *args):
         """Where all results are to be stored."""
-        default = os.path.realpath(os.path.join(self.here, '../data/')) + '/'
+        default = os.path.realpath(os.path.join(self.code, '../data/')) + '/'
         return self.store('data', default, *args)
 
     def results(self, *args):

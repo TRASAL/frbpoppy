@@ -23,6 +23,7 @@ from bokeh.plotting import figure
 
 from frbpoppy.log import pprint
 from frbpoppy.frbcat import Frbcat
+from frbpoppy.paths import paths
 
 # Number of dataframes/populations
 num_df = 0

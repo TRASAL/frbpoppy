@@ -13,6 +13,9 @@ import numpy as np
 import pandas as pd
 import sqlite3
 
+from frbpoppy.paths import paths
+from frbpoppy.log import pprint
+
 
 class Plot:
     """Class to plot a population or the output of a Monte Carlo."""
@@ -61,10 +64,10 @@ class Plot:
     def path(self, s, where='results'):
         """Return the path to a file in the results folder."""
         if where == 'results':
-            r = os.path.join(os.path.dirname(__file__), '../data/results/' + s)
+            r = os.path.join(paths.results(), s)
         if where == 'html':
-            cwd = os.path.dirname(__file__)
-            d = os.path.join(cwd, 'plot_config/{}.html'.format(s))
+            cd = paths.code
+            d = os.path.join(cd, f'plot_config/{s}.html')
             r = open(d).read()
         return r
 
@@ -166,7 +169,7 @@ class Plot:
                 st = 0.00001
                 ma += st
 
-            print(p, mi, ma, st)
+            pprint(f"{p:>15} {mi:>15} {ma:>15} {st:>15}")
 
             # Set standard value
             v = df[p].value_counts().idxmax()
@@ -375,7 +378,7 @@ class Plot:
                 query = 'SELECT * FROM pars WHERE '
 
                 # An utterly and completely ridiculous way to solve SQL
-                # rounding bugs with decimals
+                # rounding bug with decimals
                 for f in filt:
                     value = str(filt[f])
                     if '.' not in value:
@@ -423,14 +426,14 @@ class Plot:
             test = (val_test & par_test)
             try:
                 iden = dk[test].iloc[0]['id']
-                print('Parameters found')
+                pprint('Parameters found')
             except IndexError:
-                print('No parameters found')
-                print('SQL constraints:', query)
-                print('Looking for:', x_name)
-                print('With value:', val[x_name])
-                print('Finding:', *[repr(r) for r in dk[x_name].values])
-                print('Looking in:\n', dk)
+                pprint('No parameters found')
+                pprint('SQL constraints:', query)
+                pprint('Looking for:', x_name)
+                pprint('With value:', val[x_name])
+                pprint('Finding:', *[repr(r) for r in dk[x_name].values])
+                pprint('Looking in:\n', dk)
                 iden = ''
 
             # Update histogram data

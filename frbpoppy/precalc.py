@@ -70,6 +70,7 @@ def ne2001_table(gal, gab, test=False):
                 results.append(r)
 
             # Give an update on the progress
+            pprint('Creating a DM lookup table (only needs to be done once)')
             sys.stdout.write('\r{}'.format(gl))
             sys.stdout.flush()
 

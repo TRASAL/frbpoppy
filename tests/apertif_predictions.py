@@ -20,12 +20,5 @@ pop = generate(n_per_day*days,
 # Observe FRB population
 surv_pop = observe(pop, 'APERTIF-IAB-10', pattern='tophat')
 
-# Save populations
-pop.save()
-surv_pop.save()
-
-# Plot results
-files = [paths.results()+'population_initial.csv',
-         paths.results()+'population_apertif.csv']
-
-plot(files=files, mute=False)
+# Plot FRB populations
+plot(pop, surv_pop, mute=False)
