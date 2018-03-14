@@ -7,8 +7,11 @@ import pandas as pd
 import requests
 
 import frbpoppy.galacticops as go
+from frbpoppy.frb import FRB
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
+from frbpoppy.population import Population
+from frbpoppy.source import Source
 
 
 class Frbcat():
@@ -109,14 +112,28 @@ class Frbcat():
                    'flux': 's_peak',
                    'redshift_host': 'z',
                    'spectral_index': 'si',
-                   'dispersion smearing': 't_dm',
-                   'scattering_timescale': 't_scat'}
+                   'dispersion_smearing': 't_dm',
+                   'dm_error': 'dm_err',
+                   'scattering_timescale': 't_scat',
+                   'sampling_time': 't_samp'}
 
         self.df.rename(columns=convert, inplace=True)
 
         # Add some extra columns
         self.df['fluence'] = self.df['s_peak'] * self.df['w_eff']
         self.df['population'] = 'frbcat'
+        self.df['t_dm_err'] = ((self.df['t_dm']/self.df['dm']) *
+                               (self.df['dm_err']*self.df['dm']))
+
+        # Temporary fix to missing data on FRB170827 in frbcat
+        self.df['t_samp'] = self.df['t_samp'].fillna(0.06400)
+
+        # Gives somewhat of an idea of the pulse width upon arrival at Earth
+        self.df['w_int'] = (self.df['w_eff']**2 -
+                            self.df['t_dm']**2 -
+                            self.df['t_dm_err']**2 -
+                            self.df['t_scat']**2 -
+                            self.df['t_samp']**2)**0.5
 
         # Reduce confusion in telescope names
         small_tele = self.df['telescope'].str.lower()
@@ -174,3 +191,41 @@ class Frbcat():
 
             for name in names:
                 pprint(name + ',')
+
+    def to_pop(self):
+        """
+        Convert to a Population object.
+
+        Please ensure self.clean() has been run first.
+        """
+        pop = Population()
+        pop.name = 'frbcat'
+
+        # For each source
+        for name, src_df in self.df.groupby('frb'):
+
+            source = Source()
+            source.name = name
+            source.dm = src_df.dm.iloc[0]
+            source.dm_mw = src_df.dm_mw.iloc[0]
+            source.gl = src_df.gl.iloc[0]
+            source.gb = src_df.gb.iloc[0]
+            source.ra = src_df.ra.iloc[0]
+            source.dec = src_df.dec.iloc[0]
+            source.z = src_df.z.iloc[0]
+            source.t_scat = src_df.t_scat.iloc[0]
+
+            for index, row in src_df.iterrows():
+                frb = FRB()
+                frb.w_eff = row.w_eff
+                frb.si = row.si
+                frb.snr = row.snr
+                frb.s_peak = row.s_peak
+                frb.fluence = row.fluence
+                source.add(frb)
+
+            pop.add(source)
+
+        pop.pickle_pop()
+
+        return pop

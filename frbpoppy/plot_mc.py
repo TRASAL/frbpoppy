@@ -77,13 +77,13 @@ class Plot:
         if not query:
             query = 'select * from pars;'
         if not loc:
-            loc = 'ks_temp5.db'
+            loc = 'ks_20180308.db'
         elif loc == 'ks':
-            loc = 'ks_temp5.db'
+            loc = 'ks_20180308.db'
         elif loc == 'hist':
-            loc = 'hists_temp5.db'
+            loc = 'hists_20180308.db'
         elif loc == 'rate':
-            loc = 'rates_temp5.db'
+            loc = 'rates_20180308.db'
 
         p = self.path(loc)
         conn = sqlite3.connect(p)

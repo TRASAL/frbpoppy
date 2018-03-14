@@ -395,11 +395,14 @@ class Survey:
         # Also Cordes & McLaughlin (2003, DOI: 10.1086/378231)
         # For details see p. 30 of Emily Petroff's thesis (2016), found here:
         # http://hdl.handle.net/1959.3/417307
-        frb.w_eff = math.sqrt(frb.w_int**2 + src.t_dm**2 + src.t_dm_err**2 +
-                              src.t_scat**2 + self.t_samp**2)
+        if not frb.w_eff:  # Hack to go from frbcat df to pop
+            frb.w_eff = math.sqrt(frb.w_int**2 + src.t_dm**2 +
+                                  src.t_dm_err**2 + src.t_scat**2 +
+                                  self.t_samp**2)
 
         # Calculate flux density
-        self.calc_s_peak(frb, src, f_low=pop.f_min, f_high=pop.f_max)
+        if not frb.s_peak:  # Hack to go from frbcat df to pop
+            self.calc_s_peak(frb, src, f_low=pop.f_min, f_high=pop.f_max)
 
         # Radiometer equation for single pulse (Dewey et al., 1984)
         sp = frb.s_peak
@@ -489,13 +492,17 @@ class Survey:
         n = 0
 
         for r in rates:
+
+            # Filter frbcat population
+            if not pop.v_max:
+                continue
+
             area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
             f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
             f_time = 86400 / self.t_obs  # pop.time
             det = r.det * f_area * f_time
             faint = r.faint * f_area * f_time
             out = r.out + r.det - det + r.faint - faint
-
             vol = r.tot() / pop.v_max * (365.25*86400/pop.time)
 
             s_rates = Rates()
@@ -518,27 +525,38 @@ class Survey:
             output (bool, optional): Whether to print out the rates or not
             scaled (bool, optional): Print scaled (default) or normal rates
         """
-        f = self.s_frb_rates
-        s = self.s_src_rates
-        if not scaled:
+        # Filter frbcat population
+        if not pop.v_max:
             f = self.frb_rates
             s = self.src_rates
+            pprint('Frbcat population -> No scaled rates available')
+        else:
+            f = self.s_frb_rates
+            s = self.s_src_rates
+            if not scaled:
+                f = self.frb_rates
+                s = self.src_rates
 
         r = '{:20.19} {:>10} {:>10} {:>10}\n'
 
         # Set up title
-        days = (pop.time/86400)
+        if pop.v_max:
+            days = (pop.time/86400)
+            r_days = round(days)
+        else:
+            r_days = '-'
 
         t = r.format(self.survey_name, 'Days', 'FRBs', 'Sources')
         line = '-'*len(t.split('\n')[-2].strip()) + '\n'
         t += line
 
-        tot = ('In population', round(days), round(f.tot()), round(s.tot()))
-        det = ('Detected', round(days), round(f.det), round(s.det))
-        faint = ('Too faint', round(days), round(f.faint), round(s.faint))
-        out = ('Outside survey', round(days), round(f.out), round(s.out))
-        vol = ('/Gpc^3', 365.25, round(f.vol), round(s.vol))
-        if f.det > 0:
+        tot = ('In population', r_days, round(f.tot()), round(s.tot()))
+        det = ('Detected', r_days, round(f.det), round(s.det))
+        faint = ('Too faint', r_days, round(f.faint), round(s.faint))
+        out = ('Outside survey', r_days, round(f.out), round(s.out))
+        if pop.v_max:
+            vol = ('/Gpc^3', 365.25, round(f.vol), round(s.vol))
+        if f.det > 0 and pop.v_max:
             exp = round(days/f.det, 4)
         else:
             exp = '?'
@@ -548,7 +566,8 @@ class Survey:
         t += r.format(*det)
         t += r.format(*faint)
         t += r.format(*out)
-        t += r.format(*vol)
+        if pop.v_max:
+            t += r.format(*vol)
         t += r.format(*exp_frb)
         t += line
 

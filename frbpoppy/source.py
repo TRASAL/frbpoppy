@@ -35,6 +35,9 @@ class Source:
         self.T_tot = 0
         self.detected = False
 
+        # Special property
+        self.name = None
+
     def __str__(self):
         """Define how to print an FRB source to a console"""
 
