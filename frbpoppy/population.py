@@ -8,12 +8,12 @@ from frbpoppy.paths import paths
 
 
 class Population:
-    """Class to hold a population of FRBs"""
+    """Class to hold a population of FRBs."""
 
     def __init__(self):
-
+        """Initializing."""
         # Population properties
-        self.cosmology = None
+        self.dist_co_max = None
         self.dm_host = None
         self.dm_igm = None
         self.electron_model = None
@@ -24,11 +24,12 @@ class Population:
         self.lum_min = None
         self.lum_pow = None
         self.name = None
+        self.n_density = None
         self.repeat = None
         self.si_mean = None
         self.si_sigma = None
         self.time = None  # seconds
-        self.v_max = None
+        self.vol_co_max = None
         self.w_max = None
         self.w_min = None
         self.W_m = None
@@ -41,7 +42,6 @@ class Population:
 
     def __str__(self):
         """Define how to print a population object to a console."""
-
         s = 'Population properties:'
 
         attributes = []
@@ -87,7 +87,8 @@ class Population:
             f.write(v)
 
     def values(self, sep=','):
-        """Gather source values into table in string format
+        """
+        Gather source values into table in string format.
 
         Args:
             sep (str, optional): Define the seperator between values
@@ -95,8 +96,8 @@ class Population:
         Returns:
             data (str): Data table with the values of all attributes, including
                 a header at the top
-        """
 
+        """
         # Check the population contains sources
         if len(self.sources) == 0:
             m = 'Population {} contains no sources'
@@ -130,24 +131,22 @@ class Population:
         return data
 
     def to_df(self):
-        """Gather source values into a pandas dataframe"""
+        """Gather source values into a pandas dataframe."""
         data = StringIO(self.values())
         df = pd.read_csv(data)
         return df
 
     def pickle_pop(self):
         """Allow the population to be pickled for future use."""
-
         file_name = 'population_{}.p'.format(self.name.lower())
         file_path = paths.populations() + file_name
-
         output = open(file_path, 'wb')
         pickle.dump(self, output, 2)
         output.close()
 
 
 def unpickle(filename=None):
-    """Quick function to unpickle a population
+    """Quick function to unpickle a population.
 
     Args:
         filename (str, optional): Define the path to the pickled population,
@@ -155,8 +154,8 @@ def unpickle(filename=None):
 
     Returns:
         pop (Population): Population class
-    """
 
+    """
     # Find population file
     if os.path.isfile(filename):
         f = open(filename, 'rb')

@@ -129,7 +129,7 @@ class Frbcat():
         self.df['t_samp'] = self.df['t_samp'].fillna(0.06400)
 
         # Gives somewhat of an idea of the pulse width upon arrival at Earth
-        self.df['w_int'] = (self.df['w_eff']**2 -
+        self.df['w_arr'] = (self.df['w_eff']**2 -
                             self.df['t_dm']**2 -
                             self.df['t_dm_err']**2 -
                             self.df['t_scat']**2 -

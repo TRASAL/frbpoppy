@@ -31,7 +31,7 @@ num_df = 0
 
 def histogram(dfs):
     """
-    Quick function to 'histogram' each column of each dataframes
+    Quick function to 'histogram' each column of each dataframes.
 
     Args:
         dfs (list): List of dataframes
@@ -183,11 +183,12 @@ def plot_pop(files=[], frbcat=True):
 
     # Create axis options
     axis_map = {
-        'Dispersion Measure (pc/cm^3)': 'dm',
+        'Comoving Distance (Gpc)': 'dist_co',
+        'Declination (°)': 'dec',
         'Dispersion Measure - Host (pc/cm^3)': 'dm_host',
         'Dispersion Measure - IGM (pc/cm^3)': 'dm_igm',
         'Dispersion Measure - Milky Way (pc/cm^3)': 'dm_mw',
-        'Distance (Gpc)': 'dist',
+        'Dispersion Measure (pc/cm^3)': 'dm',
         'Fluence (Jy*ms)': 'fluence',
         'Galactic Latitude (degrees)': 'gb',
         'Galactic Longitude (degrees)': 'gl',
@@ -196,11 +197,11 @@ def plot_pop(files=[], frbcat=True):
         'Galactic Z (Gpc)': 'gz',
         'Luminosity - Bolometric (10^30 ergs/s)': 'lum_bol',
         'Peak Flux Density (Jy)': 's_peak',
+        'Proper Distance (Gpc)': 'dist_pr',
         'Pulse Width - Effective (ms)': 'w_eff',
         'Pulse Width - Intrinsic (ms)': 'w_int',
         'Redshift': 'z',
         'Right Ascension (°)': 'ra',
-        'Declination (°)': 'dec',
         'Signal to Noise Ratio': 'snr',
         }
 

@@ -101,26 +101,28 @@ def ne2001_table(gal, gab, test=False):
     return dm_mw
 
 
-def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0, test=False):
+def dist_table(d, d_type='dist', H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0,
+               test=False):
     """
-    Create/use a lookup table for distance to redshift.
+    Create/use a lookup table for distance and redshift.
 
     Create a list of tuples to lookup the corresponding redshift for a comoving
-    distance [Gpc]. Uses formulas from Hoggs et al. (1999) for the cosmological
-    calculations, assuming a flat universe. To avoid long calculation times,
-    it will check if a previous run with the same parameters has been done,
-    which it will then load it. If not, it will calculate a new table, and save
-    the table for later runs.
+    distance [Gpc] (or the other way around). Uses formulas from
+    Hoggs et al. (1999) for the cosmological calculations. To avoid long
+    calculation times, it will check if a previous run with the same parameters
+    has been done, which it will then load it. If not, it will calculate a new
+    table, and save the table for later runs.
 
     Args:
-        dist (float): Comoving distance [Gpc]
+        d (float): Comoving distance [Gpc] or redshift
+        d_type (str): Whether parameter is 'dist' or 'z'
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
         z_max (float, optional): Maximum redshift. Defaults to 5.0
         test (bool): Flag for coarser resolution
     Returns:
-        z (float): Redshift
+        r (float): Redshift or comoving volume [Gpc]
 
     """
     uni_mods = os.path.join(paths.models(), 'universe/')
@@ -141,22 +143,24 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0, test=False):
 
     if test:
         step = 0.1
-        path = uni_mods + f + '_test.db'
+        file_name = uni_mods + f + '_test.db'
     else:
         step = 0.0001
-        path = uni_mods + f + '.db'
+        file_name = uni_mods + f + '.db'
 
     # Setup database
     db = False
-    if os.path.exists(path):
+    if os.path.exists(file_name):
         db = True
 
     # Connect to database
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(file_name)
     c = conn.cursor()
 
     # Create db
     if not db:
+
+        pprint('Creating a redshift table (only needs to happen once)')
 
         W_k = 1.0 - W_m - W_v  # Omega curvature
 
@@ -171,18 +175,12 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0, test=False):
 
         results = []
 
-        # Numerically integrate the following function
-        def d_c(x):
-            """Comoving distance (Hogg et al, 1999)."""
-            return 1/math.sqrt((W_m*(1+x)**3 + W_k*(1+x)**2 + W_v))
-
         for z in zs:
-            d = cl/H_0*integrate(d_c, 0, z)[0]
-            d /= 1e3  # Covert from Mpc to Gpc
-            results.append((d, z))
+            # Comoving distance [Gpc]
+            di = go.z_to_d(z, out='dist_co', H_0=H_0, W_m=W_m, W_v=W_v)
+            results.append((di, z))
 
             # Give an update on the progress
-            pprint('Creating a redshift table (only needs to happen once)')
             sys.stdout.write('\r{}'.format(z))
             sys.stdout.flush()
 
@@ -191,15 +189,20 @@ def dist_table(dist, H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0, test=False):
 
         # Make for easier searching
         c.execute('create index ix on redshift (dist)')
+        c.execute('create index ixx on redshift (z)')
 
         # Save
         conn.commit()
 
+    if d_type == 'dist':
+        query = 'select z from redshift where dist > ? limit 1'
+    elif d_type == 'z':
+        query = 'select dist from redshift where z > ? limit 1'
+
     # Search database
-    z = c.execute('select z from redshift where dist > ? limit 1',
-                  [dist]).fetchone()[0]
+    r = c.execute(query, [d]).fetchone()[0]
 
     # Close database
     conn.close()
 
-    return z
+    return r

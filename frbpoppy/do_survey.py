@@ -1,6 +1,8 @@
+"""Allow a survey to be run over a population of FRBs."""
 from frbpoppy.population import Population, unpickle
 from frbpoppy.survey import Survey
 from frbpoppy.paths import paths
+
 
 def observe(population,
             survey_name,
@@ -33,8 +35,8 @@ def observe(population,
 
     Returns:
         surv_pop (Population): Observed survey population
-    """
 
+    """
     # Copy population so that it can be observed multiple times
     if not pop_path:
         pop = unpickle(population.name)
@@ -45,7 +47,7 @@ def observe(population,
     surv_pop = Population()
     surv_pop.name = survey_name
     surv_pop.time = pop.time
-    surv_pop.v_max = pop.v_max
+    surv_pop.vol_co_max = pop.vol_co_max
 
     for src in pop.sources:
 

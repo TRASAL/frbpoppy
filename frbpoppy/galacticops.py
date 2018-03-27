@@ -355,18 +355,21 @@ def load_T_sky():
     return t_sky_list
 
 
-def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
+def z_to_d(z, out='vol_co', H_0=69.6, W_m=0.286, W_v=0.714):
     """
-    Convert redshift to a comoving volume. Based on James Schombert's python
+    Convert redshift to a various measures. Based on James Schombert's python
     implementation of Edward L. Wright's cosmology calculator.
 
     Args:
         z (float): Redshift
+        out (str): Whether to return the comoving distance 'dist_co', the
+            luminosity distance 'dist_lum' or comoving volume 'vol_co'
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
-        W_k (float, optional): Omega vacuum. Defaults to 0.714
+        W_v (float, optional): Omega vacuum. Defaults to 0.714
     Returns:
-        v_gpc (float): Comoving volume from Earth to the source [Gpc^3]
+        dist (float): One of the distance measures [Gpc], or comoving volume
+            from Earth to the source [Gpc^3]
     """
 
     # Initialize constants
@@ -376,7 +379,6 @@ def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
     dcmr = 0.
     az = 1/(1+z)
 
-    # Calculate comoving distance
     n = 1000
 
     for i in range(n):
@@ -385,50 +387,54 @@ def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
         dcmr += 1/(a*adot)
 
     dcmr = (1.-az)*dcmr/n
-    dc_mpc = (c/H_0)*dcmr  # Comoving distance [Mpc]
 
-    # Not necessary, but handy to have
-    # Calculate luminosity distance
-    ratio = 1.
-    x = math.sqrt(abs(W_k))*dcmr
+    if out == 'dist_co':
+        dc_mpc = (c/H_0)*dcmr  # Comoving distance [Mpc]
+        return dc_mpc*1e-3  # Convert to Gpc
 
-    if x > 0.1:
-        if W_k > 0:
-            ratio = 0.5*(math.exp(x)-math.exp(-x))/x
+    if out == 'dist_lum':
+        ratio = 1.
+        x = math.sqrt(abs(W_k))*dcmr
+
+        if x > 0.1:
+            if W_k > 0:
+                ratio = 0.5*(math.exp(x)-math.exp(-x))/x
+            else:
+                ratio = math.sin(x)/x
         else:
-            ratio = math.sin(x)/x
-    else:
-        y = x*x
-        if W_k < 0:
-            y = -y
-        ratio = 1. + y/6. + y*y/120.
+            y = x*x
+            if W_k < 0:
+                y = -y
+            ratio = 1. + y/6. + y*y/120.
 
-    dcmt = ratio*dcmr
-    da = az*dcmt
-    dl = da/(az*az)
-    dl_mpc = (c/H_0)*dl  # Luminosity distance [Mpc]
+        dcmt = ratio*dcmr
+        da = az*dcmt
+        dl = da/(az*az)
+        dl_mpc = (c/H_0)*dl  # Luminosity distance [Mpc]
 
-    # Calculate comoving volume
-    ratio = 1.00
-    x = math.sqrt(abs(W_k))*dcmr
-    if x > 0.1:
-        if W_k > 0:
-            ratio = (0.125*(math.exp(2.*x)-math.exp(-2.*x))-x/2.)/(x*x*x/3.)
+        return dl_mpc*1e-3  # Covert to Gpc
+
+    if out == 'vol_co':
+        ratio = 1.00
+        x = math.sqrt(abs(W_k))*dcmr
+        if x > 0.1:
+            if W_k > 0:
+                ratio = (0.125*(math.exp(2.*x)-math.exp(-2.*x))-x/2.)/(x**3/3)
+            else:
+                ratio = (x/2. - math.sin(2.*x)/4.)/(x**3/3)
         else:
-            ratio = (x/2. - math.sin(2.*x)/4.)/(x*x*x/3.)
-    else:
-        y = x*x
-        if W_k < 0:
-            y = -y
-        ratio = 1. + y/5. + (2./105.)*y*y
+            y = x*x
+            if W_k < 0:
+                y = -y
+            ratio = 1. + y/5. + (2./105.)*y*y
 
-    v_cm = ratio*dcmr*dcmr*dcmr/3.
-    v_gpc = 4.*math.pi*((0.001*c/H_0)**3)*v_cm  # Comoving volume
+        v_cm = ratio*dcmr**3/3
+        v_gpc = 4.*math.pi*((1e-3*c/H_0)**3)*v_cm  # Comoving volume
 
-    return v_gpc
+        return v_gpc
 
 
-def z_to_dist(z, H_0=69.6):
+def z_to_d_approx(z, H_0=69.6):
     """
     Calculate distance in Gpc from a redshift.
 

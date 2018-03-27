@@ -386,9 +386,9 @@ class MonteCarlo:
         fr = 'rates.db'
 
         if self.extension:
-            fh = fh.split('.')[0] + f'_{self.extension}' + fh.split('.')[1]
-            fk = fk.split('.')[0] + f'_{self.extension}' + fk.split('.')[1]
-            fr = fr.split('.')[0] + f'_{self.extension}' + fr.split('.')[1]
+            fh = fh.split('.')[0] + f'_{self.extension}.' + fh.split('.')[1]
+            fk = fk.split('.')[0] + f'_{self.extension}.' + fk.split('.')[1]
+            fr = fr.split('.')[0] + f'_{self.extension}.' + fr.split('.')[1]
 
         self.save(df=db_hists, filename=fh)
         self.save(df=db_ks, filename=fk)

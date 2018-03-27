@@ -86,7 +86,7 @@ class Paths():
         return self.store('models', default, *args)
 
     def frbcat(self, *args):
-        """Where all models are to be stored."""
+        """Where all frbcatalogues are to be stored."""
         default = self.data() + 'frbcat/'
         return self.store('frbcat', default, *args)
 

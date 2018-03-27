@@ -10,7 +10,7 @@ n_per_day = 5000
 population = generate(n_per_day*days,
                       days=days,
                       lum_dist_pars=[1e40, 1e50, -1.5],
-                      z_max=2.5,
+                      z_max=5.0,
                       pulse=[0.1, 10],
                       repeat=0.0)
 
@@ -18,4 +18,4 @@ population = generate(n_per_day*days,
 result = observe(population, 'APERTIF')
 
 # Plot populations
-plot(population, result)
+plot(population, result, mute=False)

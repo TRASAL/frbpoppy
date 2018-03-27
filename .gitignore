@@ -106,5 +106,5 @@ tests/*.csv
 tests/*.html
 tests/*.p
 tests/*.png
-
+tests/plots/*
 temp\.csv

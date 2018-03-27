@@ -1,26 +1,29 @@
+"""Class containing properties relevant to an FRB source."""
 import random
 import frbpoppy.distributions as dis
 from frbpoppy.frb import FRB
 
 
 class Source:
-    """Class containing individual source properties"""
+    """Class containing individual source properties."""
 
     def __init__(self):
-
+        """Initializing."""
         # "Intrinsic properties"
+        self.dec = None
+        self.dist = None
+        self.dist_co = None  # Comoving distance [Gpc]
+        self.dist_pr = None  # Proper distance [Gpc]
         self.dm = None
-        self.dm_mw = None
-        self.dm_igm = None
         self.dm_host = None
-        self.gl = None
+        self.dm_igm = None
+        self.dm_mw = None
         self.gb = None
+        self.gl = None
         self.gx = None
         self.gy = None
         self.gz = None
         self.ra = None
-        self.dec = None
-        self.dist = None
         self.z = None
 
         # Collect all FRB bursts
@@ -39,8 +42,7 @@ class Source:
         self.name = None
 
     def __str__(self):
-        """Define how to print an FRB source to a console"""
-
+        """Define how to print an FRB source to a console."""
         s = 'Frb source properties:'
 
         attributes = []
@@ -53,27 +55,26 @@ class Source:
         return s
 
     def add(self, frb):
-        """Add an FRB to the source"""
+        """Add an FRB to the source."""
         self.frbs.append(frb)
         self.n_frbs += 1
 
     def create_frb(self, pop, time=None):
         """
-        Create an frb to add to source
+        Create an frb to add to source.
 
         Args:
             pop (Population): Population parameters
             time (float): Time of burst [s]
         """
-
         # Initialise an FRB
         frb = FRB()
 
-        # Give a redshifted random intrinsic pulse width [ms]
-        frb.w_int = dis.redshift_w(z=self.z,
-                                   w_min=pop.w_min,
-                                   w_max=pop.w_max,
-                                   cosmology=pop.cosmology)
+        # Get a random intrinsic pulse width [ms]
+        frb.w_int = random.uniform(pop.w_min, pop.w_max)
+
+        # Calculate the pulse width upon arrival to Earth
+        frb.w_arr = frb.w_int*(1+self.z)
 
         # Add bolometric luminosity [erg/s]
         frb.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
