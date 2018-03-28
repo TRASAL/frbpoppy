@@ -19,7 +19,7 @@ def generate(n_gen,
              emission_pars=[10e6, 10e9],
              lum_dist_pars=[1e40, 1e50, 1],
              name=None,
-             n_density='constant',
+             n_model='constant',
              pulse=[0.1, 10],
              repeat=0.0,
              si_pars=[-1.4, 0.],
@@ -51,7 +51,7 @@ def generate(n_gen,
             Defaults to [1e40, 1e50, 1]
         name (str, optional): Name to be given to the population. Defaults to
             'initial'
-        n_density (str, optional): Type of number density for frbs to be
+        n_model (str, optional): Type of number density for frbs to be
             distributed by. Options are 'constant' for constant number density
             per comoving volume and 'sfr' for the number density to follow
             the star formation rate
@@ -131,7 +131,7 @@ def generate(n_gen,
         m = 'Please provide a string as input for the name of the population'
         raise ValueError(m)
 
-    if n_density not in ['constant', 'sfr']:
+    if n_model not in ['constant', 'sfr']:
         m = 'Please ensure the number density is either constant or sfr'
         raise ValueError(m)
 
@@ -169,7 +169,7 @@ def generate(n_gen,
     pop.lum_pow = lum_dist_pars[2]
     pop.name = name
     pop.n_gen = n_gen
-    pop.n_density = n_density
+    pop.n_model = n_model
     pop.repeat = repeat
     pop.si_mean = si_pars[0]
     pop.si_sigma = si_pars[1]
@@ -201,21 +201,21 @@ def generate(n_gen,
         src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
 
         # Use constant number density of sources per comoving volume
-        if pop.n_density == 'constant':
+        if pop.n_model == 'constant':
             # Calculate comoving distance [Gpc]
             src.dist_co = pop.dist_co_max*random.random()
             src.z = pc.dist_table(src.dist_co, H_0=pop.H_0)
 
         # Get sources to follow star forming rate
-        if pop.n_density == 'sfr':
+        if pop.n_model == 'sfr':
             src.z = dis.z_from_sfr(z_max=pop.z_max)
             src.dist_co = pc.dist_table(src.z, d_type='z', H_0=pop.H_0)
 
         # Get the proper distance
-        src.dist_pr = src.dist_co/(1+src.z)
+        dist_pr = src.dist_co/(1+src.z)
 
         # Convert into galactic coordinates
-        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist_pr)
+        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, dist_pr)
 
         # Dispersion measure of the Milky Way
         if electron_model == 'ne2001':

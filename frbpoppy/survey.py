@@ -1,3 +1,4 @@
+"""Class holding survey properties."""
 import math
 import os
 import random
@@ -45,12 +46,11 @@ class Survey:
         survey_name (str): Name of survey with which to observe population. Can
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
-        pattern (str): Set gain pattern to be either 'gaussian' or 'airy'.
-            Defaults to 'gaussian'
+        gain_pattern (str): Set gain pattern
 
     """
 
-    def __init__(self, survey_name, pattern='gaussian'):
+    def __init__(self, survey_name, gain_pattern='gaussian'):
         """Initializing."""
         # Find survey file
         if os.path.isfile(survey_name):
@@ -74,7 +74,7 @@ class Survey:
         self.gains_list = None
         self.t_obs_list = None
         self.T_sky_list = go.load_T_sky()
-        self.gain_pattern = pattern
+        self.gain_pattern = gain_pattern
         self.aa = False  # Whether aperture array
 
         # Counters
@@ -205,8 +205,7 @@ class Survey:
         return True
 
     def intensity_profile(self):
-        """Calculate intensity profile"""
-
+        """Calculate intensity profile."""
         # Angular variable on sky, defined so that at fwhm/2, the
         # intensity profile is exactly 0.5. It's multiplied by the sqrt of
         # a random number to ensure the distribution of variables on the
@@ -241,6 +240,9 @@ class Survey:
             int_pro = 1
             if random.random() > 0.5:
                 int_pro = 0
+
+        if self.gain_pattern == 'perfect':
+            int_pro = 1
 
         return int_pro
 
@@ -368,7 +370,7 @@ class Survey:
 
     def obs_prop(self, frb, src, pop):
         """
-        Set various observation properties of an FRB
+        Set various observation properties of an FRB.
 
         Args:
             frb (class): FRB of which to calculate the signal to noise
@@ -384,6 +386,7 @@ class Survey:
             frb.s_peak (float): Mean spectral flux density per observed
                 source [Jy]
             frb.fluence (float): Fluence of the observed pulse [Jy*ms]
+
         """
         # Effective pulse width [ms]
         # From Narayan (1987, DOI: 10.1086/165442)

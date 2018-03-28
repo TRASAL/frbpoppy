@@ -1,6 +1,5 @@
 """Test FRB sources following star forming rate."""
 from frbpoppy.do_populate import generate
-from frbpoppy.do_survey import observe
 from frbpoppy.do_plot import plot
 
 days = 7
@@ -13,7 +12,7 @@ pop_cst = generate(n_per_day*days,
                    z_max=4.,
                    pulse=[0.1, 10],
                    repeat=0.0,
-                   n_density='constant',
+                   n_model='constant',
                    name='constant')
 
 # Generate population following star forming rate
@@ -23,7 +22,7 @@ pop_sfr = generate(n_per_day*days,
                    z_max=4.,
                    pulse=[0.1, 10],
                    repeat=0.0,
-                   n_density='sfr',
+                   n_model='sfr',
                    name='sfr')
 
 # Plot populations

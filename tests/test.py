@@ -139,7 +139,7 @@ class TestSurvey(unittest.TestCase):
         self.assertIsInstance(s4, pop)
 
         # Check Airy works
-        s5 = observe(self.pop, 'WHOLESKY', pattern='airy')
+        s5 = observe(self.pop, 'WHOLESKY', gain_pattern='airy')
         self.assertIsInstance(s5, pop)
 
         # Test printing of sources

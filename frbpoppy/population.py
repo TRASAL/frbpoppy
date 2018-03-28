@@ -24,7 +24,7 @@ class Population:
         self.lum_min = None
         self.lum_pow = None
         self.name = None
-        self.n_density = None
+        self.n_model = None
         self.repeat = None
         self.si_mean = None
         self.si_sigma = None

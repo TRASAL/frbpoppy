@@ -13,7 +13,6 @@ class Source:
         self.dec = None
         self.dist = None
         self.dist_co = None  # Comoving distance [Gpc]
-        self.dist_pr = None  # Proper distance [Gpc]
         self.dm = None
         self.dm_host = None
         self.dm_igm = None

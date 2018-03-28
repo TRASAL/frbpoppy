@@ -1,11 +1,32 @@
 """Check the log N log S slope of a population."""
 import numpy as np
-from scipy import optimize
 from bokeh.plotting import figure, show
 
 from frbpoppy.population import unpickle
 
-pop_aper = unpickle('apertif')
+MAKE = False
+FIT = True
+
+if MAKE:
+    from frbpoppy.do_populate import generate
+    from frbpoppy.do_survey import observe
+
+    days = 7
+    n_per_day = 5000
+
+    # Generate FRB population
+    population = generate(n_per_day*days,
+                          days=days,
+                          lum_dist_pars=[1e40, 1e50, -1.5],
+                          z_max=2.5,
+                          pulse=[0.1, 10],
+                          repeat=0.0)
+
+    # Observe FRB population
+    pop_aper = observe(population, 'APERTIF')
+
+else:
+    pop_aper = unpickle('apertif')
 
 # Get fluences
 fluences = []
@@ -22,36 +43,38 @@ p = figure(title='Log N / Log S', x_axis_type='log', y_axis_type='log')
 p.xaxis.axis_label = 'Fluence (Jy*ms)'
 p.yaxis.axis_label = 'Cumulative Number'
 
+# Find optimum lower limit
+m = min(e for e in cum_hist if e > 0)
+bottom = 10**(np.log10(m) - 1)
+
 p.quad(top=cum_hist,
-       bottom=10**(np.log10(min(hist)) - 1),
+       bottom=bottom,
        left=edges[:-1],
        right=edges[1:],
        alpha=0.5,
        legend='Apertif')
 
-# Fit
-from lmfit import Model
+if FIT:
+    from lmfit import Model
 
-xs = 10**((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)
+    xs = 10**((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)
 
+    def powerlaw(x, norm=1, alpha=-1):
+        return norm*x**(alpha)
 
-def powerlaw(x, norm=1, alpha=-1):
-    return norm*x**(alpha)
+    model = Model(powerlaw)
+    params = model.make_params()
 
+    params['alpha'].min = -5.0
+    params['alpha'].max = -0.5
 
-model = Model(powerlaw)
-params = model.make_params()
+    result = model.fit(cum_hist, params, x=xs)
 
-params['alpha'].min = -5.0
-params['alpha'].max = -0.5
+    alpha = result.params['alpha'].value
+    alpha_err = result.params['alpha'].stderr
+    norm = result.params['norm'].value
+    ys = [powerlaw(x, norm=norm, alpha=alpha) for x in xs]
 
-result = model.fit(cum_hist, params, x=xs)
-
-alpha = result.params['alpha'].value
-alpha_err = result.params['alpha'].stderr
-norm = result.params['norm'].value
-ys = [powerlaw(x, norm=norm, alpha=alpha) for x in xs]
-
-p.line(xs, ys, line_width=3, line_alpha=0.6, legend=f'α = {alpha:.3}')
+    p.line(xs, ys, line_width=3, line_alpha=0.6, legend=f'α = {alpha:.3}')
 
 show(p)

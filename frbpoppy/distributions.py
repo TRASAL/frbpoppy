@@ -8,7 +8,8 @@ def powerlaw(low, high, power):
     Return random variable distributed according to power law.
 
     The power law distribution power is simply the power, not including a minus
-    sign (P scales with x^n with n the power).
+    sign (P scales with x^n with n the power). A flat powerlaw can therefore
+    be created by taking setting power to zero.
 
     Args:
         low (float): Lower limit of distribution
@@ -20,16 +21,16 @@ def powerlaw(low, high, power):
     if low > high:
         low, high = high, low
 
-    p1 = power + 1
-    if (low == 0. or high == 0.) and p1 < 0:
+    # p1 = power
+    if (low == 0. or high == 0.) and power < 0:
         raise ValueError('Power law not defined at 0 if power is negative')
     # Not completely kosher, but hey...
-    if p1 == 0:
-        p1 = 0.00000001
+    if power == 0:
+        power = 1e-15
 
     y = random.random()
 
-    a = ((high**p1 - low**p1)*y + low**p1)**(1/p1)
+    a = ((high**power - low**power)*y + low**power)**(1/power)
 
     return a
 

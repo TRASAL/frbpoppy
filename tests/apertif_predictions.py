@@ -18,7 +18,7 @@ pop = generate(n_per_day*days,
                repeat=0.0)
 
 # Observe FRB population
-surv_pop = observe(pop, 'APERTIF-IAB-10', pattern='tophat')
+surv_pop = observe(pop, 'APERTIF-IAB-10', gain_pattern='tophat')
 
 # Plot FRB populations
 plot(pop, surv_pop, mute=False)

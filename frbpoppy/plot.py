@@ -197,7 +197,6 @@ def plot_pop(files=[], frbcat=True):
         'Galactic Z (Gpc)': 'gz',
         'Luminosity - Bolometric (10^30 ergs/s)': 'lum_bol',
         'Peak Flux Density (Jy)': 's_peak',
-        'Proper Distance (Gpc)': 'dist_pr',
         'Pulse Width - Effective (ms)': 'w_eff',
         'Pulse Width - Intrinsic (ms)': 'w_int',
         'Redshift': 'z',

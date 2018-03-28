@@ -6,7 +6,7 @@ from frbpoppy.paths import paths
 
 def observe(population,
             survey_name,
-            pattern='gaussian',
+            gain_pattern='gaussian',
             output=True,
             return_pop=True,
             return_survey=False,
@@ -19,8 +19,8 @@ def observe(population,
     Args:
         population (Population): Population class of FRB sources to observe
         survey_name (str): Name of survey file with which to observe
-        pattern (str, optional): Gain pattern, either 'gaussian' (default) or
-            'airy'
+        gain_pattern (str, optional): Gain pattern, either 'gaussian' (default)
+            'airy', 'tophat' or 'perfect'
         output (bool, optional): Whether to print the rates or not
         return_pop (bool, optional): Whether to return a population. Primarily
             intended for debugging. Defaults to True
@@ -43,7 +43,7 @@ def observe(population,
     else:
         pop = unpickle(filename=pop_path)
 
-    s = Survey(survey_name, pattern=pattern)
+    s = Survey(survey_name, gain_pattern=gain_pattern)
     surv_pop = Population()
     surv_pop.name = survey_name
     surv_pop.time = pop.time

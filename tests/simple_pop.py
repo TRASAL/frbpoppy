@@ -23,6 +23,6 @@ pop = generate(n_per_day*days,
                repeat=0.0)
 
 # Observe FRB population
-surv_pop = observe(pop, 'HTRU', pattern='tophat')
+surv_pop = observe(pop, 'HTRU', gain_pattern='tophat')
 
 plot(pop, surv_pop, mute=False)
