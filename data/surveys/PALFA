@@ -2,27 +2,27 @@
 # PALFA survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
-1.2      ! survey degradation factor
-9        ! antenna gain (K/Jy)
-204      ! integration time (s)
-0.0655   ! sampling time (ms)
-3.4      ! system temperature (K)
-1375     ! centre frequency (MHz)
-300      ! bandwidth (MHz)
-0.390625 ! channel bandwidth (MHz)
-2        ! number of polarizations
-0.0189   ! beam size (deg^2)
-0        ! minimum RA (deg)
-360      ! maximum RA (deg)
--71.656  ! minimum DEC (deg)
-90       ! maximum DEC (deg)
-30       ! minimum Galactic longitude (deg)
-78       ! maximum Galactic longitude (deg)
-162      ! minimum 2 Galactic longitude (deg)
-214      ! maximum 2 Galactic longitude (deg)
--5       ! minimum Galactic latitude (deg)
-5        ! maximum Galactic latitude (deg)
-0.02     ! fractional uptime [0-1]
-8        ! signal-to-noise ratio [0-1]
+1.2      !  survey degradation factor 
+9        !  antenna gain (K/Jy) 
+204      !  integration time (s) 
+0.0655   !  sampling time (ms) 
+3.4      !  system temperature (K) 
+1375     !  centre frequency (MHz) 
+300      !  bandwidth (MHz) 
+0.390625 !  channel bandwidth (MHz) 
+2        !  number of polarizations 
+0.0189   !  beam size (deg^2) 
+0        !  minimum RA (deg) 
+360      !  maximum RA (deg) 
+-71.656  !  minimum DEC (deg) 
+90       !  maximum DEC (deg) 
+30       !  minimum Galactic longitude (deg) 
+78       !  maximum Galactic longitude (deg) 
+162      !  minimum 2 Galactic longitude (deg) 
+214      !  maximum 2 Galactic longitude (deg) 
+-5       !  minimum Galactic latitude (deg) 
+5        !  maximum Galactic latitude (deg) 
+0.02     !  fractional uptime [0-1] 
+8        !  signal-to-noise ratio [0-1] 
      nan ! reference
 #9467BD  ! colour
