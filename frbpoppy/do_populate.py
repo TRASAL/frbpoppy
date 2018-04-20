@@ -17,7 +17,7 @@ def generate(n_gen,
              dm_pars=[100, 1200],
              electron_model='ne2001',
              emission_pars=[10e6, 10e9],
-             lum_dist_pars=[1e40, 1e50, 1],
+             lum_dist_pars=[1e40, 1e50, 0],
              name=None,
              n_model='constant',
              pulse=[0.1, 10],
@@ -59,13 +59,13 @@ def generate(n_gen,
             should be [ms]. Defaults to [0.5, 5]
         repeat (float, optional): Fraction of sources which repeat
         si_pars (list, optional): Spectral index parameters, being the mean
-            index and the standard deviation thereof. Defaults to [-1.4, 0.]
+            index and the standard deviation thereof. Defaults to [0., 0.]
         z_max (float, optional): The maximum redshift out to which to
             distribute FRBs
         test (float, optional): Flag to help testing
 
     Returns:
-        pop (Population): A population of generated sources
+        Population: A population of generated sources
 
     """
     # Check input
@@ -181,10 +181,17 @@ def generate(n_gen,
     pop.z_max = z_max
 
     # Cosmology calculations
-    pop.dist_co_max = go.z_to_d(z_max, out='dist_co',
+    pop.dist_co_max = go.z_to_d(z=z_max, dist_co=True,
                                 H_0=pop.H_0, W_m=pop.W_m, W_v=pop.W_v)
-    pop.vol_co_max = go.z_to_d(z_max, out='vol_co',
+    pop.vol_co_max = go.z_to_d(z_max, vol_co=True,
                                H_0=pop.H_0, W_m=pop.W_m, W_v=pop.W_v)
+
+    # Ensure precalculations are done if necessary
+    pc.dist_table(z=1.0,
+                  dist_co=True,
+                  H_0=pop.H_0,
+                  W_m=pop.W_m,
+                  W_v=pop.W_v)
 
     while pop.n_srcs < pop.n_gen:
 
@@ -202,14 +209,16 @@ def generate(n_gen,
 
         # Use constant number density of sources per comoving volume
         if pop.n_model == 'constant':
-            # Calculate comoving distance [Gpc]
-            src.dist_co = pop.dist_co_max*random.random()
-            src.z = pc.dist_table(src.dist_co, H_0=pop.H_0)
+            # Calculate comoving volume [Gpc]
+            vol_co = pop.vol_co_max*random.random()
+            r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
+            src.dist_co = r['dist_co']
+            src.z = r['z']
 
         # Get sources to follow star forming rate
         if pop.n_model == 'sfr':
             src.z = dis.z_from_sfr(z_max=pop.z_max)
-            src.dist_co = pc.dist_table(src.z, d_type='z', H_0=pop.H_0)
+            src.dist_co = pc.dist_table(z=src.z, dist_co=True)
 
         # Get the proper distance
         dist_pr = src.dist_co/(1+src.z)
@@ -226,8 +235,8 @@ def generate(n_gen,
         # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z, slope=pop.dm_igm)
 
-        # Dispersion measure of the host
-        src.dm_host = pop.dm_host
+        # Dispersion measure of the host (Tendulkar)
+        src.dm_host = pop.dm_host / (1 + src.z)
 
         # Total dispersion measure
         src.dm = src.dm_mw + src.dm_igm + src.dm_host

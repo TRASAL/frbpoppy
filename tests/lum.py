@@ -4,7 +4,7 @@ from frbpoppy.do_survey import observe
 from frbpoppy.do_plot import plot
 from frbpoppy.population import unpickle
 
-MAKE = False
+MAKE = True
 
 if MAKE:
     days = 7
@@ -13,8 +13,8 @@ if MAKE:
     # Generate FRB population
     population = generate(n_per_day*days,
                           days=days,
-                          lum_dist_pars=[1e40, 1e50, -0.5],
-                          z_max=5.0,
+                          lum_dist_pars=[1e40, 1e50, -1.5],
+                          z_max=2.5,
                           pulse=[0.1, 10],
                           si_pars=[0., 0.],
                           repeat=0.0)
@@ -28,7 +28,7 @@ if MAKE:
     population = generate(n_per_day*days,
                           days=days,
                           lum_dist_pars=[1e45, 1e45, 0.],
-                          z_max=5.0,
+                          z_max=2.5,
                           pulse=[0.1, 10],
                           si_pars=[0., 0.],
                           repeat=0.0)
@@ -42,7 +42,7 @@ if MAKE:
     population = generate(n_per_day*days,
                           days=days,
                           lum_dist_pars=[1e40, 1e50, 0.],
-                          z_max=5.0,
+                          z_max=2.5,
                           pulse=[0.1, 10],
                           si_pars=[0., 0.],
                           repeat=0.0)
@@ -56,7 +56,6 @@ else:
     neg = unpickle('lum_neg')
     candle = unpickle('lum_candle')
     flat = unpickle('lum_flat')
-
 
 # Plot populations
 plot(neg, candle, flat, mute=False, frbcat=False)

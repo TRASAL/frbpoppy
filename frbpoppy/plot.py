@@ -76,7 +76,8 @@ def histogram(dfs):
         hist = pd.DataFrame(np.nan, index=np.arange(49), columns=['empty'])
         hist['color'] = df['color'][0]
         hist['population'] = df['population'][0]
-        hist['bottom'] = 0.0000001
+        hist['bottom'] = 10**(round(np.log10(1/len(df))) - 1)
+
         for c in cols:
 
             low = limits[c][0]
@@ -115,7 +116,7 @@ def histogram(dfs):
     return hists
 
 
-def plot_pop(files=[], frbcat=True):
+def plot_pop(files=[], frbcat=True, hist_axis='log'):
     """
     Plot populations in browser using Bokeh.
 
@@ -124,6 +125,7 @@ def plot_pop(files=[], frbcat=True):
                       with csv files - file an issue if you would like more
                       options)
         frbcat (bool): Whether to plot frbcat parameters. Defaults to True
+        hist_log (bool): Whether to plot using a linear or log axis
 
     """
     # Configure colours
@@ -139,13 +141,12 @@ def plot_pop(files=[], frbcat=True):
     dfs = []
 
     def read(path=None):
-        '''
+        """
         Mini-function to read in data
 
         Args:
             path (str): Path to file to read
-        '''
-
+        """
         global num_df
 
         if os.path.isfile(path):
@@ -223,7 +224,7 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=sc_tools)
-                # output_backend="webgl")
+
     # Stop labels falling off
     sp.min_border_left = 80
 
@@ -252,8 +253,7 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=hp_tools,
-                # output_backend="webgl",
-                x_axis_type="log",
+                x_axis_type=hist_axis,
                 y_axis_type="log")
 
     # Create Column Data Sources for interacting with the plot

@@ -1,5 +1,6 @@
 """Class holding survey properties."""
 import math
+import numpy as np
 import os
 import random
 from scipy.special import j1
@@ -75,11 +76,19 @@ class Survey:
         self.t_obs_list = None
         self.T_sky_list = go.load_T_sky()
         self.gain_pattern = gain_pattern
+        self.beam_array = None
         self.aa = False  # Whether aperture array
 
         # Counters
         self.frb_rates = Rates()
         self.src_rates = Rates()
+
+        # Null points of an Airy disk
+        self.airy_nulls = [1.22, 2.24, 3.26, 4.26, 5.33, 6.39, 7.48, 8.6, 9.7]
+
+        # Set beam file so that it is only imported once
+        if gain_pattern == 'parkes':
+            self.beam_array = np.load(paths.models() + '/beams/parkes.npy')
 
     def __str__(self):
         """Define how to print a survey object to a console."""
@@ -204,8 +213,10 @@ class Survey:
 
         return True
 
-    def intensity_profile(self):
+    def intensity_profile(self, sidelobe=1, test=False, mul=None):
         """Calculate intensity profile."""
+        self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
+
         # Angular variable on sky, defined so that at fwhm/2, the
         # intensity profile is exactly 0.5. It's multiplied by the sqrt of
         # a random number to ensure the distribution of variables on the
@@ -213,38 +224,55 @@ class Survey:
         # (uniform random point within circle). You could see this as
         # the offset from the centre of the beam.
 
-        self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
+        offset = self.fwhm * math.sqrt(random.random())
 
-        offset = self.fwhm * math.sqrt(random.random()) / 2.0
+        if mul:
+            offset = self.fwhm * math.sqrt(1) * mul
 
-        if self.gain_pattern == 'gaussian':
+        if self.gain_pattern == 'perfect':
+            int_pro = 1
 
-            # Formula's based on 'Interferometry and Synthesis in Radio
-            # Astronomy' by A. Richard Thompson, James. M. Moran and
-            # George W. Swenson, JR. (Second edition), around p. 15
+        elif self.gain_pattern == 'tophat':
+            int_pro = 1
+            if random.random() > 0.5:
+                int_pro = 0
 
-            # Intensity profile
+        # Formula's based on 'Interferometry and Synthesis in Radio
+        # Astronomy' by A. Richard Thompson, James. M. Moran and
+        # George W. Swenson, JR. (Second edition), around p. 15
+
+        elif self.gain_pattern == 'gaussian':
+            # Set the maximum offset equal to the null after a sidelobe
+            # I realise this pattern isn't an airy, but you have to cut
+            # somewhere
+            offset *= self.airy_nulls[sidelobe]
+
             alpha = 2*math.sqrt(math.log(2))
             int_pro = math.exp(-(alpha*offset/self.fwhm)**2)
 
-        if self.gain_pattern == 'airy':
+        elif self.gain_pattern == 'airy':
+            # Set the maximum offset equal to the null after a sidelobe
+            offset *= self.airy_nulls[sidelobe]
+
             c = 299792458
             conv = math.pi/(60*180.)  # Conversion arcmins -> radians
             eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
             a = eff_diam/2  # Effective radius of telescope
             lamda = c/(self.central_freq*1e6)
-            kasin = (2*math.pi*a/lamda)*math.sin(offset*conv)
+            ka = (2*math.pi*a/lamda)
+            kasin = ka*math.sin(offset*conv)
             int_pro = 4*(j1(kasin)/kasin)**2
 
-        if self.gain_pattern == 'tophat':
-            int_pro = 1
-            if random.random() > 0.5:
-                int_pro = 0
+        elif self.gain_pattern == 'parkes':
+            shape = self.beam_array.shape
+            ran_x = np.random.randint(0, shape[0])
+            ran_y = np.random.randint(0, shape[1])
+            int_pro = self.beam_array[ran_x, ran_y]
 
-        if self.gain_pattern == 'perfect':
-            int_pro = 1
-
-        return int_pro
+        if test is False:
+            return int_pro
+        else:
+            return offset, int_pro
 
     def dm_smear(self, src, dm_err=0.2):
         """
@@ -352,8 +380,8 @@ class Survey:
         sp = frb.si + 1
         sm = frb.si - 1
 
-        # Convert distance to metres
-        dist = src.dist_co * 3.08567758149137e25
+        # Convert distance to 10^25 metres
+        dist = src.dist_co * 3.0856775814913673
 
         # Convert luminosity to Watts
         lum = frb.lum_bol * 1e-7
@@ -363,8 +391,8 @@ class Survey:
         den = 4*math.pi*dist**2 * (f_high**sp - f_low**sp)
         s_peak = nom/den
 
-        # Convert to Janskys
-        s_peak *= 1e26
+        # Convert to Janskys and accounting for the (10^25)^2
+        s_peak /= 1e24
 
         frb.s_peak = s_peak
 

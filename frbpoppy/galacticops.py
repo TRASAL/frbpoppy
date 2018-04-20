@@ -62,7 +62,7 @@ def lb_to_xyz(gl, gb, dist):
 
 def lb_to_radec(l, b):
     """
-    Convert galactic coordinates to RA, Dec
+    Convert galactic coordinates to RA, Dec.
 
     Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
     Bradley W. Carroll, Dale A. Ostlie (Eq. 24.19 onwards).
@@ -80,8 +80,8 @@ def lb_to_radec(l, b):
 
     Returns:
         ra, dec (float): Right ascension and declination [fractional degrees]
-    """
 
+    """
     gl = math.radians(l)
     gb = math.radians(b)
 
@@ -174,8 +174,7 @@ def ergspers_to_watts(e):
 
 def ne2001_dist_to_dm(dist, gl, gb):
     """
-    Convert position to a dispersion measure using NE2001 (compiled from
-    fortran)
+    Convert position to a dispersion measure using NE2001.
 
     Args:
         dist (float): Distance to source [Gpc]. Distance will be cut at 100kpc,
@@ -185,6 +184,7 @@ def ne2001_dist_to_dm(dist, gl, gb):
         gb (float): Galactic latitude [fractional degrees]
     Returns:
         dm (float): Dispersion measure [pc*cm^-3]
+
     """
     dist *= 1e6  # Convert from Gpc to kpc
 
@@ -210,13 +210,16 @@ def ne2001_dist_to_dm(dist, gl, gb):
 
     return dm
 
+
 def ne2001_get_smtau(dist, gl, gb):
     """
-    Use the NE2001 model to calculate scattering measure. Calculations based on
-    work presented in Cordes & Lazio (1991, DOI: 10.1086/170261)
+    Use the NE2001 model to calculate scattering measure.
+
+    Calculations based on work presented in Cordes & Lazio
+    (1991, DOI: 10.1086/170261)
 
     Args:
-        dist (float): Distance to source [kpc]. Distance will be cut at 100 kpc,
+        dist (float): Distance to source [kpc]. Distance will be cut at 100 kpc
                       as NE2001 can not cope with larger distances. Therefore
                       the calculated scattering will only be that from the
                       Milky Way.
@@ -225,8 +228,8 @@ def ne2001_get_smtau(dist, gl, gb):
     Returns:
         sm (float): Scattering measure
         smtau (float): Scattering measure, but unsure why different to sm
-    """
 
+    """
     # NE2001 gives errors if distance input is too large! 100 kpc ought to be
     # enough to clear the galaxy.
     if dist > 100:
@@ -266,7 +269,7 @@ def ne2001_scint_time_bw(dist, gl, gb, freq):
     Use the NE2001 model to get the diffractive scintillation timescale
 
     Args:
-        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc,
+        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc
                       as NE2001 can not cope with larger distances. Therefore
                       the calculated scintillation timescale will only be that
                       from the Milky Way.
@@ -317,7 +320,7 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
     log_t = offset + 0.154*math.log10(dm) + 1.07*math.log10(dm)**2
     log_t += scindex*math.log10(freq/1e3)
 
-    # Width of Gaussian distribution based on values given Lorimer et al. (2008)
+    # Width of Gaussian distribution based on values given Lorimer et al (2008)
     t_scat = 10**random.gauss(log_t, 0.8)
 
     return t_scat
@@ -355,22 +358,37 @@ def load_T_sky():
     return t_sky_list
 
 
-def z_to_d(z, out='vol_co', H_0=69.6, W_m=0.286, W_v=0.714):
+def z_to_d(z, H_0=69.6, W_m=0.286, W_v=0.714,
+           dist_co=False, dist_lum=False, vol_co=False):
     """
-    Convert redshift to a various measures. Based on James Schombert's python
-    implementation of Edward L. Wright's cosmology calculator.
+    Convert redshift to a various measures.
+
+    Based on James Schombert's python implementation of Edward L. Wright's
+    cosmology calculator.
 
     Args:
         z (float): Redshift
-        out (str): Whether to return the comoving distance 'dist_co', the
-            luminosity distance 'dist_lum' or comoving volume 'vol_co'
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_v (float, optional): Omega vacuum. Defaults to 0.714
+        dist_co (bool): Whether to return the comoving distance
+        dist_lum (bool): Whether to return the luminosity distance
+        vol_co (bool): Whether to return the comoving volume
+
     Returns:
-        dist (float): One of the distance measures [Gpc], or comoving volume
-            from Earth to the source [Gpc^3]
+        float: One of the distance measures [Gpc], or comoving volume from
+            Earth to the source [Gpc^3]
+
+        Alternatively
+        dict: Various outputs as requested
+
     """
+    # Set default output
+    if sum(map(bool, [dist_co, dist_lum, vol_co])) == 0:
+        dist_co = True
+
+    # Set up outputs
+    outputs = {}
 
     # Initialize constants
     W_r = 0.4165/(H_0*H_0)  # Omega radiation
@@ -388,11 +406,11 @@ def z_to_d(z, out='vol_co', H_0=69.6, W_m=0.286, W_v=0.714):
 
     dcmr = (1.-az)*dcmr/n
 
-    if out == 'dist_co':
+    if dist_co:
         dc_mpc = (c/H_0)*dcmr  # Comoving distance [Mpc]
-        return dc_mpc*1e-3  # Convert to Gpc
+        outputs['dist_co'] = dc_mpc*1e-3  # Convert to Gpc
 
-    if out == 'dist_lum':
+    if dist_lum:
         ratio = 1.
         x = math.sqrt(abs(W_k))*dcmr
 
@@ -412,9 +430,9 @@ def z_to_d(z, out='vol_co', H_0=69.6, W_m=0.286, W_v=0.714):
         dl = da/(az*az)
         dl_mpc = (c/H_0)*dl  # Luminosity distance [Mpc]
 
-        return dl_mpc*1e-3  # Covert to Gpc
+        outputs['dist_lum'] = dl_mpc*1e-3  # Covert to Gpc
 
-    if out == 'vol_co':
+    if vol_co:
         ratio = 1.00
         x = math.sqrt(abs(W_k))*dcmr
         if x > 0.1:
@@ -431,7 +449,13 @@ def z_to_d(z, out='vol_co', H_0=69.6, W_m=0.286, W_v=0.714):
         v_cm = ratio*dcmr**3/3
         v_gpc = 4.*math.pi*((1e-3*c/H_0)**3)*v_cm  # Comoving volume
 
-        return v_gpc
+        outputs['vol_co'] = v_gpc
+
+    if len(outputs) == 1:
+        output, = outputs.values()
+        return output
+    else:
+        return outputs
 
 
 def z_to_d_approx(z, H_0=69.6):

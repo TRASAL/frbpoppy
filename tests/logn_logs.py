@@ -5,7 +5,9 @@ from bokeh.plotting import figure, show
 from frbpoppy.population import unpickle
 
 MAKE = False
-FIT = True
+FIT = False
+POP = 'lum_neg'
+FLUENCE_LIMIT_LOW = False  # False or a float value
 
 if MAKE:
     from frbpoppy.do_populate import generate
@@ -26,15 +28,20 @@ if MAKE:
     pop_aper = observe(population, 'APERTIF')
 
 else:
-    pop_aper = unpickle('apertif')
+    pop_aper = unpickle(POP)
 
 # Get fluences
 fluences = []
 for src in pop_aper.sources:
-    fluences.append(src.frbs[0].fluence)
+    f = src.frbs[0].fluence
+    if FLUENCE_LIMIT_LOW:
+        if f > 10**(np.log10(FLUENCE_LIMIT_LOW) - 1):
+            fluences.append(f)
+    else:
+        fluences.append(f)
 
 # Bin up
-log_bins = np.logspace(np.log10(min(fluences)), np.log10(max(fluences)), 10)
+log_bins = np.logspace(np.log10(min(fluences)), np.log10(max(fluences)), 50)
 hist, edges = np.histogram(fluences, bins=log_bins)
 cum_hist = [sum(hist[i:]) for i in range(len(hist))]
 
@@ -52,7 +59,7 @@ p.quad(top=cum_hist,
        left=edges[:-1],
        right=edges[1:],
        alpha=0.5,
-       legend='Apertif')
+       legend=POP)
 
 if FIT:
     from lmfit import Model

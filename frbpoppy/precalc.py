@@ -101,10 +101,10 @@ def ne2001_table(gal, gab, test=False):
     return dm_mw
 
 
-def dist_table(d, d_type='dist', H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0,
-               test=False):
+def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
+               dist_co=None, vol_co=None, z=None):
     """
-    Create/use a lookup table for distance and redshift.
+    Create/use a lookup table for comoving distance, volume & redshift.
 
     Create a list of tuples to lookup the corresponding redshift for a comoving
     distance [Gpc] (or the other way around). Uses formulas from
@@ -114,38 +114,47 @@ def dist_table(d, d_type='dist', H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0,
     table, and save the table for later runs.
 
     Args:
-        d (float): Comoving distance [Gpc] or redshift
-        d_type (str): Whether parameter is 'dist' or 'z'
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
-        z_max (float, optional): Maximum redshift. Defaults to 5.0
         test (bool): Flag for coarser resolution
+        dist_co (float or bool): Whether to give or return comoving distance
+        z (float or bool): Whether to give or return redshift
+        vol_co (float or bool): Whether to give or comoving volume
+
     Returns:
-        r (float): Redshift or comoving volume [Gpc]
+        float: Distance measures [Gpc], redshift, or comoving volume from
+            Earth to the source [Gpc^3]
+
+        Alternatively
+        dict: Various outputs as requested
 
     """
     uni_mods = os.path.join(paths.models(), 'universe/')
 
-    # Initializing
-    cl = 299792.458  # Velocity of light [km/sec]
+    # Check input
+    if not any([e for e in [dist_co, vol_co, z] if e is True]):
+        raise ValueError('Set which parameters you would like as output')
+    # Using z later on
+    redshift = z
 
     def cvt(value):
-        """Convert a value to a string without a period."""
+        """Convert a float to a string without a period."""
         return str(value).replace('.', 'd')
 
     # Filename
     paras = ['h0', cvt(H_0),
              'wm', cvt(W_m),
-             'wv', cvt(W_v),
-             'zmax', cvt(z_max)]
+             'wv', cvt(W_v)]
     f = '-'.join(paras)
 
     if test:
         step = 0.1
+        z_max = 3.0
         file_name = uni_mods + f + '_test.db'
     else:
         step = 0.0001
+        z_max = 8.0
         file_name = uni_mods + f + '.db'
 
     # Setup database
@@ -160,7 +169,8 @@ def dist_table(d, d_type='dist', H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0,
     # Create db
     if not db:
 
-        pprint('Creating a redshift table (only needs to happen once)')
+        pprint('Creating a distance table (only needs to happen once)')
+        pprint('At redshift:')
 
         W_k = 1.0 - W_m - W_v  # Omega curvature
 
@@ -170,39 +180,62 @@ def dist_table(d, d_type='dist', H_0=69.6, W_m=0.286, W_v=0.714, z_max=5.0,
         zs = np.arange(0, z_max+step, step)
 
         # Create database
-        c.execute('create table redshift ' +
-                  '(dist real, z real)')
+        c.execute('create table distances (z real, dist real, vol real)')
 
         results = []
 
         for z in zs:
             # Comoving distance [Gpc]
-            di = go.z_to_d(z, out='dist_co', H_0=H_0, W_m=W_m, W_v=W_v)
-            results.append((di, z))
+            dists = go.z_to_d(z, H_0=H_0, W_m=W_m, W_v=W_v,
+                              dist_co=True, vol_co=True)
+            results.append((z, dists['dist_co'], dists['vol_co']))
 
             # Give an update on the progress
             sys.stdout.write('\r{}'.format(z))
             sys.stdout.flush()
 
         # Save results to database
-        c.executemany('insert into redshift values (?,?)', results)
+        c.executemany('insert into distances values (?,?,?)', results)
 
         # Make for easier searching
-        c.execute('create index ix on redshift (dist)')
-        c.execute('create index ixx on redshift (z)')
+        c.execute('create index ix on distances (z)')
+        c.execute('create index ixx on distances (dist)')
+        c.execute('create index ixxx on distances (vol)')
 
         # Save
         conn.commit()
 
-    if d_type == 'dist':
-        query = 'select z from redshift where dist > ? limit 1'
-    elif d_type == 'z':
-        query = 'select dist from redshift where z > ? limit 1'
+        pprint('\nFinished distance table')
+
+    # Set input value
+    if isinstance(dist_co, float):
+        in_par = 'dist'
+        i = dist_co
+    elif isinstance(vol_co, float):
+        in_par = 'vol'
+        i = vol_co
+    elif isinstance(redshift, float):
+        in_par = 'z'
+        i = redshift
 
     # Search database
-    r = c.execute(query, [d]).fetchone()[0]
+    query = f'select * from distances where {in_par} > ? limit 1'
+    results = c.execute(query, [i]).fetchone()
 
     # Close database
     conn.close()
 
-    return r
+    # Gather outputs
+    outputs = {}
+    if redshift is True:
+        outputs['z'] = results[0]
+    if dist_co is True:
+        outputs['dist_co'] = results[1]
+    if vol_co is True:
+        outputs['vol_co'] = results[2]
+
+    if len(outputs) == 1:
+        output, = outputs.values()
+        return output
+    else:
+        return outputs
