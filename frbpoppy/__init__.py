@@ -9,7 +9,7 @@ from .frbcat import *
 from .galacticops import *
 from .log import pprint
 from .monte_carlo import MonteCarlo
-from .paths import path
+from .paths import paths
 # from .plot_mc import Plot
 from .population import Population
 from .precalc import *

@@ -1,14 +1,15 @@
 """Code to inspect a population."""
-import os
-import sys
-sys.path.append("..")
-from frbpoppy.population import Population, unpickle
+import os.path
 
-pop_path = './simple_pop.p'
+from frbpoppy.population import unpickle
+from frbpoppy.paths import paths
+from frbpoppy.log import pprint
+
+pop_path = os.path.join(paths.results(), 'population_initial.p')
 
 pop = unpickle(pop_path)
 
-print(pop)
+pprint(pop)
 
 for src in pop.sources:
-    print(src.dm_host, src.dm_igm, src.dm_mw)
+    pprint(src.dm_host, src.dm_igm, src.dm_mw)

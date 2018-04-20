@@ -1,15 +1,18 @@
+"""Class holding survey properties."""
 import math
+import numpy as np
 import os
 import random
 from scipy.special import j1
 
 import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
+from frbpoppy.paths import paths
 
 
 class Rates:
     """
-    Class to hold rate counters
+    Class to hold rate counters.
 
     Args:
         det (int, optional): Number detected
@@ -18,10 +21,11 @@ class Rates:
         out (int, optional): Number outside survey, space or timewise
         sky (int, optional): Number per sky above > 1 Jy
         vol (int, optional): Number per Gpc^3
+
     """
 
     def __init__(self):
-
+        """Initializing."""
         # Rates
         self.det = 0
         self.faint = 0
@@ -31,33 +35,31 @@ class Rates:
         self.vol = 0
 
     def tot(self):
-        """Calculate the total number of rates"""
+        """Calculate the total number of rates."""
         return self.det + self.out + self.faint
 
 
 class Survey:
     """
-    Method containing survey parameters and functions
+    Method containing survey parameters and functions.
 
     Args:
         survey_name (str): Name of survey with which to observe population. Can
-            either be a predefined survey present in frbpoppy
-            (see data/surveys/) or a path name to a new survey
-            filename
-        pattern (str): Set gain pattern to be either 'gaussian' or 'airy'.
-            Defaults to 'gaussian'
+            either be a predefined survey present in frbpoppy or a path name to
+            a new survey filename
+        gain_pattern (str): Set gain pattern
+
     """
 
-    def __init__(self, survey_name, pattern='gaussian'):
-
+    def __init__(self, survey_name, gain_pattern='gaussian'):
+        """Initializing."""
         # Find survey file
         if os.path.isfile(survey_name):
             f = open(survey_name, 'r')
         else:
             # Find standard survey files
             try:
-                survey_dir = os.path.dirname(__file__) + '/../data/surveys/'
-                path = os.path.join(survey_dir, survey_name)
+                path = os.path.join(paths.surveys(), survey_name)
                 f = open(path, 'r')
             except IOError:
                 s = 'Survey file {0} does not exist'.format(survey_name)
@@ -73,17 +75,23 @@ class Survey:
         self.gains_list = None
         self.t_obs_list = None
         self.T_sky_list = go.load_T_sky()
-        self.gain_pattern = pattern
+        self.gain_pattern = gain_pattern
+        self.beam_array = None
         self.aa = False  # Whether aperture array
-        self.int_pro = self.intensity_profile()
 
         # Counters
         self.frb_rates = Rates()
         self.src_rates = Rates()
 
-    def __str__(self):
-        """Define how to print a survey object to a console"""
+        # Null points of an Airy disk
+        self.airy_nulls = [1.22, 2.24, 3.26, 4.26, 5.33, 6.39, 7.48, 8.6, 9.7]
 
+        # Set beam file so that it is only imported once
+        if gain_pattern == 'parkes':
+            self.beam_array = np.load(paths.models() + '/beams/parkes.npy')
+
+    def __str__(self):
+        """Define how to print a survey object to a console."""
         s = 'Survey properties:'
 
         attributes = []
@@ -97,15 +105,15 @@ class Survey:
 
     def parse(self, f):
         """
-        Attempt to parse an already opened survey file
+        Attempt to parse an already opened survey file.
 
         Args:
             f (str): Filename, see Survey class
 
         Returns:
             Various attributes
-        """
 
+        """
         for line in f:
 
             # Ignore comments
@@ -157,16 +165,14 @@ class Survey:
                 self.gb_min = float(v)  # [deg]
             elif p.count('maximum Galactic latitude'):
                 self.gb_max = float(v)  # [deg]
-            elif p.count('uptime'):
-                self.uptime = float(v)  # % of time in use
-                if self.uptime > 1.0:
-                    self.uptime = 1.0
             elif p.count('signal-to-noise'):
                 self.snr_limit = float(v)  # Minimum snr required for detection
             elif p.count('gain pattern'):
                 self.gain_pat = v  # Gain pattern of telescope
             elif p.count('Aperture Array'):
                 self.aa = True
+            elif p.count('uptime'):
+                pass
             elif p.count('reference'):
                 pass
             elif p.count('colour'):
@@ -178,7 +184,7 @@ class Survey:
 
     def in_region(self, src):
         """
-        Check if a given source is within the survey region
+        Check if a given source is within the survey region.
 
         Args:
             src (Source): Source of which to check whether in survey region
@@ -186,8 +192,8 @@ class Survey:
         Returns:
             True: If source is within survey region
             False: If source is outside survey region
-        """
 
+        """
         if src.gl > 180.:
             src.gl -= 360.
 
@@ -207,8 +213,9 @@ class Survey:
 
         return True
 
-    def intensity_profile(self):
-        """Calculate intensity profile"""
+    def intensity_profile(self, sidelobe=1, test=False, mul=None):
+        """Calculate intensity profile."""
+        self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
 
         # Angular variable on sky, defined so that at fwhm/2, the
         # intensity profile is exactly 0.5. It's multiplied by the sqrt of
@@ -217,37 +224,63 @@ class Survey:
         # (uniform random point within circle). You could see this as
         # the offset from the centre of the beam.
 
-        self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
+        offset = self.fwhm * math.sqrt(random.random())
 
-        offset = self.fwhm * math.sqrt(random.random()) / 2.0
+        if mul:
+            offset = self.fwhm * math.sqrt(1) * mul
 
-        if self.gain_pattern == 'gaussian':
+        if self.gain_pattern == 'perfect':
+            int_pro = 1
 
-            # Formula's based on 'Interferometry and Synthesis in Radio
-            # Astronomy' by A. Richard Thompson, James. M. Moran and
-            # George W. Swenson, JR. (Second edition), around p. 15
+        elif self.gain_pattern == 'tophat':
+            int_pro = 1
+            if random.random() > 0.5:
+                int_pro = 0
 
-            # Intensity profile
+        # Formula's based on 'Interferometry and Synthesis in Radio
+        # Astronomy' by A. Richard Thompson, James. M. Moran and
+        # George W. Swenson, JR. (Second edition), around p. 15
+
+        elif self.gain_pattern == 'gaussian':
+            # Set the maximum offset equal to the null after a sidelobe
+            # I realise this pattern isn't an airy, but you have to cut
+            # somewhere
+            offset *= self.airy_nulls[sidelobe]
+
             alpha = 2*math.sqrt(math.log(2))
             int_pro = math.exp(-(alpha*offset/self.fwhm)**2)
 
-        if self.gain_pattern == 'airy':
+        elif self.gain_pattern == 'airy':
+            # Set the maximum offset equal to the null after a sidelobe
+            offset *= self.airy_nulls[sidelobe]
+
             c = 299792458
             conv = math.pi/(60*180.)  # Conversion arcmins -> radians
             eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
             a = eff_diam/2  # Effective radius of telescope
             lamda = c/(self.central_freq*1e6)
-            kasin = (2*math.pi*a/lamda)*math.sin(offset*conv)
+            ka = (2*math.pi*a/lamda)
+            kasin = ka*math.sin(offset*conv)
             int_pro = 4*(j1(kasin)/kasin)**2
 
-        return int_pro
+        elif self.gain_pattern == 'parkes':
+            shape = self.beam_array.shape
+            ran_x = np.random.randint(0, shape[0])
+            ran_y = np.random.randint(0, shape[1])
+            int_pro = self.beam_array[ran_x, ran_y]
+
+        if test is False:
+            return int_pro
+        else:
+            return offset, int_pro
 
     def dm_smear(self, src, dm_err=0.2):
         """
-        Calculate delay in pulse across a channel due to dm smearing. Formula's
-        based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer & Michael
-        Kramer, section A2.4. Note the power of the forefactor has changed due
-        to the central frequency being given in MHz.
+        Calculate delay in pulse across a channel due to dm smearing.
+
+        Formula's based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer
+        & Michael Kramer, section A2.4. Note the power of the forefactor has
+        changed due to the central frequency being given in MHz.
 
         Args:
             src (Source): Source object with a dm attribute
@@ -255,10 +288,10 @@ class Survey:
 
         Returns:
             t_dm, t_dm_err (float): Time of delay [ms] at central band
-                frequency, with its error assuming a
-                20% uncertainty in the dispersion measure
-        """
+                frequency, with its error assuming a 20% uncertainty in the
+                dispersion measure
 
+        """
         t_dm = 8.297616e6 * self.bw_chan * src.dm * (self.central_freq)**-3
         t_dm_err = (t_dm/src.dm)*(dm_err*src.dm)
 
@@ -266,9 +299,7 @@ class Survey:
         src.t_dm_err = t_dm_err
 
     def scat(self, src):
-        """
-        Set scattering timescale for source
-        """
+        """Set scattering timescale for source."""
         # Offset according to Lorimer et al. (doi:10.1093/mnrasl/slt098)
         src.t_scat = go.scatter_bhat(src.dm,
                                      scindex=-3.86,
@@ -322,8 +353,10 @@ class Survey:
 
     def calc_s_peak(self, frb, src, f_low=10e6, f_high=10e9):
         """
-        Calculate the mean spectral flux density following Lorimer et al, 2013,
-        eq. 9., at the central frequency of the survey.
+        Calculate the mean spectral flux density.
+
+        Following Lorimer et al, 2013, eq. 9., at the central frequency
+        of the survey.
 
         Args:
             frb (class): FRB
@@ -331,12 +364,12 @@ class Survey:
             f_low (float): Source emission lower frequency limit [Hz]. Defaults
                 to 10e6
             f_high (float): Source emission higher frequency limit [Hz].
-                Defaults to 10e6
+                Defaults to 10e9
 
         Returns:
             frb.s_peak (float): Mean spectral flux density [Jy]
-        """
 
+        """
         # Limits observing bandwidth (as seen in rest frame source)
         f_1 = (self.central_freq - 0.5*self.bw)
         f_1 *= 1e6  # MHz -> Hz
@@ -347,8 +380,8 @@ class Survey:
         sp = frb.si + 1
         sm = frb.si - 1
 
-        # Convert distance to metres
-        dist = src.dist * 3.08567758149137e25
+        # Convert distance to 10^25 metres
+        dist = src.dist_co * 3.0856775814913673
 
         # Convert luminosity to Watts
         lum = frb.lum_bol * 1e-7
@@ -358,14 +391,14 @@ class Survey:
         den = 4*math.pi*dist**2 * (f_high**sp - f_low**sp)
         s_peak = nom/den
 
-        # Convert to Janskys
-        s_peak *= 1e26
+        # Convert to Janskys and accounting for the (10^25)^2
+        s_peak /= 1e24
 
         frb.s_peak = s_peak
 
     def obs_prop(self, frb, src, pop):
         """
-        Set various observation properties of an FRB
+        Set various observation properties of an FRB.
 
         Args:
             frb (class): FRB of which to calculate the signal to noise
@@ -381,17 +414,21 @@ class Survey:
             frb.s_peak (float): Mean spectral flux density per observed
                 source [Jy]
             frb.fluence (float): Fluence of the observed pulse [Jy*ms]
+
         """
         # Effective pulse width [ms]
         # From Narayan (1987, DOI: 10.1086/165442)
         # Also Cordes & McLaughlin (2003, DOI: 10.1086/378231)
         # For details see p. 30 of Emily Petroff's thesis (2016), found here:
         # http://hdl.handle.net/1959.3/417307
-        frb.w_eff = math.sqrt(frb.w_int**2 + src.t_dm**2 + src.t_dm_err**2 +
-                              src.t_scat**2 + self.t_samp**2)
+        if not frb.w_eff:  # Hack to go from frbcat df to pop
+            frb.w_eff = math.sqrt(frb.w_arr**2 + src.t_dm**2 +
+                                  src.t_dm_err**2 + src.t_scat**2 +
+                                  self.t_samp**2)
 
         # Calculate flux density
-        self.calc_s_peak(frb, src, f_low=pop.f_min, f_high=pop.f_max)
+        if not frb.s_peak:  # Hack to go from frbcat df to pop
+            self.calc_s_peak(frb, src, f_low=pop.f_min, f_high=pop.f_max)
 
         # Radiometer equation for single pulse (Dewey et al., 1984)
         sp = frb.s_peak
@@ -402,20 +439,22 @@ class Survey:
         frb.fluence = frb.s_peak * frb.w_eff
 
         # Account for offset in beam
-        frb.snr *= self.int_pro
+        frb.snr *= self.intensity_profile()
 
     def scint(self, frb, src):
         """
-        Calculate scintillation effect on the signal to noise ratio (rather
-        than adapting the flux, as the snr can change per survey attempt).
-        Formulas based on 'Handbook of Pulsar Astronomy" by Duncan Lorimer &
-        Michael Kramer, section 4.2.
+        Calculate scintillation effect on the signal to noise ratio.
+
+        (Rather than adapting the flux, as the snr can change per survey
+        attempt). Formulas based on 'Handbook of Pulsar Astronomy" by Duncan
+        Lorimer & Michael Kramer, section 4.2.
 
         Args:
             frb (class): FRB
             src (class): Source of FRB
         Returns:
             frb.snr (float): Signal to noise ratio modulated by scintillation
+
         """
         # Calculate scattering
         self.scat(src)
@@ -445,7 +484,7 @@ class Survey:
             # Taking the average kappa value
             kappa = 0.15
 
-            t_diss, decorr_bw = go.ne2001_scint_time_bw(src.dist,
+            t_diss, decorr_bw = go.ne2001_scint_time_bw(src.dist_co,
                                                         src.gl,
                                                         src.gb,
                                                         self.central_freq)
@@ -472,25 +511,27 @@ class Survey:
 
     def scale_rates(self, pop):
         """
-        Scale all rates according to integration time and uptime
+        Scale all rates according to integration time and uptime.
 
         Args:
             pop (Population): Population class
         """
-
         rates = (self.frb_rates, self.src_rates)
         n = 0
 
         for r in rates:
 
+            # Filter frbcat population
+            if not pop.vol_co_max:
+                continue
+
             area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
             f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
-            f_time = pop.time/self.t_obs
+            f_time = 86400 / self.t_obs  # pop.time
             det = r.det * f_area * f_time
             faint = r.faint * f_area * f_time
             out = r.out + r.det - det + r.faint - faint
-
-            vol = r.tot() / pop.v_max * (365.25*86400/pop.time)
+            vol = r.tot() / pop.vol_co_max * (365.25*86400/pop.time)
 
             s_rates = Rates()
             s_rates.det = det
@@ -512,28 +553,39 @@ class Survey:
             output (bool, optional): Whether to print out the rates or not
             scaled (bool, optional): Print scaled (default) or normal rates
         """
-        f = self.s_frb_rates
-        s = self.s_src_rates
-        if not scaled:
+        # Filter frbcat population
+        if not pop.vol_co_max:
             f = self.frb_rates
             s = self.src_rates
+            pprint('Frbcat population -> No scaled rates available')
+        else:
+            f = self.s_frb_rates
+            s = self.s_src_rates
+            if not scaled:
+                f = self.frb_rates
+                s = self.src_rates
 
         r = '{:20.19} {:>10} {:>10} {:>10}\n'
 
         # Set up title
-        days = (pop.time/86400)
+        if pop.vol_co_max:
+            days = (pop.time/86400)
+            r_days = round(days)
+        else:
+            r_days = '-'
 
         t = r.format(self.survey_name, 'Days', 'FRBs', 'Sources')
         line = '-'*len(t.split('\n')[-2].strip()) + '\n'
         t += line
 
-        tot = ('In population', round(days), round(f.tot()), round(s.tot()))
-        det = ('Detected', round(days), round(f.det), round(s.det))
-        faint = ('Too faint', round(days), round(f.faint), round(s.faint))
-        out = ('Outside survey', round(days), round(f.out), round(s.out))
-        vol = ('/Gpc^3', 365.25, round(f.vol), round(s.vol))
-        if f.det > 0:
-            exp = round(days/f.det, 3)
+        tot = ('In population', r_days, round(f.tot()), round(s.tot()))
+        det = ('Detected', r_days, round(f.det), round(s.det))
+        faint = ('Too faint', r_days, round(f.faint), round(s.faint))
+        out = ('Outside survey', r_days, round(f.out), round(s.out))
+        if pop.vol_co_max:
+            vol = ('/Gpc^3', 365.25, round(f.vol), round(s.vol))
+        if f.det > 0 and pop.vol_co_max:
+            exp = round(days/f.det, 4)
         else:
             exp = '?'
         exp_frb = ('Expected', exp, 1, '-')
@@ -542,7 +594,8 @@ class Survey:
         t += r.format(*det)
         t += r.format(*faint)
         t += r.format(*out)
-        t += r.format(*vol)
+        if pop.vol_co_max:
+            t += r.format(*vol)
         t += r.format(*exp_frb)
         t += line
 

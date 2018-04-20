@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Get Started &#8212; frbpoppy by David Gardenier</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo_small.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Documentation" href="documentation.html" />
+    <link rel="prev" title="frbpoppy" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="get-started">
+<h1>Get Started<a class="headerlink" href="#get-started" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-can-i-install-it">
+<h2>How can I install it?<a class="headerlink" href="#how-can-i-install-it" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">Ensure <code class="docutils literal"><span class="pre">gfortran</span></code> is installed on your system (used for NE2001).</p>
+</li>
+<li><p class="first">Get the files from the github repository:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/davidgardenier/frbpoppy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Install frbpoppy locally on Ubuntu by going to the downloaded directory</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd ./frbpoppy
+</pre></div>
+</div>
+</li>
+<li><p class="first">Run the following to get a local install - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo python3 setup.py develop
+</pre></div>
+</div>
+<p>Macs should also be supported, however no tests have been done on Windows.</p>
+<p><em>If receiving an ASCII error, this is</em> <a class="reference external" href="https://github.com/bokeh/bokeh/issues/7272">a bug</a> <em>in Bokeh.</em></p>
+</li>
+<li><p class="first">Test whether frbpoppy is working with:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python3
+&gt;&gt;&gt; import frbpoppy
+</pre></div>
+</div>
+<p>If you don&#8217;t get any errors - hurray, all should be working!</p>
+</li>
+</ol>
+</div>
+<div class="section" id="how-do-i-use-it">
+<h2>How do I use it?<a class="headerlink" href="#how-do-i-use-it" title="Permalink to this headline">¶</a></h2>
+<p>Population synthesis always involves three steps:</p>
+<ol class="arabic">
+<li><p class="first"><strong>Model population</strong></p>
+<p>Generating a population in <code class="docutils literal"><span class="pre">frbpoppy</span></code> can be done using the <code class="docutils literal"><span class="pre">generate</span></code> function:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy.do_populate</span> <span class="k">import</span> <span class="n">generate</span>
+<span class="n">pop</span> <span class="o">=</span> <span class="n">generate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The generate function takes a number of parameters, allowing you generate the exact population you want, from a steep luminosity function to ultra-long intrinsic pulses. It&#8217;s all possible. The population you&#8217;ve just generated is called your initial population. The next step will be to observe it with whichever survey takes your fancy.</p>
+</li>
+<li><p class="first"><strong>Survey modeled population</strong></p>
+<p>In <code class="docutils literal"><span class="pre">frbpoppy</span></code>, a population can be observed with a number of different surveys. While many current surveys have been included within <code class="docutils literal"><span class="pre">frbpoppy</span></code>, it is possible to define your own survey, or adapt the ones available. To observe a population simply add the following lines</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy.do_survey</span> <span class="k">import</span> <span class="n">observe</span>
+<span class="n">surv_pop</span> <span class="o">=</span> <span class="n">observe</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="s1">&#39;APERTIF&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>Compare obtained results with actual survey results</strong>
+One of the easiest ways to compare the observed results to actual observations is to use the built in interactive viewer. Simply pass the populations as arguments in to the plot function, and explore away!</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy.do_plot</span> <span class="k">import</span> <span class="n">plot</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">surv_pop</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="what-now">
+<h2>What now?<a class="headerlink" href="#what-now" title="Permalink to this headline">¶</a></h2>
+<p>These are the basics, but <code class="docutils literal"><span class="pre">frbpoppy</span></code> offers much functionally than given in this brief guide. Feel free to pursue the <a class="reference internal" href="documentation.html"><span class="doc">Documentation</span></a>, the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/tree/master/tests">tests</a> directory in <code class="docutils literal"><span class="pre">frbpoppy</span></code>, or even the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy">code base</a> itself to find out more.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo_150.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">frbpoppy</a></h1>
+
+
+
+<p class="blurb">Fast Radio Burst Population Synthesis in Python</p>
+
+
+
+
+
+
+
+
+<h3><a href="index.html">Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="documentation.html">Documentation</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">frbpoppy</a></li>
+      <li>Next: <a href="documentation.html" title="next chapter">Documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <!-- <div><input type="submit" value="Go" /></div> -->
+      <!-- <input type="hidden" name="check_keywords" value="yes" /> -->
+      <!-- <input type="hidden" name="area" value="default" /> -->
+    </form>
+</div>
+<script type="text/javascript" align="center">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

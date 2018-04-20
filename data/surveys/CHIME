@@ -2,25 +2,25 @@
 # CHIME survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
-1.2      ! survey degradation factor
-1.4      ! antenna gain (K/Jy)
-1000     ! integration time (s)
-1        ! sampling time (ms)
-50       ! system temperature (K)
-600      ! centre frequency (MHz)
-400      ! bandwidth (MHz)
-0.1      ! channel bandwidth (MHz)
-2        ! number of polarizations
-180      ! beam size (deg^2)
-0        ! minimum RA (deg)
-360      ! maximum RA (deg)
--40.679  ! minimum DEC (deg)
-90       ! maximum DEC (deg)
--180     ! minimum Galactic longitude (deg)
-180      ! maximum Galactic longitude (deg)
--90      ! minimum Galactic latitude (deg)
-90       ! maximum Galactic latitude (deg)
-0.7      ! fractional uptime [0-1]
-8        ! signal-to-noise ratio [0-1]
+1.2      !  survey degradation factor 
+1.4      !  antenna gain (K/Jy) 
+1000     !  integration time (s) 
+1        !  sampling time (ms) 
+50       !  system temperature (K) 
+600      !  centre frequency (MHz) 
+400      !  bandwidth (MHz) 
+0.1      !  channel bandwidth (MHz) 
+2        !  number of polarizations 
+180      !  beam size (deg^2) 
+0        !  minimum RA (deg) 
+360      !  maximum RA (deg) 
+-40.679  !  minimum DEC (deg) 
+90       !  maximum DEC (deg) 
+-180     !  minimum Galactic longitude (deg) 
+180      !  maximum Galactic longitude (deg) 
+-90      !  minimum Galactic latitude (deg) 
+90       !  maximum Galactic latitude (deg) 
+0.7      !  fractional uptime [0-1] 
+8        !  signal-to-noise ratio [0-1] 
      nan ! reference
 #83230A  ! colour

@@ -13,6 +13,9 @@ import numpy as np
 import pandas as pd
 import sqlite3
 
+from frbpoppy.paths import paths
+from frbpoppy.log import pprint
+
 
 class Plot:
     """Class to plot a population or the output of a Monte Carlo."""
@@ -61,10 +64,10 @@ class Plot:
     def path(self, s, where='results'):
         """Return the path to a file in the results folder."""
         if where == 'results':
-            r = os.path.join(os.path.dirname(__file__), '../data/results/' + s)
+            r = os.path.join(paths.results(), s)
         if where == 'html':
-            cwd = os.path.dirname(__file__)
-            d = os.path.join(cwd, 'plot_config/{}.html'.format(s))
+            cd = paths.code
+            d = os.path.join(cd, f'plot_config/{s}.html')
             r = open(d).read()
         return r
 
@@ -74,13 +77,13 @@ class Plot:
         if not query:
             query = 'select * from pars;'
         if not loc:
-            loc = 'ks_temp4.db'
+            loc = 'ks_20180315.db'
         elif loc == 'ks':
-            loc = 'ks_temp4.db'
+            loc = 'ks_20180315.db'
         elif loc == 'hist':
-            loc = 'hists_temp4.db'
+            loc = 'hists_20180315.db'
         elif loc == 'rate':
-            loc = 'rates_temp4.db'
+            loc = 'rates_20180315.db'
 
         p = self.path(loc)
         conn = sqlite3.connect(p)
@@ -115,14 +118,12 @@ class Plot:
 
         # Optional frbcat plotting
         cat_sel = CheckboxButtonGroup(labels=['frbcat'], active=[0])
-        cat_sel = CheckboxButtonGroup(labels=['frbcat'], active=[])   # SYDNET ADDITION
 
         # Optional survey plotting
         if len(self.surveys) >= 7:
             selection = [6, 7]
         else:
             selection = [i for i in range(len(self.surveys))]
-            selection = [0]  # SYDNET ADDITION
         sur_sel = CheckboxButtonGroup(labels=self.surveys, active=selection)
 
         # Setup observed parameter choice
@@ -168,6 +169,8 @@ class Plot:
                 st = 0.00001
                 ma += st
 
+            pprint(f"{p:>15} {mi:>15} {ma:>15} {st:>15}")
+
             # Set standard value
             v = df[p].value_counts().idxmax()
 
@@ -200,7 +203,11 @@ class Plot:
 
             # Stepsize
             s = np.sort(p_min.unique())
-            st = s[1] - s[0]
+            if len(s) > 1:
+                st = s[1] - s[0]
+            else:
+                st = 0.00001
+                ma += st
 
             # Set standard values
             mi_v = p_min.value_counts().idxmax()
@@ -371,7 +378,7 @@ class Plot:
                 query = 'SELECT * FROM pars WHERE '
 
                 # An utterly and completely ridiculous way to solve SQL
-                # rounding bugs with decimals
+                # rounding bug with decimals
                 for f in filt:
                     value = str(filt[f])
                     if '.' not in value:
@@ -419,14 +426,14 @@ class Plot:
             test = (val_test & par_test)
             try:
                 iden = dk[test].iloc[0]['id']
-                print('Parameters found')
+                pprint('Parameters found')
             except IndexError:
-                print('No parameters found')
-                print('SQL constraints:', query)
-                print('Looking for:', x_name)
-                print('With value:', val[x_name])
-                print('Finding:', *[repr(r) for r in dk[x_name].values])
-                print('Looking in:\n', dk)
+                pprint('No parameters found')
+                pprint('SQL constraints:', query)
+                pprint('Looking for:', x_name)
+                pprint('With value:', val[x_name])
+                pprint('Finding:', *[repr(r) for r in dk[x_name].values])
+                pprint('Looking in:\n', dk)
                 iden = ''
 
             # Update histogram data
@@ -539,4 +546,4 @@ class Plot:
         curdoc().title = 'frbpoppy'
 
 
-Plot().mc()
+# Plot().mc()

@@ -22,7 +22,8 @@ from bokeh.palettes import Category10, viridis
 from bokeh.plotting import figure
 
 from frbpoppy.log import pprint
-from frbpoppy.frbcat import get_frbcat
+from frbpoppy.frbcat import Frbcat
+from frbpoppy.paths import paths
 
 # Number of dataframes/populations
 num_df = 0
@@ -30,7 +31,7 @@ num_df = 0
 
 def histogram(dfs):
     """
-    Quick function to 'histogram' each column of each dataframes
+    Quick function to 'histogram' each column of each dataframes.
 
     Args:
         dfs (list): List of dataframes
@@ -75,7 +76,8 @@ def histogram(dfs):
         hist = pd.DataFrame(np.nan, index=np.arange(49), columns=['empty'])
         hist['color'] = df['color'][0]
         hist['population'] = df['population'][0]
-        hist['bottom'] = 0.0000001
+        hist['bottom'] = 10**(round(np.log10(1/len(df))) - 1)
+
         for c in cols:
 
             low = limits[c][0]
@@ -93,7 +95,10 @@ def histogram(dfs):
             bins = np.linspace(low, high, 50)
 
             if high - low > 1000:
+                if low == 0:
+                    low = 1e-3
                 bins = np.geomspace(low, high, num=50)
+
             col = df[c].apply(pd.to_numeric, errors='coerce')
             col = col.dropna()
             h, _ = np.histogram(col, bins=bins)
@@ -111,7 +116,7 @@ def histogram(dfs):
     return hists
 
 
-def plot_pop(files=[], frbcat=True):
+def plot_pop(files=[], frbcat=True, hist_axis='log'):
     """
     Plot populations in browser using Bokeh.
 
@@ -120,6 +125,7 @@ def plot_pop(files=[], frbcat=True):
                       with csv files - file an issue if you would like more
                       options)
         frbcat (bool): Whether to plot frbcat parameters. Defaults to True
+        hist_log (bool): Whether to plot using a linear or log axis
 
     """
     # Configure colours
@@ -135,13 +141,12 @@ def plot_pop(files=[], frbcat=True):
     dfs = []
 
     def read(path=None):
-        '''
+        """
         Mini-function to read in data
 
         Args:
             path (str): Path to file to read
-        '''
-
+        """
         global num_df
 
         if os.path.isfile(path):
@@ -172,18 +177,19 @@ def plot_pop(files=[], frbcat=True):
 
     # Import frbcat
     if frbcat:
-        df = get_frbcat()
+        df = Frbcat().df
         num = len(dfs)
         df['color'] = colours[num]
         dfs.append(df)
 
     # Create axis options
     axis_map = {
-        'Dispersion Measure (pc/cm^3)': 'dm',
+        'Comoving Distance (Gpc)': 'dist_co',
+        'Declination (°)': 'dec',
         'Dispersion Measure - Host (pc/cm^3)': 'dm_host',
         'Dispersion Measure - IGM (pc/cm^3)': 'dm_igm',
         'Dispersion Measure - Milky Way (pc/cm^3)': 'dm_mw',
-        'Distance (Gpc)': 'dist',
+        'Dispersion Measure (pc/cm^3)': 'dm',
         'Fluence (Jy*ms)': 'fluence',
         'Galactic Latitude (degrees)': 'gb',
         'Galactic Longitude (degrees)': 'gl',
@@ -196,7 +202,6 @@ def plot_pop(files=[], frbcat=True):
         'Pulse Width - Intrinsic (ms)': 'w_int',
         'Redshift': 'z',
         'Right Ascension (°)': 'ra',
-        'Declination (°)': 'dec',
         'Signal to Noise Ratio': 'snr',
         }
 
@@ -219,7 +224,7 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=sc_tools)
-                # output_backend="webgl")
+
     # Stop labels falling off
     sp.min_border_left = 80
 
@@ -248,8 +253,7 @@ def plot_pop(files=[], frbcat=True):
                 active_scroll='wheel_zoom',
                 toolbar_location='right',
                 tools=hp_tools,
-                # output_backend="webgl",
-                # x_axis_type="log",
+                x_axis_type=hist_axis,
                 y_axis_type="log")
 
     # Create Column Data Sources for interacting with the plot
@@ -290,6 +294,7 @@ def plot_pop(files=[], frbcat=True):
                 df = empty
             else:
                 df = dfs[i][cols]
+                df = df.replace('None', np.nan)
                 df[x_name].apply(pd.to_numeric, errors='coerce')
                 df[y_name].apply(pd.to_numeric, errors='coerce')
                 df = df.dropna()

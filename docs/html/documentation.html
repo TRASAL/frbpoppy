@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Documentation &#8212; frbpoppy by David Gardenier</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/logo_small.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="All Modules" href="frbpoppy.html" />
+    <link rel="prev" title="Get Started" href="get_started.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="where-to-start">
+<h2>Where to start?<a class="headerlink" href="#where-to-start" title="Permalink to this headline">¶</a></h2>
+<p>Either browse through the basic modules down below, or browse through the <a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p>
+<div class="section" id="do-populate">
+<h3>Do populate<a class="headerlink" href="#do-populate" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Code for generating a population of FRBs.</p>
+<dl class="function">
+<dt>
+<code class="descclassname">do_populate.</code><code class="descname">generate</code><span class="sig-paren">(</span><em>n_gen, days=1, cosmology=True, cosmo_pars=[69.6, 0.286, 0.714], dm_pars=[100, 1200], electron_model='ne2001', emission_pars=[10000000.0, 10000000000.0], lum_dist_pars=[1e+40, 1e+50, 1], name=None, pulse=[0.1, 10], repeat=0.0, si_pars=[-1.4, 0.0], z_max=2.5, test=False</em><span class="sig-paren">)</span></dt>
+<dd><p>Generate a population of FRBs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_gen</strong> (<em>int</em>) &#8211; Number of FRB sources/sky/time to generate</li>
+<li><strong>days</strong> (<em>float</em>) &#8211; Number of days over which FRBs are generated.
+Defaults to 1</li>
+<li><strong>cosmology</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to use cosmology in all
+calculations. Defaults to True.</li>
+<li><strong>cosmo_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Three values, the first being the Hubble
+constant, the second the density parameter Ω_m and the third
+being the cosmological constant Ω_Lambda (referred to as W_m
+in the rest of the code). These parameters default to those
+determined with Planck [69.6, 0.286, 0.714]</li>
+<li><strong>dm_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Two values, the first being the dispersion
+measure of the host, and the second being the slope of the
+intergalactic dispersion measure. Defaults to [100, 1200]</li>
+<li><strong>electron_model</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Model for the free electron density in
+the Milky Way. Defaults to &#8216;ne2001&#8217;</li>
+<li><strong>emission_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; The minimum and maximum frequency [Hz]
+between which FRB sources should emit the given bolometric
+luminosity. Defaults to [10e6,10e9]</li>
+<li><strong>lum_dist_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Bolometric luminosity distribution
+parameters being: the minimum luminosity [erg/s], the maximum
+luminosity [erg/s] and the powerlaw index of the distribution.
+Defaults to [1e40, 1e50, 1]</li>
+<li><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Name to be given to the population. Defaults to
+&#8216;initial&#8217;</li>
+<li><strong>pulse</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Values between which the intrinsic pulse width
+should be [ms]. Defaults to [0.5, 5]</li>
+<li><strong>repeat</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Fraction of sources which repeat</li>
+<li><strong>si_pars</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; Spectral index parameters, being the mean
+index and the standard deviation thereof. Defaults to [-1.4, 0.]</li>
+<li><strong>z_max</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; The maximum redshift out to which to
+distribute FRBs</li>
+<li><strong>test</strong> (<em>float</em><em>, </em><em>optional</em>) &#8211; Flag to help testing</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A population of generated sources</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="frbpoppy.html#plot_mc.Plot.pop" title="plot_mc.Plot.pop">pop</a> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="do-survey">
+<h3>Do survey<a class="headerlink" href="#do-survey" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="function">
+<dt>
+<code class="descclassname">do_survey.</code><code class="descname">observe</code><span class="sig-paren">(</span><em>population</em>, <em>survey_name</em>, <em>pattern='gaussian'</em>, <em>output=True</em>, <em>return_pop=True</em>, <em>return_survey=False</em>, <em>scat=False</em>, <em>scint=False</em>, <em>pop_path=''</em><span class="sig-paren">)</span></dt>
+<dd><p>Run survey to detect FRB sources.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>population</strong> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population"><em>Population</em></a>) &#8211; Population class of FRB sources to observe</li>
+<li><strong>survey_name</strong> (<em>str</em>) &#8211; Name of survey file with which to observe</li>
+<li><strong>pattern</strong> (<em>str</em><em>, </em><em>optional</em>) &#8211; Gain pattern, either &#8216;gaussian&#8217; (default) or
+&#8216;airy&#8217;</li>
+<li><strong>output</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to print the rates or not</li>
+<li><strong>return_pop</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to return a population. Primarily
+intended for debugging. Defaults to True</li>
+<li><strong>return_survey</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to return a survey. Primarily
+intended for debugging. Defaults to False</li>
+<li><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to include scattering in signal to noise
+calculations. Defaults to False</li>
+<li><strong>scint</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to apply scintillation to observations.
+Defaults to False</li>
+<li><strong>pop_path</strong> (<em>str</em>) &#8211; Give filename for a pickled population rather than
+using a population class</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Observed survey population</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">surv_pop (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population">Population</a>)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="do-plot">
+<h3>Do plot<a class="headerlink" href="#do-plot" title="Permalink to this headline">¶</a></h3>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>Start up Bokeh server</p>
+<dl class="function">
+<dt>
+<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>mute=True</em><span class="sig-paren">)</span></dt>
+<dd><p>Plot populations with bokeh. Has to save populations before plotting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>*pops</strong> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population"><em>Population</em></a><em>, </em><em>optional</em>) &#8211; Add the populations you would like to
+see plotted</li>
+<li><strong>files</strong> (<em>list</em><em>, </em><em>optional</em>) &#8211; List of population files to plot (currently
+only works with csv files - file an issue if you would like more
+options)</li>
+<li><strong>frbcat</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to plot frbcat parameters. Defaults to
+True</li>
+<li><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) &#8211; Whether to display the plot or not. Mainly used
+for debugging purposes. Defaults to True</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="still-haven-t-found-what-you-re-looking-for">
+<h3>Still haven&#8217;t found what you&#8217;re looking for?<a class="headerlink" href="#still-haven-t-found-what-you-re-looking-for" title="Permalink to this headline">¶</a></h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="frbpoppy.html">All Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-adapt_pop">adapt_pop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-distributions">distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_hist">do_hist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_monte_carlo">do_monte_carlo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_plot">do_plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_populate">do_populate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_survey">do_survey</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-frb">frb</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-frbcat">frbcat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-galacticops">galacticops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-log">log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-monte_carlo">monte_carlo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-paths">paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-plot">plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-plot_mc">plot_mc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-population">population</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-precalc">precalc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-source">source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-survey">survey</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo_150.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">frbpoppy</a></h1>
+
+
+
+<p class="blurb">Fast Radio Burst Population Synthesis in Python</p>
+
+
+
+
+
+
+
+
+<h3><a href="index.html">Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="get_started.html">Get Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Documentation</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="get_started.html" title="previous chapter">Get Started</a></li>
+      <li>Next: <a href="frbpoppy.html" title="next chapter">All Modules</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <!-- <div><input type="submit" value="Go" /></div> -->
+      <!-- <input type="hidden" name="check_keywords" value="yes" /> -->
+      <!-- <input type="hidden" name="area" value="default" /> -->
+    </form>
+</div>
+<script type="text/javascript" align="center">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

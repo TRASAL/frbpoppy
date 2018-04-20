@@ -19,7 +19,7 @@
 #
 import os
 import sys
-sys.path.insert(0,os.path.abspath('../code/'))
+sys.path.insert(0,os.path.abspath('../frbpoppy/'))
 #sys.path.insert(0, os.path.abspath('..'))
 
 # -- General configuration ------------------------------------------------
@@ -39,7 +39,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -87,7 +87,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'html']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -133,7 +133,7 @@ html_theme = 'alabaster'
 # documentation.
 #
 html_theme_options = {
-    "github_user": "davidgardenier", 
+    "github_user": "davidgardenier",
     "github_repo": "frbpoppy",
     "show_powered_by": "false",
     "description": 'Fast Radio Burst Population Synthesis in Python',
@@ -141,7 +141,7 @@ html_theme_options = {
     }
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['_templates/']
+html_theme_path = ['templates/']
 
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
@@ -166,7 +166,7 @@ html_favicon = 'logo_small.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static/']
+html_static_path = ['static/']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -187,8 +187,8 @@ html_last_updated_fmt = "%b %d, %Y"
 
 # Custom sidebar templates, maps document names to template names.
 #
-html_sidebars = {'**':['about.html', 
-                       'globaltoc.html', 
+html_sidebars = {'**':['about.html',
+                       'globaltoc.html',
                        'relations.html',
                        'searchbox.html']}
 

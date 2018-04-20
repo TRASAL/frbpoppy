@@ -3,17 +3,18 @@ class FRB:
 
     def __init__(self):
 
-        self.w_int = None
         self.lum_bol = None
         self.si = None
         self.time = None
+        self.w_arr = None
+        self.w_int = None
 
         # Detection properties
-        self.snr = None
         self.detected = False
-        self.w_eff = None
-        self.s_peak = None
         self.fluence = None
+        self.s_peak = None
+        self.snr = None
+        self.w_eff = None
 
     def __str__(self):
         """Define how to print an FRB to a console"""

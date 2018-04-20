@@ -4,8 +4,9 @@ import subprocess
 import sys
 
 from frbpoppy.log import pprint
+from frbpoppy.paths import paths
 
-def plot(*pops, files=[], frbcat=True, show=True, mute=True):
+def plot(*pops, files=[], frbcat=True, show=True, mute=True, port=5006):
     """
     Plot populations with bokeh. Has to save populations before plotting.
 
@@ -18,9 +19,10 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True):
         frbcat (bool, optional): Whether to plot frbcat parameters. Defaults to
             True
         show (bool, optional): Whether to display the plot or not. Mainly used
-            for debugging purposes. Defaults to True
+            for debugging purposes. Defaults to True.
+        port (int): The port on which to launch Bokeh
+
     """
-    folder = os.path.dirname(__file__)
 
     if len(pops) > 0:
 
@@ -29,8 +31,8 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True):
             pop.save()
 
             # Save location
-            loc = '../data/results/population_' + pop.name.lower() + '.csv'
-            out = os.path.join(folder, loc)
+            file_name = 'population_' + pop.name.lower() + '.csv'
+            out = os.path.join(paths.populations(), file_name)
             files.append(out)
 
     # Command for starting up server
@@ -39,9 +41,13 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True):
     else:
         command = 'python3'
 
+    # Command for changing port
+    if port != 5006:
+        command += f' --port={port}'
+
     # Add script path
     script = 'plot.py'
-    out = os.path.join(folder, script)
+    out = os.path.join(os.path.dirname(__file__), script)
     command += ' ' + out
 
     # For the arguments

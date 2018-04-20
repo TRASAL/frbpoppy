@@ -1,6 +1,7 @@
 """
-Series of galactic operations (doesn't that sound cool?!), as in converting
-coordinates, calculating DM etc.
+Series of galactic operations (doesn't that sound cool?!).
+
+...as in converting coordinates, calculating DM etc.
 """
 
 import ctypes as C
@@ -9,18 +10,34 @@ import math
 import os
 import random
 
+from frbpoppy.paths import paths
+from frbpoppy.log import pprint
+
 # Import fortran libraries
-mods = os.path.join(os.path.dirname(__file__), '../data/models/')
-uni_mods = os.path.join(mods,'universe/')
-dm_mods = os.path.join(mods, 'dm/')
+uni_mods = os.path.join(paths.models(), 'universe/')
+dm_mods = os.path.join(paths.models(), 'dm/')
 loc = os.path.join(dm_mods, 'libne2001.so')
 ne2001lib = C.CDLL(loc)
 ne2001lib.dm_.restype = C.c_float
 
 
+def frac_deg(ra, dec):
+    """Convert coordinates expressed in hh:mm:ss to fractional degrees."""
+    # Inspired by Joe Filippazzo calculator
+    rh, rm, rs = [float(r) for r in ra.split(':')]
+    ra = rh*15 + rm/4 + rs/240
+    dd, dm, ds = [float(d) for d in dec.split(':')]
+    if dd < 0:
+        sign = -1
+    else:
+        sign = 1
+    dec = dd + sign*dm/60 + sign*ds/3600
+    return ra, dec
+
+
 def lb_to_xyz(gl, gb, dist):
     """
-    Convert galactic coordinates to galactic XYZ
+    Convert galactic coordinates to galactic XYZ.
 
     Args:
         l (float): Galactic longitude [fractional degrees]
@@ -29,6 +46,7 @@ def lb_to_xyz(gl, gb, dist):
 
     Returns:
         gx, gy, gz: Galactic XYZ [Gpc]
+
     """
     rsun = 8.5e-6  # Gpc
 
@@ -44,7 +62,7 @@ def lb_to_xyz(gl, gb, dist):
 
 def lb_to_radec(l, b):
     """
-    Convert galactic coordinates to RA, Dec
+    Convert galactic coordinates to RA, Dec.
 
     Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
     Bradley W. Carroll, Dale A. Ostlie (Eq. 24.19 onwards).
@@ -62,8 +80,8 @@ def lb_to_radec(l, b):
 
     Returns:
         ra, dec (float): Right ascension and declination [fractional degrees]
-    """
 
+    """
     gl = math.radians(l)
     gb = math.radians(b)
 
@@ -92,16 +110,16 @@ def lb_to_radec(l, b):
     return ra, dec
 
 
-def radec_to_lb(ra, dec):
+def radec_to_lb(ra, dec, frac=False):
     """
-    Convert from ra, dec to galactic coordinates
+    Convert from ra, dec to galactic coordinates.
 
     Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)' by
     Bradley W. Carroll, Dale A. Ostlie (Eq. 24.16 onwards).
 
     NOTE: This function is not as accurate as the astropy conversion, nor as
     the Javascript calculators found online. However, as using astropy was
-    prohibitively slow while running over large populations, frbpoppy uses this
+    prohibitively slow while running over large populations, we use this
     function. While this function is not as accurate, the under/over
     estimations of the coordinates are equally distributed meaning the errors
     cancel each other in the limit of large populations.
@@ -109,21 +127,13 @@ def radec_to_lb(ra, dec):
     Args:
         ra (string): Right ascension given in the form '19:06:53'
         dec (string): Declination given in the form '-40:37:14'
-
+        frac (bool): Denote whether coordinates are already fractional or not
     Returns:
         gl, gb (float): Galactic longitude and latitude [fractional degrees]
-    """
 
-    # Convert to fractional degrees
-    # Inspired by Joe Filippazzo calculator
-    rh, rm, rs = [float(r) for r in ra.split(':')]
-    ra = rh*15 + rm/4 + rs/240
-    dd, dm, ds = [float(d) for d in dec.split(':')]
-    if dd < 0:
-        sign = -1
-    else:
-        sign = 1
-    dec = dd + sign*dm/60 + sign*ds/3600
+    """
+    if not frac:
+        ra, dec = frac_deg(ra, dec)
 
     a = math.radians(ra)
     d = math.radians(dec)
@@ -143,6 +153,7 @@ def radec_to_lb(ra, dec):
     x = cd_ngp*sd - sd_ngp*cd*math.cos(a - a_ngp)
     gl = - math.atan2(y, x) + l_ngp
     gl = math.degrees(gl) % 360
+
     # Shift so in range -180 to 180
     if gl > 180:
         gl = -(360 - gl)
@@ -157,14 +168,13 @@ def radec_to_lb(ra, dec):
 
 
 def ergspers_to_watts(e):
-    """Quick converstion from luminosity given in ergs/s to Watts"""
+    """Quick converstion from luminosity given in ergs/s to Watts."""
     return e*1e-7
 
 
 def ne2001_dist_to_dm(dist, gl, gb):
     """
-    Convert position to a dispersion measure using NE2001 (compiled from
-    fortran)
+    Convert position to a dispersion measure using NE2001.
 
     Args:
         dist (float): Distance to source [Gpc]. Distance will be cut at 100kpc,
@@ -174,6 +184,7 @@ def ne2001_dist_to_dm(dist, gl, gb):
         gb (float): Galactic latitude [fractional degrees]
     Returns:
         dm (float): Dispersion measure [pc*cm^-3]
+
     """
     dist *= 1e6  # Convert from Gpc to kpc
 
@@ -199,13 +210,16 @@ def ne2001_dist_to_dm(dist, gl, gb):
 
     return dm
 
+
 def ne2001_get_smtau(dist, gl, gb):
     """
-    Use the NE2001 model to calculate scattering measure. Calculations based on
-    work presented in Cordes & Lazio (1991, DOI: 10.1086/170261)
+    Use the NE2001 model to calculate scattering measure.
+
+    Calculations based on work presented in Cordes & Lazio
+    (1991, DOI: 10.1086/170261)
 
     Args:
-        dist (float): Distance to source [kpc]. Distance will be cut at 100 kpc,
+        dist (float): Distance to source [kpc]. Distance will be cut at 100 kpc
                       as NE2001 can not cope with larger distances. Therefore
                       the calculated scattering will only be that from the
                       Milky Way.
@@ -214,8 +228,8 @@ def ne2001_get_smtau(dist, gl, gb):
     Returns:
         sm (float): Scattering measure
         smtau (float): Scattering measure, but unsure why different to sm
-    """
 
+    """
     # NE2001 gives errors if distance input is too large! 100 kpc ought to be
     # enough to clear the galaxy.
     if dist > 100:
@@ -255,7 +269,7 @@ def ne2001_scint_time_bw(dist, gl, gb, freq):
     Use the NE2001 model to get the diffractive scintillation timescale
 
     Args:
-        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc,
+        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc
                       as NE2001 can not cope with larger distances. Therefore
                       the calculated scintillation timescale will only be that
                       from the Milky Way.
@@ -306,7 +320,7 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
     log_t = offset + 0.154*math.log10(dm) + 1.07*math.log10(dm)**2
     log_t += scindex*math.log10(freq/1e3)
 
-    # Width of Gaussian distribution based on values given Lorimer et al. (2008)
+    # Width of Gaussian distribution based on values given Lorimer et al (2008)
     t_scat = 10**random.gauss(log_t, 0.8)
 
     return t_scat
@@ -344,19 +358,37 @@ def load_T_sky():
     return t_sky_list
 
 
-def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
+def z_to_d(z, H_0=69.6, W_m=0.286, W_v=0.714,
+           dist_co=False, dist_lum=False, vol_co=False):
     """
-    Convert redshift to a comoving volume. Based on James Schombert's python
-    implementation of Edward L. Wright's cosmology calculator.
+    Convert redshift to a various measures.
+
+    Based on James Schombert's python implementation of Edward L. Wright's
+    cosmology calculator.
 
     Args:
         z (float): Redshift
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
-        W_k (float, optional): Omega vacuum. Defaults to 0.714
+        W_v (float, optional): Omega vacuum. Defaults to 0.714
+        dist_co (bool): Whether to return the comoving distance
+        dist_lum (bool): Whether to return the luminosity distance
+        vol_co (bool): Whether to return the comoving volume
+
     Returns:
-        v_gpc (float): Comoving volume from Earth to the source [Gpc^3]
+        float: One of the distance measures [Gpc], or comoving volume from
+            Earth to the source [Gpc^3]
+
+        Alternatively
+        dict: Various outputs as requested
+
     """
+    # Set default output
+    if sum(map(bool, [dist_co, dist_lum, vol_co])) == 0:
+        dist_co = True
+
+    # Set up outputs
+    outputs = {}
 
     # Initialize constants
     W_r = 0.4165/(H_0*H_0)  # Omega radiation
@@ -365,7 +397,6 @@ def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
     dcmr = 0.
     az = 1/(1+z)
 
-    # Calculate comoving distance
     n = 1000
 
     for i in range(n):
@@ -374,47 +405,100 @@ def z_to_v(z, H_0=69.6, W_m=0.286, W_v=0.714):
         dcmr += 1/(a*adot)
 
     dcmr = (1.-az)*dcmr/n
-    dc_mpc = (c/H_0)*dcmr  # Comoving distance [Mpc]
 
-    # Not necessary, but handy to have
-    # Calculate luminosity distance
-    ratio = 1.
-    x = math.sqrt(abs(W_k))*dcmr
+    if dist_co:
+        dc_mpc = (c/H_0)*dcmr  # Comoving distance [Mpc]
+        outputs['dist_co'] = dc_mpc*1e-3  # Convert to Gpc
 
-    if x > 0.1:
-        if W_k > 0:
-            ratio = 0.5*(math.exp(x)-math.exp(-x))/x
+    if dist_lum:
+        ratio = 1.
+        x = math.sqrt(abs(W_k))*dcmr
+
+        if x > 0.1:
+            if W_k > 0:
+                ratio = 0.5*(math.exp(x)-math.exp(-x))/x
+            else:
+                ratio = math.sin(x)/x
         else:
-            ratio = math.sin(x)/x
-    else:
-        y = x*x
-        if W_k < 0:
-            y = -y
-        ratio = 1. + y/6. + y*y/120.
+            y = x*x
+            if W_k < 0:
+                y = -y
+            ratio = 1. + y/6. + y*y/120.
 
-    dcmt = ratio*dcmr
-    da = az*dcmt
-    dl = da/(az*az)
-    dl_mpc = (c/H_0)*dl  # Luminosity distance [Mpc]
+        dcmt = ratio*dcmr
+        da = az*dcmt
+        dl = da/(az*az)
+        dl_mpc = (c/H_0)*dl  # Luminosity distance [Mpc]
 
-    # Calculate comoving volume
-    ratio = 1.00
-    x = math.sqrt(abs(W_k))*dcmr
-    if x > 0.1:
-        if W_k > 0:
-            ratio = (0.125*(math.exp(2.*x)-math.exp(-2.*x))-x/2.)/(x*x*x/3.)
+        outputs['dist_lum'] = dl_mpc*1e-3  # Covert to Gpc
+
+    if vol_co:
+        ratio = 1.00
+        x = math.sqrt(abs(W_k))*dcmr
+        if x > 0.1:
+            if W_k > 0:
+                ratio = (0.125*(math.exp(2.*x)-math.exp(-2.*x))-x/2.)/(x**3/3)
+            else:
+                ratio = (x/2. - math.sin(2.*x)/4.)/(x**3/3)
         else:
-            ratio = (x/2. - math.sin(2.*x)/4.)/(x*x*x/3.)
+            y = x*x
+            if W_k < 0:
+                y = -y
+            ratio = 1. + y/5. + (2./105.)*y*y
+
+        v_cm = ratio*dcmr**3/3
+        v_gpc = 4.*math.pi*((1e-3*c/H_0)**3)*v_cm  # Comoving volume
+
+        outputs['vol_co'] = v_gpc
+
+    if len(outputs) == 1:
+        output, = outputs.values()
+        return output
     else:
-        y = x*x
-        if W_k < 0:
-            y = -y
-        ratio = 1. + y/5. + (2./105.)*y*y
+        return outputs
 
-    v_cm = ratio*dcmr*dcmr*dcmr/3.
-    v_gpc = 4.*math.pi*((0.001*c/H_0)**3)*v_cm  # Comoving volume
 
-    return v_gpc
+def z_to_d_approx(z, H_0=69.6):
+    """
+    Calculate distance in Gpc from a redshift.
+
+    Only holds for z <= 2. Formulas from 'An Introduction to Modern
+    Astrophysics (2nd Edition)' by Bradley W. Carroll, Dale A. Ostlie.
+    (Eq. 27.7)
+
+    Args:
+        z (float): Redshift
+        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+    Returns:
+        dist (float): Associated distance [Gpc]
+    """
+    c = 299792.458  # Velocity of light [km/sec]
+    zsq = (z+1)**2
+    dist = c/H_0 * (zsq - 1)/(zsq + 1)
+    dist /= 1e3  # Mpc -> Gpc
+    return dist
+
+
+def dist_to_z(dist, H_0=69.6):
+    """
+    Calculate redshift from a distance in Gpc.
+
+    Only holds for z <= 2. Formulas from 'An Introduction to Modern
+    Astrophysics (2nd Edition)' by Bradley W. Carroll, Dale A. Ostlie.
+    (Eq. 27.7)
+
+    Args:
+        dist (float): Distance [Gpc].
+        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+    Returns:
+        z (float): Associated redshift
+    """
+    c = 299792.458  # Velocity of light [km/sec]
+    dist *= 1e3  # Gpc -> Mpc
+    dhc = dist*H_0/c
+    det = math.sqrt(1 - dhc**2)
+    z = -(det + dhc - 1)/(dhc - 1)
+    return z
 
 
 def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
@@ -447,7 +531,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
 
     def cvt(value):
         """Convert a value to a string without a period"""
-        return str(value).replace('.','d')
+        return str(value).replace('.', 'd')
 
     # Filename
     paras = ['h0', cvt(H_0),
@@ -476,7 +560,7 @@ def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
         W_k = 1.0 - W_m - W_v  # Omega curvature
 
         if W_k != 0.0:
-            print('Careful - Your cosmological parameters do not sum to 1.0')
+            pprint('Careful - Your cosmological parameters do not sum to 1.0')
 
         # Numerically integrate the following function
         def d_c(x):
@@ -520,7 +604,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
     if not ds:
         # Convert distance in Gpc to z. Holds for z <= 2
         # Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)'
-        # by Bradley W. Carroll, Dale A. Ostlie.
+        # by Bradley W. Carroll, Dale A. Ostlie. (Eq. 27.7)
         c = 299792.458  # Velocity of light [km/sec]
         d *= 1e3
         dhc = d*H_0/c
@@ -544,7 +628,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
 
             return z
 
-    print('Gone over your maximum redshift', d)
+    pprint('Gone over your maximum redshift', d)
     # Return highest z if beyond the largest redshift
     return zs[-1]
 

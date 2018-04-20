@@ -2,25 +2,25 @@
 # FAST survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
-1        ! survey degradation factor
-20       ! antenna gain (K/Jy)
-2100     ! integration time (s)
-0.05     ! sampling time (ms)
-25       ! system temperature (K)
-1374     ! centre frequency (MHz)
-512      ! bandwidth (MHz)
-0.5      ! channel bandwidth (MHz)
-2        ! number of polarizations
-2        ! beam size (deg^2)
-0        ! minimum RA (deg)
-360      ! maximum RA (deg)
--35      ! minimum DEC (deg)
-90       ! maximum DEC (deg)
--180     ! minimum Galactic longitude (deg)
-180      ! maximum Galactic longitude (deg)
--90      ! minimum Galactic latitude (deg)
-90       ! maximum Galactic latitude (deg)
-1        ! fractional uptime [0-1]
-9        ! signal-to-noise ratio [0-1]
+1        !  survey degradation factor 
+20       !  antenna gain (K/Jy) 
+2100     !  integration time (s) 
+0.05     !  sampling time (ms) 
+25       !  system temperature (K) 
+1374     !  centre frequency (MHz) 
+512      !  bandwidth (MHz) 
+0.5      !  channel bandwidth (MHz) 
+2        !  number of polarizations 
+2        !  beam size (deg^2) 
+0        !  minimum RA (deg) 
+360      !  maximum RA (deg) 
+-35      !  minimum DEC (deg) 
+90       !  maximum DEC (deg) 
+-180     !  minimum Galactic longitude (deg) 
+180      !  maximum Galactic longitude (deg) 
+-90      !  minimum Galactic latitude (deg) 
+90       !  maximum Galactic latitude (deg) 
+1        !  fractional uptime [0-1] 
+9        !  signal-to-noise ratio [0-1] 
 psrpoppy ! reference
 #A2DCE6  ! colour

@@ -1,23 +1,26 @@
 ##############################################################################
-# Survey parameters for testing
+# TEST survey parameters
+# WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
-     1.2 ! survey degradation factor
-     1.0 ! antenna gain (K/Jy)
- 10800.0 ! integration time (s)
-  0.0409 ! sampling time (ms)
-    70.0 ! system temperature (K)
-  1400.0 ! centre frequency (MHz)
-   300.0 ! bandwidth (MHz)
- 0.78125 ! channel bandwidth (MHz)
-     2.0 ! number of polarizations
-    15.0 ! full-width half maximum (arcmin)
-     0.0 ! minimum RA (deg)
-   360.0 ! maximum RA (deg)
-   -90.0 ! minimum DEC (deg)
-    90.0 ! maximum DEC (deg)
-  -180.0 ! minimum Galactic longitude (deg)
-   180.0 ! maximum Galactic longitude (deg)
-   -90.0 ! minimum abs(Galactic latitude) (deg)
-    90.0 ! maximum abs(Galactic latitude) (deg)
-     0.8 ! fractional survey coverage (0-1)
-     0.1 ! signal-to-noise ratio
+1.2      !  survey degradation factor 
+1000000  !  antenna gain (K/Jy) 
+86400    !  integration time (s) 
+1E-07    !  sampling time (ms) 
+0.0001   !  system temperature (K) 
+1400     !  centre frequency (MHz) 
+2000     !  bandwidth (MHz) 
+0.001    !  channel bandwidth (MHz) 
+2        !  number of polarizations 
+41253    !  beam size (deg^2) 
+0        !  minimum RA (deg) 
+360      !  maximum RA (deg) 
+-90      !  minimum DEC (deg) 
+90       !  maximum DEC (deg) 
+-180     !  minimum Galactic longitude (deg) 
+180      !  maximum Galactic longitude (deg) 
+-90      !  minimum Galactic latitude (deg) 
+90       !  maximum Galactic latitude (deg) 
+1        !  fractional uptime [0-1] 
+1        !  signal-to-noise ratio [0-1] 
+     nan ! reference
+     nan ! colour

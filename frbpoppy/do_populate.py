@@ -3,28 +3,28 @@
 import math
 import random
 
-import frbpoppy.galacticops as go
-import frbpoppy.distributions as dis
-import frbpoppy.precalc as pc
+from frbpoppy.log import pprint
 from frbpoppy.population import Population
 from frbpoppy.source import Source
+import frbpoppy.distributions as dis
+import frbpoppy.galacticops as go
+import frbpoppy.precalc as pc
 
 
 def generate(n_gen,
              days=1,
-             cosmology=True,
              cosmo_pars=[69.6, 0.286, 0.714],
              dm_pars=[100, 1200],
              electron_model='ne2001',
              emission_pars=[10e6, 10e9],
-             lum_dist_pars=[1e40, 1e50, 1],
+             lum_dist_pars=[1e40, 1e50, 0],
              name=None,
-             pulse=[0.1, 5],
+             n_model='constant',
+             pulse=[0.1, 10],
              repeat=0.0,
              si_pars=[-1.4, 0.],
              z_max=2.5,
-             test=False,
-             save_path=''):
+             test=False):
     """
     Generate a population of FRBs.
 
@@ -32,8 +32,6 @@ def generate(n_gen,
         n_gen (int): Number of FRB sources/sky/time to generate
         days (float): Number of days over which FRBs are generated.
             Defaults to 1
-        cosmology (bool, optional): Whether to use cosmology in all
-            calculations. Defaults to True.
         cosmo_pars (list, optional): Three values, the first being the Hubble
             constant, the second the density parameter Ω_m and the third
             being the cosmological constant Ω_Lambda (referred to as W_m
@@ -53,18 +51,21 @@ def generate(n_gen,
             Defaults to [1e40, 1e50, 1]
         name (str, optional): Name to be given to the population. Defaults to
             'initial'
+        n_model (str, optional): Type of number density for frbs to be
+            distributed by. Options are 'constant' for constant number density
+            per comoving volume and 'sfr' for the number density to follow
+            the star formation rate
         pulse (str, optional): Values between which the intrinsic pulse width
             should be [ms]. Defaults to [0.5, 5]
         repeat (float, optional): Fraction of sources which repeat
         si_pars (list, optional): Spectral index parameters, being the mean
-            index and the standard deviation thereof. Defaults to [-1.4, 0.]
+            index and the standard deviation thereof. Defaults to [0., 0.]
         z_max (float, optional): The maximum redshift out to which to
             distribute FRBs
         test (float, optional): Flag to help testing
-        save_path (str): path for saving population. Defaults to results folder
 
     Returns:
-        pop (Population): A population of generated sources
+        Population: A population of generated sources
 
     """
     # Check input
@@ -81,9 +82,6 @@ def generate(n_gen,
         m = 'Please ensure the number of days is an integer'
         raise ValueError(m)
 
-    if type(cosmology) != bool:
-        raise ValueError('Please ensure cosmology is a boolean')
-
     if not all(isinstance(par, (float, int)) for par in cosmo_pars):
         m = 'Please ensure all cosmology parameters are floats or integeters'
         raise ValueError(m)
@@ -96,9 +94,9 @@ def generate(n_gen,
         m = 'Please ensure there are two dispersion measure parameters'
         raise ValueError(m)
 
-    if electron_model not in ['ne2001']:
+    if electron_model not in ['ne2001', 'zero']:
         m = 'Unsupported electron model: {}'.format(electron_model)
-        print(m)
+        pprint(m)
 
     if not all(isinstance(par, (float, int)) for par in emission_pars):
         m = 'Please ensure all emission parameters are floats or integeters'
@@ -133,6 +131,10 @@ def generate(n_gen,
         m = 'Please provide a string as input for the name of the population'
         raise ValueError(m)
 
+    if n_model not in ['constant', 'sfr']:
+        m = 'Please ensure the number density is either constant or sfr'
+        raise ValueError(m)
+
     if type(repeat) != float:
         m = 'Please ensure fraction of sources which repeat is a float'
         raise ValueError(m)
@@ -156,7 +158,6 @@ def generate(n_gen,
 
     # Set up population
     pop = Population()
-    pop.cosmology = cosmology
     pop.dm_host = dm_pars[0]
     pop.dm_igm = dm_pars[1]
     pop.electron_model = electron_model
@@ -168,16 +169,29 @@ def generate(n_gen,
     pop.lum_pow = lum_dist_pars[2]
     pop.name = name
     pop.n_gen = n_gen
+    pop.n_model = n_model
     pop.repeat = repeat
     pop.si_mean = si_pars[0]
     pop.si_sigma = si_pars[1]
     pop.time = days * 86400  # Convert to seconds
-    pop.v_max = go.z_to_v(z_max)
     pop.w_max = pulse[1]
     pop.W_m = cosmo_pars[1]
     pop.w_min = pulse[0]
     pop.W_v = cosmo_pars[2]
     pop.z_max = z_max
+
+    # Cosmology calculations
+    pop.dist_co_max = go.z_to_d(z=z_max, dist_co=True,
+                                H_0=pop.H_0, W_m=pop.W_m, W_v=pop.W_v)
+    pop.vol_co_max = go.z_to_d(z_max, vol_co=True,
+                               H_0=pop.H_0, W_m=pop.W_m, W_v=pop.W_v)
+
+    # Ensure precalculations are done if necessary
+    pc.dist_table(z=1.0,
+                  dist_co=True,
+                  H_0=pop.H_0,
+                  W_m=pop.W_m,
+                  W_v=pop.W_v)
 
     while pop.n_srcs < pop.n_gen:
 
@@ -193,26 +207,36 @@ def generate(n_gen,
         # Convert
         src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
 
-        # Calculate comoving distance [Gpc]
-        src.dist = (pop.v_max * random.random() * (3/(4*math.pi)))**(1/3)
+        # Use constant number density of sources per comoving volume
+        if pop.n_model == 'constant':
+            # Calculate comoving volume [Gpc]
+            vol_co = pop.vol_co_max*random.random()
+            r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
+            src.dist_co = r['dist_co']
+            src.z = r['z']
 
-        # Calculate redshift
-        src.z = pc.dist_table(src.dist, H_0=pop.H_0, test=test)
+        # Get sources to follow star forming rate
+        if pop.n_model == 'sfr':
+            src.z = dis.z_from_sfr(z_max=pop.z_max)
+            src.dist_co = pc.dist_table(z=src.z, dist_co=True)
+
+        # Get the proper distance
+        dist_pr = src.dist_co/(1+src.z)
 
         # Convert into galactic coordinates
-        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, src.dist)
+        src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, dist_pr)
 
         # Dispersion measure of the Milky Way
         if electron_model == 'ne2001':
-            src.dm_mw = pc.ne2001_table(src.gl, src.gb, test=test)
+            src.dm_mw = pc.ne2001_table(src.gl, src.gb)
         else:
             src.dm_mw = 0.
 
         # Dispersion measure of the intergalactic medium
         src.dm_igm = go.ioka_dm_igm(src.z, slope=pop.dm_igm)
 
-        # Dispersion measure of the host
-        src.dm_host = pop.dm_host  # Thornton et al. (2013)
+        # Dispersion measure of the host (Tendulkar)
+        src.dm_host = pop.dm_host / (1 + src.z)
 
         # Total dispersion measure
         src.dm = src.dm_mw + src.dm_igm + src.dm_host
@@ -223,18 +247,14 @@ def generate(n_gen,
         # If repeating add another FRB
         if random.random() < pop.repeat:
 
-            ts = dis.oppermann_pen()
-
-            for t in ts:
+            times = dis.oppermann_pen()
+            for t in times:
                 src.create_frb(pop, time=t)
 
         # Add source to population
         pop.add(src)
 
     # Save population
-    if not save_path:
-        pop.pickle_pop()
-    else:
-        pop.pickle_pop(out=save_path)
+    pop.pickle_pop()
 
     return pop

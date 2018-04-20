@@ -12,7 +12,7 @@ from frbpoppy.adapt_pop import Adapt
 from frbpoppy.do_hist import histogram
 from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe
-from frbpoppy.frbcat import get_frbcat
+from frbpoppy.frbcat import Frbcat
 from frbpoppy.log import pprint
 
 
@@ -133,6 +133,9 @@ class MonteCarlo:
         # Set number of days over which to run the virtual surveys
         self.days = 14
 
+        # Set extension for files
+        self.extension = ''
+
     def path(self, s):
         """Return the path to a file in the results folder."""
         return os.path.join(os.path.dirname(__file__), '../data/results/' + s)
@@ -240,7 +243,7 @@ class MonteCarlo:
         pos_pars = self.possible_pars()
         pos_pars.to_csv('temp.csv')
         # Get the actual observations with which to compare
-        cat = get_frbcat()
+        cat = Frbcat().df
 
         # Set up dictionary for results
         d = defaultdict(list)
@@ -377,6 +380,16 @@ class MonteCarlo:
         db_ks = pd.DataFrame(d)
         db_rates = pd.DataFrame(rates)
 
-        self.save(df=db_hists, filename='hists_temp4.db')
-        self.save(df=db_ks, filename='ks_temp4.db')
-        self.save(df=db_rates, filename='rates_temp4.db')
+        # Create paths for saving results
+        fh = 'hists.db'
+        fk = 'ks.db'
+        fr = 'rates.db'
+
+        if self.extension:
+            fh = fh.split('.')[0] + f'_{self.extension}.' + fh.split('.')[1]
+            fk = fk.split('.')[0] + f'_{self.extension}.' + fk.split('.')[1]
+            fr = fr.split('.')[0] + f'_{self.extension}.' + fr.split('.')[1]
+
+        self.save(df=db_hists, filename=fh)
+        self.save(df=db_ks, filename=fk)
+        self.save(df=db_rates, filename=fr)

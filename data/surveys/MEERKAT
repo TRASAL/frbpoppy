@@ -2,25 +2,25 @@
 # MEERKAT survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
-1.2      ! survey degradation factor
-1        ! antenna gain (K/Jy)
-1000     ! integration time (s)
-0.1      ! sampling time (ms)
-450      ! system temperature (K)
-1285     ! centre frequency (MHz)
-470      ! bandwidth (MHz)
-1        ! channel bandwidth (MHz)
-2        ! number of polarizations
-0.785    ! beam size (deg^2)
-0        ! minimum RA (deg)
-360      ! maximum RA (deg)
--90      ! minimum DEC (deg)
-59.279   ! maximum DEC (deg)
--180     ! minimum Galactic longitude (deg)
-180      ! maximum Galactic longitude (deg)
--90      ! minimum Galactic latitude (deg)
-90       ! maximum Galactic latitude (deg)
-0.11     ! fractional uptime [0-1]
-8        ! signal-to-noise ratio [0-1]
+1.2      !  survey degradation factor 
+1        !  antenna gain (K/Jy) 
+1000     !  integration time (s) 
+0.1      !  sampling time (ms) 
+450      !  system temperature (K) 
+1285     !  centre frequency (MHz) 
+470      !  bandwidth (MHz) 
+1        !  channel bandwidth (MHz) 
+2        !  number of polarizations 
+0.785    !  beam size (deg^2) 
+0        !  minimum RA (deg) 
+360      !  maximum RA (deg) 
+-90      !  minimum DEC (deg) 
+59.279   !  maximum DEC (deg) 
+-180     !  minimum Galactic longitude (deg) 
+180      !  maximum Galactic longitude (deg) 
+-90      !  minimum Galactic latitude (deg) 
+90       !  maximum Galactic latitude (deg) 
+0.11     !  fractional uptime [0-1] 
+8        !  signal-to-noise ratio [0-1] 
      nan ! reference
 #BEA36E  ! colour
