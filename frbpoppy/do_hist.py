@@ -3,12 +3,15 @@ import numpy as np
 import pandas as pd
 
 
-def histogram(dfs):
+def histogram(dfs, n_bins=50, log=False, mc=False):
     """
-    Quick function to 'histogram' each column of each dataframe
+    Quick function to 'histogram' each column of each dataframe.
 
     Args:
         dfs (list): List of dataframes
+        n_bins (int): Number of bins
+        log (bool): Bin in log space or not
+        mc (bool): Whether running for a Monte Carlo plot
     Returns:
         hists (list): List of histogramed dataframes
     """
@@ -51,11 +54,20 @@ def histogram(dfs):
     # Bin each dataframe
     for df in dfs:
 
-        for c in cols:
+        hist = pd.DataFrame(np.nan,
+                            index=np.arange(n_bins-1),
+                            columns=['empty'])
 
-            hist = pd.DataFrame(np.nan,
-                                index=np.arange(14),
-                                columns=['empty'])
+        if not mc:
+            hist['color'] = df['color'][0]
+            hist['population'] = df['population'][0]
+
+        if log or not mc:
+            hist['bottom'] = 10**(round(np.log10(1/len(df))) - 1)
+        else:
+            hist['bottom'] = 0
+
+        for c in cols:
 
             low = limits[c][0]
             high = limits[c][1]
@@ -69,33 +81,50 @@ def histogram(dfs):
             if df[c].nunique() == 1 and df[c].iloc[0] == 'None':
                 continue
 
-            if high - low > 1500:
+            if log:
                 if low == 0:
                     low = 1e-3
-                bins = np.geomspace(low, high, num=15)
+                if high == 0:
+                    high = 1e-3
+                bins = np.geomspace(low, high, num=n_bins)
             else:
-                bins = np.linspace(low, high, 15)
+                bins = np.linspace(low, high, n_bins)
 
-            col = df[c].convert_objects(convert_numeric=True)
+            col = df[c].apply(pd.to_numeric, errors='coerce')
             col = col.dropna()
             h, _ = np.histogram(col, bins=bins)
 
             # Normalise
             h = [e/h.sum() for e in h]
 
-            hist['id'] = df['id'].iloc[0]
-            hist['in_par'] = df['in_par'].iloc[0]
-            hist['out_par'] = c
-            hist['top'] = pd.Series(h)
-            hist['bottom'] = 0.
-            hist['left'] = pd.Series(bins[:-1])
-            hist['right'] = pd.Series(bins[1:])
-            hist['survey'] = df['survey'].iloc[0]
-            hist['frbs'] = len(col)  # number of frbs in population
-            hist['frbcat'] = df['frbcat'].iloc[0]
+            if mc:
+                hist['id'] = df['id'].iloc[0]
+                hist['in_par'] = df['in_par'].iloc[0]
+                hist['out_par'] = c
+                hist['survey'] = df['survey'].iloc[0]
+                hist['frbs'] = len(col)  # number of frbs in population
+                hist['frbcat'] = df['frbcat'].iloc[0]
+                hist['top'] = pd.Series(h)
+                hist['left'] = pd.Series(bins[:-1])
+                hist['right'] = pd.Series(bins[1:])
+            else:
+                hist[c] = pd.Series(h)
+                hist[f'{c}_left'] = pd.Series(bins[:-1])
+                hist[f'{c}_right'] = pd.Series(bins[1:])
 
-            del hist['empty']
+        del hist['empty']
+        hists.append(hist)
 
-            hists.append(hist)
+    # Make the bottom of the bins line up
+    bottom = 1e99
+    for hist in hists:
+        if hist['bottom'][0] < bottom:
+            bottom = hist['bottom'][0]
 
-    return pd.concat(hists)
+    for hist in hists:
+        hist['bottom'] = bottom
+
+    if mc:
+        return pd.concat(hists)
+    else:
+        return hists

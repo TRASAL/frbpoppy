@@ -8,7 +8,7 @@ mc.surveys = {'HTRU': 'parkes',
               'UTMOST-1D': 'UTMOST'}
 
 # Set a limited run
-mc.days = 30
+mc.days = 2
 mc.dm_host.limits(0, 100, 100, 100)
 mc.dm_igm_slope.limits(1000, 1200, 100, 1200)
 mc.freq_max.limits(1e7, 1e10, 3, 1e10, log=True)

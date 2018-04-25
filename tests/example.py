@@ -3,7 +3,7 @@ from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe
 from frbpoppy.do_plot import plot
 
-days = 7
+days = 1
 n_per_day = 5000
 
 # Generate FRB population
