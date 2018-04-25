@@ -56,11 +56,6 @@ class Plot:
 
         self.inv_pars = {v: k for k, v in self.pars.items()}
 
-    def pop(self, files=[]):
-        """Plot a population."""
-        # TODO Merge with the other plot file
-        pass
-
     def path(self, s, where='results'):
         """Return the path to a file in the results folder."""
         if where == 'results':
@@ -77,13 +72,13 @@ class Plot:
         if not query:
             query = 'select * from pars;'
         if not loc:
-            loc = 'ks_20180315.db'
+            loc = 'ks_test_small.db'
         elif loc == 'ks':
-            loc = 'ks_20180315.db'
+            loc = 'ks_test_small.db'
         elif loc == 'hist':
-            loc = 'hists_20180315.db'
+            loc = 'hists_test_small.db'
         elif loc == 'rate':
-            loc = 'rates_20180315.db'
+            loc = 'rates_test_small.db'
 
         p = self.path(loc)
         conn = sqlite3.connect(p)

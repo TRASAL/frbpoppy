@@ -1,4 +1,4 @@
-"""Testing a perfect survey detected everything."""
+"""Testing a perfect survey detecting everything."""
 from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe
 from frbpoppy.do_plot import plot
@@ -18,4 +18,4 @@ population = generate(n_per_day*days,
 result = observe(population, 'PERFECT')
 
 # Plot populations
-plot(population, result, mute=False)
+plot(population, result)

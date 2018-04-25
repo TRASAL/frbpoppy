@@ -124,9 +124,12 @@ class Adapt:
         # Adapt just the intrinsic pulse width
         for source in self.pop.sources:
             for frb in source.frbs:
-                frb.w_int = dis.redshift_w(z=source.z,
-                                           w_min=w_int_min,
-                                           w_max=w_int_max)
+
+                # Get a random intrinsic pulse width [ms]
+                frb.w_int = random.uniform(w_int_min, w_int_max)
+
+                # Calculate the pulse width upon arrival to Earth
+                frb.w_arr = frb.w_int*(1+source.z)
 
         # Save the population
         self.pop.pickle_pop()

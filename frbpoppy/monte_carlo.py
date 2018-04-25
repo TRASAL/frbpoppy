@@ -371,7 +371,7 @@ class MonteCarlo:
                         rates['srcs_per_day'].append(srcs_per_day)
 
                 if sur_pops:
-                    hists.append(histogram(sur_pops))
+                    hists.append(histogram(sur_pops, mc=True))
 
         try:
             db_hists = pd.concat(hists)
