@@ -1,4 +1,4 @@
-"""Calculate where null points lie."""
+"""Calculate where null points of an Airy pattern lie."""
 from collections import deque
 
 from frbpoppy.survey import Survey

@@ -242,7 +242,7 @@ class Plot():
             tab.fig.xaxis.axis_label = self.x_axis.value
             tab.fig.yaxis.axis_label = self.y_axis.value
 
-            if tab.name.startswith('Histogram'):
+            if tab.name.startswith('Hist'):
                 tab.fig.yaxis.axis_label = 'Fraction'
 
             for i, source in enumerate(tab.sources):

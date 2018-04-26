@@ -1,3 +1,4 @@
+"""Plot the distribution of redshifts following the star formation rate."""
 from matplotlib import pyplot as plt
 
 from frbpoppy.distributions import z_from_sfr

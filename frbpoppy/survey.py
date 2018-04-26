@@ -48,10 +48,11 @@ class Survey:
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
         gain_pattern (str): Set gain pattern
+        sidelobes (int): Number of sidelobes (relevent if gain_pattern is airy)
 
     """
 
-    def __init__(self, survey_name, gain_pattern='gaussian'):
+    def __init__(self, survey_name, gain_pattern='gaussian', sidelobes=1):
         """Initializing."""
         # Find survey file
         if os.path.isfile(survey_name):
@@ -85,6 +86,7 @@ class Survey:
 
         # Null points of an Airy disk
         self.airy_nulls = [1.22, 2.24, 3.26, 4.26, 5.33, 6.39, 7.48, 8.6, 9.7]
+        self.sidelobes = sidelobes
 
         # Set beam file so that it is only imported once
         if gain_pattern == 'parkes':
@@ -213,7 +215,7 @@ class Survey:
 
         return True
 
-    def intensity_profile(self, sidelobe=1, test=False, mul=None):
+    def intensity_profile(self, sidelobes=1, test=False, mul=None):
         """Calculate intensity profile."""
         self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
 
@@ -245,14 +247,14 @@ class Survey:
             # Set the maximum offset equal to the null after a sidelobe
             # I realise this pattern isn't an airy, but you have to cut
             # somewhere
-            offset *= self.airy_nulls[sidelobe]
+            offset *= self.airy_nulls[sidelobes]
 
             alpha = 2*math.sqrt(math.log(2))
             int_pro = math.exp(-(alpha*offset/self.fwhm)**2)
 
         elif self.gain_pattern == 'airy':
             # Set the maximum offset equal to the null after a sidelobe
-            offset *= self.airy_nulls[sidelobe]
+            offset *= self.airy_nulls[sidelobes]
 
             c = 299792458
             conv = math.pi/(60*180.)  # Conversion arcmins -> radians
@@ -439,7 +441,7 @@ class Survey:
         frb.fluence = frb.s_peak * frb.w_eff
 
         # Account for offset in beam
-        frb.snr *= self.intensity_profile()
+        frb.snr *= self.intensity_profile(sidelobes=self.sidelobes)
 
     def scint(self, frb, src):
         """
