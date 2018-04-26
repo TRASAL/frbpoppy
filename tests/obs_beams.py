@@ -1,4 +1,4 @@
-"""Compare detections for various beam patterns"""
+"""Compare detections for various beam patterns."""
 from frbpoppy.do_populate import generate
 from frbpoppy.do_survey import observe
 from frbpoppy.do_plot import plot
