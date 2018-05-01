@@ -193,6 +193,8 @@ def generate(n_gen,
                   W_m=pop.W_m,
                   W_v=pop.W_v)
 
+    pprint('Generating population')
+
     while pop.n_srcs < pop.n_gen:
 
         # Initialise
@@ -256,5 +258,7 @@ def generate(n_gen,
 
     # Save population
     pop.pickle_pop()
+
+    pprint('Generated population')
 
     return pop

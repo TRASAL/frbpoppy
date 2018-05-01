@@ -6,12 +6,12 @@ from frbpoppy.population import unpickle
 from frbpoppy.log import pprint
 
 MAKE = True
-MAX_SIDELOBES = 6
+SIDELOBES = [0, 4, 8]
 
 pops = []
 
 if MAKE:
-    days = 14
+    days = 256
     n_per_day = 5000
 
     # Generate FRB population
@@ -24,15 +24,16 @@ if MAKE:
                           repeat=0.0)
 
     # Observe FRB population
-    for i in range(MAX_SIDELOBES):
+    for i in SIDELOBES:
         pprint(f'Detecting frbs with {i} sidelobes')
-        airy = observe(population, 'HTRU', gain_pattern='airy', sidelobes=i)
+        airy = observe(population, 'HTRU', gain_pattern='airy', sidelobes=i,
+                       equal_area=True)
         airy.name = f'airy_sidelobe{i}'
         airy.pickle_pop()
         pops.append(airy)
 
 else:
-    for i in range(MAX_SIDELOBES):
+    for i in SIDELOBES:
         pops.append(unpickle(f'airy_sidelobe{i}'))
 
 # Plot populations

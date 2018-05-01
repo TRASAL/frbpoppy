@@ -8,6 +8,7 @@ def observe(population,
             survey_name,
             gain_pattern='gaussian',
             sidelobes=1,
+            equal_area=False,
             output=True,
             return_pop=True,
             return_survey=False,
@@ -44,7 +45,8 @@ def observe(population,
     else:
         pop = unpickle(filename=pop_path)
 
-    s = Survey(survey_name, gain_pattern=gain_pattern, sidelobes=sidelobes)
+    s = Survey(survey_name, gain_pattern=gain_pattern, sidelobes=sidelobes,
+               equal_area=equal_area)
     surv_pop = Population()
     surv_pop.name = survey_name
     surv_pop.time = pop.time
