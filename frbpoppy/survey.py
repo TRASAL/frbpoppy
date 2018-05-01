@@ -49,10 +49,11 @@ class Survey:
             a new survey filename
         gain_pattern (str): Set gain pattern
         sidelobes (int): Number of sidelobes (relevent if gain_pattern is airy)
+        equal_area (bool): Ensures beam area on sky can be equal
 
     """
 
-    def __init__(self, survey_name, gain_pattern='gaussian', sidelobes=1):
+    def __init__(self, survey_name, gain_pattern='gaussian', sidelobes=1, equal_area=False):
         """Initializing."""
         # Find survey file
         if os.path.isfile(survey_name):
@@ -84,9 +85,10 @@ class Survey:
         self.frb_rates = Rates()
         self.src_rates = Rates()
 
-        # Null points of an Airy disk
+        # Beam pattern arguments
         self.airy_nulls = [1.22, 2.24, 3.26, 4.26, 5.33, 6.39, 7.48, 8.6, 9.7]
         self.sidelobes = sidelobes
+        self.equal_area = equal_area
 
         # Set beam file so that it is only imported once
         if gain_pattern == 'parkes':
@@ -215,9 +217,12 @@ class Survey:
 
         return True
 
-    def intensity_profile(self, sidelobes=1, test=False, mul=None):
+    def intensity_profile(self, sidelobes=1, test=False, equal_area=False,
+                          dimensions=2):
         """Calculate intensity profile."""
         self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
+
+        offset = self.fwhm
 
         # Angular variable on sky, defined so that at fwhm/2, the
         # intensity profile is exactly 0.5. It's multiplied by the sqrt of
@@ -226,10 +231,10 @@ class Survey:
         # (uniform random point within circle). You could see this as
         # the offset from the centre of the beam.
 
-        offset = self.fwhm * math.sqrt(random.random())
-
-        if mul:
-            offset = self.fwhm * math.sqrt(1) * mul
+        if dimensions == 2:  # 2D
+            offset *= math.sqrt(random.random())
+        else:  # 1D
+            offset *= random.random()
 
         if self.gain_pattern == 'perfect':
             int_pro = 1
@@ -253,17 +258,26 @@ class Survey:
             int_pro = math.exp(-(alpha*offset/self.fwhm)**2)
 
         elif self.gain_pattern == 'airy':
-            # Set the maximum offset equal to the null after a sidelobe
-            offset *= self.airy_nulls[sidelobes]
+            int_pro = None
 
-            c = 299792458
-            conv = math.pi/(60*180.)  # Conversion arcmins -> radians
-            eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
-            a = eff_diam/2  # Effective radius of telescope
-            lamda = c/(self.central_freq*1e6)
-            ka = (2*math.pi*a/lamda)
-            kasin = ka*math.sin(offset*conv)
-            int_pro = 4*(j1(kasin)/kasin)**2
+            if equal_area:
+                offset *= self.airy_nulls[-1]
+                # Check whether offset is within the sidelobe you're including
+                if offset > self.airy_nulls[sidelobes]*self.fwhm:
+                    int_pro = 0
+            else:
+                # Set the maximum offset equal to the null after a sidelobe
+                offset *= self.airy_nulls[sidelobes]
+
+            if int_pro is None:
+                c = 299792458
+                conv = math.pi/(60*180.)  # Conversion arcmins -> radians
+                eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
+                a = eff_diam/2  # Effective radius of telescope
+                lamda = c/(self.central_freq*1e6)
+                ka = (2*math.pi*a/lamda)
+                kasin = ka*math.sin(offset*conv)
+                int_pro = 4*(j1(kasin)/kasin)**2
 
         elif self.gain_pattern == 'parkes':
             shape = self.beam_array.shape
@@ -315,19 +329,20 @@ class Survey:
 
     def calc_T_sky(self, src):
         """
-        Calculate the sky temperature from the Haslam table, before scaling to
-        the survey frequency. The temperature sky map is given in the weird
-        units of HealPix and despite looking up info on this coordinate system,
-        I don't have the foggiest idea of how to transform these to galactic
-        coordinates. I have therefore directly copied the following code from
-        psrpoppy in the assumption Sam Bates managed to figure it out.
+        Calculate the sky temperature from the Haslam table.
+
+        Afterwards scale to the survey frequency. The temperature sky map is
+        given in the weird units of HealPix and despite looking up info on this
+        coordinate system, I don't have the foggiest idea of how to transform
+        these to galactic coordinates. I have therefore directly copied the
+        following code from psrpoppy in the assumption Sam Bates managed to
+        figure it out.
 
         Args:
             src (class): Needed for coordinates
         Returns:
             src.T_sky (float): Sky temperature [K]
         """
-
         # ensure l is in range 0 -> 360
         B = src.gb
         if src.gl < 0.:
@@ -432,6 +447,10 @@ class Survey:
         if not frb.s_peak:  # Hack to go from frbcat df to pop
             self.calc_s_peak(frb, src, f_low=pop.f_min, f_high=pop.f_max)
 
+        # Account for offset in beam
+        frb.s_peak *= self.intensity_profile(sidelobes=self.sidelobes,
+                                             equal_area=self.equal_area)
+
         # Radiometer equation for single pulse (Dewey et al., 1984)
         sp = frb.s_peak
         frb.snr = sp*self.gain*math.sqrt(self.n_pol*self.bw*frb.w_eff*1e3)
@@ -439,9 +458,6 @@ class Survey:
 
         # Calculate fluence [Jy*ms]
         frb.fluence = frb.s_peak * frb.w_eff
-
-        # Account for offset in beam
-        frb.snr *= self.intensity_profile(sidelobes=self.sidelobes)
 
     def scint(self, frb, src):
         """

@@ -5,8 +5,8 @@ from bokeh.plotting import figure, show
 from frbpoppy.population import unpickle
 
 MAKE = False
-FIT = False
-POP = 'lum_neg'
+FIT = True
+POP = 'airy_sidelobe0'
 FLUENCE_LIMIT_LOW = False  # False or a float value
 
 if MAKE:
@@ -35,7 +35,7 @@ fluences = []
 for src in pop_aper.sources:
     f = src.frbs[0].fluence
     if FLUENCE_LIMIT_LOW:
-        if f > 10**(np.log10(FLUENCE_LIMIT_LOW) - 1):
+        if f > FLUENCE_LIMIT_LOW:
             fluences.append(f)
     else:
         fluences.append(f)
