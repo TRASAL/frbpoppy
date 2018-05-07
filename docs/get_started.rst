@@ -77,4 +77,4 @@ Population synthesis always involves three steps:
 *********
 What now?
 *********
-These are the basics, but ``frbpoppy`` offers much functionally than given in this brief guide. Feel free to pursue the :doc:`documentation`, the `tests <https://github.com/davidgardenier/frbpoppy/tree/master/tests>`_ directory in ``frbpoppy``, or even the `code base <https://github.com/davidgardenier/frbpoppy>`_ itself to find out more.
+These are the basics, but ``frbpoppy`` offers much more functionality than given in this brief guide. Feel free to pursue the :doc:`documentation`, the `tests <https://github.com/davidgardenier/frbpoppy/tree/master/tests>`_ directory in ``frbpoppy``, or even the `code base <https://github.com/davidgardenier/frbpoppy>`_ itself to find out more.

@@ -2,25 +2,27 @@
 # PMSURV survey parameters
 # WARNING: Values must be taken with a grain of salt - guesses abound!
 ##############################################################################
-1.2      !  survey degradation factor 
-0.581    !  antenna gain (K/Jy) 
-2100     !  integration time (s) 
-0.25     !  sampling time (ms) 
-28       !  system temperature (K) 
-1374     !  centre frequency (MHz) 
-288      !  bandwidth (MHz) 
-3        !  channel bandwidth (MHz) 
-2        !  number of polarizations 
-41253    !  beam size (deg^2) 
-0        !  minimum RA (deg) 
-360      !  maximum RA (deg) 
--90      !  minimum DEC (deg) 
-57       !  maximum DEC (deg) 
--100     !  minimum Galactic longitude (deg) 
-50       !  maximum Galactic longitude (deg) 
-0        !  minimum Galactic latitude (deg) 
-5        !  maximum Galactic latitude (deg) 
-1        !  fractional uptime [0-1] 
-9        !  signal-to-noise ratio [0-1] 
+1.2      ! survey degradation factor
+0.581    ! antenna gain (K/Jy)
+2100     ! integration time (s)
+0.25     ! sampling time (ms)
+28       ! system temperature (K)
+1374     ! centre frequency (MHz)
+288      ! bandwidth (MHz)
+3        ! channel bandwidth (MHz)
+2        ! number of polarizations
+0.5551   ! beam size (deg^2)
+0        ! minimum RA (deg)
+360      ! maximum RA (deg)
+-90      ! minimum DEC (deg)
+57       ! maximum DEC (deg)
+-100     ! minimum Galactic longitude (deg)
+50       ! maximum Galactic longitude (deg)
+     nan ! minimum 2 Galactic longitude (deg)
+     nan ! maximum 2 Galactic longitude (deg)
+0        ! minimum Galactic latitude (deg)
+5        ! maximum Galactic latitude (deg)
+1        ! fractional uptime [0-1]
+9        ! signal-to-noise ratio [0-1]
 http://adsabs.harvard.edu/abs/2001MNRAS.328...17M ! reference
-#1F77B4  ! colour
+     nan ! colour

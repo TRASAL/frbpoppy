@@ -49,7 +49,8 @@ class Survey:
             a new survey filename
         gain_pattern (str): Set gain pattern
         sidelobes (int): Number of sidelobes (relevent if gain_pattern is airy)
-        equal_area (bool): Ensures beam area on sky can be equal
+        equal_area (int/bool): Ensures beam area on sky can be equal to a beam
+            pattern with a max number of sizelobes. If unwanted, set to False
 
     """
 
@@ -86,7 +87,18 @@ class Survey:
         self.src_rates = Rates()
 
         # Beam pattern arguments
-        self.airy_nulls = [1.22, 2.24, 3.26, 4.26, 5.33, 6.39, 7.48, 8.6, 9.7]
+        self._kasin_nulls = [3.831706,
+                             7.015587,
+                             10.173468,
+                             13.323692,
+                             16.47063,
+                             19.615859,
+                             22.760084,
+                             25.903672,
+                             29.046829,
+                             32.18968,
+                             35.332308,
+                             38.474766]
         self.sidelobes = sidelobes
         self.equal_area = equal_area
 
@@ -217,6 +229,25 @@ class Survey:
 
         return True
 
+    def max_offset(self, x):
+        """Calculate the maximum offset of an FRB in an Airy disk.
+
+        Args:
+            x (int): Maximum sidelobe wanted
+
+        """
+        try:
+            c = math.asin(self.fwhm*self._kasin_nulls[x]/(60*180))
+        except ValueError:
+            m = f'Beamsize including sidelobes would be larger than sky \n'
+            A = (90/self._kasin_nulls[x])**2*math.pi
+            m += f'Ensure beamsize is smaller than {A}'
+            raise ValueError(m)
+
+        nom = 60*180*c
+        den = math.pi*self.fwhm
+        return nom/den
+
     def intensity_profile(self, sidelobes=1, test=False, equal_area=False,
                           dimensions=2):
         """Calculate intensity profile."""
@@ -233,7 +264,7 @@ class Survey:
 
         if dimensions == 2:  # 2D
             offset *= math.sqrt(random.random())
-        else:  # 1D
+        elif dimensions == 1:  # 1D
             offset *= random.random()
 
         if self.gain_pattern == 'perfect':
@@ -260,18 +291,18 @@ class Survey:
         elif self.gain_pattern == 'airy':
             int_pro = None
 
-            if equal_area:
-                offset *= self.airy_nulls[-1]
+            if type(equal_area) == int:
+                offset *= self.max_offset(equal_area)
                 # Check whether offset is within the sidelobe you're including
-                if offset > self.airy_nulls[sidelobes]*self.fwhm:
+                if offset > self.max_offset(sidelobes)*self.fwhm:
                     int_pro = 0
             else:
                 # Set the maximum offset equal to the null after a sidelobe
-                offset *= self.airy_nulls[sidelobes]
+                offset *= self.max_offset(sidelobes)
 
             if int_pro is None:
                 c = 299792458
-                conv = math.pi/(60*180.)  # Conversion arcmins -> radians
+                conv = math.pi/(60*180)  # Conversion arcmins -> radians
                 eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
                 a = eff_diam/2  # Effective radius of telescope
                 lamda = c/(self.central_freq*1e6)

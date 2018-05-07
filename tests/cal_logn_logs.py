@@ -6,7 +6,7 @@ from frbpoppy.population import unpickle
 
 MAKE = False
 FIT = True
-POP = 'airy_sidelobe0'
+POP = 'airy_sidelobe4'
 FLUENCE_LIMIT_LOW = False  # False or a float value
 
 if MAKE:

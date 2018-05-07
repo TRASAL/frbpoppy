@@ -8,8 +8,8 @@ import itertools
 from frbpoppy.survey import Survey
 
 PATTERNS = ['airy']  # 'gaussian', 'airy', 'tophat', 'perfect'
-PLOT = 'hist_int_pro'  # 'beam_pattern' or 'hist_int_pro'
-EQUAL_AREA = True
+PLOT = 'beam_pattern'  # 'beam_pattern' or 'hist_int_pro'
+EQUAL_AREA = False
 DIMENSIONS = 1
 
 n = 100000
@@ -25,6 +25,7 @@ def color_gen():
     """Generate a sequence of colours."""
     yield from itertools.cycle(Category10[10])
 color = color_gen()
+
 
 # Generate a data set
 def get_int_pro(sidelobes=1):
@@ -66,14 +67,15 @@ def plot_hist(ints, pattern='', i=None):
 
 
 for pattern in PATTERNS:
-    s = Survey('APERTIF', gain_pattern=pattern)
+    s = Survey('PERFECT', gain_pattern=pattern)
+    s.beam_size = 48
 
     # Plot beam pattern
     if PLOT == 'beam_pattern':
 
         # If wanting to compare sidelobes
         if len(PATTERNS) == 1 and pattern == 'airy':
-            for i in range(3, -1, -1):
+            for i in range(6, -1, -1):
                 x, y = get_int_pro(sidelobes=i)
                 p.circle(x, y, legend=f'{pattern}_{i}', color=next(color))
 
@@ -85,7 +87,7 @@ for pattern in PATTERNS:
 
         # If wanting to compare sidelobes
         if len(PATTERNS) == 1 and pattern == 'airy':
-            for i in range(3, -1, -1):
+            for i in range(6, -1, -1):
                 _, ints = get_int_pro(sidelobes=i)
                 plot_hist(ints, pattern=pattern, i=i)
         else:

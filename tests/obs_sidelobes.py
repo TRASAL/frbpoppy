@@ -5,29 +5,40 @@ from frbpoppy.do_plot import plot
 from frbpoppy.population import unpickle
 from frbpoppy.log import pprint
 
-MAKE = True
+OBSERVE = True
+USE_SAVED = True
 SIDELOBES = [0, 4, 8]
 
 pops = []
 
-if MAKE:
-    days = 256
-    n_per_day = 5000
+if OBSERVE:
 
-    # Generate FRB population
-    population = generate(n_per_day*days,
-                          days=days,
-                          lum_dist_pars=[1e45, 1e45, 0.],
-                          z_max=2.5,
-                          pulse=[0.1, 10],
-                          si_pars=[0., 0.],
-                          repeat=0.0)
+    if USE_SAVED:
+        population = unpickle('medium')
+        population.name = 'medium'
+    else:
+        days = 3
+        n_per_day = 5000
+
+        # Generate FRB population
+        population = generate(n_per_day*days,
+                              days=days,
+                              lum_dist_pars=[1e45, 1e45, 0.],
+                              z_max=5.0,
+                              pulse=[1, 1],
+                              si_pars=[0., 0.],
+                              repeat=0.0)
+        population.name = 'medium'
+        population.pickle_pop()
 
     # Observe FRB population
     for i in SIDELOBES:
         pprint(f'Detecting frbs with {i} sidelobes')
-        airy = observe(population, 'HTRU', gain_pattern='airy', sidelobes=i,
-                       equal_area=True)
+        airy = observe(population,
+                       'PERFECT_SMALL',
+                       gain_pattern='airy',
+                       sidelobes=i,
+                       equal_area=SIDELOBES[-1])
         airy.name = f'airy_sidelobe{i}'
         airy.pickle_pop()
         pops.append(airy)
