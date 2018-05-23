@@ -1,0 +1,27 @@
+##############################################################################
+# APERTIF-FLY survey parameters
+# WARNING: Values must be taken with a grain of salt - guesses abound!
+##############################################################################
+1.2      ! survey degradation factor
+0.11     ! antenna gain (K/Jy)
+10800    ! integration time (s)
+0.04096  ! sampling time (ms)
+70       ! system temperature (K)
+1370     ! centre frequency (MHz)
+300      ! bandwidth (MHz)
+0.19531  ! channel bandwidth (MHz)
+2        ! number of polarizations
+104.4    ! beam size (deg^2)
+0        ! minimum RA (deg)
+360      ! maximum RA (deg)
+-37.1    ! minimum DEC (deg)
+90       ! maximum DEC (deg)
+-180     ! minimum Galactic longitude (deg)
+180      ! maximum Galactic longitude (deg)
+     nan ! minimum 2 Galactic longitude (deg)
+     nan ! maximum 2 Galactic longitude (deg)
+-90      ! minimum Galactic latitude (deg)
+90       ! maximum Galactic latitude (deg)
+1        ! fractional uptime [0-1]
+8        ! signal-to-noise ratio [0-1]
+leon-oostrum ! reference
