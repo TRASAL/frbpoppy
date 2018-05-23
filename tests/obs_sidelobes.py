@@ -7,7 +7,7 @@ from frbpoppy.log import pprint
 
 OBSERVE = True
 USE_SAVED = True
-SIDELOBES = [0, 4, 8]
+SIDELOBES = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
 pops = []
 
@@ -48,4 +48,4 @@ else:
         pops.append(unpickle(f'airy_sidelobe{i}'))
 
 # Plot populations
-plot(*pops, mute=False, frbcat=False)
+plot(*pops, mute=False, frbcat=True)

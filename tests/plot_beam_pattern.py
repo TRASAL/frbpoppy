@@ -7,8 +7,8 @@ import itertools
 
 from frbpoppy.survey import Survey
 
-PATTERNS = ['airy']  # 'gaussian', 'airy', 'tophat', 'perfect'
-PLOT = 'beam_pattern'  # 'beam_pattern' or 'hist_int_pro'
+PATTERNS = ['airy', 'gaussian', 'apertif']  # 'gaussian', 'airy', 'tophat', 'perfect'
+PLOT = 'hist_int_pro'  # 'beam_pattern' or 'hist_int_pro'
 EQUAL_AREA = False
 DIMENSIONS = 1
 
@@ -16,9 +16,9 @@ n = 100000
 
 # Set up plot
 if PLOT == 'beam_pattern':
-    p = figure(y_axis_type='log')
+    p = figure(y_axis_type='log',x_axis_label='Arcminutes')
 elif PLOT == 'hist_int_pro':
-    p = figure(x_axis_type='log')
+    p = figure(x_axis_type='log', y_axis_type='log')
 
 # Get a sequence of colours
 def color_gen():
@@ -57,18 +57,17 @@ def plot_hist(ints, pattern='', i=None):
     if i is not None:
         pattern += f'_{i}'
 
-    p.quad(top=hist,
+    p.quad(top=norm,
            bottom=bottom,
            left=edges[:-1],
            right=edges[1:],
-           alpha=0.5,
+           alpha=0.2,
            legend=pattern,
            color=next(color))
 
 
 for pattern in PATTERNS:
-    s = Survey('PERFECT', gain_pattern=pattern)
-    s.beam_size = 48
+    s = Survey('APERTIF', gain_pattern=pattern)
 
     # Plot beam pattern
     if PLOT == 'beam_pattern':

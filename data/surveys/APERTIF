@@ -7,7 +7,7 @@
 10800    ! integration time (s)
 0.04096  ! sampling time (ms)
 70       ! system temperature (K)
-1400     ! centre frequency (MHz)
+1370     ! centre frequency (MHz)
 300      ! bandwidth (MHz)
 0.19531  ! channel bandwidth (MHz)
 2        ! number of polarizations
@@ -25,4 +25,3 @@
 1        ! fractional uptime [0-1]
 8        ! signal-to-noise ratio [0-1]
 leon-oostrum ! reference
-     nan ! colour

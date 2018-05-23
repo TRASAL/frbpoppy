@@ -103,8 +103,10 @@ class Survey:
         self.equal_area = equal_area
 
         # Set beam file so that it is only imported once
-        if gain_pattern == 'parkes':
-            self.beam_array = np.load(paths.models() + '/beams/parkes.npy')
+        self._special_beams = ['parkes', 'apertif']
+        if gain_pattern in self._special_beams:
+            place = paths.models() + f'/beams/{gain_pattern}.npy'
+            self.beam_array = np.load(place)
 
     def __str__(self):
         """Define how to print a survey object to a console."""
@@ -237,30 +239,21 @@ class Survey:
 
         """
         try:
-            c = math.asin(self.fwhm*self._kasin_nulls[x]/(60*180))
+            arcsin = math.asin(self.fwhm*self._kasin_nulls[x]/(60*180))
         except ValueError:
             m = f'Beamsize including sidelobes would be larger than sky \n'
             A = (90/self._kasin_nulls[x])**2*math.pi
             m += f'Ensure beamsize is smaller than {A}'
             raise ValueError(m)
 
-        nom = 60*180*c
-        den = math.pi*self.fwhm
-        return nom/den
+        return 2/self.fwhm * 60*180/math.pi * arcsin
 
     def intensity_profile(self, sidelobes=1, test=False, equal_area=False,
                           dimensions=2):
         """Calculate intensity profile."""
         self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
 
-        offset = self.fwhm
-
-        # Angular variable on sky, defined so that at fwhm/2, the
-        # intensity profile is exactly 0.5. It's multiplied by the sqrt of
-        # a random number to ensure the distribution of variables on the
-        # sky remains uniform, not that it increases towards the centre
-        # (uniform random point within circle). You could see this as
-        # the offset from the centre of the beam.
+        offset = self.fwhm/2  # Radius = Diameter/2.
 
         if dimensions == 2:  # 2D
             offset *= math.sqrt(random.random())
@@ -283,7 +276,7 @@ class Survey:
             # Set the maximum offset equal to the null after a sidelobe
             # I realise this pattern isn't an airy, but you have to cut
             # somewhere
-            offset *= self.airy_nulls[sidelobes]
+            offset *= self.max_offset(sidelobes)
 
             alpha = 2*math.sqrt(math.log(2))
             int_pro = math.exp(-(alpha*offset/self.fwhm)**2)
@@ -310,11 +303,18 @@ class Survey:
                 kasin = ka*math.sin(offset*conv)
                 int_pro = 4*(j1(kasin)/kasin)**2
 
-        elif self.gain_pattern == 'parkes':
+        elif self.gain_pattern in self._special_beams:
             shape = self.beam_array.shape
             ran_x = np.random.randint(0, shape[0])
             ran_y = np.random.randint(0, shape[1])
             int_pro = self.beam_array[ran_x, ran_y]
+            offset = math.sqrt((ran_x-shape[0]/2)**2 + (ran_y-shape[1]/2)**2)
+
+            # Scaling factors to correct for pixel scale
+            if self.gain_pattern == 'apertif':  # 1 pixel = 0.94'
+                offset *= 240/256  # [arcmin]
+            if self.gain_pattern == 'parkes':  # 1 pixel = 54"
+                offset *= 0.9  # [arcmin]
 
         if test is False:
             return int_pro
@@ -354,7 +354,7 @@ class Survey:
                                      freq=self.central_freq)
 
     def calc_Ts(self, src):
-        """Set temperatures for source"""
+        """Set temperatures for source."""
         self.calc_T_sky(src)
         src.T_tot = self.T_sys + src.T_sky
 

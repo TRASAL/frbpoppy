@@ -25,4 +25,3 @@
 0.5      ! fractional uptime [0-1]
 10       ! signal-to-noise ratio [0-1]
 https://arxiv.org/pdf/1601.02444.pdf ! reference
-     nan ! colour
