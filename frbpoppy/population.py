@@ -57,6 +57,8 @@ class Population:
         self.sources = []
         self.n_srcs = 0
 
+# -------------------------------
+
     def __str__(self):
         """Define how to print a population object to a console."""
         s = 'Population properties:'

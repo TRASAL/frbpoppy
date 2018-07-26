@@ -15,3 +15,5 @@ from .population import Population
 from .precalc import *
 from .source import Source
 from .survey import Survey
+from .cosmic_population import CosmicPopulation
+from .rates import NumberOf, Rates
