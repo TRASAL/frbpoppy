@@ -19,10 +19,10 @@ if MAKE:
     # Generate FRB population
     population = generate(n_per_day*days,
                           days=days,
-                          lum_dist_pars=[1e40, 1e50, -1.5],
+                          lum_range=[1e40, 1e50],
+                          lum_index=-1.5,
                           z_max=2.5,
-                          pulse=[0.1, 10],
-                          repeat=0.0)
+                          pulse_range=[0.1, 10])
 
     # Observe FRB population
     pop_aper = observe(population, 'APERTIF')

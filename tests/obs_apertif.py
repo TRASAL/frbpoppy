@@ -13,9 +13,8 @@ n_per_day = 5000
 # Generate FRB population
 pop = generate(n_per_day*days,
                days=days,
-               lum_dist_pars=[1e45, 1e50, -1.5],
-               z_max=2.0,
-               repeat=0.0)
+               lum_range=[1e45, 1e50],
+               lum_index=-1.5)
 
 # Observe FRB population
 surv_pop = observe(pop, 'APERTIF-FLY', gain_pattern='airy')

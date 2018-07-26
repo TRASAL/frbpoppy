@@ -17,17 +17,15 @@ if OBSERVE:
         population = unpickle('medium')
         population.name = 'medium'
     else:
-        days = 3
+        days = 14
         n_per_day = 5000
 
         # Generate FRB population
         population = generate(n_per_day*days,
                               days=days,
-                              lum_dist_pars=[1e45, 1e45, 0.],
-                              z_max=5.0,
-                              pulse=[1, 1],
-                              si_pars=[0., 0.],
-                              repeat=0.0)
+                              lum_range=[1e40, 1e50],
+                              lum_index=0.,
+                              z_max=5.)
         population.name = 'medium'
         population.pickle_pop()
 
@@ -48,4 +46,4 @@ else:
         pops.append(unpickle(f'airy_sidelobe{i}'))
 
 # Plot populations
-plot(*pops, mute=False, frbcat=True)
+plot(*pops, mute=False, frbcat=False)

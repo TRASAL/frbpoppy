@@ -501,7 +501,7 @@ def dist_to_z(dist, H_0=69.6):
     return z
 
 
-def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=8.0):
+def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=6.0):
     """
     Create a list of tuples to lookup the corresponding redshift for a comoving
     distance [Gpc]. Uses formulas from Hoggs et al. (1999) for the cosmological

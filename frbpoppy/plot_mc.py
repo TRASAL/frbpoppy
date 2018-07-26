@@ -26,7 +26,7 @@ class Plot:
                      'dist': 'Distance (Gpc)',
                      'dm_host': 'Dispersion Measure - Host (pc/cm^3)',
                      'dm_igm': 'Dispersion Measure - IGM (pc/cm^3)',
-                     'dm_igm_slope': 'Dispersion Measure - IGM - Slope (pc/cm^3)',
+                     'dm_igm_index': 'Dispersion Measure - IGM - Slope (pc/cm^3)',
                      'dm_mw': 'Dispersion Measure - Milky Way (pc/cm^3)',
                      'dm': 'Dispersion Measure (pc/cm^3)',
                      'fluence': 'Fluence (Jy*ms)',
@@ -45,7 +45,7 @@ class Plot:
                      'ra': 'Right Ascension (°)',
                      'rep': 'Repeater Fraction',
                      's_peak': 'Peak Flux Density (Jy)',
-                     'si_mean': 'Spectral Index - Mean',
+                     'si_mu': 'Spectral Index - Mean',
                      'si_sigma': 'Spectral Index - Sigma',
                      'snr': 'Signal to Noise Ratio',
                      'w_eff': 'Pulse Width - Effective (ms)',
@@ -385,7 +385,7 @@ class Plot:
                     if f == 'si_sigma':
                         if value != '0.0' and len(value.split('.')[-1]) != 2:
                             value += '0'
-                    if f == 'si_mean':
+                    if f == 'si_mu':
                         if len(value.split('.')[-1]) == 2:
                             value = value[:-1]
                     if f in ['freq_max']:

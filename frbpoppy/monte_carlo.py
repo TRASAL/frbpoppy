@@ -88,7 +88,7 @@ class MonteCarlo:
 
         # Initialise parameters
         self.dm_host = Parameter(0, 200, 10, 100)
-        self.dm_igm_slope = Parameter(1000, 1400, 20, 1200)
+        self.dm_igm_index = Parameter(1000, 1400, 20, 1200)
         self.freq_max = Parameter(1e6, 1e11, 0.5, 1e10, log=True)
         self.freq_min = Parameter(1e6, 1e11, 0.5, 1e7, log=True)
         self.lum_bol_max = Parameter(1e30, 1e60, 1, 1e50, log=True)
@@ -96,14 +96,14 @@ class MonteCarlo:
         self.lum_bol_slope = Parameter(0.5, 1.5, 0.1, 1.)
         self.n_day = Parameter(2000, 14000, 2000, 10000)
         self.rep = Parameter(0.0, 0.1, 0.01, 0.05)
-        self.si_mean = Parameter(-2.0, -1, 0.1, -1.4)
+        self.si_mu = Parameter(-2.0, -1, 0.1, -1.4)
         self.si_sigma = Parameter(0.0, 0.5, 0.1, 0.0)
         self.w_int_max = Parameter(0, 5, 0.1, 5)
         self.w_int_min = Parameter(0, 5, 0.1, 1)
 
         # Gather parameters
         self.pars = {'dm_host': self.dm_host,
-                     'dm_igm_slope': self.dm_igm_slope,
+                     'dm_igm_index': self.dm_igm_index,
                      'freq_max': self.freq_max,
                      'freq_min': self.freq_min,
                      'lum_bol_min': self.lum_bol_min,
@@ -111,7 +111,7 @@ class MonteCarlo:
                      'lum_bol_slope': self.lum_bol_slope,
                      'n_day': self.n_day,
                      'rep': self.rep,
-                     'si_mean': self.si_mean,
+                     'si_mu': self.si_mu,
                      'si_sigma': self.si_sigma,
                      'w_int_max': self.w_int_max,
                      'w_int_min': self.w_int_min,
@@ -263,14 +263,14 @@ class MonteCarlo:
             r = group.iloc[0]
             pop = generate(int(r.n_day)*self.days,
                            days=self.days,
-                           dm_pars=[r.dm_host, r.dm_igm_slope],
+                           dm_pars=[r.dm_host, r.dm_igm_index],
                            emission_pars=[r.freq_min, r.freq_max],
                            lum_dist_pars=[r.lum_bol_min,
                                           r.lum_bol_max,
                                           r.lum_bol_slope],
                            pulse=[r.w_int_min, r.w_int_max],
                            repeat=float(r.rep),
-                           si_pars=[r.si_mean, r.si_sigma])
+                           si_pars=[r.si_mu, r.si_sigma])
 
             # Iterate over each value a parameter can take
             for i, r in group.iterrows():
@@ -285,16 +285,16 @@ class MonteCarlo:
                 # Adapt population
                 if name == 'dm_host':
                     pop = Adapt(pop).dm_host(r.dm_host)
-                elif name == 'dm_igm_slope':
-                    pop = Adapt(pop).dm_igm(r.dm_igm_slope)
+                elif name == 'dm_igm_index':
+                    pop = Adapt(pop).dm_igm(r.dm_igm_index)
                 elif name == 'freq_min':
                     pop = Adapt(pop).freq(r.freq_min, r.freq_max)
                 elif name == 'lum_bol_min' or name == 'lum_bol_slope':
                     pop = Adapt(pop).lum_bol(r.lum_bol_min,
                                              r.lum_bol_max,
                                              r.lum_bol_slope)
-                elif name == 'si_mean' or name == 'si_sigma':
-                    pop = Adapt(pop).si(r.si_mean, r.si_sigma)
+                elif name == 'si_mu' or name == 'si_sigma':
+                    pop = Adapt(pop).si(r.si_mu, r.si_sigma)
                 elif name == 'w_int_min':
                     pop = Adapt(pop).w_int(r.w_int_min, r.w_int_max)
 

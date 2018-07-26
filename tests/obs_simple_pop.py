@@ -13,13 +13,17 @@ n_per_day = 10000
 # Generate FRB population
 pop = generate(n_per_day*days,
                days=days,
-               lum_dist_pars=[1e40, 1e45, -1.0],
+               lum_range=[1e40, 1e45],
+               lum_index=-1.0,
                z_max=0.01,
-               dm_pars=[0, 1200],
-               electron_model='ne2001',
-               emission_pars=[10e6, 10e9],
-               pulse=[5, 5],
-               si_pars=[0., 0.],
+               dm_host=0,
+               dm_igm_index=1200,
+               dm_mw_model='ne2001',
+               emission_range=[10e6, 10e9],
+               pulse_model='uniform',
+               pulse_range=[0, 10],
+               si_mu=0.,
+               si_sigma=0.,
                repeat=0.0)
 
 # Observe FRB population

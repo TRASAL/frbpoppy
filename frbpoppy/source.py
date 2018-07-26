@@ -70,7 +70,11 @@ class Source:
         frb = FRB()
 
         # Get a random intrinsic pulse width [ms]
-        frb.w_int = random.uniform(pop.w_min, pop.w_max)
+        if pop.w_model == 'lognormal':
+            frb.w_int = random.lognormvariate(pop.w_mu, pop.w_sigma)
+
+        if pop.w_model == 'uniform':
+            frb.w_int = random.uniform(pop.w_min, pop.w_max)
 
         # Calculate the pulse width upon arrival to Earth
         frb.w_arr = frb.w_int*(1+self.z)
@@ -79,7 +83,7 @@ class Source:
         frb.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
 
         # Add spectral index
-        frb.si = random.gauss(pop.si_mean, pop.si_sigma)
+        frb.si = random.gauss(pop.si_mu, pop.si_sigma)
 
         # Add time
         frb.time = time

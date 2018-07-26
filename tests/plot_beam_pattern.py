@@ -7,8 +7,8 @@ import itertools
 
 from frbpoppy.survey import Survey
 
-PATTERNS = ['airy', 'gaussian', 'apertif']  # 'gaussian', 'airy', 'tophat', 'perfect'
-PLOT = 'hist_int_pro'  # 'beam_pattern' or 'hist_int_pro'
+PATTERNS = ['airy']  # 'gaussian', 'airy', 'tophat', 'perfect'
+PLOT = 'beam_pattern'  # 'beam_pattern' or 'hist_int_pro'
 EQUAL_AREA = False
 DIMENSIONS = 1
 
@@ -16,7 +16,7 @@ n = 100000
 
 # Set up plot
 if PLOT == 'beam_pattern':
-    p = figure(y_axis_type='log',x_axis_label='Arcminutes')
+    p = figure(y_axis_type='log', x_axis_label='Arcminutes')
 elif PLOT == 'hist_int_pro':
     p = figure(x_axis_type='log', y_axis_type='log')
 

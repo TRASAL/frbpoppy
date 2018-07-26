@@ -13,28 +13,45 @@ class Population:
     def __init__(self):
         """Initializing."""
         # Population properties
-        self.dist_co_max = None
+        self.name = None
+
+        # Frequency emission limits [MHz]
+        self.f_max = None
+        self.f_min = None
+
+        # Dispersion Measure [pc/cm^3]
         self.dm_host = None
         self.dm_igm = None
         self.electron_model = None
-        self.f_max = None
-        self.f_min = None
-        self.H_0 = None
+
+        # Luminosity
         self.lum_max = None
         self.lum_min = None
         self.lum_pow = None
-        self.name = None
-        self.n_model = None
-        self.repeat = None
-        self.si_mean = None
+
+        # Spectral index
+        self.si_mu = None
         self.si_sigma = None
-        self.time = None  # seconds
-        self.vol_co_max = None
+
+        # Pulse width
+        self.w_model = None
+        self.w_mu = None
+        self.w_sigma = None
         self.w_max = None
         self.w_min = None
+
+        # Cosmology
+        self.dist_co_max = None
+        self.H_0 = None
+        self.n_model = None
+        self.vol_co_max = None
         self.W_m = None
         self.W_v = None
         self.z_max = None
+
+        # Repeater properties
+        self.repeat = None
+        self.time = None  # seconds
 
         # Store FRB sources
         self.sources = []

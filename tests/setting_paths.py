@@ -19,14 +19,7 @@ pprint('New path:', paths.populations())
 # Generate FRB population
 pop = generate(n_per_day*days,
                days=days,
-               lum_dist_pars=[1e42, 1e42, -1.0],
-               z_max=0.1,
-               dm_pars=[0, 1200],
-               electron_model='zero',
-               emission_pars=[10e6, 10e9],
-               pulse=[5, 5],
-               si_pars=[0., 0.],
-               repeat=0.0)
+               lum_range=[1e40, 1e46])
 
 # Observe FRB population
 surv_pop = observe(pop, 'APERTIF')

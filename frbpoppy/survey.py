@@ -54,7 +54,8 @@ class Survey:
 
     """
 
-    def __init__(self, survey_name, gain_pattern='gaussian', sidelobes=1, equal_area=False):
+    def __init__(self, survey_name, gain_pattern='gaussian', sidelobes=1,
+                 equal_area=False):
         """Initializing."""
         # Find survey file
         if os.path.isfile(survey_name):
@@ -261,9 +262,11 @@ class Survey:
             offset *= random.random()
 
         if self.gain_pattern == 'perfect':
+            offset *= self.max_offset(sidelobes)
             int_pro = 1
 
         elif self.gain_pattern == 'tophat':
+            offset *= self.max_offset(sidelobes)
             int_pro = 1
             if random.random() > 0.5:
                 int_pro = 0
@@ -287,7 +290,7 @@ class Survey:
             if type(equal_area) == int:
                 offset *= self.max_offset(equal_area)
                 # Check whether offset is within the sidelobe you're including
-                if offset > self.max_offset(sidelobes)*self.fwhm:
+                if offset > self.max_offset(sidelobes)*self.fwhm/2.:
                     int_pro = 0
             else:
                 # Set the maximum offset equal to the null after a sidelobe
@@ -340,7 +343,7 @@ class Survey:
 
         """
         t_dm = 8.297616e6 * self.bw_chan * src.dm * (self.central_freq)**-3
-        t_dm_err = (t_dm/src.dm)*(dm_err*src.dm)
+        t_dm_err = t_dm*dm_err
 
         src.t_dm = t_dm
         src.t_dm_err = t_dm_err
@@ -560,7 +563,7 @@ class Survey:
 
     def scale_rates(self, pop):
         """
-        Scale all rates according to integration time and uptime.
+        Scale all rates according to surveyed area .
 
         Args:
             pop (Population): Population class
@@ -575,10 +578,10 @@ class Survey:
                 continue
 
             area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
-            f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
-            f_time = 86400 / self.t_obs  # pop.time
-            det = r.det * f_area * f_time
-            faint = r.faint * f_area * f_time
+            self.f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
+            self.f_time = 86400 / self.t_obs  # pop.time
+            det = r.det * self.f_area #* self.f_time
+            faint = r.faint * self.f_area #* self.f_time
             out = r.out + r.det - det + r.faint - faint
             vol = r.tot() / pop.vol_co_max * (365.25*86400/pop.time)
 
@@ -594,58 +597,73 @@ class Survey:
             else:
                 self.s_src_rates = s_rates
 
-    def rates(self, pop, output=True, scaled=True):
+    def rates(self, pop, output=True, scale_area=True, scale_time=False):
         """
         Print survey rates, such as the number of detected sources etc.
 
         Args:
             output (bool, optional): Whether to print out the rates or not
-            scaled (bool, optional): Print scaled (default) or normal rates
+            scale_area (bool, optional): Scale to the surveyed area
+            scale_time (bool, optional): Scale so rates are per day
         """
-        # Filter frbcat population
-        if not pop.vol_co_max:
-            f = self.frb_rates
-            s = self.src_rates
-            pprint('Frbcat population -> No scaled rates available')
+        f = self.frb_rates
+        s = self.src_rates
+        days = (pop.time/86400)
+
+        # Calculate scaling factors
+        area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
+        self.f_area = (self.beam_size * s.tot()) / ((s.det + s.faint)*area_sky)
+        self.f_time = 86400 / pop.time  # pop.time
+
+        # Calculate volumetric rate
+        if pop.vol_co_max:
+            f.vol = f.tot() / pop.vol_co_max * (365.25*86400/pop.time)
+            s.vol = s.tot() / pop.vol_co_max * (365.25*86400/pop.time)
         else:
-            f = self.s_frb_rates
-            s = self.s_src_rates
-            if not scaled:
-                f = self.frb_rates
-                s = self.src_rates
+            f.vol = '?'
+            s.vol = '?'
 
         r = '{:20.19} {:>10} {:>10} {:>10}\n'
 
-        # Set up title
-        if pop.vol_co_max:
-            days = (pop.time/86400)
-            r_days = round(days)
-        else:
-            r_days = '-'
+        def format(description, days, frbs, srcs):
+            """Format line for printing rates."""
+            scalable_parms = ('Detected', 'Too faint', 'Expected')
+            if scale_area and description in scalable_parms:
+                frbs *= self.f_area
+                srcs *= self.f_area
 
+            if scale_time:
+                frbs *= self.f_time
+                srcs *= self.f_time
+                days = 1
+
+            if description == 'Expected':
+                if frbs > 0:
+                    self.days_per_frb = days/frbs
+                    days = str(round(self.days_per_frb, 5))
+                frbs = 1
+                srcs = '-'
+
+            if type(days) != str:
+                days = round(days)
+            if type(frbs) != str:
+                frbs = round(frbs)
+            if type(srcs) != str:
+                srcs = round(srcs)
+
+            return r.format(description, days, frbs, srcs)
+
+        # Set up title
         t = r.format(self.survey_name, 'Days', 'FRBs', 'Sources')
         line = '-'*len(t.split('\n')[-2].strip()) + '\n'
         t += line
 
-        tot = ('In population', r_days, round(f.tot()), round(s.tot()))
-        det = ('Detected', r_days, round(f.det), round(s.det))
-        faint = ('Too faint', r_days, round(f.faint), round(s.faint))
-        out = ('Outside survey', r_days, round(f.out), round(s.out))
-        if pop.vol_co_max:
-            vol = ('/Gpc^3', 365.25, round(f.vol), round(s.vol))
-        if f.det > 0 and pop.vol_co_max:
-            exp = round(days/f.det, 4)
-        else:
-            exp = '?'
-        exp_frb = ('Expected', exp, 1, '-')
-
-        t += r.format(*tot)
-        t += r.format(*det)
-        t += r.format(*faint)
-        t += r.format(*out)
-        if pop.vol_co_max:
-            t += r.format(*vol)
-        t += r.format(*exp_frb)
+        # Format rates
+        t += format('In population', days, f.tot(), s.tot())
+        t += format('Detected', days, f.det, s.det)
+        t += format('Too faint', days, f.faint, s.faint)
+        t += format('/Gpc^3', 365.25, f.vol, s.vol)
+        t += format('Expected', days, f.det, s.det)
         t += line
 
         for n in t.split('\n')[:-1]:

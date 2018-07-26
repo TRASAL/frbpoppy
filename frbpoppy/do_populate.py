@@ -13,171 +13,83 @@ import frbpoppy.precalc as pc
 
 def generate(n_gen,
              days=1,
-             cosmo_pars=[69.6, 0.286, 0.714],
-             dm_pars=[100, 1200],
-             electron_model='ne2001',
-             emission_pars=[10e6, 10e9],
-             lum_dist_pars=[1e40, 1e50, 0],
-             name=None,
-             n_model='constant',
-             pulse=[0.1, 10],
+             name='initial',
+             H_0=69.6,
+             W_m=0.286,
+             W_v=0.714,
+             dm_host=100,
+             dm_igm_index=1200,
+             dm_mw_model='ne2001',
+             emission_range=[10e6, 10e9],
+             lum_range=[1e40, 1e50],
+             lum_index=0,
+             n_model='sfr',
+             pulse_model='lognormal',
+             pulse_range=[0.1, 10],
+             pulse_mu=1.6,
+             pulse_sigma=1.,
              repeat=0.0,
-             si_pars=[-1.4, 0.],
+             si_mu=-1.4,
+             si_sigma=1.,
              z_max=2.5,
              test=False):
-    """
-    Generate a population of FRBs.
+    """Generate a popuation of FRBs.
 
     Args:
-        n_gen (int): Number of FRB sources/sky/time to generate
+        n_gen (int): Number of FRB sources/sky/time to generate.
         days (float): Number of days over which FRBs are generated.
-            Defaults to 1
-        cosmo_pars (list, optional): Three values, the first being the Hubble
-            constant, the second the density parameter Ω_m and the third
-            being the cosmological constant Ω_Lambda (referred to as W_m
-            in the rest of the code). These parameters default to those
-            determined with Planck [69.6, 0.286, 0.714]
-        dm_pars (list, optional): Two values, the first being the dispersion
-            measure of the host, and the second being the slope of the
-            intergalactic dispersion measure. Defaults to [100, 1200]
-        electron_model (str, optional): Model for the free electron density in
-            the Milky Way. Defaults to 'ne2001'
-        emission_pars (list, optional): The minimum and maximum frequency [Hz]
-            between which FRB sources should emit the given bolometric
-            luminosity. Defaults to [10e6,10e9]
-        lum_dist_pars (list, optional): Bolometric luminosity distribution
-            parameters being: the minimum luminosity [erg/s], the maximum
-            luminosity [erg/s] and the powerlaw index of the distribution.
-            Defaults to [1e40, 1e50, 1]
-        name (str, optional): Name to be given to the population. Defaults to
-            'initial'
-        n_model (str, optional): Type of number density for frbs to be
-            distributed by. Options are 'constant' for constant number density
-            per comoving volume and 'sfr' for the number density to follow
-            the star formation rate
-        pulse (str, optional): Values between which the intrinsic pulse width
-            should be [ms]. Defaults to [0.5, 5]
-        repeat (float, optional): Fraction of sources which repeat
-        si_pars (list, optional): Spectral index parameters, being the mean
-            index and the standard deviation thereof. Defaults to [0., 0.]
-        z_max (float, optional): The maximum redshift out to which to
-            distribute FRBs
-        test (float, optional): Flag to help testing
+        name (str): Population name.
+        H_0 (float): Hubble constant.
+        W_m (float): Density parameter Ω_m.
+        W_v (float): Cosmological constant Ω_Λ.
+        dm_host (float): Dispersion measure host [pc/cm^3].
+        dm_igm_index (float): Dispersion measure slope for the IGM [pc/cm^3].
+        dm_mw_model (str): Dispersion measure model for the Milky Way.
+            Options are 'ne2001' or 'zero'.
+        emission_range (list): The frequency range [Hz] between which FRB
+            sources should emit the given bolometric luminosity.
+        lum_range (list): Bolometric luminosity (distance) range [erg/s].
+        lum_index (float): Power law index.
+        n_model (str): Number density model. Options are 'constant' or 'sfr'.
+        pulse_model (str): Pulse width model, 'lognormal' or 'uniform'.
+        pulse_range (list): Pulse width range [ms].
+        pulse_mu (float): Mean pulse width [ms].
+        pulse_sigma (float): Deviation pulse width [ms].
+        repeat (float): Repeater fraction of population.
+        si_mu (float): Mean spectral index.
+        si_sigma (float): Standard deviation spectral index.
+        z_max (float): Maximum redshift.
+        test (bool): Testing flag.
 
     Returns:
-        Population: A population of generated sources
+        Population: Population of FRBs.
 
     """
-    # Check input
-    if type(n_gen) != int:
-        m = 'Please ensure the number of generated sources is an integer'
-        raise ValueError(m)
-
-    if n_gen < 1:
-        m = 'Please ensure the number of generated sources is > 0'
-        raise ValueError(m)
-
-    # Check input
-    if type(days) != int:
-        m = 'Please ensure the number of days is an integer'
-        raise ValueError(m)
-
-    if not all(isinstance(par, (float, int)) for par in cosmo_pars):
-        m = 'Please ensure all cosmology parameters are floats or integeters'
-        raise ValueError(m)
-
-    if len(cosmo_pars) != 3:
-        m = 'Please ensure there are three cosmology parameters'
-        raise ValueError(m)
-
-    if len(dm_pars) != 2:
-        m = 'Please ensure there are two dispersion measure parameters'
-        raise ValueError(m)
-
-    if electron_model not in ['ne2001', 'zero']:
-        m = 'Unsupported electron model: {}'.format(electron_model)
-        pprint(m)
-
-    if not all(isinstance(par, (float, int)) for par in emission_pars):
-        m = 'Please ensure all emission parameters are floats or integeters'
-        raise ValueError(m)
-
-    if len(emission_pars) != 2:
-        m = 'Please ensure there are two emission parameters'
-        raise ValueError(m)
-
-    if not all(isinstance(par, (float, int)) for par in lum_dist_pars):
-        m = 'Please ensure all luminosity distribution parameters are '
-        m += 'floats or integeters'
-        raise ValueError(m)
-
-    if len(lum_dist_pars) != 3:
-        m = 'Please ensure there are three luminosity distribution parameters'
-        raise ValueError(m)
-
-    if not all(isinstance(par, (float, int)) for par in pulse):
-        m = 'Please ensure all pulse parameters are '
-        m += 'floats or integeters'
-        raise ValueError(m)
-
-    if len(pulse) != 2:
-        m = 'Please ensure there are two pulse parameters'
-        raise ValueError(m)
-
-    if not name:
-        name = 'Initial'
-
-    if type(name) != str:
-        m = 'Please provide a string as input for the name of the population'
-        raise ValueError(m)
-
-    if n_model not in ['constant', 'sfr']:
-        m = 'Please ensure the number density is either constant or sfr'
-        raise ValueError(m)
-
-    if type(repeat) != float:
-        m = 'Please ensure fraction of sources which repeat is a float'
-        raise ValueError(m)
-
-    if repeat > 1:
-        m = 'The repeat fraction can not be more than 1.0'
-        raise ValueError(m)
-
-    if not all(isinstance(par, (float, int)) for par in si_pars):
-        m = 'Please ensure all spectral index parameters are '
-        m += 'floats or integers'
-        raise ValueError(m)
-
-    if len(si_pars) != 2:
-        m = 'Please ensure there are two spectral index parameters'
-        raise ValueError(m)
-
-    if not isinstance(z_max, (float, int)):
-        m = 'Please ensure the maximum redshift is given as a float or integer'
-        raise ValueError(m)
-
     # Set up population
     pop = Population()
-    pop.dm_host = dm_pars[0]
-    pop.dm_igm = dm_pars[1]
-    pop.electron_model = electron_model
-    pop.f_max = emission_pars[1]
-    pop.f_min = emission_pars[0]
-    pop.H_0 = cosmo_pars[0]
-    pop.lum_max = lum_dist_pars[1]
-    pop.lum_min = lum_dist_pars[0]
-    pop.lum_pow = lum_dist_pars[2]
+    pop.dm_host = dm_host
+    pop.dm_igm_index = dm_igm_index
+    pop.dm_mw_model = dm_mw_model
+    pop.f_max = emission_range[1]
+    pop.f_min = emission_range[0]
+    pop.H_0 = H_0
+    pop.lum_max = lum_range[1]
+    pop.lum_min = lum_range[0]
+    pop.lum_pow = lum_index
     pop.name = name
     pop.n_gen = n_gen
     pop.n_model = n_model
     pop.repeat = repeat
-    pop.si_mean = si_pars[0]
-    pop.si_sigma = si_pars[1]
+    pop.si_mu = si_mu
+    pop.si_sigma = si_sigma
     pop.time = days * 86400  # Convert to seconds
-    pop.w_max = pulse[1]
-    pop.W_m = cosmo_pars[1]
-    pop.w_min = pulse[0]
-    pop.W_v = cosmo_pars[2]
+    pop.w_model = pulse_model
+    pop.w_max = pulse_range[1]
+    pop.w_min = pulse_range[0]
+    pop.w_mu = pulse_mu
+    pop.w_sigma = pulse_sigma
+    pop.W_m = W_m
+    pop.W_v = W_v
     pop.z_max = z_max
 
     # Cosmology calculations
@@ -193,7 +105,9 @@ def generate(n_gen,
                   W_m=pop.W_m,
                   W_v=pop.W_v)
 
-    pprint('Generating population')
+    if not name:
+        name = 'initial'
+    pprint(f'Generating {name} population')
 
     while pop.n_srcs < pop.n_gen:
 
@@ -229,13 +143,14 @@ def generate(n_gen,
         src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, dist_pr)
 
         # Dispersion measure of the Milky Way
-        if electron_model == 'ne2001':
+        if pop.dm_mw_model == 'ne2001':
             src.dm_mw = pc.ne2001_table(src.gl, src.gb)
-        else:
+
+        elif pop.dm_mw_model == 'zero':
             src.dm_mw = 0.
 
         # Dispersion measure of the intergalactic medium
-        src.dm_igm = go.ioka_dm_igm(src.z, slope=pop.dm_igm)
+        src.dm_igm = go.ioka_dm_igm(src.z, slope=pop.dm_igm_index)
 
         # Dispersion measure of the host (Tendulkar)
         src.dm_host = pop.dm_host / (1 + src.z)
@@ -259,6 +174,6 @@ def generate(n_gen,
     # Save population
     pop.pickle_pop()
 
-    pprint('Generated population')
+    pprint(f'Generated {pop.name} population')
 
     return pop

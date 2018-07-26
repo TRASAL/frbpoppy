@@ -108,3 +108,5 @@ tests/*.p
 tests/*.png
 tests/plots/*
 temp\.csv
+publication/plots/
+publication/build/

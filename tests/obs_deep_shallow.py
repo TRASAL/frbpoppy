@@ -13,11 +13,11 @@ if MAKE:
     # Generate FRB population
     population = generate(n_per_day*days,
                           days=days,
-                          lum_dist_pars=[1e40, 1e45, 0.],
+                          lum_range=[1e40, 1e45],
+                          lum_index=0,
                           z_max=2.5,
-                          pulse=[0.1, 10],
-                          si_pars=[0., 0.],
-                          repeat=0.0)
+                          si_mean=0.,
+                          si_sigma=0.)
 
     # Observe FRB population
     deep = observe(population, 'TEST-DEEP', gain_pattern='perfect')

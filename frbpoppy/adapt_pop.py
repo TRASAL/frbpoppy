@@ -89,12 +89,12 @@ class Adapt:
         self.pop.pickle_pop()
         return self.pop
 
-    def si(self, si_mean, si_sigma):
+    def si(self, si_mu, si_sigma):
         """
         Adapt the population's mean spectral index and the standard deviation.
 
         Args:
-            si_mean (float): Mean spectral index
+            si_mu (float): Mean spectral index
             si_sigma (float): Mean standard deviation of the spectral index
 
         Returns:
@@ -103,7 +103,7 @@ class Adapt:
         """
         for source in self.pop.sources:
             for frb in source.frbs:
-                frb.si = random.gauss(self.pop.si_mean, self.pop.si_sigma)
+                frb.si = random.gauss(self.pop.si_mu, self.pop.si_sigma)
 
         # Save the population
         self.pop.pickle_pop()

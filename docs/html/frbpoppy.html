@@ -139,14 +139,14 @@
 
 <dl class="method">
 <dt id="adapt_pop.Adapt.si">
-<code class="descname">si</code><span class="sig-paren">(</span><em>si_mean</em>, <em>si_sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.si" title="Permalink to this definition">¶</a></dt>
+<code class="descname">si</code><span class="sig-paren">(</span><em>si_mu</em>, <em>si_sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.si" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adapt the population&#8217;s mean spectral index and the standard deviation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>si_mean</strong> (<em>float</em>) &#8211; Mean spectral index</li>
+<li><strong>si_mu</strong> (<em>float</em>) &#8211; Mean spectral index</li>
 <li><strong>si_sigma</strong> (<em>float</em>) &#8211; Mean standard deviation of the spectral index</li>
 </ul>
 </td>
@@ -505,7 +505,7 @@ with Frbcat().df</p>
 <p>...as in converting coordinates, calculating DM etc.</p>
 <dl class="function">
 <dt id="galacticops.dist_lookup">
-<code class="descclassname">galacticops.</code><code class="descname">dist_lookup</code><span class="sig-paren">(</span><em>cosmology=True</em>, <em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em>, <em>z_max=8.0</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.dist_lookup" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">galacticops.</code><code class="descname">dist_lookup</code><span class="sig-paren">(</span><em>cosmology=True</em>, <em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em>, <em>z_max=6.0</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.dist_lookup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a list of tuples to lookup the corresponding redshift for a comoving
 distance [Gpc]. Uses formulas from Hoggs et al. (1999) for the cosmological
 calculations, assuming a flat universe. To avoid long calculation times,

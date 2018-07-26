@@ -83,16 +83,19 @@ class Frbcat():
                repeat_bursts=False,
                repeater=True):
         """Filter frbcat in various ways."""
+        # Lower all column names
+        self.df.columns = map(str.lower, self.df.columns)
+
         if one_per_frb:
             # Only keep rows with the largest number of parameters
             # so that only one row per FRB remains
             self.df['count'] = self.df.count(axis=1)
             self.df = self.df.sort_values('count', ascending=False)
-            self.df = self.df.drop_duplicates('utc')
+            self.df = self.df.drop_duplicates(subset=['utc'])
 
         if not repeat_bursts:
             # Only keeps one detection of the repeater
-            self.df = self.df.drop_duplicates('frb')
+            self.df = self.df.drop_duplicates(subset=['frb'])
 
         if not repeater:
             self.df = self.df[self.df.frb_name != 'FRB121102']
@@ -106,8 +109,7 @@ class Frbcat():
         self.df.columns = self.df.columns.str.replace('rmp_', '')
 
         # Conversion table
-        convert = {'frb_name': 'frb',
-                   'mw_dm_limit': 'dm_mw',
+        convert = {'mw_dm_limit': 'dm_mw',
                    'width': 'w_eff',
                    'flux': 's_peak',
                    'redshift_host': 'z',

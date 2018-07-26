@@ -75,7 +75,9 @@ class Plot():
                        'Pulse Width - Intrinsic (ms)': 'w_int',
                        'Redshift': 'z',
                        'Right Ascension (°)': 'ra',
-                       'Signal to Noise Ratio': 'snr'}
+                       'Spectral Index': 'si',
+                       'Signal to Noise Ratio': 'snr',
+                       'Time (s)': 'time'}
 
         # Running plotting
         self.set_colours()

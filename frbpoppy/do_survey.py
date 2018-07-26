@@ -6,7 +6,7 @@ from frbpoppy.paths import paths
 
 def observe(population,
             survey_name,
-            gain_pattern='gaussian',
+            gain_pattern='airy',
             sidelobes=1,
             equal_area=False,
             output=True,
@@ -114,7 +114,7 @@ def observe(population,
             s.src_rates.faint += 1
 
     # Scale rates according to length of survey etc
-    s.scale_rates(surv_pop)
+    # s.scale_rates(surv_pop)
     s.rates(surv_pop, output=output)
 
     # Return population or survey classes
