@@ -58,32 +58,44 @@ class Source:
         self.frbs.append(frb)
         self.n_frbs += 1
 
-    def create_frb(self, pop, time=None):
+    def create_frb(self,
+                   w_model=None,
+                   w_mu=None,
+                   w_sigma=None,
+                   w_min=None,
+                   w_max=None,
+                   lum_min=None,
+                   lum_max=None,
+                   lum_pow=None,
+                   si_mu=None,
+                   si_sigma=None,
+                   time=None,
+                   **kwargs):
         """
         Create an frb to add to source.
 
         Args:
-            pop (Population): Population parameters
+            par (float): See Population attributes
             time (float): Time of burst [s]
         """
         # Initialise an FRB
         frb = FRB()
 
         # Get a random intrinsic pulse width [ms]
-        if pop.w_model == 'lognormal':
-            frb.w_int = random.lognormvariate(pop.w_mu, pop.w_sigma)
+        if w_model == 'lognormal':
+            frb.w_int = random.lognormvariate(w_mu, w_sigma)
 
-        if pop.w_model == 'uniform':
-            frb.w_int = random.uniform(pop.w_min, pop.w_max)
+        if w_model == 'uniform':
+            frb.w_int = random.uniform(w_min, w_max)
 
         # Calculate the pulse width upon arrival to Earth
         frb.w_arr = frb.w_int*(1+self.z)
 
         # Add bolometric luminosity [erg/s]
-        frb.lum_bol = dis.powerlaw(pop.lum_min, pop.lum_max, pop.lum_pow)
+        frb.lum_bol = dis.powerlaw(lum_min, lum_max, lum_pow)
 
         # Add spectral index
-        frb.si = random.gauss(pop.si_mu, pop.si_sigma)
+        frb.si = random.gauss(si_mu, si_sigma)
 
         # Add time
         frb.time = time

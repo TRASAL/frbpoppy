@@ -10,82 +10,39 @@ from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 
 
-class Rates:
-    """
-    Class to hold rate counters.
-
-    Args:
-        det (int, optional): Number detected
-        faint (int, optional): Number to faint to detect
-        jy (int, optional): Number arrived within survey > 1 Jy
-        out (int, optional): Number outside survey, space or timewise
-        sky (int, optional): Number per sky above > 1 Jy
-        vol (int, optional): Number per Gpc^3
-
-    """
-
-    def __init__(self):
-        """Initializing."""
-        # Rates
-        self.det = 0
-        self.faint = 0
-        self.jy = 0
-        self.out = 0
-        self.sky = 0
-        self.vol = 0
-
-    def tot(self):
-        """Calculate the total number of rates."""
-        return self.det + self.out + self.faint
-
-
 class Survey:
     """
     Method containing survey parameters and functions.
 
     Args:
-        survey_name (str): Name of survey with which to observe population. Can
+        name (str): Name of survey with which to observe population. Can
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
         gain_pattern (str): Set gain pattern
-        sidelobes (int): Number of sidelobes (relevent if gain_pattern is airy)
+        sidelobes (int): Number of sidelobes to include
         equal_area (int/bool): Ensures beam area on sky can be equal to a beam
             pattern with a max number of sizelobes. If unwanted, set to False
 
     """
 
-    def __init__(self, survey_name, gain_pattern='gaussian', sidelobes=1,
+    def __init__(self,
+                 name,
+                 gain_pattern='gaussian',
+                 sidelobes=1,
                  equal_area=False):
         """Initializing."""
-        # Find survey file
-        if os.path.isfile(survey_name):
-            f = open(survey_name, 'r')
-        else:
-            # Find standard survey files
-            try:
-                path = os.path.join(paths.surveys(), survey_name)
-                f = open(path, 'r')
-            except IOError:
-                s = 'Survey file {0} does not exist'.format(survey_name)
-                raise IOError(s)
+        # Set up parameters
+        self.name = name
+        self.gain_pattern = gain_pattern
+        self.sidelobes = sidelobes
+        self.equal_area = equal_area
+
+        self.beam_array = None
+        self.T_sky_list = go.load_T_sky()
 
         # Parse survey file
-        self.gl2_min = None
-        self.gl2_max = None
-        self.parse(f)
-        self.discoveries = 0
-        self.survey_name = survey_name
-        self.pointings_list = None
-        self.gains_list = None
-        self.t_obs_list = None
-        self.T_sky_list = go.load_T_sky()
-        self.gain_pattern = gain_pattern
-        self.beam_array = None
-        self.aa = False  # Whether aperture array
-
-        # Counters
-        self.frb_rates = Rates()
-        self.src_rates = Rates()
+        self.find_survey_file()
+        self.parse()
 
         # Beam pattern arguments
         self._kasin_nulls = [3.831706,
@@ -100,12 +57,9 @@ class Survey:
                              32.18968,
                              35.332308,
                              38.474766]
-        self.sidelobes = sidelobes
-        self.equal_area = equal_area
 
         # Set beam file so that it is only imported once
-        self._special_beams = ['parkes', 'apertif']
-        if gain_pattern in self._special_beams:
+        if gain_pattern in ['parkes', 'apertif']:
             place = paths.models() + f'/beams/{gain_pattern}.npy'
             self.beam_array = np.load(place)
 
@@ -122,18 +76,24 @@ class Survey:
 
         return s
 
-    def parse(self, f):
-        """
-        Attempt to parse an already opened survey file.
+    def find_survey_file(self):
+        """Use defaults to find survey file."""
+        if os.path.isfile(self.name):
+            f = open(self.name, 'r')
+        else:
+            # Find standard survey files
+            try:
+                path = os.path.join(paths.surveys(), self.name)
+                f = open(path, 'r')
+            except IOError:
+                s = 'Survey file {0} does not exist'.format(self.name)
+                raise IOError(s)
 
-        Args:
-            f (str): Filename, see Survey class
+        self.survey_file = f
 
-        Returns:
-            Various attributes
-
-        """
-        for line in f:
+    def parse(self):
+        """Attempt to parse an already opened survey file."""
+        for line in self.survey_file:
 
             # Ignore comments
             if line[0] == '#':
@@ -163,7 +123,7 @@ class Survey:
             elif p.count('polarizations'):
                 self.n_pol = float(v)  # number of polarizations
             elif p.count('beam size'):
-                self.beam_size = float(v)  # [deg**2]
+                self.beam_size_fwhm = float(v)  # [deg**2]
             elif p.count('minimum RA'):
                 self.ra_min = float(v)  # [deg]
             elif p.count('maximum RA'):
@@ -185,11 +145,11 @@ class Survey:
             elif p.count('maximum Galactic latitude'):
                 self.gb_max = float(v)  # [deg]
             elif p.count('signal-to-noise'):
-                self.snr_limit = float(v)  # Minimum snr required for detection
+                self.snr_limit = float(v)  # Minimum s/r required for detection
             elif p.count('gain pattern'):
-                self.gain_pat = v  # Gain pattern of telescope
+                pass  # Gain pattern of telescope
             elif p.count('Aperture Array'):
-                self.aa = True
+                pass
             elif p.count('uptime'):
                 pass
             elif p.count('reference'):
@@ -199,7 +159,7 @@ class Survey:
             else:
                 pprint('Parameter {0} not recognised'.format(p))
 
-        f.close()
+        self.survey_file.close()
 
     def in_region(self, src):
         """
@@ -209,8 +169,7 @@ class Survey:
             src (Source): Source of which to check whether in survey region
 
         Returns:
-            True: If source is within survey region
-            False: If source is outside survey region
+            bool: If source is within a survey region
 
         """
         if src.gl > 180.:
@@ -252,9 +211,12 @@ class Survey:
     def intensity_profile(self, sidelobes=1, test=False, equal_area=False,
                           dimensions=2):
         """Calculate intensity profile."""
-        self.fwhm = 2*math.sqrt(self.beam_size/math.pi) * 60  # [arcmin]
+        self.fwhm = 2*math.sqrt(self.beam_size_fwhm/math.pi) * 60  # [arcmin]
 
         offset = self.fwhm/2  # Radius = Diameter/2.
+
+        max_offset = offset*self.max_offset(sidelobes)
+        self.beam_size = math.pi*(max_offset/60)**2  # [sq degrees]
 
         if dimensions == 2:  # 2D
             offset *= math.sqrt(random.random())
@@ -292,6 +254,9 @@ class Survey:
                 # Check whether offset is within the sidelobe you're including
                 if offset > self.max_offset(sidelobes)*self.fwhm/2.:
                     int_pro = 0
+                # Calculate beamsize
+                max_offset = self.max_offset(equal_area)*self.fwhm/2.
+                self.beam_size = math.pi*(max_offset/60)**2  # [sq degrees]
             else:
                 # Set the maximum offset equal to the null after a sidelobe
                 offset *= self.max_offset(sidelobes)
@@ -306,7 +271,7 @@ class Survey:
                 kasin = ka*math.sin(offset*conv)
                 int_pro = 4*(j1(kasin)/kasin)**2
 
-        elif self.gain_pattern in self._special_beams:
+        elif self.gain_pattern in ['parkes', 'apertif']:
             shape = self.beam_array.shape
             ran_x = np.random.randint(0, shape[0])
             ran_y = np.random.randint(0, shape[1])
@@ -316,8 +281,10 @@ class Survey:
             # Scaling factors to correct for pixel scale
             if self.gain_pattern == 'apertif':  # 1 pixel = 0.94'
                 offset *= 240/256  # [arcmin]
+                self.beam_size = 25.
             if self.gain_pattern == 'parkes':  # 1 pixel = 54"
                 offset *= 0.9  # [arcmin]
+                self.beam_size = 9.
 
         if test is False:
             return int_pro
@@ -412,10 +379,8 @@ class Survey:
         Args:
             frb (class): FRB
             src (class): Source of FRB
-            f_low (float): Source emission lower frequency limit [Hz]. Defaults
-                to 10e6
+            f_low (float): Source emission lower frequency limit [Hz].
             f_high (float): Source emission higher frequency limit [Hz].
-                Defaults to 10e9
 
         Returns:
             frb.s_peak (float): Mean spectral flux density [Jy]
@@ -447,14 +412,15 @@ class Survey:
 
         frb.s_peak = s_peak
 
-    def obs_prop(self, frb, src, pop):
+    def obs_prop(self, frb, src, f_min, f_max):
         """
         Set various observation properties of an FRB.
 
         Args:
             frb (class): FRB of which to calculate the signal to noise
             src (class): Source to which the FRB belongs
-            pop (class): Population to which the source belongs
+            f_min (float): Source emission lower frequency limit [Hz].
+            f_max (float): Source emission higher frequency limit [Hz].
 
         Returns:
             frb.snr (float): Signal to noise ratio based on the radiometer
@@ -479,7 +445,7 @@ class Survey:
 
         # Calculate flux density
         if not frb.s_peak:  # Hack to go from frbcat df to pop
-            self.calc_s_peak(frb, src, f_low=pop.f_min, f_high=pop.f_max)
+            self.calc_s_peak(frb, src, f_low=f_min, f_high=f_max)
 
         # Account for offset in beam
         frb.s_peak *= self.intensity_profile(sidelobes=self.sidelobes,
@@ -596,76 +562,3 @@ class Survey:
                 n += 1
             else:
                 self.s_src_rates = s_rates
-
-    def rates(self, pop, output=True, scale_area=True, scale_time=False):
-        """
-        Print survey rates, such as the number of detected sources etc.
-
-        Args:
-            output (bool, optional): Whether to print out the rates or not
-            scale_area (bool, optional): Scale to the surveyed area
-            scale_time (bool, optional): Scale so rates are per day
-        """
-        f = self.frb_rates
-        s = self.src_rates
-        days = (pop.time/86400)
-
-        # Calculate scaling factors
-        area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
-        self.f_area = (self.beam_size * s.tot()) / ((s.det + s.faint)*area_sky)
-        self.f_time = 86400 / pop.time  # pop.time
-
-        # Calculate volumetric rate
-        if pop.vol_co_max:
-            f.vol = f.tot() / pop.vol_co_max * (365.25*86400/pop.time)
-            s.vol = s.tot() / pop.vol_co_max * (365.25*86400/pop.time)
-        else:
-            f.vol = '?'
-            s.vol = '?'
-
-        r = '{:20.19} {:>10} {:>10} {:>10}\n'
-
-        def format(description, days, frbs, srcs):
-            """Format line for printing rates."""
-            scalable_parms = ('Detected', 'Too faint', 'Expected')
-            if scale_area and description in scalable_parms:
-                frbs *= self.f_area
-                srcs *= self.f_area
-
-            if scale_time:
-                frbs *= self.f_time
-                srcs *= self.f_time
-                days = 1
-
-            if description == 'Expected':
-                if frbs > 0:
-                    self.days_per_frb = days/frbs
-                    days = str(round(self.days_per_frb, 5))
-                frbs = 1
-                srcs = '-'
-
-            if type(days) != str:
-                days = round(days)
-            if type(frbs) != str:
-                frbs = round(frbs)
-            if type(srcs) != str:
-                srcs = round(srcs)
-
-            return r.format(description, days, frbs, srcs)
-
-        # Set up title
-        t = r.format(self.survey_name, 'Days', 'FRBs', 'Sources')
-        line = '-'*len(t.split('\n')[-2].strip()) + '\n'
-        t += line
-
-        # Format rates
-        t += format('In population', days, f.tot(), s.tot())
-        t += format('Detected', days, f.det, s.det)
-        t += format('Too faint', days, f.faint, s.faint)
-        t += format('/Gpc^3', 365.25, f.vol, s.vol)
-        t += format('Expected', days, f.det, s.det)
-        t += line
-
-        for n in t.split('\n')[:-1]:
-            if output:
-                pprint(n)

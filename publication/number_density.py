@@ -3,8 +3,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from frbpoppy.do_populate import generate
-from frbpoppy.population import unpickle
+from frbpoppy import CosmicPopulation, unpickle
 
 MAKE = False
 
@@ -13,18 +12,21 @@ if MAKE:
     n_per_day = 5000
 
     # Generate population following a constant number density / comoving volume
-    pop_cst = generate(n_per_day*days,
-                       days=days,
-                       z_max=6.0,
-                       n_model='constant',
-                       name='constant')
+    pop_cst = CosmicPopulation(n_per_day*days,
+                               days=days,
+                               z_max=6.0,
+                               n_model='constant',
+                               name='constant')
 
     # Generate population following star forming rate
-    pop_sfr = generate(n_per_day*days,
-                       days=days,
-                       z_max=6.0,
-                       n_model='sfr',
-                       name='sfr')
+    pop_sfr = CosmicPopulation(n_per_day*days,
+                               days=days,
+                               z_max=6.0,
+                               n_model='sfr',
+                               name='sfr')
+
+    pop_cst.pickle_pop()
+    pop_sfr.pickle_pop()
 
 else:
     pop_cst = unpickle('constant')
@@ -36,9 +38,8 @@ ax = fig.add_subplot(111)
 
 # Get redshift of population
 zs = defaultdict(list)
-for pop in (pop_cst, pop_sfr):
-    for src in pop.sources:
-        zs[pop.name].append(src.z)
+zs['sfr'] = pop_sfr.get('z')
+zs['constant'] = pop_cst.get('z')
 
 for pop in zs:
     n, bins, patches = ax.hist(zs[pop],
