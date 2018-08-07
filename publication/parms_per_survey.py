@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import numpy as np
 
-from frbpoppy.do_populate import generate
-from frbpoppy.do_survey import observe
-from frbpoppy.population import unpickle
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
 
 MAKE = False  # Construct a population to survey
 PARMS = ['fluence', 'dm', 's_peak', 'w_eff']
@@ -16,7 +14,7 @@ NBINS = 50
 if MAKE:
     n_per_day = 5000
     days = 28
-    pop_std = generate(n_per_day*days, days=days, name='standard')
+    pop_std = CosmicPopulation(n_per_day*days, days=days, name='standard')
 else:
     pop_std = unpickle('standard')
 
@@ -47,16 +45,10 @@ for p in PARMS:
         logbins = False
 
     for i, pattern in enumerate(PATTERNS):
-        surv_pop = observe(pop_std, SURVEYS[i], gain_pattern=pattern)
+        survey = Survey(SURVEYS[i], gain_pattern=pattern)
+        surv_pop = SurveyPopulation(pop_std, survey)
 
-        ps = []
-
-        for src in surv_pop.sources:
-            try:
-                ps.append(getattr(src, p))
-            except AttributeError:
-                for frb in src.frbs:
-                    ps.append(getattr(frb, p))
+        ps = surv_pop.get(p)
 
         if logbins:
             # Calculate the min and max powers:

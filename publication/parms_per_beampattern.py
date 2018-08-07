@@ -3,12 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import numpy as np
 
-from frbpoppy.do_populate import generate
-from frbpoppy.do_survey import observe
-from frbpoppy.population import unpickle
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
 
 MAKE = False  # Construct a population to survey
-PARMS = ['fluence']  # , 'fluence', 's_peak', 'w_eff']
+PARMS = ['fluence', 's_peak', 'w_eff']  # , 'fluence', 's_peak', 'w_eff']
 PATTERNS = ['perfect', 'tophat', 'gaussian', 'airy']
 SURVEY = 'HTRU'
 NBINS = 50
@@ -16,7 +14,7 @@ NBINS = 50
 if MAKE:
     n_per_day = 5000
     days = 28
-    pop_std = generate(n_per_day*days, days=days, name='standard')
+    pop_std = CosmicPopulation(n_per_day*days, days=days, name='standard')
 else:
     pop_std = unpickle('standard')
 
@@ -32,7 +30,7 @@ for p in PARMS:
         # plt.yscale('log')
         logbins = True
     elif p == 's_peak':
-        title = r'S_{peak}'
+        title = r'$S_{\text{peak}}$ (Jy)'
         plt.xscale('log')
         plt.yscale('log')
         logbins = True
@@ -44,16 +42,9 @@ for p in PARMS:
         logbins = False
 
     for pattern in PATTERNS:
-        surv_pop = observe(pop_std, SURVEY, gain_pattern=pattern)
-
-        ps = []
-
-        for src in surv_pop.sources:
-            try:
-                ps.append(getattr(src, p))
-            except AttributeError:
-                for frb in src.frbs:
-                    ps.append(getattr(frb, p))
+        survey = Survey(SURVEY, gain_pattern=pattern)
+        surv_pop = SurveyPopulation(pop_std, survey)
+        ps = surv_pop.get(p)
 
         if logbins:
             # Calculate the min and max powers:

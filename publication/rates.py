@@ -3,22 +3,20 @@ from collections import namedtuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from frbpoppy.do_populate import generate
-from frbpoppy.do_survey import observe
-from frbpoppy.population import unpickle
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
 
 MAKE = False
-Survey = namedtuple('Survey', ['name', 'prior', 'pattern'])
+SurveyProps = namedtuple('Survey', ['name', 'prior', 'pattern'])
 surveys = []
-surveys.append(Survey('HTRU', 14, 'airy'))
-surveys.append(Survey('APERTIF', 7, 'airy'))
-surveys.append(Survey('UTMOST-1D', 30, 'airy'))
-surveys.append(Survey('ASKAP-FLY', 14, 'airy'))
+surveys.append(SurveyProps('HTRU', 14, 'airy'))
+surveys.append(SurveyProps('APERTIF', 7, 'airy'))
+surveys.append(SurveyProps('UTMOST-1D', 30, 'airy'))
+surveys.append(SurveyProps('ASKAP-FLY', 14, 'airy'))
 
 if MAKE:
     n_per_day = 5000
     days = 28
-    pop_std = generate(n_per_day*days, days=days, name='standard')
+    pop_std = CosmicPopulation(n_per_day*days, days=days, name='standard')
 else:
     pop_std = unpickle('standard')
 
@@ -28,14 +26,9 @@ prior = [s.prior for s in surveys]
 prediction = []
 
 for survey in surveys:
-    survey = observe(pop_std,
-                     survey.name,
-                     gain_pattern=survey.pattern,
-                     return_survey=True,
-                     return_pop=False,
-                     output=True)
-
-    prediction.append(survey.days_per_frb)
+    surv = Survey(survey.name, gain_pattern=survey.pattern)
+    surv_pop = SurveyPopulation(pop_std, surv)
+    prediction.append(surv_pop.rates().exp)
 
 # Create plot
 fig, ax = plt.subplots()
@@ -50,6 +43,6 @@ ax.invert_yaxis()  # labels read top-to-bottom
 ax.set_xlabel('Days per FRB')
 plt.legend()
 plt.tight_layout()
-# plt.xscale('log')
+plt.xscale('log')
 
 plt.savefig('plots/rates.pdf')

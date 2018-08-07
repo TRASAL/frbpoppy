@@ -108,7 +108,7 @@ class CosmicPopulation(Population):
                       W_v=self.W_v)
 
         # Let user know what's happening
-        pprint(f'Starting generating {self.name} population')
+        pprint(f'Generating {self.name} population')
 
         while self.n_srcs < self.n_gen:
 
@@ -160,7 +160,8 @@ class CosmicPopulation(Population):
             src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
             # Add initial frb
-            attrs = self.__dict__
+            attrs = dict(self.__dict__)
+            attrs.pop('time')
             src.create_frb(**attrs)
 
             # If repeating add another FRB
@@ -176,4 +177,4 @@ class CosmicPopulation(Population):
         # Save population
         self.pickle_pop()
 
-        pprint(f'Finished generating {self.name} population')
+        pprint(f'Finished')

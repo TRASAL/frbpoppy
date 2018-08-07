@@ -21,8 +21,8 @@ class Population:
 
         # Dispersion Measure [pc/cm^3]
         self.dm_host = None
-        self.dm_igm = None
-        self.electron_model = None
+        self.dm_igm_index = None
+        self.dm_mw_model = None
 
         # Luminosity
         self.lum_max = None
@@ -57,8 +57,6 @@ class Population:
         self.sources = []
         self.n_srcs = 0
 
-# -------------------------------
-
     def __str__(self):
         """Define how to print a population object to a console."""
         s = 'Population properties:'
@@ -76,6 +74,19 @@ class Population:
         """Add a source to the population."""
         self.sources.append(source)
         self.n_srcs += 1
+
+    def get(self, par):
+        """Get a list of a parameter."""
+        pars = []
+
+        for src in self.sources:
+            try:
+                pars.append(getattr(src, par))
+            except AttributeError:
+                for frb in src.frbs:
+                    pars.append(getattr(frb, par))
+
+        return pars
 
     def save(self, sep=','):
         """
