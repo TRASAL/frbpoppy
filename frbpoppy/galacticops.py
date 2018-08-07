@@ -266,7 +266,7 @@ def ne2001_get_smtau(dist, gl, gb):
 
 def ne2001_scint_time_bw(dist, gl, gb, freq):
     """
-    Use the NE2001 model to get the diffractive scintillation timescale
+    Use the NE2001 model to get the diffractive scintillation timescale.
 
     Args:
         dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc
@@ -358,104 +358,108 @@ def load_T_sky():
     return t_sky_list
 
 
-def z_to_d(z, H_0=69.6, W_m=0.286, W_v=0.714,
-           dist_co=False, dist_lum=False, vol_co=False):
-    """
-    Convert redshift to a various measures.
+class Redshift:
+    """Class for converting redshift to other distance measures."""
 
-    Based on James Schombert's python implementation of Edward L. Wright's
-    cosmology calculator.
+    def __init__(self, z, H_0=69.6, W_m=0.286, W_v=0.714):
+        """
+        Convert redshift to a various measures.
 
-    Args:
-        z (float): Redshift
-        H_0 (float, optional): Hubble parameter. Defaults to 69.6
-        W_m (float, optional): Omega matter. Defaults to 0.286
-        W_v (float, optional): Omega vacuum. Defaults to 0.714
-        dist_co (bool): Whether to return the comoving distance
-        dist_lum (bool): Whether to return the luminosity distance
-        vol_co (bool): Whether to return the comoving volume
+        Based on James Schombert's python implementation of Edward L. Wright's
+        cosmology calculator.
 
-    Returns:
-        float: One of the distance measures [Gpc], or comoving volume from
-            Earth to the source [Gpc^3]
+        Args:
+            z (float): Redshift
+            self.H_0 (float, optional): Hubble parameter.
+            self.W_m (float, optional): Omega matter.
+            self.W_v (float, optional): Omega vacuum.
 
-        Alternatively
-        dict: Various outputs as requested
+        Returns:
+            float: One of the distance measures [Gpc], or comoving volume from
+                Earth to the source [Gpc^3]
 
-    """
-    # Set default output
-    if sum(map(bool, [dist_co, dist_lum, vol_co])) == 0:
-        dist_co = True
+        """
+        self.z = z
+        self.H_0 = H_0
+        self.W_m = W_m
+        self.W_v = W_v
 
-    # Set up outputs
-    outputs = {}
+        # Initialize constants
+        self.W_r = 0.4165/(self.H_0*self.H_0)  # Omega radiation
+        self.W_k = 1.0 - self.W_m - self.W_r - self.W_v  # Omega curvature
+        self.c = 299792.458  # Velocity of light [km/sec]
+        self.dcmr = 0.
+        self.az = 1/(1+self.z)
 
-    # Initialize constants
-    W_r = 0.4165/(H_0*H_0)  # Omega radiation
-    W_k = 1.0 - W_m - W_r - W_v  # Omega curvature
-    c = 299792.458  # Velocity of light [km/sec]
-    dcmr = 0.
-    az = 1/(1+z)
+        # Distance measures
+        self.dc_mpc = None
+        self.dl_mpc = None
 
-    n = 1000
+    def dist_co(self):
+        """Calculate the corresponding comoving distance [Gpc]."""
+        n = 1000
 
-    for i in range(n):
-        a = az+(1-az)*(i+0.5)/n
-        adot = math.sqrt(W_k + W_m/a + W_r/(a*a) + W_v*a*a)
-        dcmr += 1/(a*adot)
+        for i in range(n):
+            a = self.az+(1-self.az)*(i+0.5)/n
+            s = sum([self.W_k, self.W_m/a, self.W_r/(a*a), self.W_v*a*a])
+            adot = math.sqrt(s)
+            self.dcmr += 1/(a*adot)
 
-    dcmr = (1.-az)*dcmr/n
+        self.dcmr = (1.-self.az)*self.dcmr/n
 
-    if dist_co:
-        dc_mpc = (c/H_0)*dcmr  # Comoving distance [Mpc]
-        outputs['dist_co'] = dc_mpc*1e-3  # Convert to Gpc
+        self.dc_mpc = (self.c/self.H_0)*self.dcmr  # Comoving distance [Mpc]
 
-    if dist_lum:
+        return self.dc_mpc*1e-3  # Convert to Gpc
+
+    def dist_lum(self):
+        """Calculate the corresponding luminosity distance [Gpc]."""
+        if not self.dc_mpc:
+            self.dist_co()
+
+        # Calculate luminosity distance
         ratio = 1.
-        x = math.sqrt(abs(W_k))*dcmr
+        x = math.sqrt(abs(self.W_k))*self.dcmr
 
         if x > 0.1:
-            if W_k > 0:
+            if self.W_k > 0:
                 ratio = 0.5*(math.exp(x)-math.exp(-x))/x
             else:
                 ratio = math.sin(x)/x
         else:
             y = x*x
-            if W_k < 0:
+            if self.W_k < 0:
                 y = -y
             ratio = 1. + y/6. + y*y/120.
 
-        dcmt = ratio*dcmr
-        da = az*dcmt
-        dl = da/(az*az)
-        dl_mpc = (c/H_0)*dl  # Luminosity distance [Mpc]
+        dcmt = ratio*self.dcmr
+        da = self.az*dcmt
+        dl = da/(self.az*self.az)
+        self.dl_mpc = (self.c/self.H_0)*dl  # Luminosity distance [Mpc]
 
-        outputs['dist_lum'] = dl_mpc*1e-3  # Covert to Gpc
+        return self.dl_mpc*1e-3  # Covert to Gpc
 
-    if vol_co:
+    def vol_co(self):
+        """Calculate the corresponding comoving volume [Gpc^3]."""
+        if not self.dl_mpc:
+            self.dist_lum()
+
         ratio = 1.00
-        x = math.sqrt(abs(W_k))*dcmr
+        x = math.sqrt(abs(self.W_k))*self.dcmr
         if x > 0.1:
-            if W_k > 0:
+            if self.W_k > 0:
                 ratio = (0.125*(math.exp(2.*x)-math.exp(-2.*x))-x/2.)/(x**3/3)
             else:
                 ratio = (x/2. - math.sin(2.*x)/4.)/(x**3/3)
         else:
             y = x*x
-            if W_k < 0:
+            if self.W_k < 0:
                 y = -y
             ratio = 1. + y/5. + (2./105.)*y*y
 
-        v_cm = ratio*dcmr**3/3
-        v_gpc = 4.*math.pi*((1e-3*c/H_0)**3)*v_cm  # Comoving volume
+        v_cm = ratio*self.dcmr**3/3
+        self.v_gpc = 4.*math.pi*((1e-3*self.c/self.H_0)**3)*v_cm
 
-        outputs['vol_co'] = v_gpc
-
-    if len(outputs) == 1:
-        output, = outputs.values()
-        return output
-    else:
-        return outputs
+        return self.v_gpc
 
 
 def z_to_d_approx(z, H_0=69.6):
