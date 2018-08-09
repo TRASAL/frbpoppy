@@ -1,3 +1,4 @@
+"""Define a class to hold a population of FRBs."""
 from io import StringIO
 import os
 import pickle

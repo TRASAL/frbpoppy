@@ -1,7 +1,7 @@
 from .adapt_pop import Adapt
 from .distributions import *
 from .do_hist import histogram
-# from .do_plot import plot
+from .do_plot import plot
 from .do_populate import generate
 from .do_survey import observe
 from .frb import FRB

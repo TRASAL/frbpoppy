@@ -49,7 +49,10 @@ class Rates:
     @property
     def exp(self):
         """Days before an FRB is detected."""
-        return self.days/self.det
+        try:
+            return self.days/self.det
+        except ZeroDivisionError:
+            return float('NaN')
 
 
 def scale(rates, area=True, time=False):
