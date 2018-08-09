@@ -24,11 +24,16 @@ else:
 y_pos = np.arange(len(surveys))
 prior = [s.prior for s in surveys]
 prediction = []
+fluence_limit = []
 
 for survey in surveys:
     surv = Survey(survey.name, gain_pattern=survey.pattern)
     surv_pop = SurveyPopulation(pop_std, surv)
-    prediction.append(surv_pop.rates().exp)
+
+    predict = surv_pop.rates().exp
+    min_fluence = min(surv_pop.get('fluence'))
+    prediction.append(predict)
+    fluence_limit.append(min_fluence)
 
 # Create plot
 fig, ax = plt.subplots()
@@ -40,6 +45,13 @@ plt.plot(prediction, y_pos, 'o', label='Frbpoppy')
 ax.set_yticks(y_pos)
 ax.set_yticklabels([s.name for s in surveys])
 ax.invert_yaxis()  # labels read top-to-bottom
+
+# Create right axis
+ax2 = ax.twinx()
+ax2.set_ylim(ax.get_ylim())
+ax2.set_yticks(ax.get_yticks())
+ax2.set_yticklabels([f'>{round(f, 2)} Jy ms' for f in fluence_limit])
+
 ax.set_xlabel('Days per FRB')
 plt.legend()
 plt.tight_layout()

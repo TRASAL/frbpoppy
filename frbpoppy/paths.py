@@ -22,6 +22,19 @@ class Paths():
 
         self.config = {s: '' for s in self.subfolders}
 
+    def __str__(self):
+        """Define how to print a path object to a console."""
+        s = 'Paths:'
+
+        attributes = []
+        for e in self.subfolders:
+            attr = '\n\t{0:12.11}{1:.60}'.format(e, getattr(self, e)())
+            attributes.append(attr)
+
+        s += ''.join(attributes)
+
+        return s
+
     def check(self, path):
         """Perform checks on path."""
         # Just convient to have files ending in a slash

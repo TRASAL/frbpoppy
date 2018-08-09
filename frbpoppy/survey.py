@@ -526,39 +526,3 @@ class Survey:
 
         # Distribute the scintillation according to gaussian distribution
         frb.snr = random.gauss(frb.snr, m*frb.snr)
-
-    def scale_rates(self, pop):
-        """
-        Scale all rates according to surveyed area .
-
-        Args:
-            pop (Population): Population class
-        """
-        rates = (self.frb_rates, self.src_rates)
-        n = 0
-
-        for r in rates:
-
-            # Filter frbcat population
-            if not pop.vol_co_max:
-                continue
-
-            area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
-            self.f_area = (self.beam_size * r.tot()) / ((r.det + r.faint)*area_sky)
-            self.f_time = 86400 / self.t_obs  # pop.time
-            det = r.det * self.f_area #* self.f_time
-            faint = r.faint * self.f_area #* self.f_time
-            out = r.out + r.det - det + r.faint - faint
-            vol = r.tot() / pop.vol_co_max * (365.25*86400/pop.time)
-
-            s_rates = Rates()
-            s_rates.det = det
-            s_rates.faint = faint
-            s_rates.out = out
-            s_rates.vol = vol
-
-            if n == 0:
-                self.s_frb_rates = s_rates
-                n += 1
-            else:
-                self.s_src_rates = s_rates
