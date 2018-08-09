@@ -1,18 +1,14 @@
 """Short example of how frbpoppy works."""
-from frbpoppy.do_populate import generate
-from frbpoppy.do_survey import observe
-from frbpoppy.do_plot import plot
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 
-days = 1
-n_per_day = 5000
+# Generate an FRB population
+population = CosmicPopulation(10000, days=2, name='example')
 
-# Generate FRB population
-population = generate(n_per_day*days,
-                      days=days,
-                      name='example')
+# Setup a survey
+survey = Survey('APERTIF')
 
-# Observe FRB population
-result = observe(population, 'APERTIF')
+# Observe the FRB population
+result = SurveyPopulation(population, survey)
 
 # Plot populations
 plot(population, result)

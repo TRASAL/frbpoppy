@@ -35,7 +35,7 @@ class Frbcat():
         self.get()
 
         # Transform the data
-        if frbpoppy:
+        if frbpoppy is True:
             self.filter(one_per_frb=True,
                         repeat_bursts=False,
                         repeater=True)
