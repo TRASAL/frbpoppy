@@ -174,7 +174,4 @@ class CosmicPopulation(Population):
             # Add source to population
             self.add(src)
 
-        # Save population
-        self.pickle_pop()
-
         pprint(f'Finished')

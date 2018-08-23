@@ -28,7 +28,7 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True, port=5006):
 
         # Save populations
         for pop in pops:
-            pop.save()
+            pop.save(extention='csv')
 
             # Save location
             file_name = 'population_' + pop.name.lower() + '.csv'

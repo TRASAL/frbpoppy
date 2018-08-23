@@ -1,5 +1,8 @@
-bokeh==0.12.10
+bokeh==0.12.14
 numpy==1.14.1
-pandas==0.21.0
-scipy==1.0.0
-SQLAlchemy==1.2.3
+pandas==0.23.4
+scipy==1.1.0
+SQLAlchemy==1.2.10
+lmfit==0.9.11
+matplotlib==2.2.3
+requests==2.19.1

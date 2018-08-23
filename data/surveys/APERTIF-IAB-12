@@ -12,6 +12,8 @@
 0.19530999999999998 ! channel bandwidth (MHz)
      2.0 ! number of polarizations
      8.7 ! beam size (deg^2)
+     8.0 ! signal-to-noise ratio [0-1]
+   100.0 ! maximum pulse width (ms)
      0.0 ! minimum RA (deg)
    360.0 ! maximum RA (deg)
    -37.1 ! minimum DEC (deg)
@@ -23,5 +25,4 @@
    -90.0 ! minimum Galactic latitude (deg)
     90.0 ! maximum Galactic latitude (deg)
      1.0 ! fractional uptime [0-1]
-     8.0 ! signal-to-noise ratio [0-1]
      nan ! reference
