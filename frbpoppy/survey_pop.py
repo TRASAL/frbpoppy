@@ -1,6 +1,8 @@
 """Class to generate a survey population of FRBs."""
 from copy import deepcopy
 import math
+import numpy as np
+from lmfit import Model
 
 from frbpoppy.log import pprint
 from frbpoppy.population import Population
@@ -113,3 +115,58 @@ class SurveyPopulation(Population):
             r = scale(r, time=True)
 
         return r
+
+    def calc_logn_logs(self):
+        """TODO. Currently unfinished."""
+        f_lim = self.survey.calc_fluence_limit()
+        f_lim = 5e-1
+        fluences = [f for f in self.get('fluence') if f >= f_lim]
+
+        # Bin up
+        min_f = np.log10(min(fluences))
+        max_f = np.log10(max(fluences))
+        log_bins = np.logspace(min_f, max_f, 50)
+        hist, edges = np.histogram(fluences, bins=log_bins)
+        cum_hist = [sum(hist[i:]) for i in range(len(hist))]
+
+        log_xs = ((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)
+        xs = 10**log_xs
+
+        def powerlaw(x, norm=1, alpha=-1):
+            return norm*x**(alpha)
+
+        def linear(x, norm=1, alpha=-1):
+            """log(y) = log(norm) + alpha * log(x)"""
+            return norm + alpha*x
+
+        in_logspace = False
+
+        if in_logspace:
+            model = Model(linear)
+            params = model.make_params()
+
+            params['alpha'].min = -5.0
+            params['alpha'].max = 0.5
+
+            elems = zip(log_xs, np.log10(cum_hist))
+            elems = [e for e in elems if e[1] > 0]
+            log_xs, log_cum = zip(*elems)
+            result = model.fit(log_cum, params, x=log_xs)
+
+            alpha = result.params['alpha'].value
+            alpha_err = result.params['alpha'].stderr
+            norm = 10**(result.params['norm'].value)
+        else:
+            model = Model(powerlaw)
+            params = model.make_params()
+
+            params['alpha'].min = -5.0
+            params['alpha'].max = 0.5
+
+            result = model.fit(cum_hist, params, x=xs)
+
+            alpha = result.params['alpha'].value
+            alpha_err = result.params['alpha'].stderr
+            norm = result.params['norm'].value
+
+        return alpha, alpha_err, norm

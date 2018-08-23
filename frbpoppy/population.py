@@ -89,13 +89,19 @@ class Population:
 
         return pars
 
-    def save(self, sep=','):
+    def to_df(self):
+        """Gather source values into a pandas dataframe."""
+        data = StringIO(self._values())
+        df = pd.read_csv(data)
+        return df
+
+    def save(self, extention='p'):
         """
         Write out source properties as data file.
 
         Args:
-            sep (str): Define seperator in file, which also changes the file
-                       type between .dat and .csv. Defaults to csv
+            extention (str): Type of file to save.
+                Choice from ['csv', 'dat', 'p']
         """
         # Check if a population has been a survey name
         if not self.name:
@@ -103,21 +109,34 @@ class Population:
         else:
             file_name = 'population_' + self.name.lower()
 
-        # Set file types
-        if sep == ',':
-            file_name += '.csv'
-        elif sep == ' ':
-            file_name += '.dat'
-
         path = paths.populations() + file_name
 
+        # Set file types
+        if extention == 'p':
+            path += '.p'
+            self.to_pickle(path)
+        if extention == 'csv':
+            path += '.csv'
+            self._to_csv(path)
+        elif extention == 'dat':
+            path += '.dat'
+            self._to_csv(path, sep=' ')
+
+    def _to_csv(self, path, sep=','):
+        """Write a population to a csv file.
+
+        Args:
+            path (str): Path to which to write
+            sep (str): Seperator character
+
+        """
         with open(path, 'w') as f:
-            v = self.values(sep=sep)
+            v = self._values(sep=sep)
             if not v:
                 v = ' '
             f.write(v)
 
-    def values(self, sep=','):
+    def _values(self, sep=','):
         """
         Gather source values into table in string format.
 
@@ -161,17 +180,14 @@ class Population:
 
         return data
 
-    def to_df(self):
-        """Gather source values into a pandas dataframe."""
-        data = StringIO(self.values())
-        df = pd.read_csv(data)
-        return df
+    def to_pickle(self, path):
+        """Write a population to a pickled file for future use.
 
-    def pickle_pop(self):
-        """Allow the population to be pickled for future use."""
-        file_name = 'population_{}.p'.format(self.name.lower())
-        file_path = paths.populations() + file_name
-        output = open(file_path, 'wb')
+        Args:
+            path (str): Path to which to write
+
+        """
+        output = open(path, 'wb')
         pickle.dump(self, output, 2)
         output.close()
 
@@ -184,7 +200,7 @@ def unpickle(filename=None):
             or give the population name
 
     Returns:
-        pop (Population): Population class
+        Population: Population class
 
     """
     # Find population file

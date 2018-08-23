@@ -25,4 +25,4 @@
      1.0 ! fractional uptime [0-1]
    1e-16 ! signal-to-noise ratio [0-1]
      nan ! reference
-     nan ! colour
+       1 ! maximum pulse width (ms)

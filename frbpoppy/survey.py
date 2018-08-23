@@ -79,21 +79,21 @@ class Survey:
     def find_survey_file(self):
         """Use defaults to find survey file."""
         if os.path.isfile(self.name):
-            f = open(self.name, 'r')
+            path = self.name
         else:
             # Find standard survey files
             try:
                 path = os.path.join(paths.surveys(), self.name)
-                f = open(path, 'r')
             except IOError:
                 s = 'Survey file {0} does not exist'.format(self.name)
                 raise IOError(s)
 
-        self.survey_file = f
+        self.survey_file = path
 
     def parse(self):
         """Attempt to parse an already opened survey file."""
-        for line in self.survey_file:
+        open_file = open(self.survey_file, 'r')
+        for line in open_file:
 
             # Ignore comments
             if line[0] == '#':
@@ -124,6 +124,8 @@ class Survey:
                 self.n_pol = float(v)  # number of polarizations
             elif p.count('beam size'):
                 self.beam_size_fwhm = float(v)  # [deg**2]
+            elif p.count('maximum pulse width'):
+                self.max_w_eff = float(v)  # [ms]
             elif p.count('minimum RA'):
                 self.ra_min = float(v)  # [deg]
             elif p.count('maximum RA'):
@@ -159,7 +161,7 @@ class Survey:
             else:
                 pprint('Parameter {0} not recognised'.format(p))
 
-        self.survey_file.close()
+        open_file.close()
 
     def in_region(self, src):
         """
@@ -215,20 +217,19 @@ class Survey:
 
         offset = self.fwhm/2  # Radius = Diameter/2.
 
-        max_offset = offset*self.max_offset(sidelobes)
-        self.beam_size = math.pi*(max_offset/60)**2  # [sq degrees]
+        if self.gain_pattern == 'perfect':
+            int_pro = 1
+            self.beam_size = self.beam_size_fwhm
+        else:
+            max_offset = offset*self.max_offset(sidelobes)
+            self.beam_size = math.pi*(max_offset/60)**2  # [sq degrees]
 
         if dimensions == 2:  # 2D
             offset *= math.sqrt(random.random())
         elif dimensions == 1:  # 1D
             offset *= random.random()
 
-        if self.gain_pattern == 'perfect':
-            offset *= self.max_offset(sidelobes)
-            int_pro = 1
-
-        elif self.gain_pattern == 'tophat':
-            offset *= self.max_offset(sidelobes)
+        if self.gain_pattern == 'tophat':
             int_pro = 1
             if random.random() > 0.5:
                 int_pro = 0
@@ -526,3 +527,29 @@ class Survey:
 
         # Distribute the scintillation according to gaussian distribution
         frb.snr = random.gauss(frb.snr, m*frb.snr)
+
+    def calc_fluence_limit(self, w_eff=None):
+        """Calculate the fluence limit.
+
+        Read Keane, Petroff (2015) for more details on how this is calculated.
+
+        Args:
+            w_eff: Pulse width at which to calculate the fluence limit [ms].
+                Default sets this to be at the maximum searched pulse width.
+
+        Returns:
+            float: Fluence limit for a maximum pulse width burst [Jy ms]
+
+        """
+        if not w_eff:
+            w_eff = self.max_w_eff
+
+        # Line of constant S/N
+        self.s_peak_limit = self.snr_limit*self.T_sys*self.beta
+        self.s_peak_limit /= self.gain*math.sqrt(self.n_pol*self.bw*1e3)
+
+        # Line of constant fluence
+        self.fluence_limit = self.s_peak_limit / math.sqrt(w_eff)
+        self.fluence_limit *= w_eff
+
+        return self.fluence_limit

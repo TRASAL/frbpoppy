@@ -5,7 +5,7 @@ from matplotlib.lines import Line2D
 
 from frbpoppy import CosmicPopulation, unpickle
 
-MAKE = False
+MAKE = True
 
 if MAKE:
     days = 7
@@ -25,8 +25,8 @@ if MAKE:
                                n_model='sfr',
                                name='sfr')
 
-    pop_cst.pickle_pop()
-    pop_sfr.pickle_pop()
+    pop_cst.save()
+    pop_sfr.save()
 
 else:
     pop_cst = unpickle('constant')

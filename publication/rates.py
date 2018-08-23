@@ -31,9 +31,11 @@ for survey in surveys:
     surv_pop = SurveyPopulation(pop_std, surv)
 
     predict = surv_pop.rates().exp
-    min_fluence = min(surv_pop.get('fluence'))
+    lim = surv.calc_fluence_limit()
+    if lim == float('nan'):
+        lim = '?'
     prediction.append(predict)
-    fluence_limit.append(min_fluence)
+    fluence_limit.append(lim)
 
 # Create plot
 fig, ax = plt.subplots()
@@ -50,7 +52,7 @@ ax.invert_yaxis()  # labels read top-to-bottom
 ax2 = ax.twinx()
 ax2.set_ylim(ax.get_ylim())
 ax2.set_yticks(ax.get_yticks())
-ax2.set_yticklabels([f'>{round(f, 2)} Jy ms' for f in fluence_limit])
+ax2.set_yticklabels([f'{round(f, 2)} Jy ms' for f in fluence_limit])
 
 ax.set_xlabel('Days per FRB')
 plt.legend()

@@ -29,7 +29,7 @@ class Adapt:
             src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
         # Save the population
-        self.pop.pickle_pop()
+        self.pop.save()
         return self.pop
 
     def dm_igm(self, slope):
@@ -48,7 +48,7 @@ class Adapt:
             src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
         # Save the population
-        self.pop.pickle_pop()
+        self.pop.save()
         return self.pop
 
     def freq(self, freq_min, freq_max):
@@ -65,7 +65,7 @@ class Adapt:
         """
         self.pop.f_min = freq_min
         self.pop.f_max = freq_max
-        self.pop.pickle_pop()
+        self.pop.save()
         return self.pop
 
     def lum_bol(self, lum_min, lum_max, lum_pow):
@@ -86,7 +86,7 @@ class Adapt:
                 frb.lum_bol = dis.powerlaw(lum_min, lum_max, lum_pow)
 
         # Save the population
-        self.pop.pickle_pop()
+        self.pop.save()
         return self.pop
 
     def si(self, si_mu, si_sigma):
@@ -106,7 +106,7 @@ class Adapt:
                 frb.si = random.gauss(self.pop.si_mu, self.pop.si_sigma)
 
         # Save the population
-        self.pop.pickle_pop()
+        self.pop.save()
         return self.pop
 
     def w_int(self, w_int_min, w_int_max):
@@ -132,5 +132,5 @@ class Adapt:
                 frb.w_arr = frb.w_int*(1+source.z)
 
         # Save the population
-        self.pop.pickle_pop()
+        self.pop.save()
         return self.pop
