@@ -84,8 +84,9 @@ class Plot():
         self.set_widgets()
         self.get_data()
         self.make_scatter()
-        self.make_histogram()
-        self.make_histogram(log=True)
+        self.make_histogram(kind='lin')
+        self.make_histogram(kind='log')
+        self.make_histogram(kind='cum')
         self.set_layout()
 
     def set_colours(self):
@@ -179,17 +180,26 @@ class Plot():
 
         self.tabs.append(tab)
 
-    def make_histogram(self, log=False):
+    def make_histogram(self, kind='lin'):
         """Set up a histogram plot."""
         # Initializing plot
         tab = Tab()
 
-        if log:
-            tab.name = 'Hist (Log)'
-            axis_type = 'log'
-        else:
+        if kind == 'lin':
             tab.name = 'Hist (Lin)'
             axis_type = 'linear'
+            log = False
+            cum = False
+        elif kind == 'log':
+            tab.name = 'Hist (Log)'
+            axis_type = 'log'
+            log = True
+            cum = False
+        elif kind == 'cum':
+            tab.name = 'Hist (Cum)'
+            axis_type = 'log'
+            log = True
+            cum = True
 
         # Set up interactive tools
         props = [("pop", "@population"), ("frac", "@top")]
@@ -206,7 +216,7 @@ class Plot():
                          y_axis_type="log")
 
         # Create Column Data Sources for interacting with the plot
-        hists = histogram(self.dfs, log=log)
+        hists = histogram(self.dfs, log=log, cum=cum)
 
         props = dict(top=[],
                      left=[],
@@ -228,10 +238,12 @@ class Plot():
                          alpha=0.4,
                          source=source)
 
-        if log:
-            self.hists_log = hists
-        else:
+        if kind == 'lin':
             self.hists_lin = hists
+        elif kind == 'log':
+            self.hists_log = hists
+        elif kind == 'cum':
+            self.hists_cum = hists
 
         self.tabs.append(tab)
 
@@ -249,19 +261,18 @@ class Plot():
 
             for i, source in enumerate(tab.sources):
 
+                cols = [x_abr, f'{x_abr}_left', f'{x_abr}_right',
+                        'bottom', 'color', 'population']
+
                 if tab.name == 'Scatter':
                     cols = [x_abr, y_abr, 'color', 'population']
                     dfs = self.dfs
-
                 elif tab.name == "Hist (Lin)":
-                    cols = [x_abr, f'{x_abr}_left', f'{x_abr}_right',
-                            'bottom', 'color', 'population']
                     dfs = self.hists_lin
-
                 elif tab.name == "Hist (Log)":
-                    cols = [x_abr, f'{x_abr}_left', f'{x_abr}_right',
-                            'bottom', 'color', 'population']
                     dfs = self.hists_log
+                elif tab.name == "Hist (Cum)":
+                    dfs = self.hists_cum
 
                 # Ensure columns are present in each population
                 if (x_abr not in dfs[i] or
@@ -314,7 +325,7 @@ class Plot():
         for tab in self.tabs:
             panels.append(Panel(child=tab.fig, title=tab.name))
             tab.fig.legend.click_policy = 'hide'
-        tabs = Tabs(tabs=panels)
+        tabs = Tabs(tabs=panels, width=self.width)
 
         # Add sidebar and tabs
         L = layout([[s, tabs]], sizing_mode='fixed')

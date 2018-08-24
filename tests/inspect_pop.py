@@ -2,4 +2,4 @@
 from frbpoppy import unpickle, plot
 
 pop = unpickle('perfect')
-plot(pop, mute=False)
+plot(pop, mute=False, frbcat=False)

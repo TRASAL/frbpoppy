@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-def histogram(dfs, n_bins=50, log=False, mc=False):
+def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
     """
     Quick function to 'histogram' each column of each dataframe.
 
@@ -96,6 +96,10 @@ def histogram(dfs, n_bins=50, log=False, mc=False):
 
             # Normalise
             h = [e/h.sum() for e in h]
+
+            # Cumulative
+            if cum:
+                h = [sum(h[i:]) for i in range(len(h))]
 
             if mc:
                 hist['id'] = df['id'].iloc[0]
