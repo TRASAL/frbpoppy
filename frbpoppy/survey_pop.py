@@ -116,17 +116,27 @@ class SurveyPopulation(Population):
 
         return r
 
-    def calc_logn_logs(self):
+    def calc_logn_logs(self, parameter='fluence', method='jp', min_p=None):
         """TODO. Currently unfinished."""
-        f_lim = self.survey.calc_fluence_limit()
-        f_lim = 5e-1
-        fluences = [f for f in self.get('fluence') if f >= f_lim]
+        parms = self.get(parameter)
+
+        if method == 'jp':
+            n = len(parms)
+            if min_p is None:
+                f_0 = min(parms)
+            else:
+                f_0 = min_p
+            alpha = -1/((1/n)*sum([math.log(f/f_0) for f in parms]))
+            alpha *= (n-1)/n  # Removing bias in alpha
+            alpha_err = n*alpha/((n-1)*(n-2)**0.5)
+            norm = n / (f_0**alpha)  # Normalisation at lowest parameter
+            return alpha, alpha_err, norm
 
         # Bin up
-        min_f = np.log10(min(fluences))
-        max_f = np.log10(max(fluences))
+        min_f = np.log10(min(parms))
+        max_f = np.log10(max(parms))
         log_bins = np.logspace(min_f, max_f, 50)
-        hist, edges = np.histogram(fluences, bins=log_bins)
+        hist, edges = np.histogram(parms, bins=log_bins)
         cum_hist = [sum(hist[i:]) for i in range(len(hist))]
 
         log_xs = ((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)

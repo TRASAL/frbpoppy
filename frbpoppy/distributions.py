@@ -24,9 +24,8 @@ def powerlaw(low, high, power):
     # p1 = power
     if (low == 0. or high == 0.) and power < 0:
         raise ValueError('Power law not defined at 0 if power is negative')
-    # Not completely kosher, but hey...
     if power == 0:
-        power = 1e-15
+        return 10**random.uniform(np.log10(low), np.log10(high))
 
     y = random.random()
 

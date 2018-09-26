@@ -24,6 +24,7 @@ from bokeh.plotting import figure
 from frbpoppy.frbcat import Frbcat
 from frbpoppy.do_hist import histogram
 from frbpoppy.log import pprint
+from frbpoppy import unpickle
 
 
 class Tab():
@@ -108,7 +109,7 @@ class Plot():
             # Check whether file exists
             if os.path.isfile(f):
                 try:
-                    df = pd.read_csv(f)
+                    df = unpickle(f).to_df()
                 except ValueError:
                     continue
                 name = f.split('_')[-1].split('.')[0]
@@ -117,7 +118,7 @@ class Plot():
                 pprint(m)
 
             # Downsample population size if it's too large
-            if df.shape[0] > 30000:
+            if df.shape[0] > 10000:
                 df = df.iloc[::10]
 
             df['population'] = name
@@ -350,7 +351,7 @@ if '-nofrbcat' in args:
 # Which files to plot
 files = []
 for a in args:
-    if a.endswith('.csv'):
+    if a.endswith('.p'):
         files.append(a)
 
 # Check whether populations have been given as input

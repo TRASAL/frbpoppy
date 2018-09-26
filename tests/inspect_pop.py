@@ -1,5 +1,4 @@
 """Code to inspect a population."""
-from frbpoppy import unpickle, plot
+from frbpoppy import plot
 
-pop = unpickle('perfect')
-plot(pop, mute=False, frbcat=False)
+plot('cosmic', 'perfect', 'apertif', mute=False, frbcat=False, print_command=True, port=5003)

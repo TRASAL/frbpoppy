@@ -91,7 +91,16 @@ class Population:
 
     def to_df(self):
         """Gather source values into a pandas dataframe."""
-        data = StringIO(self._values())
+        values = self._values()
+
+        if len(values) >= 200000:
+            # Take quarter of the values
+            pprint(f'Quartering {self.name} population')
+            values = values[:len(values)//4]
+            index = values.rfind('\n')
+            values = values[:index]
+
+        data = StringIO(values)
         df = pd.read_csv(data)
         return df
 

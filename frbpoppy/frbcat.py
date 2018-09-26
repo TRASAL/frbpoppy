@@ -194,17 +194,20 @@ class Frbcat():
             for name in names:
                 pprint(name + ',')
 
-    def to_pop(self):
+    def to_pop(self, df=None):
         """
         Convert to a Population object.
 
         Please ensure self.clean() has been run first.
         """
+        if not isinstance(df, pd.DataFrame):
+            df = self.df
+
         pop = Population()
         pop.name = 'frbcat'
 
         # For each source
-        for name, src_df in self.df.groupby('frb'):
+        for name, src_df in df.groupby('frb'):
 
             source = Source()
             source.name = name
@@ -228,6 +231,6 @@ class Frbcat():
 
             pop.add(source)
 
-        pop.pickle_pop()
+        pop.save()
 
         return pop
