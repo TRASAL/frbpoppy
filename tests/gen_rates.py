@@ -2,13 +2,19 @@
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 from frbpoppy import unpickle, pprint, plot
 
-MAKE = True
+MAKE = False
 
 if MAKE:
     # Create cosmic population
     n_per_day = 5000
     days = 30
-    cosmic = CosmicPopulation(n_per_day*days, lum_index=-0.5, name='neg_cosmic')
+    cosmic = CosmicPopulation(n_per_day*days,
+                              lum_range=[1e39, 1e49],
+                              lum_index=-0.5,
+                              pulse_model='lognormal',
+                              pulse_mu=1.,
+                              pulse_sigma=1.,
+                              name='neg_cosmic')
     pprint(cosmic.name)
     cosmic.save()
 else:
@@ -16,7 +22,7 @@ else:
 
 pops = []
 
-for name in ('apertif', 'htru', 'utmost-1d'):
+for name in ['htru']:
 
     # Set up beam patterns
     if name == 'htru':
@@ -29,4 +35,4 @@ for name in ('apertif', 'htru', 'utmost-1d'):
     surv_pop = SurveyPopulation(cosmic, survey)
     pops.append(surv_pop)
 
-plot(*pops)
+plot(*pops, frbcat='htru')

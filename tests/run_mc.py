@@ -5,7 +5,7 @@ from frbpoppy.monte_carlo import MonteCarlo
 mc = MonteCarlo()
 
 mc.surveys = {'HTRU': 'parkes',
-              'UTMOST-1D': 'UTMOST'}
+              'UTMOST': 'UTMOST'}
 
 # Set a limited run
 mc.days = 90

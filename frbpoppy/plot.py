@@ -112,10 +112,16 @@ class Plot():
                     df = unpickle(f).to_df()
                 except ValueError:
                     continue
-                name = f.split('_')[-1].split('.')[0]
+                if 'population' in f:
+                    name = f.split('population_')[-1].split('.')[0]
+                else:
+                    name = f
+            if df is not None:
+                pass
             else:
                 m = 'Skipping population {} - contains no sources'.format(f)
                 pprint(m)
+                continue
 
             # Downsample population size if it's too large
             if df.shape[0] > 10000:
@@ -131,6 +137,11 @@ class Plot():
         # Add on frbcat
         if self.frbcat:
             df = Frbcat().df
+            # Filter by survey if wished
+            if isinstance(self.frbcat, str):
+                df = df[df.survey == self.frbcat.upper()]
+                df['population'] = f'frbcat {self.frbcat}'
+
             df['color'] = self.colours[len(self.dfs)]
             self.dfs.append(df)
 
@@ -344,9 +355,14 @@ class Plot():
 args = sys.argv
 
 # Whether to plot the frbcat population
-frbcat = True
-if '-nofrbcat' in args:
-    frbcat = False
+if '-frbcat' in args:
+    frbcat = args[args.index('-frbcat') + 1]
+    if frbcat == 'True':
+        frbcat = True
+    elif frbcat == 'False':
+        frbcat = False
+else:
+    frcat = True
 
 # Which files to plot
 files = []

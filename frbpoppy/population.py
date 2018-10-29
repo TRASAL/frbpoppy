@@ -21,7 +21,9 @@ class Population:
         self.f_min = None
 
         # Dispersion Measure [pc/cm^3]
-        self.dm_host = None
+        self.dm_host_model = None
+        self.dm_host_mu = None
+        self.dm_host_sigma = None
         self.dm_igm_index = None
         self.dm_mw_model = None
 
@@ -92,6 +94,9 @@ class Population:
     def to_df(self):
         """Gather source values into a pandas dataframe."""
         values = self._values()
+
+        if not values:
+            return None
 
         if len(values) >= 200000:
             # Take quarter of the values

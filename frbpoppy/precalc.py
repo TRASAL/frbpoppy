@@ -1,11 +1,10 @@
 """Create a lookup tables for redshift and the NE2001 dispersion measure."""
 
 import os
-import math
 import numpy as np
 import sqlite3
 import sys
-from scipy.integrate import quad as integrate
+from scipy.integrate import quad
 
 import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
@@ -186,9 +185,8 @@ def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
 
         for z in zs:
             # Comoving distance [Gpc]
-            dists = go.z_to_d(z, H_0=H_0, W_m=W_m, W_v=W_v,
-                              dist_co=True, vol_co=True)
-            results.append((z, dists['dist_co'], dists['vol_co']))
+            dist = go.Redshift(z, H_0=H_0, W_m=W_m, W_v=W_v)
+            results.append((z, dist.dist_co(), dist.vol_co()))
 
             # Give an update on the progress
             sys.stdout.write('\r{}'.format(z))
@@ -239,3 +237,87 @@ def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
         return output
     else:
         return outputs
+
+
+def csmd_table(z, H_0=69.6, W_m=0.286, W_v=0.714, test=False):
+    """
+    Create/use a stellar mass density lookup table for the FRB number density.
+
+    Args:
+        z (float): Redshift
+        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+        W_m (float, optional): Omega matter. Defaults to 0.286
+        W_v (float, optional): Omega vacuum. Defaults to 0.714
+        test (bool): Flag for coarser resolution
+
+    Returns:
+        float: Stellar mass density at given redshift
+
+    """
+    uni_mods = os.path.join(paths.models(), 'universe/')
+
+    # Set up for testing
+    if test:
+        step = 0.1
+        rounding = 1
+        path = uni_mods + 'csmd_test.db'
+    else:
+        step = 1e-5
+        rounding = 5
+        path = uni_mods + 'csmd.db'
+
+    # Setup database
+    db = False
+    if os.path.exists(path):
+        db = True
+
+    # Connect to database
+    conn = sqlite3.connect(path)
+    c = conn.cursor()
+
+    # Create db
+    if not db:
+        # Set array of coordinates
+        zs = np.arange(0., 6. + step, step)
+
+        # Create database
+        c.execute('create table csmd (z real, csmd real)')
+
+        results = []
+
+        def integral(z):
+            z1 = z + 1
+            return z1**1.7/(1+(z1/2.9)**5.6)*(1/(H_0*(W_m*z1**3+W_v)**0.5))
+
+        def csmd(z):
+            return 0.01095*quad(integral, z, np.inf)[0]
+
+        vec_csmd = np.vectorize(csmd)
+
+        # Give an update on the progress
+        pprint('Creating a CSMD lookup table (only needs to be done once)')
+
+        csmds = vec_csmd(zs)
+
+        results = list(zip(np.around(zs, decimals=rounding), csmds))
+
+        # Save results to database
+        c.executemany('insert into csmd values (?,?)', results)
+
+        # Make for easier searching
+        c.execute('create index ix on csmd (z, csmd)')
+
+        # Save
+        conn.commit()
+
+    # Round values
+    z = round(z, rounding)
+
+    # Search database
+    smd = c.execute('select csmd from csmd where z=? limit 1',
+                    [z]).fetchone()[0]
+
+    # Close database
+    conn.close()
+
+    return smd

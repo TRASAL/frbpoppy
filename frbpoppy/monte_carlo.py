@@ -128,7 +128,7 @@ class MonteCarlo:
                         'PALFA': 'arecibo',
                         'ARECIBO-SPF': 'arecibo',
                         'ALFABURST': 'arecibo',
-                        'UTMOST-1D': 'UTMOST'}
+                        'UTMOST': 'UTMOST'}
 
         # Set number of days over which to run the virtual surveys
         self.days = 14

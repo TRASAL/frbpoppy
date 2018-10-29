@@ -1,22 +1,25 @@
 """Generate non cosmological population."""
 import os
-from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
+import numpy as np
+import matplotlib.pyplot as plt
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle, plot
 
 MAKE = False
 
 if MAKE:
     # Generate an FRB population
-    days = 30
+    days = 14
     population = CosmicPopulation(days*5000,
                                   z_max=0.01,
-                                  lum_range=[1e39, 1e40],
+                                  lum_range=[1e40, 1e40],
                                   si_mu=0,
                                   si_sigma=0.,
                                   n_model='constant',
+                                  pulse_model='uniform',
                                   pulse_range=[1., 1.],
                                   days=days)
 
-    population.name = 'cosmic_z001_lum_narrow'
+    population.name = 'cosmic_z001_small'
     population.save()
 
     # Setup a survey
@@ -24,13 +27,18 @@ if MAKE:
 
     # Observe the FRB population
     surv_pop = SurveyPopulation(population, survey)
-    surv_pop.name = 'perfect_z001_lum_narrow'
+    surv_pop.name = 'perfect_z001_small'
     surv_pop.save()
 else:
-    surv_pop = unpickle('perfect_z001_lum_narrow')
+    z4 = unpickle('perfect_z4_small')
 
-fluences = surv_pop.get('fluence')
+# plot(z4, frbcat=False)
+dc = np.array(z4.get('dist_co'))
+z = np.array(z4.get('z'))
 
-with open(os.path.expanduser('~/Downloads/fluence_z001.csv'), 'w') as f:
-    for item in fluences:
-        f.write("%s\n" % item)
+min_dc = min(dc)
+min_z = min(z)
+dc_norm = dc / min_dc
+z_norm = z / min_z
+plt.plot(z, dc_norm / z_norm)
+plt.show()

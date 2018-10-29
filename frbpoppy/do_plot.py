@@ -63,8 +63,13 @@ def plot(*pops, files=[], frbcat=True, show=True,
     command += ' --args'
 
     # Add frbcat
-    if not frbcat:
-        command += ' -nofrbcat'
+    command += ' -frbcat'
+    if frbcat is False:
+        command += ' False'
+    if frbcat is True:
+        command += ' True'
+    elif type(frbcat) == str and len(frbcat) > 0:
+        command += f' {frbcat}'
 
     # Add in populations
     for f in files:

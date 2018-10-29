@@ -20,7 +20,9 @@ class CosmicPopulation(Population):
                  H_0=69.6,
                  W_m=0.286,
                  W_v=0.714,
-                 dm_host=100,
+                 dm_host_model='normal',
+                 dm_host_mu=100,
+                 dm_host_sigma=0,
                  dm_igm_index=1200,
                  dm_mw_model='ne2001',
                  emission_range=[10e6, 10e9],
@@ -45,7 +47,10 @@ class CosmicPopulation(Population):
             H_0 (float): Hubble constant.
             W_m (float): Density parameter Ω_m.
             W_v (float): Cosmological constant Ω_Λ.
-            dm_host (float): Dispersion measure host [pc/cm^3].
+            dm_host_model (float): Dispersion measure host model. Options are
+                'normal' or 'lognormal'.
+            dm_host_mu (float): Mean dispersion measure host [pc/cm^3].
+            dm_host_sigma (float): Deviation dispersion measure host [pc/cm^3].
             dm_igm_index (float): Dispersion measure slope for IGM [pc/cm^3].
             dm_mw_model (str): Dispersion measure model for the Milky Way.
                 Options are 'ne2001' or 'zero'.
@@ -53,7 +58,8 @@ class CosmicPopulation(Population):
                 sources should emit the given bolometric luminosity.
             lum_range (list): Bolometric luminosity (distance) range [erg/s].
             lum_index (float): Power law index.
-            n_model (str): Number density model. Either 'constant' or 'sfr'.
+            n_model (str): Number density model. Either 'constant', 'sfr' or
+                'smd'.
             pulse_model (str): Pulse width model, 'lognormal' or 'uniform'.
             pulse_range (list): Pulse width range [ms].
             pulse_mu (float): Mean pulse width [ms].
@@ -70,7 +76,9 @@ class CosmicPopulation(Population):
         """
         # Set up population
         Population.__init__(self)
-        self.dm_host = dm_host
+        self.dm_host_model = dm_host_model
+        self.dm_host_mu = dm_host_mu
+        self.dm_host_sigma = dm_host_sigma
         self.dm_igm_index = dm_igm_index
         self.dm_mw_model = dm_mw_model
         self.f_max = emission_range[1]
@@ -131,11 +139,30 @@ class CosmicPopulation(Population):
                 r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
                 src.dist_co = r['dist_co']
                 src.z = r['z']
-
             # Get sources to follow star forming rate
-            if self.n_model == 'sfr':
+            elif self.n_model == 'sfr':
                 src.z = dis.z_from_sfr(z_max=self.z_max)
                 src.dist_co = pc.dist_table(z=src.z, dist_co=True)
+
+            # Get sources to follow stellar mass density
+            elif self.n_model == 'smd':
+                src.z = dis.z_from_csmd(z_max=self.z_max)
+                src.dist_co = pc.dist_table(z=src.z, dist_co=True)
+
+            # For testing only
+            # Get sources to follow z
+            elif self.n_model == 'const_per_z':
+                src.z = self.z_max*random.random()
+                r = pc.dist_table(z=src.z, dist_co=True, vol_co=True)
+                src.dist_co = r['dist_co']
+                src.vol_co = r['vol_co']
+            # For testing only
+            # Get sources to follow comoving distance
+            elif self.n_model == 'const_per_dist_co':
+                src.dist_co = self.dist_co_max*random.random()
+                r = pc.dist_table(dist_co=src.dist_co, z=True, vol_co=True)
+                src.z = r['z']
+                src.vol_co = r['vol_co']
 
             # Get the proper distance
             dist_pr = src.dist_co/(1+src.z)
@@ -146,7 +173,6 @@ class CosmicPopulation(Population):
             # Dispersion measure of the Milky Way
             if self.dm_mw_model == 'ne2001':
                 src.dm_mw = pc.ne2001_table(src.gl, src.gb)
-
             elif self.dm_mw_model == 'zero':
                 src.dm_mw = 0.
 
@@ -154,7 +180,18 @@ class CosmicPopulation(Population):
             src.dm_igm = go.ioka_dm_igm(src.z, slope=self.dm_igm_index)
 
             # Dispersion measure of the host (Tendulkar)
-            src.dm_host = self.dm_host / (1 + src.z)
+            if self.dm_host_model == 'normal':
+                src.dm_host = random.gauss(self.dm_host_mu, self.dm_host_sigma)
+            elif self.dm_host_model == 'lognormal':
+                mu = math.log(self.dm_host_mu)
+                sigma = math.log(self.dm_host_sigma)
+                # TODO Testing a hard cut off - remove in actual release
+                r = 6000
+                while r > 5000:
+                    r = random.lognormvariate(mu, sigma)
+                src.dm_host = r
+
+            src.dm_host /= (1 + src.z)
 
             # Total dispersion measure
             src.dm = src.dm_mw + src.dm_igm + src.dm_host
