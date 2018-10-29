@@ -95,7 +95,7 @@ class Frbcat():
 
         if not repeat_bursts:
             # Only keeps one detection of the repeater
-            self.df = self.df.drop_duplicates(subset=['frb'])
+            self.df = self.df.drop_duplicates(subset=['frb_name'])
 
         if not repeater:
             self.df = self.df[self.df.frb_name != 'FRB121102']
@@ -108,8 +108,17 @@ class Frbcat():
         self.df.columns = self.df.columns.str.replace('rop_', '')
         self.df.columns = self.df.columns.str.replace('rmp_', '')
 
+        # Split out errors on values
+        for c in self.df.columns:
+            if self.df[c].dtype == object:
+                if any(self.df[c].str.contains('&plusmn', na=False)):
+                    val, err = self.df[c].str.split('&plusmn', 1).str
+                    self.df[c] = pd.to_numeric(val)
+                    self.df[c+'_err'] = pd.to_numeric(err)
+
         # Conversion table
-        convert = {'mw_dm_limit': 'dm_mw',
+        convert = {'frb_name': 'frb',
+                   'mw_dm_limit': 'dm_mw',
                    'width': 'w_eff',
                    'flux': 's_peak',
                    'redshift_host': 'z',
@@ -141,14 +150,6 @@ class Frbcat():
         small_tele = self.df['telescope'].str.lower()
         self.df['telescope'] = small_tele
 
-        # Split out errors on values
-        for c in self.df.columns:
-            if self.df[c].dtype == object:
-                if any(self.df[c].str.contains('&plusmn', na=False)):
-                    val, err = self.df[c].str.split('&plusmn', 1).str
-                    self.df[c] = pd.to_numeric(val)
-                    self.df[c+'_err'] = pd.to_numeric(err)
-
         # Set utc as dates
         self.df['utc'] = pd.to_datetime(self.df['utc'])
 
@@ -159,6 +160,8 @@ class Frbcat():
             # Clean up some errors in frbcat
             if df['decj'].count(':') < 2:
                 df['decj'] = df['decj'] + ':00'
+            if df['raj'].count(':') < 2:
+                df['raj'] = df['raj'] + ':00'
 
             ra, dec = go.frac_deg(df['raj'], df['decj'])
             gl, gb = go.radec_to_lb(ra, dec, frac=True)
@@ -192,19 +195,22 @@ class Frbcat():
             pprint('Please add these frbs to {}'.format(surf))
 
             for name in names:
-                pprint(name + ',')
+                print(name + ',')
 
-    def to_pop(self):
+    def to_pop(self, df=None):
         """
         Convert to a Population object.
 
         Please ensure self.clean() has been run first.
         """
+        if not isinstance(df, pd.DataFrame):
+            df = self.df
+
         pop = Population()
         pop.name = 'frbcat'
 
         # For each source
-        for name, src_df in self.df.groupby('frb'):
+        for name, src_df in df.groupby('frb'):
 
             source = Source()
             source.name = name
@@ -228,6 +234,6 @@ class Frbcat():
 
             pop.add(source)
 
-        pop.pickle_pop()
+        pop.save()
 
         return pop

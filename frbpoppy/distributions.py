@@ -1,6 +1,7 @@
 """Define distributions from which to get random numbers."""
 import numpy as np
 import random
+import frbpoppy.precalc as pc
 
 
 def powerlaw(low, high, power):
@@ -24,9 +25,8 @@ def powerlaw(low, high, power):
     # p1 = power
     if (low == 0. or high == 0.) and power < 0:
         raise ValueError('Power law not defined at 0 if power is negative')
-    # Not completely kosher, but hey...
     if power == 0:
-        power = 1e-15
+        return 10**random.uniform(np.log10(low), np.log10(high))
 
     y = random.random()
 
@@ -115,6 +115,25 @@ def z_from_sfr(z_max=2.5):
         x = random.random()*z_max
         y = random.random()*9.0
         if y <= sfr(x):
+            z = x
+
+    return z
+
+
+def z_from_csmd(z_max=6.0):
+    """
+    Return a random redshift for sources following the Stellar Mass Density.
+
+    Follows Madau & Dickinson (2014), eq. 2 & 15. For more info see
+    https://arxiv.org/pdf/1403.0007.pdf
+
+    """
+    z = None
+
+    while not z:
+        x = random.random()*z_max
+        y = random.random()*0.00065
+        if y <= pc.csmd_table(x):
             z = x
 
     return z

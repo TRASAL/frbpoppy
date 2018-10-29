@@ -5,7 +5,7 @@ mc = MonteCarlo()
 
 # Set up a small run
 mc.surveys = {'HTRU': 'parkes',
-              'UTMOST-1D': 'UTMOST'}
+              'UTMOST': 'UTMOST'}
 
 # Set a limited run
 mc.days = 30

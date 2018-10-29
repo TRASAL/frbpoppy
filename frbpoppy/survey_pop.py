@@ -1,8 +1,7 @@
 """Class to generate a survey population of FRBs."""
 from copy import deepcopy
 import math
-import numpy as np
-from lmfit import Model
+import random
 
 from frbpoppy.log import pprint
 from frbpoppy.population import Population
@@ -58,6 +57,10 @@ class SurveyPopulation(Population):
             # Calculate total temperature
             self.survey.calc_Ts(src)
 
+            # For rates
+            all_faint = True
+            all_late = True
+
             for frb in src.frbs:
 
                 # Check if repeat FRBs are within an integration time
@@ -76,27 +79,38 @@ class SurveyPopulation(Population):
 
                 # Check whether it has been detected
                 if frb.snr > self.survey.snr_limit:
-                    self.frb_rates.det += 1
-                    if not src.detected:
-                        self.src_rates.det += 1
-                        src.detected = True
+
+                    all_faint = False
+
+                    # TODO Add 1+z penalty factor
+                    if random.random() <= 1/(1+src.z):
+                        self.frb_rates.det += 1
+                        if not src.detected:
+                            self.src_rates.det += 1
+                            src.detected = True
+                        all_late = False
+                    else:
+                        self.frb_rates.late += 1
                 else:
                     self.frb_rates.faint += 1
 
             if src.detected:
                 self.add(src)
-            else:
+            elif all_faint:
                 self.src_rates.faint += 1
+            elif all_late:
+                self.src_rates.late += 1
 
         # Calculate scaling factors
         area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
         f_area = (self.survey.beam_size * self.src_rates.tot())
-        f_area /= ((self.src_rates.det + self.src_rates.faint)*area_sky)
+        inside = self.src_rates.det+self.src_rates.late+self.src_rates.faint
+        f_area /= (inside*area_sky)
         f_time = 86400 / self.time
 
         # Saving scaling factors
         for r in (self.frb_rates, self.src_rates):
-            r.days = self.time/86400
+            r.days = self.time/86400  # seconds -> days
             r.f_area = f_area
             r.f_time = f_time
             r.name = self.name
@@ -116,57 +130,19 @@ class SurveyPopulation(Population):
 
         return r
 
-    def calc_logn_logs(self):
+    def calc_logn_logs(self, parameter='fluence', min_p=None):
         """TODO. Currently unfinished."""
-        f_lim = self.survey.calc_fluence_limit()
-        f_lim = 5e-1
-        fluences = [f for f in self.get('fluence') if f >= f_lim]
+        parms = self.get(parameter)
 
-        # Bin up
-        min_f = np.log10(min(fluences))
-        max_f = np.log10(max(fluences))
-        log_bins = np.logspace(min_f, max_f, 50)
-        hist, edges = np.histogram(fluences, bins=log_bins)
-        cum_hist = [sum(hist[i:]) for i in range(len(hist))]
+        n = len(parms)
 
-        log_xs = ((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)
-        xs = 10**log_xs
-
-        def powerlaw(x, norm=1, alpha=-1):
-            return norm*x**(alpha)
-
-        def linear(x, norm=1, alpha=-1):
-            """log(y) = log(norm) + alpha * log(x)"""
-            return norm + alpha*x
-
-        in_logspace = False
-
-        if in_logspace:
-            model = Model(linear)
-            params = model.make_params()
-
-            params['alpha'].min = -5.0
-            params['alpha'].max = 0.5
-
-            elems = zip(log_xs, np.log10(cum_hist))
-            elems = [e for e in elems if e[1] > 0]
-            log_xs, log_cum = zip(*elems)
-            result = model.fit(log_cum, params, x=log_xs)
-
-            alpha = result.params['alpha'].value
-            alpha_err = result.params['alpha'].stderr
-            norm = 10**(result.params['norm'].value)
+        if min_p is None:
+            f_0 = min(parms)
         else:
-            model = Model(powerlaw)
-            params = model.make_params()
-
-            params['alpha'].min = -5.0
-            params['alpha'].max = 0.5
-
-            result = model.fit(cum_hist, params, x=xs)
-
-            alpha = result.params['alpha'].value
-            alpha_err = result.params['alpha'].stderr
-            norm = result.params['norm'].value
+            f_0 = min_p
+        alpha = -1/((1/n)*sum([math.log(f/f_0) for f in parms]))
+        alpha *= (n-1)/n  # Removing bias in alpha
+        alpha_err = n*alpha/((n-1)*(n-2)**0.5)
+        norm = n / (f_0**alpha)  # Normalisation at lowest parameter
 
         return alpha, alpha_err, norm

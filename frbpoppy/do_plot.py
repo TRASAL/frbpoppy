@@ -6,7 +6,8 @@ import sys
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 
-def plot(*pops, files=[], frbcat=True, show=True, mute=True, port=5006):
+def plot(*pops, files=[], frbcat=True, show=True,
+         mute=True, port=5006, print_command=False):
     """
     Plot populations with bokeh. Has to save populations before plotting.
 
@@ -21,6 +22,7 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True, port=5006):
         show (bool, optional): Whether to display the plot or not. Mainly used
             for debugging purposes. Defaults to True.
         port (int): The port on which to launch Bokeh
+        print_command (bool): Whether to show the command do_plot is running
 
     """
 
@@ -28,18 +30,25 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True, port=5006):
 
         # Save populations
         for pop in pops:
-            pop.save(extention='csv')
+
+            if type(pop) == str:
+                name = pop
+            else:
+                name = pop.name.lower()
+                pop.save()
 
             # Save location
-            file_name = 'population_' + pop.name.lower() + '.csv'
+            file_name = 'population_' + name + '.p'
             out = os.path.join(paths.populations(), file_name)
             files.append(out)
 
     # Command for starting up server
+    command = 'nice -n 19 '
+
     if show:
-        command = 'bokeh serve --show'
+        command += 'bokeh serve --show'
     else:
-        command = 'python3'
+        command += 'python3'
 
     # Command for changing port
     if port != 5006:
@@ -54,8 +63,13 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True, port=5006):
     command += ' --args'
 
     # Add frbcat
-    if not frbcat:
-        command += ' -nofrbcat'
+    command += ' -frbcat'
+    if frbcat is False:
+        command += ' False'
+    if frbcat is True:
+        command += ' True'
+    elif type(frbcat) == str and len(frbcat) > 0:
+        command += f' {frbcat}'
 
     # Add in populations
     for f in files:
@@ -63,6 +77,10 @@ def plot(*pops, files=[], frbcat=True, show=True, mute=True, port=5006):
 
     # Let people know what's happening
     pprint('Plotting populations')
+
+    if print_command:
+        pprint(command)
+
     pprint('Press Ctrl+C to quit')
 
     # Add method to gracefully quit plotting

@@ -110,3 +110,4 @@ tests/plots/*
 temp\.csv
 publication/plots/
 publication/build/
+data/results/*

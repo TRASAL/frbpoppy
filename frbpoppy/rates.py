@@ -11,6 +11,7 @@ class Rates:
         self.type = rate_type
         self.det = 0  # Number detected
         self.faint = 0  # Number too faint to detect
+        self.late = 0  # Number too late to detect
         self.out = 0  # Number outside survey, space or timewise
         self.vol = 0  # Number per Gpc^3
         self.days = 0  # Days of a survey
@@ -34,6 +35,7 @@ class Rates:
         rdays = round(self.days)
         t += r.format('In population', rdays, round(self.tot()))
         t += r.format('Detected', rdays, round(self.det))
+        t += r.format('Too late', rdays, round(self.late))
         t += r.format('Too faint', rdays, round(self.faint))
         t += r.format('Outside survey', rdays, round(self.out))
         t += r.format('/Gpc^3', 365.25, round(self.vol))
@@ -44,7 +46,7 @@ class Rates:
 
     def tot(self):
         """Calculate the total number of rates."""
-        return self.det + self.out + self.faint
+        return self.det + self.out + self.faint + self.late
 
     @property
     def exp(self):
@@ -63,12 +65,14 @@ def scale(rates, area=True, time=False):
         rates.scaled_area = True
         tot = rates.tot()
         rates.det *= rates.f_area
+        rates.late *= rates.f_area
         rates.faint *= rates.f_area
-        rates.out = tot - rates.det - rates.faint
+        rates.out = tot - rates.det - rates.faint - rates.late
 
     if time:
         rates.scaled_time = True
         rates.det *= rates.f_time
+        rates.late *= rates.f_time
         rates.faint *= rates.f_time
         rates.out *= rates.f_time
         rates.days = 1

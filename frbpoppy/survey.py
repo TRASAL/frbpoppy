@@ -200,6 +200,10 @@ class Survey:
             x (int): Maximum sidelobe wanted
 
         """
+        # Allow for cut at FWHM
+        if x == 0.5:
+            return 1
+
         try:
             arcsin = math.asin(self.fwhm*self._kasin_nulls[x]/(60*180))
         except ValueError:

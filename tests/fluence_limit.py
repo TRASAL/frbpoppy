@@ -8,7 +8,7 @@ SURVEYS = ['APERTIF',
            'HTRU',
            'LOFAR',
            'MWA',
-           'UTMOST-1D']
+           'UTMOST']
 
 r = '{:10.19} {:>10}'
 print(r.format('Survey', 'Jy*ms'))
