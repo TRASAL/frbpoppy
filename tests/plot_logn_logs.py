@@ -10,30 +10,45 @@ if MAKE:
     from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 
     # Generate an FRB population
-    days = 120
+    days = 14
     population = CosmicPopulation(days*5000,
-                                  z_max=0.1,
-                                  lum_range=[1e36, 1e42],
+                                  z_max=0.01,
+                                  lum_range=[1e40, 1e40],
                                   si_mu=0,
                                   si_sigma=0.,
                                   n_model='constant',
-                                  days=days)
-    population.name = 'cosmic'
+                                  days=days,
+                                  dm_host_model='normal',
+                                  dm_host_mu=0,
+                                  dm_host_sigma=0,
+                                  dm_igm_index=0,
+                                  dm_igm_sigma=0,
+                                  dm_mw_model='zero',
+                                  emission_range=[10e6, 10e9],
+                                  lum_index=0,
+                                  pulse_model='uniform',
+                                  pulse_range=[1., 1.],
+                                  pulse_mu=1.,
+                                  pulse_sigma=0.,
+                                  repeat=0.)
+    population.name = 'test'
     population.save()
 
     # Setup a survey
-    survey = Survey('APERTIF', gain_pattern='apertif')
+    survey = Survey('PERFECT', gain_pattern='perfect')
 
     # Observe the FRB population
     surv_pop = SurveyPopulation(population, survey)
-    surv_pop.name = 'apertif'
+    surv_pop.name = 'lognlogs'
     surv_pop.save()
 
 else:
-    surv_pop = unpickle('apertif')
+    surv_pop = unpickle('lognlogs')
 
 
-parms = surv_pop.get('fluence')
+parms = np.array(surv_pop.get('fluence'))
+min_p = min(parms)
+max_p = max(parms)
 
 # Bin up
 min_f = np.log10(min(parms))
@@ -56,13 +71,19 @@ p.quad(top=cum_hist,
        left=edges[:-1],
        right=edges[1:],
        alpha=0.5,
-       legend='apertif')
+       legend='perfect')
 
-alpha, alpha_err, norm = surv_pop.calc_logn_logs(parameter='fluence')
+alpha, alpha_err, norm = surv_pop.calc_logn_logs(parameter='fluence',
+                                                 min_p=min_p,
+                                                 max_p=max_p)
 print(alpha, alpha_err, norm)
 
 xs = 10**((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)
+# import IPython; IPython.embed()
+xs = xs[xs>=min_p]
+xs = xs[xs<=max_p]
 ys = [norm*x**(alpha) for x in xs]
-p.line(xs, ys, line_width=3, line_alpha=0.6, legend=f'α = {alpha:.3}')
+p.line(xs, ys, line_width=3, line_alpha=0.6,
+       legend=f'α = {alpha:.3} ± {round(abs(alpha_err), 2)}')
 
 show(p)

@@ -24,6 +24,7 @@ class CosmicPopulation(Population):
                  dm_host_mu=100,
                  dm_host_sigma=0,
                  dm_igm_index=1200,
+                 dm_igm_sigma=None,
                  dm_mw_model='ne2001',
                  emission_range=[10e6, 10e9],
                  lum_range=[1e40, 1e50],
@@ -52,6 +53,7 @@ class CosmicPopulation(Population):
             dm_host_mu (float): Mean dispersion measure host [pc/cm^3].
             dm_host_sigma (float): Deviation dispersion measure host [pc/cm^3].
             dm_igm_index (float): Dispersion measure slope for IGM [pc/cm^3].
+            dm_igm_sigma (float): Scatter around dm_igm. Defaults 0.2*slope*z
             dm_mw_model (str): Dispersion measure model for the Milky Way.
                 Options are 'ne2001' or 'zero'.
             emission_range (list): The frequency range [Hz] between which FRB
@@ -80,6 +82,7 @@ class CosmicPopulation(Population):
         self.dm_host_mu = dm_host_mu
         self.dm_host_sigma = dm_host_sigma
         self.dm_igm_index = dm_igm_index
+        self.dm_igm_sigma = dm_igm_sigma
         self.dm_mw_model = dm_mw_model
         self.f_max = emission_range[1]
         self.f_min = emission_range[0]
@@ -177,7 +180,8 @@ class CosmicPopulation(Population):
                 src.dm_mw = 0.
 
             # Dispersion measure of the intergalactic medium
-            src.dm_igm = go.ioka_dm_igm(src.z, slope=self.dm_igm_index)
+            src.dm_igm = go.ioka_dm_igm(src.z, slope=self.dm_igm_index,
+                                        sigma=self.dm_igm_sigma)
 
             # Dispersion measure of the host (Tendulkar)
             if self.dm_host_model == 'normal':

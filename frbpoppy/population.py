@@ -25,6 +25,7 @@ class Population:
         self.dm_host_mu = None
         self.dm_host_sigma = None
         self.dm_igm_index = None
+        self.dm_igm_sigma = None
         self.dm_mw_model = None
 
         # Luminosity

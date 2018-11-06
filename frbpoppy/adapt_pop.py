@@ -25,11 +25,9 @@ class Adapt:
 
         """
         for src in self.pop.sources:
-            src.dm_host = dm
+            src.dm_host = dm / (1+src.z)
             src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
-        # Save the population
-        self.pop.save()
         return self.pop
 
     def dm_igm(self, slope):
@@ -47,8 +45,6 @@ class Adapt:
             src.dm_igm = go.ioka_dm_igm(src.z, slope=slope)
             src.dm = src.dm_mw + src.dm_igm + src.dm_host
 
-        # Save the population
-        self.pop.save()
         return self.pop
 
     def freq(self, freq_min, freq_max):
@@ -65,7 +61,6 @@ class Adapt:
         """
         self.pop.f_min = freq_min
         self.pop.f_max = freq_max
-        self.pop.save()
         return self.pop
 
     def lum_bol(self, lum_min, lum_max, lum_pow):
@@ -85,8 +80,6 @@ class Adapt:
             for frb in source.frbs:
                 frb.lum_bol = dis.powerlaw(lum_min, lum_max, lum_pow)
 
-        # Save the population
-        self.pop.save()
         return self.pop
 
     def si(self, si_mu, si_sigma):
@@ -103,10 +96,8 @@ class Adapt:
         """
         for source in self.pop.sources:
             for frb in source.frbs:
-                frb.si = random.gauss(self.pop.si_mu, self.pop.si_sigma)
+                frb.si = random.gauss(si_mu, si_sigma)
 
-        # Save the population
-        self.pop.save()
         return self.pop
 
     def w_int(self, w_int_min, w_int_max):
@@ -131,6 +122,4 @@ class Adapt:
                 # Calculate the pulse width upon arrival to Earth
                 frb.w_arr = frb.w_int*(1+source.z)
 
-        # Save the population
-        self.pop.save()
         return self.pop

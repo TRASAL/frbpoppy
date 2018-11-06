@@ -637,7 +637,7 @@ def interpolate_z(d, ds, zs, H_0=69.6):
     return zs[-1]
 
 
-def ioka_dm_igm(z, slope=1200):
+def ioka_dm_igm(z, slope=1200, sigma=None):
     """
     Calculate the contribution of the intergalactic electron density to the
     dispersion measure, following Ioka (2003) and Inoue (2004)
@@ -648,4 +648,6 @@ def ioka_dm_igm(z, slope=1200):
     Returns:
         dm_igm (float): Dispersion measure of intergalactic medium [pc/cm^3]
     """
-    return random.gauss(slope*z, 0.2*slope*z)
+    if sigma is None:
+        sigma = 0.2*slope*z
+    return random.gauss(slope*z, sigma)

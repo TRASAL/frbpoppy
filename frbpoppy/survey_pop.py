@@ -2,6 +2,7 @@
 from copy import deepcopy
 import math
 import random
+import numpy as np
 
 from frbpoppy.log import pprint
 from frbpoppy.population import Population
@@ -11,7 +12,8 @@ from frbpoppy.rates import Rates, scale
 class SurveyPopulation(Population):
     """Class to create a survey population of FRBs."""
 
-    def __init__(self, cosmic_pop, survey, scat=False, scin=False):
+    def __init__(self, cosmic_pop, survey, scat=False, scin=False,
+                 rate_limit=True):
         """
         Run a survey to detect FRB sources.
 
@@ -22,6 +24,8 @@ class SurveyPopulation(Population):
                 noise calculations.
             scin (bool, optional): Whether to apply scintillation to
                 observations.
+            rate_limit (bool, optional): Whether to limit detections by 1/(1+z)
+                due to limitation in observing time
         """
         # Set up population
         Population.__init__(self)
@@ -82,8 +86,12 @@ class SurveyPopulation(Population):
 
                     all_faint = False
 
-                    # TODO Add 1+z penalty factor
-                    if random.random() <= 1/(1+src.z):
+                    if rate_limit is True:
+                        limit = 1/(1+src.z)
+                    else:
+                        limit = 1
+
+                    if random.random() <= limit:
                         self.frb_rates.det += 1
                         if not src.detected:
                             self.src_rates.det += 1
@@ -130,16 +138,20 @@ class SurveyPopulation(Population):
 
         return r
 
-    def calc_logn_logs(self, parameter='fluence', min_p=None):
+    def calc_logn_logs(self, parameter='fluence', min_p=None, max_p=None):
         """TODO. Currently unfinished."""
-        parms = self.get(parameter)
-
-        n = len(parms)
+        parms = np.array(self.get(parameter))
 
         if min_p is None:
             f_0 = min(parms)
         else:
             f_0 = min_p
+            parms = parms[parms >= min_p]
+
+        if max_p is not None:
+            parms = parms[parms <= max_p]
+
+        n = len(parms)
         alpha = -1/((1/n)*sum([math.log(f/f_0) for f in parms]))
         alpha *= (n-1)/n  # Removing bias in alpha
         alpha_err = n*alpha/((n-1)*(n-2)**0.5)

@@ -113,7 +113,7 @@ def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
     table, and save the table for later runs.
 
     Args:
-        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+        H_0 (float, optional): Hubble parameter. Defaults to 69.6 km/s/Mpc
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
         test (bool): Flag for coarser resolution
