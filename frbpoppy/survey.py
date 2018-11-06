@@ -401,8 +401,8 @@ class Survey:
         sp = frb.si + 1
         sm = frb.si - 1
 
-        # Convert distance to 10^25 metres
-        dist = src.dist_co * 3.0856775814913673
+        # Convert distance in Gpc to metres
+        dist = src.dist_co * 1e9 * 3.0856775814913673 * 1e16
 
         # Convert luminosity to Watts
         lum = frb.lum_bol * 1e-7
@@ -412,8 +412,8 @@ class Survey:
         den = 4*math.pi*dist**2 * (f_high**sp - f_low**sp)
         s_peak = nom/den
 
-        # Convert to Janskys and accounting for the (10^25)^2
-        s_peak /= 1e24
+        # Convert to Janskys
+        s_peak *= 1e26
 
         frb.s_peak = s_peak
 
