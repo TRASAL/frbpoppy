@@ -116,9 +116,17 @@ for si in SIS:
              label=fr"$\gamma$ of {si}")
 
     # Plot alpha
-    num_points = 4
-    boundaries = np.linspace(bins[0], bins[-1], num_points + 1)
-    bins = list(zip(boundaries[:-1:], boundaries[1::]))
+    n_points = 100
+    frac = 0.5
+    frac_width = frac*(bins[-1] - bins[0])
+    s_peak.sort()
+    points = np.linspace(bins[0], bins[-1], n_points)
+    bins = []
+    for point in points:
+        low = point - 0.5*frac_width
+        high = point + 0.5*frac_width
+        bins.append((low, high))
+
     alphas = []
     alpha_errs = []
     s_peaks = []
@@ -127,10 +135,10 @@ for si in SIS:
         low, high = 10**b[0], 10**b[1]
         section = s_peak[s_peak >= low]
         section = section[section <= high]
-        section.sort()
+        log_s_peak = (b[0] + b[1]) / 2.
+        if len(section) <= 2:
+            continue
         alpha, alpha_err, norm = calc_logn_logs(section)
-        log_s_peak = (np.log10(section[0]) + np.log10(section[-1])) / 2.
-        print(alpha, log_s_peak, len(section))
         alphas.append(alpha)
         alpha_errs.append(alpha_err)
         s_peaks.append(log_s_peak)

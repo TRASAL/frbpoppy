@@ -152,8 +152,8 @@ def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
         z_max = 3.0
         file_name = uni_mods + f + '_test.db'
     else:
-        step = 0.0001
-        z_max = 8.0
+        step = 0.00001
+        z_max = 6.5
         file_name = uni_mods + f + '.db'
 
     # Setup database

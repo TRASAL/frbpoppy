@@ -1,6 +1,8 @@
 """Short example of how frbpoppy works."""
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 
+PLOT = False
+
 # Generate an FRB population
 population = CosmicPopulation(10000, days=2, name='example')
 
@@ -11,4 +13,5 @@ survey = Survey('APERTIF')
 result = SurveyPopulation(population, survey)
 
 # Plot populations
-#plot(population, result)
+if PLOT:
+    plot(population, result)

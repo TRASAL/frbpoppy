@@ -53,7 +53,7 @@ if OBSERVE:
         pop_pl = unpickle('pl-sfr')
 
     # Create Survey
-    perfect = Survey('PERFECT-SMALL', gain_pattern='airy', sidelobes=0)
+    perfect = Survey('PERFECT-SMALL', gain_pattern='perfect', sidelobes=0)
 
     # Observe populations
     pop_sc_obs = SurveyPopulation(pop_sc, perfect)
@@ -70,7 +70,7 @@ else:
     pop_pl_obs = unpickle('pl-sfr-obs')
 
 
-limits = np.logspace(np.log10(1e-21), np.log10(1e0), 40)
+limits = np.logspace(np.log10(1e-12), np.log10(1e0), 40)
 k = 0
 
 for limit in limits:
