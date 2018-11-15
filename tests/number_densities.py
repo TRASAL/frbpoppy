@@ -15,8 +15,8 @@ if MAKE:
     pop_cst = CosmicPopulation(n_per_day*days,
                                days=days,
                                z_max=3.0,
-                               n_model='constant',
-                               name='constant')
+                               n_model='vol_co',
+                               name='vol_co')
 
     # Generate population following star forming rate
     pop_sfr = CosmicPopulation(n_per_day*days,
@@ -37,7 +37,7 @@ if MAKE:
     pop_smd.save()
 
 else:
-    pop_cst = unpickle('constant')
+    pop_cst = unpickle('vol_co')
     pop_sfr = unpickle('sfr')
     pop_smd = unpickle('smd')
 
@@ -49,11 +49,11 @@ ax = fig.add_subplot(111)
 zs = {}
 zs['sfr'] = np.array(pop_sfr.get('z'))
 zs['smd'] = np.array(pop_smd.get('z'))
-zs['constant'] = np.array(pop_cst.get('z'))
+zs['vol_co'] = np.array(pop_cst.get('z'))
 
 n_sfr, bins = np.histogram(zs['sfr'], bins=50, density=False)
 n_smd, bins = np.histogram(zs['smd'], bins=50, density=False)
-n_constant, bins = np.histogram(zs['constant'], bins=50, density=False)
+n_constant, bins = np.histogram(zs['vol_co'], bins=50, density=False)
 
 bincentres = [(bins[i]+bins[i+1])/2. for i in range(len(bins)-1)]
 

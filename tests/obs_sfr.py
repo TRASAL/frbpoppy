@@ -13,8 +13,8 @@ if MAKE:
     pop_cst = generate(n_per_day*days,
                        days=days,
                        z_max=6.0,
-                       n_model='constant',
-                       name='constant')
+                       n_model='vol_co',
+                       name='vol_co')
 
     # Generate population following star forming rate
     pop_sfr = generate(n_per_day*days,
@@ -24,7 +24,7 @@ if MAKE:
                        name='sfr')
 
 else:
-    pop_cst = unpickle('constant')
+    pop_cst = unpickle('vol_co')
     pop_sfr = unpickle('sfr')
 
 # Plot populations

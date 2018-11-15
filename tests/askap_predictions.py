@@ -12,7 +12,7 @@ if MAKE:
                                   lum_range=[1e45, 1e45],
                                   si_mu=0,
                                   si_sigma=0.,
-                                  n_model='constant',
+                                  n_model='vol_co',
                                   pulse_model='uniform',
                                   pulse_range=[1., 1.],
                                   days=days,

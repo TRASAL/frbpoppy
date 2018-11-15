@@ -10,6 +10,7 @@ from .paths import paths
 # from .plot_mc import Plot
 from .population import Population, unpickle
 from .precalc import *
+from .number_density import NumberDensity
 from .source import Source
 from .survey import Survey
 from .cosmic_pop import CosmicPopulation

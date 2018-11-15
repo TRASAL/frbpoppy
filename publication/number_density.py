@@ -15,8 +15,8 @@ if MAKE:
     pop_cst = CosmicPopulation(n_per_day*days,
                                days=days,
                                z_max=6.0,
-                               n_model='constant',
-                               name='constant')
+                               n_model='vol_co',
+                               name='vol_co')
 
     # Generate population following star forming rate
     pop_sfr = CosmicPopulation(n_per_day*days,
@@ -37,7 +37,7 @@ if MAKE:
     pop_smd.save()
 
 else:
-    pop_cst = unpickle('constant')
+    pop_cst = unpickle('vol_co')
     pop_sfr = unpickle('sfr')
     pop_sfr = unpickle('smd')
 
@@ -48,7 +48,7 @@ ax = fig.add_subplot(111)
 # Get redshift of population
 zs = defaultdict(list)
 zs['sfr'] = pop_sfr.get('z')
-zs['constant'] = pop_cst.get('z')
+zs['vol_co'] = pop_cst.get('z')
 zs['smd'] = pop_smd.get('z')
 
 for pop in zs:
