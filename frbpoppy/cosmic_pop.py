@@ -3,6 +3,7 @@ import math
 import random
 
 from frbpoppy.log import pprint
+from frbpoppy.number_density import NumberDensity
 from frbpoppy.population import Population
 from frbpoppy.source import Source
 import frbpoppy.distributions as dis
@@ -30,6 +31,7 @@ class CosmicPopulation(Population):
                  lum_range=[1e40, 1e50],
                  lum_index=0,
                  n_model='sfr',
+                 alpha=-1.5,
                  pulse_model='lognormal',
                  pulse_range=[0.1, 10],
                  pulse_mu=1.6,
@@ -60,8 +62,9 @@ class CosmicPopulation(Population):
                 sources should emit the given bolometric luminosity.
             lum_range (list): Bolometric luminosity (distance) range [erg/s].
             lum_index (float): Power law index.
-            n_model (str): Number density model. Either 'constant', 'sfr' or
+            n_model (str): Number density model. Either 'vol_co', 'sfr' or
                 'smd'.
+            alpha (float): Desired logN/logS of perfectly detected population.
             pulse_model (str): Pulse width model, 'lognormal' or 'uniform'.
             pulse_range (list): Pulse width range [ms].
             pulse_mu (float): Mean pulse width [ms].
@@ -78,6 +81,7 @@ class CosmicPopulation(Population):
         """
         # Set up population
         Population.__init__(self)
+        self.alpha = alpha
         self.dm_host_model = dm_host_model
         self.dm_host_mu = dm_host_mu
         self.dm_host_sigma = dm_host_sigma
@@ -118,6 +122,13 @@ class CosmicPopulation(Population):
                       W_m=self.W_m,
                       W_v=self.W_v)
 
+        # Set up number density
+        n_den = NumberDensity(model=self.n_model,
+                              z_max=self.z_max,
+                              vol_co_max=self.vol_co_max,
+                              dist_co_max=self.dist_co_max,
+                              alpha=self.alpha).draw
+
         # Let user know what's happening
         pprint(f'Generating {self.name} population')
 
@@ -135,37 +146,8 @@ class CosmicPopulation(Population):
             # Convert
             src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
 
-            # Use constant number density of sources per comoving volume
-            if self.n_model == 'constant':
-                # Calculate comoving volume [Gpc]
-                vol_co = self.vol_co_max*random.random()
-                r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
-                src.dist_co = r['dist_co']
-                src.z = r['z']
-            # Get sources to follow star forming rate
-            elif self.n_model == 'sfr':
-                src.z = dis.z_from_sfr(z_max=self.z_max)
-                src.dist_co = pc.dist_table(z=src.z, dist_co=True)
-
-            # Get sources to follow stellar mass density
-            elif self.n_model == 'smd':
-                src.z = dis.z_from_csmd(z_max=self.z_max)
-                src.dist_co = pc.dist_table(z=src.z, dist_co=True)
-
-            # For testing only
-            # Get sources to follow z
-            elif self.n_model == 'const_per_z':
-                src.z = self.z_max*random.random()
-                r = pc.dist_table(z=src.z, dist_co=True, vol_co=True)
-                src.dist_co = r['dist_co']
-                src.vol_co = r['vol_co']
-            # For testing only
-            # Get sources to follow comoving distance
-            elif self.n_model == 'const_per_dist_co':
-                src.dist_co = self.dist_co_max*random.random()
-                r = pc.dist_table(dist_co=src.dist_co, z=True, vol_co=True)
-                src.z = r['z']
-                src.vol_co = r['vol_co']
+            # Draw from number density
+            src.dist_co, src.z = n_den()
 
             # Get the proper distance
             dist_pr = src.dist_co/(1+src.z)

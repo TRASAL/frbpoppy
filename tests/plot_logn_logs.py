@@ -16,7 +16,7 @@ if MAKE:
                                   lum_range=[1e40, 1e40],
                                   si_mu=0,
                                   si_sigma=0.,
-                                  n_model='constant',
+                                  n_model='vol_co',
                                   days=days,
                                   dm_host_model='normal',
                                   dm_host_mu=0,

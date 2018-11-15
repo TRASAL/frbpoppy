@@ -5,21 +5,24 @@ import matplotlib.pyplot as plt
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
 
 SURVEYS = ('HTRU', 'APERTIF', 'UTMOST', 'ASKAP-FLY')
-ALPHAS = (0.5, 1.0, 1.5)
+ALPHAS = (1.5001, -1.0, -1.5)
 SPECTRAL_INDEX = 0.
-MAKE = False
-OBSERVE = False
+MAKE = True
+OBSERVE = True
+
+k = 0
 
 if MAKE:
 
     for alpha in ALPHAS:
 
-        # For testing if alpha == 0
-        if alpha != 1.0:
+        # For testing
+        if k >= 1:
             continue
+        k += 1
 
         n_per_day = 5000
-        days = 14
+        days = 3
 
         pop = CosmicPopulation(n_per_day*days,
                                days=days,
@@ -36,7 +39,8 @@ if MAKE:
                                emission_range=[10e6, 10e9],
                                lum_range=[1e40, 1e40],
                                lum_index=0,
-                               n_model='constant',
+                               n_model='vol_co',
+                               alpha=alpha,
                                pulse_model='uniform',
                                pulse_range=[1., 1.],
                                pulse_mu=1.,
@@ -74,8 +78,17 @@ bin_centres = (x[:-1] + x[1:]) / 2
 
 plt.plot(bin_centres, der)
 plt.xlabel('log S')
-plt.ylabel('log N(>S)')
-plt.ylim(-3, 0)
+plt.ylabel(r'$\alpha$')
+plt.ylim(np.mean(der)-2, np.mean(der)+2)
 
 plt.tight_layout()
 plt.savefig('plots/event_rates.pdf')
+
+plt.clf()
+
+
+plt.plot(x, y)
+plt.xlabel('log S')
+plt.ylabel(r'log N(>S)')
+plt.tight_layout()
+plt.savefig('plots/logNlogS.pdf')
