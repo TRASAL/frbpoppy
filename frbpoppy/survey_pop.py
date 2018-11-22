@@ -40,6 +40,8 @@ class SurveyPopulation(Population):
         self.frb_rates = Rates(rate_type='FRBs')
         self.src_rates = Rates(rate_type='Sources')
 
+        pprint(f'Surveying {self.cosmic_pop.name} with {self.name}')
+
         for src in cosmic_pop.sources:
 
             # Check whether source is in region

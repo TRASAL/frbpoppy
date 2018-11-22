@@ -18,21 +18,16 @@ def powerlaw(low, high, power):
         power (float): Power of power law distribution
 
     Returns:
-        x (float): Random variable picked from power law distribution
+        float: Random variable picked from power law distribution
+
     """
     if low > high:
         low, high = high, low
 
-    if (low == 0. or high == 0.) and power < 0:
-        raise ValueError('Power law not defined at 0 if power is negative')
     if power == 0:
-        return 10**random.uniform(np.log10(low), np.log10(high))
+        return 10**np.random.uniform(np.log10(low), np.log10(high))
 
-    y = random.random()
-
-    a = ((high**power - low**power)*y + low**power)**(1/power)
-
-    return a
+    return (np.random.uniform(low, high, 1)**(1/power)).item()
 
 
 def pink_noise():

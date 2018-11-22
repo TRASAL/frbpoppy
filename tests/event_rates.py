@@ -1,29 +1,36 @@
-"""Reproduce detection rates as shown in Fig. 1 from Connor (2017)."""
-import numpy as np
+"""Reproduce event rates versus alpha plot from Connor et al (2017)."""
+from collections import defaultdict
 import matplotlib.pyplot as plt
+import numpy as np
+import pickle
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
 
-SURVEYS = ('HTRU', 'APERTIF', 'UTMOST', 'ASKAP-FLY')
-ALPHAS = (1.5001, -1.0, -1.5)
-SPECTRAL_INDEX = 0.
-MAKE = True
-OBSERVE = True
+SURVEYS = ('HTRU', 'APERTIF', 'ASKAP-FLY', 'UTMOST', 'CHIME', 'PALFA', 'GUPPI')
+ALPHAS = np.around(np.linspace(-0.2, -1.8, 7), decimals=2)
+MAKE = False
+OBSERVE = False
 
-k = 0
+plot_data = defaultdict(list)
+pops = []
+
+
+def save_obj(obj, name):
+    with open('obj/' + name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def load_obj(name):
+    with open('obj/' + name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
 
 if MAKE:
-
     for alpha in ALPHAS:
-
-        # For testing
-        if k >= 1:
-            continue
-        k += 1
-
         n_per_day = 5000
-        days = 3
+        days = 100
 
+        # Local, standard candle population with constant pulse widths
         pop = CosmicPopulation(n_per_day*days,
                                days=days,
                                name=f'alpha-{alpha}',
@@ -46,49 +53,65 @@ if MAKE:
                                pulse_mu=1.,
                                pulse_sigma=0.,
                                repeat=0.,
-                               si_mu=SPECTRAL_INDEX,
+                               si_mu=0.,
                                si_sigma=0.,
                                z_max=0.1)
+
         pop.save()
-else:
-    pop = unpickle('alpha-1.0')
+        pops.append(pop)
+        plot_data['alpha'].append(alpha)
 
 if OBSERVE:
 
-    survey = Survey('PERFECT', gain_pattern='perfect', sidelobes=0)
-    surv_pop = SurveyPopulation(pop, survey)
-    surv_pop.name = 'testing-alpha'
-    surv_pop.save()
+    for alpha in ALPHAS:
+
+        if not MAKE:
+            pop = unpickle(f'alpha-{alpha}')
+
+        for s in SURVEYS:
+
+            # Set beam pattern
+            # if s == 'HTRU':
+            #     pattern = 'parkes'
+            # elif s == 'APERTIF':
+            #     pattern = 'apertif'
+            # else:
+            #     pattern = 'airy'
+            pattern = 'perfect'
+
+            survey = Survey(name=s, gain_pattern=pattern, sidelobes=0.5)
+            surv_rates = SurveyPopulation(pop, survey).rates()
+            print(f'Alpha:{pop.alpha:.2}, Survey: {s}, Det: {surv_rates.det}')
+            events_per_week = (surv_rates.det / surv_rates.days) * 7
+            events_per_week *= 1e3  # Just upping the values
+
+            plot_data[s].append(events_per_week)
+
+    save_obj(plot_data, 'rates')
 else:
-    surv_pop = unpickle('testing-alpha')
+    plot_data = load_obj('rates')
+    plot_data['alpha'] = [a for a in ALPHAS]
 
-fluences = np.array(surv_pop.get('fluence'))
+for survey in plot_data:
+    if survey == 'alpha':
+        continue
+    ps = np.array(plot_data[survey])
+    ph = np.array(plot_data['HTRU'])
+    pa = np.array(plot_data['alpha'])
 
-# N(S)
-number, bins = np.histogram(np.log10(fluences), bins=500)
-# N(>S) from N(S)
-n_gt_s = np.cumsum(number[::-1])[::-1]
-# logS
-x = bins[:-1]
-# log(N(>S))
-y = np.log10(n_gt_s)
-# Calculate derivative
-der = np.diff(y) / np.diff(x)
-bin_centres = (x[:-1] + x[1:]) / 2
+    if survey != 'HTRU':
+        ps[ph == 0.] = 0.
+    # Normalise wrt to Parkes at all alphas
+    norm = np.array([ps[i]/ph[i] for i in range(len(ps))])
+    cleaned_norm = norm[norm > 0.]
+    alpha = pa[norm > 0.]
 
-plt.plot(bin_centres, der)
-plt.xlabel('log S')
-plt.ylabel(r'$\alpha$')
-plt.ylim(np.mean(der)-2, np.mean(der)+2)
+    plt.plot(alpha, cleaned_norm, marker='o', label=survey)
 
+plt.xlabel(r'$\alpha$')
+plt.ylabel('Events per week')
+plt.yscale('log')
+plt.gca().invert_xaxis()
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.tight_layout()
 plt.savefig('plots/event_rates.pdf')
-
-plt.clf()
-
-
-plt.plot(x, y)
-plt.xlabel('log S')
-plt.ylabel(r'log N(>S)')
-plt.tight_layout()
-plt.savefig('plots/logNlogS.pdf')

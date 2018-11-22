@@ -10,9 +10,9 @@ class NumberDensity:
 
     def __init__(self,
                  model='vol_co',
-                 z_max=8.0,
-                 vol_co_max=3201.21717511309,
-                 dist_co_max=9.14295802075115,
+                 z_max=6.0,
+                 vol_co_max=8.42669369583847,
+                 dist_co_max=2506.29189915721,
                  alpha=-1.5):
         """Draw from particular number density distributions.
 
@@ -37,30 +37,28 @@ class NumberDensity:
         elif model == 'smd':
             self.draw = self.from_smd
 
-        if alpha == -1.5:
-            self.random_num = random.random
-        else:
-            # See sloped_dist
-            # self.a = 2*math.log(-self.alpha/3)/math.log(2) + 2  # Slope of PDF
-            # self.b = 0.5-(self.a/2)  # Offset of PDF
-            self.random_num = self.sloped_dist
-            self.m = -2*self.alpha - 3
+        if alpha != -1.5:
+            self.draw = self.sloped_dist
+            self.power = -self.alpha/1.5
+            self.maxi = self.vol_co_max**self.power
 
     def sloped_dist(self):
         """Draw from a sloped distribution to create a certain logNlogS slope.
 
         For PDF=a*x+b, and CDF=c*((a/2)*x**2+b*x) with c=2 so that P(.5)=.5
         """
-        y = random.random()  # Uniform distribution
-        # return (-self.b + math.sqrt(self.a*y+self.b**2))/self.a
-        return dis.powerlaw(low=1e-99, high=1, power=self.m)
+        vol_co = (self.maxi*random.random())**(1/self.power)  # [Gpc]
+        r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
+        dist_co = r['dist_co']
+        z = r['z']
+        return dist_co, z
 
     def from_vol_co(self):
         """Use constant number density of sources per comoving volume.
 
         Can be influenced by changing alpha.
         """
-        vol_co = self.vol_co_max*self.random_num()  # [Gpc]
+        vol_co = self.vol_co_max*random.random()  # [Gpc]
         r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
         dist_co = r['dist_co']
         z = r['z']
