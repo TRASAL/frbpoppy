@@ -106,7 +106,7 @@ tests/*.csv
 tests/*.html
 tests/*.p
 tests/*.png
-tests/plots/*
+tests/*/*
 temp\.csv
 publication/plots/
 publication/build/
