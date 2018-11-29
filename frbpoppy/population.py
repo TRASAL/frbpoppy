@@ -6,6 +6,7 @@ import pandas as pd
 
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
+from frbpoppy.frbs import FRBs
 
 
 class Population:
@@ -53,45 +54,22 @@ class Population:
         self.W_v = None
         self.z_max = None
 
-        # Repeater properties
-        self.repeat = None
-        self.time = None  # seconds
-
         # Store FRB sources
-        self.sources = []
-        self.n_srcs = 0
+        self.frbs = FRBs()
+        self.n_frbs = 0
 
     def __str__(self):
         """Define how to print a population object to a console."""
         s = 'Population properties:'
 
-        attributes = []
-        for e in self.__dict__:
-            attr = '\n\t{0:12.11}{1:.60}'.format(e, str(self.__dict__[e]))
-            attributes.append(attr)
-
-        s += ''.join(attributes)
+        # TODO: Code this to print all properties
 
         return s
 
-    def add(self, source):
-        """Add a source to the population."""
-        self.sources.append(source)
-        self.n_srcs += 1
-
     def get(self, par):
         """Get a list of a parameter."""
-        pars = []
-
-        for src in self.sources:
-            try:
-                pars.append(getattr(src, par))
-            except AttributeError:
-                for frb in src.frbs:
-                    pars.append(getattr(frb, par))
-
-        return pars
-
+        pass  # TODO Code this up
+        
     def to_df(self):
         """Gather source values into a pandas dataframe."""
         values = self._values()

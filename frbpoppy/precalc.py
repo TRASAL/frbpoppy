@@ -11,45 +11,34 @@ from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 
 
-def ne2001_table(gal, gab, test=False):
-    """
-    Create/use a NE2001 lookup table for dispersion measure.
+class NE2001Table:
+    """Create/use a NE2001 lookup table for dispersion measure."""
 
-    Args:
-        gl (float): Galactic longitude [fractional degrees]
-        gb (float): Galactic latitude [fractional degrees]
-        test (bool): Flag for coarser resolution
+    def __init__(self):
+        """Initializing."""
+        self.set_file_name()
 
-    Returns:
-        dm_mw (float): Galactic dispersion measure [pc*cm^-3]
+        # Setup database
+        self.db = False
+        self.step = 0.1
+        self.rounding = 2
+        if os.path.exists(self.file_name):
+            self.db = True
 
-    """
-    uni_mods = os.path.join(paths.models(), 'universe/')
+    def set_file_name(self):
+        """Determine filename."""
+        uni_mods = os.path.join(paths.models(), 'universe/')
+        self.file_name = uni_mods + 'dm_mw.db'
 
-    # Set up for testing
-    if test:
-        step = 10
-        rounding = -1
-        path = uni_mods + 'dm_mw_test.db'
-    else:
-        step = 0.1
-        rounding = 2
-        path = uni_mods + 'dm_mw.db'
+    def create_table(self):
+        """Create a lookup table for dispersion measure."""
+        # Connect to database
+        conn = sqlite3.connect(self.file_name)
+        c = conn.cursor()
 
-    # Setup database
-    db = False
-    if os.path.exists(path):
-        db = True
-
-    # Connect to database
-    conn = sqlite3.connect(path)
-    c = conn.cursor()
-
-    # Create db
-    if not db:
         # Set array of coordinates
-        gls = np.arange(-180., 180. + step, step)
-        gbs = np.arange(-90., 90. + step, step)
+        gls = np.arange(-180., 180. + self.step, self.step)
+        gbs = np.arange(-90., 90. + self.step, self.step)
         dist = 0.1  # [Gpc]
 
         # Create database
@@ -82,26 +71,44 @@ def ne2001_table(gal, gab, test=False):
         # Save
         conn.commit()
 
-    # Round values
-    def frac_round(x, prec=rounding, base=1):
-        return round(base * round(float(x)/base), prec)
+    def lookup(self, gal, gab):
+        """Look up associated milky way dispersion measure with gal coords.
 
-    # Round to 0.05 fractional degree
-    gal = frac_round(gal)
-    gab = frac_round(gab)
+        Args:
+            gl (array): Galactic longitude [fractional degrees]
+            gb (array): Galactic latitude [fractional degrees]
 
-    # Search database
-    dm_mw = c.execute('select dm_mw from dm where gl=? and gb=? limit 1',
-                      [gal, gab]).fetchone()[0]
+        Returns:
+            dm_mw (float): Galactic dispersion measure [pc*cm^-3]
 
-    # Close database
-    conn.close()
+        """
+        # Connect to database
+        conn = sqlite3.connect(self.file_name)
+        c = conn.cursor()
 
-    return dm_mw
+        dm_mw = np.ones_like(gal)
+
+        # Round values
+        def frac_round(x, prec=self.rounding, base=1):
+            return np.round(base * np.round(x/base), prec)
+
+        # Round values
+        gal = frac_round(gal, self.rounding)
+        gab = frac_round(gab, self.rounding)
+
+        # Search database
+        query = 'select dm_mw from dm where gl=? and gb=? limit 1'
+
+        for i, gl in enumerate(gal):
+            dm_mw[i] = c.execute(query, [gl, gab[i]]).fetchone()[0]
+
+        # Close database
+        conn.close()
+
+        return dm_mw
 
 
-def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
-               dist_co=None, vol_co=None, z=None):
+class DistanceTable:
     """
     Create/use a lookup table for comoving distance, volume & redshift.
 
@@ -116,72 +123,65 @@ def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
         H_0 (float, optional): Hubble parameter. Defaults to 69.6 km/s/Mpc
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_k (float, optional): Omega vacuum. Defaults to 0.714
-        test (bool): Flag for coarser resolution
-        dist_co (float or bool): Whether to give or return comoving distance
-        z (float or bool): Whether to give or return redshift
-        vol_co (float or bool): Whether to give or comoving volume
-
-    Returns:
-        float: Distance measures [Gpc], redshift, or comoving volume from
-            Earth to the source [Gpc^3]
-
-        Alternatively
-        dict: Various outputs as requested
 
     """
-    uni_mods = os.path.join(paths.models(), 'universe/')
 
-    # Check input
-    if not any([e for e in [dist_co, vol_co, z] if e is True]):
-        raise ValueError('Set which parameters you would like as output')
-    # Using z later on
-    redshift = z
+    def __init__(self, H_0=69.6, W_m=0.286, W_v=0.714):
+        """Initializing."""
+        self.H_0 = H_0
+        self.W_m = W_m
+        self.W_v = W_v
 
-    def cvt(value):
-        """Convert a float to a string without a period."""
-        return str(value).replace('.', 'd')
+        self.set_file_name()
 
-    # Filename
-    paras = ['h0', cvt(H_0),
-             'wm', cvt(W_m),
-             'wv', cvt(W_v)]
-    f = '-'.join(paras)
+        # Setup database
+        self.db = False
+        self.step = 0.00001
+        self.z_max = 6.5
+        if os.path.exists(self.file_name):
+            self.db = True
 
-    if test:
-        step = 0.1
-        z_max = 3.0
-        file_name = uni_mods + f + '_test.db'
-    else:
-        step = 0.00001
-        z_max = 6.5
-        file_name = uni_mods + f + '.db'
+    def set_file_name(self):
+        """Determine filename."""
+        uni_mods = os.path.join(paths.models(), 'universe/')
 
-    # Setup database
-    db = False
-    if os.path.exists(file_name):
-        db = True
+        def cvt(value):
+            """Convert a float to a string without a period."""
+            return str(value).replace('.', 'd')
 
-    # Connect to database
-    conn = sqlite3.connect(file_name)
-    c = conn.cursor()
+        # Convert
+        paras = ['h0', cvt(self.H_0),
+                 'wm', cvt(self.W_m),
+                 'wv', cvt(self.W_v)]
+        f = '-'.join(paras)
 
-    # Create db
-    if not db:
+        self.file_name = uni_mods + f + '.db'
 
+    def create_table(self):
+        """Create a lookup table for distances."""
         pprint('Creating a distance table (only needs to happen once)')
-        pprint('At redshift:')
+
+        # Connect to database
+        conn = sqlite3.connect(self.file_name)
+        c = conn.cursor()
+
+        H_0 = self.H_0
+        W_m = self.W_m
+        W_v = self.W_v
 
         W_k = 1.0 - W_m - W_v  # Omega curvature
 
         if W_k != 0.0:
             pprint('Careful - Your cosmological parameters do not sum to 1.0')
 
-        zs = np.arange(0, z_max+step, step)
+        zs = np.arange(0, self.z_max+self.step, self.step)
 
         # Create database
         c.execute('create table distances (z real, dist real, vol real)')
 
         results = []
+
+        pprint('At redshift:')
 
         for z in zs:
             # Comoving distance [Gpc]
@@ -205,85 +205,95 @@ def dist_table(H_0=69.6, W_m=0.286, W_v=0.714, test=False,
 
         pprint('\nFinished distance table')
 
-    # Set input value
-    if isinstance(dist_co, float):
-        in_par = 'dist'
-        i = dist_co
-    elif isinstance(vol_co, float):
-        in_par = 'vol'
-        i = vol_co
-    elif isinstance(redshift, float):
-        in_par = 'z'
-        i = redshift
+    def lookup(self, z=None, dist_co=None, vol_co=None):
+        """Look up associated values with input values."""
+        # Connect to database
+        conn = sqlite3.connect(self.file_name)
+        c = conn.cursor()
 
-    # Search database
-    query = f'select * from distances where {in_par} > ? limit 1'
-    results = c.execute(query, [i]).fetchone()
+        # Check what's being looked up
+        if z is not None:
+            in_par = 'z'
+            dist_co = np.ones_like(z)
+            vol_co = np.ones_like(z)
+        elif dist_co is not None:
+            in_par = 'dist'
+            z = np.ones_like(dist_co)
+            vol_co = np.ones_like(dist_co)
+        else:
+            in_par = 'vol'
+            z = np.ones_like(vol_co)
+            dist_co = np.ones_like(vol_co)
 
-    # Close database
-    conn.close()
+        # Search database
+        query = f'select * from distances where {in_par} > ? limit 1'
 
-    # Gather outputs
-    outputs = {}
-    if redshift is True:
-        outputs['z'] = results[0]
-    if dist_co is True:
-        outputs['dist_co'] = results[1]
-    if vol_co is True:
-        outputs['vol_co'] = results[2]
+        if in_par == 'z':
+            for i, r in enumerate(z):
+                _, dist_co[i], vol_co[i] = c.execute(query, [r]).fetchone()
+        if in_par == 'dist':
+            for i, r in enumerate(dist_co):
+                z[i], _, vol_co[i] = c.execute(query, [r]).fetchone()
+        if in_par == 'vol':
+            for i, r in enumerate(vol_co):
+                z[i], dist_co[i], _ = c.execute(query, [r]).fetchone()
 
-    if len(outputs) == 1:
-        output, = outputs.values()
-        return output
-    else:
-        return outputs
+        # Close database
+        conn.close()
+
+        return z, dist_co, vol_co
 
 
-def csmd_table(z, H_0=69.6, W_m=0.286, W_v=0.714, test=False):
+class CSMDTable:
     """
     Create/use a stellar mass density lookup table for the FRB number density.
 
     Args:
-        z (float): Redshift
         H_0 (float, optional): Hubble parameter. Defaults to 69.6
         W_m (float, optional): Omega matter. Defaults to 0.286
         W_v (float, optional): Omega vacuum. Defaults to 0.714
-        test (bool): Flag for coarser resolution
-
-    Returns:
-        float: Stellar mass density at given redshift
 
     """
-    uni_mods = os.path.join(paths.models(), 'universe/')
 
-    # Set up for testing
-    if test:
-        step = 0.1
-        rounding = 1
-        path = uni_mods + 'csmd_test.db'
-    else:
-        step = 1e-5
-        rounding = 5
-        path = uni_mods + 'csmd.db'
+    def __init__(self, H_0=69.6, W_m=0.286, W_v=0.714):
+        """Initializing."""
+        self.H_0 = H_0
+        self.W_m = W_m
+        self.W_v = W_v
 
-    # Setup database
-    db = False
-    if os.path.exists(path):
-        db = True
+        self.set_file_name()
 
-    # Connect to database
-    conn = sqlite3.connect(path)
-    c = conn.cursor()
+        # Setup database
+        self.db = False
+        self.rounding = 5
+        self.step = 1e-5
+        if os.path.exists(self.file_name):
+            self.db = True
+        else:
+            self.create_table()
 
-    # Create db
-    if not db:
+    def set_file_name(self):
+        """Determine filename."""
+        uni_mods = os.path.join(paths.models(), 'universe/')
+        self.file_name = uni_mods + 'csmd.db'
+
+    def create_table(self):
+        """Create a CSMD SQL table."""
+        # Connect to database
+        conn = sqlite3.connect(self.file_name)
+        c = conn.cursor()
+
         # Set array of coordinates
-        zs = np.arange(0., 6. + step, step)
+        zs = np.arange(0., 6. + self.step, self.step)
 
         # Create database
-        c.execute('create table csmd (z real, csmd real)')
+        self.c.execute('create table csmd (z real, csmd real)')
 
         results = []
+
+        H_0 = self.H_0
+        W_m = self.W_m
+        W_v = self.W_v
 
         def integral(z):
             z1 = z + 1
@@ -299,7 +309,7 @@ def csmd_table(z, H_0=69.6, W_m=0.286, W_v=0.714, test=False):
 
         csmds = vec_csmd(zs)
 
-        results = list(zip(np.around(zs, decimals=rounding), csmds))
+        results = list(zip(np.around(zs, decimals=self.rounding), csmds))
 
         # Save results to database
         c.executemany('insert into csmd values (?,?)', results)
@@ -310,14 +320,32 @@ def csmd_table(z, H_0=69.6, W_m=0.286, W_v=0.714, test=False):
         # Save
         conn.commit()
 
-    # Round values
-    z = round(z, rounding)
+    def lookup(self, z):
+        """Look up associated values with input values.
 
-    # Search database
-    smd = c.execute('select csmd from csmd where z=? limit 1',
-                    [z]).fetchone()[0]
+        Args:
+            z (array): Redshifts
 
-    # Close database
-    conn.close()
+        Returns:
+            array: Stellar mass density at given redshift
 
-    return smd
+        """
+        # Connect to database
+        conn = sqlite3.connect(self.file_name)
+        c = conn.cursor()
+
+        smd = np.ones_like(z)
+
+        # Round values
+        z = np.round(z, self.rounding)
+
+        # Search database
+        query = 'select csmd from csmd where z=? limit 1'
+
+        for i, r in enumerate(z):
+            smd[i] = c.execute(query, [r]).fetchone()[0]
+
+        # Close database
+        conn.close()
+
+        return smd

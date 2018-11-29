@@ -4,9 +4,9 @@ import random
 import frbpoppy.precalc as pc
 
 
-def powerlaw(low, high, power):
+def powerlaw(low, high, power, n_gen=1):
     """
-    Return random variable distributed according to power law.
+    Return random variables distributed according to power law.
 
     The power law distribution power is simply the power, not including a minus
     sign (P scales with x^n with n the power). A flat powerlaw can therefore
@@ -16,84 +16,22 @@ def powerlaw(low, high, power):
         low (float): Lower limit of distribution
         high (float): Higher limit of distribution
         power (float): Power of power law distribution
+        n_gen (int): Number of values to be generated
 
     Returns:
-        float: Random variable picked from power law distribution
+        array: Random variable picked from power law distribution
 
     """
     if low > high:
         low, high = high, low
 
     if power == 0:
-        return 10**np.random.uniform(np.log10(low), np.log10(high))
+        return 10**np.random.uniform(np.log10(low), np.log10(high), n_gen)
 
-    return (np.random.uniform(low, high, 1)**(1/power)).item()
-
-
-def pink_noise():
-    """
-    Simluate burst times using pink noise.
-
-    Returns:
-        ts (list): A list of burst times
-
-    """
-    # Assume FRBs can repeat at max once per 20s, and that
-    # would be observable for a maximum of 12h
-    length = round(86400 / 2 / 20)
-
-    # Create gaussion noise
-    signal = np.random.normal(0, 1, size=length)
-    time = [i for i in range(length)]
-
-    # Fast Fourier Transform it
-    freq = np.fft.rfftfreq(length)
-    four_trans = np.fft.rfft(signal)
-
-    # Turn into pink noise
-    pn = [e[0]*e[1]**-1 for e in zip(four_trans[1:], freq[1:])]
-
-    # Revert to time domain
-    ns = np.fft.irfft(pn)
-
-    # If above limit, then frb
-    limit = max(ns) - 2
-    ts = [e[1] for e in zip(ns, time[:-2]) if e[0] > limit]
-
-    # Revert to normal timescale
-    ts *= 20
-
-    return ts
+    return np.random.uniform(low, high, n_gen)**(1/power)
 
 
-def oppermann_pen():
-    """
-    Following Oppermann & Pen (2017), simulate repeat times.
-
-    Returns:
-        ts (list): List of burst times
-
-    """
-    r = 5.7
-    k = 0.34
-
-    ts = []
-    t_tot = 0.5  # Assuming a maximum of 12 hours on one spot
-    t_sum = 0.0
-
-    # Get time of bursts
-    while t_sum < t_tot:
-        t = r*np.random.weibull(k)
-        t_sum += t
-        ts.append(t_sum)
-
-    # Convert to seconds
-    ts = [t*86400 for t in ts[:-1]]
-
-    return ts
-
-
-def z_from_sfr(z_max=2.5):
+def z_from_sfr(z_max=2.5, n_gen=1):
     """
     Return a random redshift for sources following the Star Formation Rate.
 
@@ -104,18 +42,25 @@ def z_from_sfr(z_max=2.5):
     def sfr(z):
         return (1+z)**2.7/(1+((1+z)/2.9)**5.6)
 
-    z = None
+    def sample(n_gen):
+        return np.random.uniform(0, z_max, (n_gen,))
 
-    while not z:
-        x = random.random()*z_max
-        y = random.random()*9.0
-        if y <= sfr(x):
-            z = x
+    def accept(x):
+        return np.random.rand(x.size)*9.0 <= sfr(x)
+
+    z = sample(n_gen)
+    mask = accept(z)
+    reject, = np.where(~mask)
+    while reject.size > 0:
+        fill = sample(reject.size)
+        mask = accept(fill)
+        z[reject[mask]] = fill[mask]
+        reject = reject[~mask]
 
     return z
 
 
-def z_from_csmd(z_max=6.0):
+def z_from_csmd(z_max=6.0, n_gen=1):
     """
     Return a random redshift for sources following the Stellar Mass Density.
 
@@ -123,12 +68,29 @@ def z_from_csmd(z_max=6.0):
     https://arxiv.org/pdf/1403.0007.pdf
 
     """
-    z = None
+    # z = None
+    #
+    # while not z:
+    #     x = random.random()*z_max
+    #     y = random.random()*0.00065
+    #     if y <= pc.csmd_table(x):
+    #         z = x
+    csmd = pc.CSMDTable().lookup
 
-    while not z:
-        x = random.random()*z_max
-        y = random.random()*0.00065
-        if y <= pc.csmd_table(x):
-            z = x
+    def sample(n_gen):
+        return np.random.uniform(0, z_max, (n_gen,))
+
+    def accept(x):
+        return np.random.rand(x.size)*0.00065 <= csmd(x)
+
+    # Accept - rejct algorithm
+    z = sample(n_gen)
+    mask = accept(z)
+    reject, = np.where(~mask)
+    while reject.size > 0:
+        fill = sample(reject.size)
+        mask = accept(fill)
+        z[reject[mask]] = fill[mask]
+        reject = reject[~mask]
 
     return z
