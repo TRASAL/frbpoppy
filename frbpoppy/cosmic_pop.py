@@ -1,11 +1,11 @@
 """Class to generate a cosmic population of FRBs."""
+import numpy as np
 import math
 import random
 
 from frbpoppy.log import pprint
 from frbpoppy.number_density import NumberDensity
 from frbpoppy.population import Population
-from frbpoppy.source import Source
 import frbpoppy.distributions as dis
 import frbpoppy.galacticops as go
 import frbpoppy.precalc as pc
@@ -111,90 +111,104 @@ class CosmicPopulation(Population):
         self.z_max = z_max
 
         # Cosmology calculations
-        r = go.Redshift(self.z_max, H_0=self.H_0, W_m=self.W_m, W_v=self.W_v)
+        r = go.Redshift(self.z_max,
+                        H_0=self.H_0,
+                        W_m=self.W_m,
+                        W_v=self.W_v)
         self.dist_co_max = r.dist_co()
         self.vol_co_max = r.vol_co()
 
         # Ensure precalculations are done if necessary
-        pc.dist_table(z=1.0,
-                      dist_co=True,
-                      H_0=self.H_0,
-                      W_m=self.W_m,
-                      W_v=self.W_v)
+        pc.DistanceTable(H_0=self.H_0, W_m=self.W_m, W_v=self.W_v)
 
         # Set up number density
         n_den = NumberDensity(model=self.n_model,
                               z_max=self.z_max,
-                              vol_co_max=self.vol_co_max,
-                              dist_co_max=self.dist_co_max,
-                              alpha=self.alpha).draw
+                              alpha=self.alpha,
+                              H_0=self.H_0,
+                              W_m=self.W_m,
+                              W_v=self.W_v).draw
 
         # Let user know what's happening
         pprint(f'Generating {self.name} population')
 
-        while self.n_srcs < self.n_gen:
+        frbs = self.frbs
 
-            # Initialise
-            src = Source()
+        # Add random directional coordinates
+        frbs.gl = np.random.random(n_gen) * 360.0 - 180
+        frbs.gb = np.degrees(np.arcsin(np.random.random(n_gen)))
+        frbs.gb[::2] *= -1
 
-            # Add random directional coordinates
-            src.gl = random.random() * 360.0 - 180
-            src.gb = math.degrees(math.asin(random.random()))
-            if random.random() < 0.5:
-                src.gb *= -1
+        # Convert
+        frbs.ra, frbs.dec = go.lb_to_radec(frbs.gl, frbs.gb)
 
-            # Convert
-            src.ra, src.dec = go.lb_to_radec(src.gl, src.gb)
+        # Draw from number density
+        frbs.z, frbs.dist_co = n_den(n_gen)
 
-            # Draw from number density
-            src.dist_co, src.z = n_den()
+        # Get the proper distance
+        dist_pr = frbs.dist_co/(1+frbs.z)
 
-            # Get the proper distance
-            dist_pr = src.dist_co/(1+src.z)
+        # Convert into galactic coordinates
+        frbs.gx, frbs.gy, frbs.gz = go.lb_to_xyz(frbs.gl, frbs.gb, dist_pr)
 
-            # Convert into galactic coordinates
-            src.gx, src.gy, src.gz = go.lb_to_xyz(src.gl, src.gb, dist_pr)
+        # Dispersion measure of the Milky Way
+        if self.dm_mw_model == 'ne2001':
+            frbs.dm_mw = pc.NE2001Table().lookup(frbs.gl, frbs.gb)
+        elif self.dm_mw_model == 'zero':
+            frbs.dm_mw = np.zeros_like(frbs.z)
 
-            # Dispersion measure of the Milky Way
-            if self.dm_mw_model == 'ne2001':
-                src.dm_mw = pc.ne2001_table(src.gl, src.gb)
-            elif self.dm_mw_model == 'zero':
-                src.dm_mw = 0.
+        # Dispersion measure of the intergalactic medium
+        frbs.dm_igm = go.ioka_dm_igm(frbs.z,
+                                     slope=self.dm_igm_index,
+                                     sigma=self.dm_igm_sigma)
 
-            # Dispersion measure of the intergalactic medium
-            src.dm_igm = go.ioka_dm_igm(src.z, slope=self.dm_igm_index,
-                                        sigma=self.dm_igm_sigma)
+        # Dispersion measure of the host (Tendulkar)
+        if self.dm_host_model == 'normal':
+            frbs.dm_host = np.random.normal(self.dm_host_mu,
+                                            self.dm_host_sigma)
+        elif self.dm_host_model == 'lognormal':
+            mu = math.log(self.dm_host_mu)
+            sigma = math.log(self.dm_host_sigma)
+            frbs.dm_host = np.random.lognormal(mu, sigma)
 
-            # Dispersion measure of the host (Tendulkar)
-            if self.dm_host_model == 'normal':
-                src.dm_host = random.gauss(self.dm_host_mu, self.dm_host_sigma)
-            elif self.dm_host_model == 'lognormal':
-                mu = math.log(self.dm_host_mu)
-                sigma = math.log(self.dm_host_sigma)
-                # TODO Testing a hard cut off - remove in actual release
-                r = 6000
-                while r > 5000:
-                    r = random.lognormvariate(mu, sigma)
-                src.dm_host = r
+        frbs.dm_host /= (1 + frbs.z)
 
-            src.dm_host /= (1 + src.z)
+        # Total dispersion measure
+        frbs.dm = frbs.dm_mw + frbs.dm_igm + frbs.dm_host
 
-            # Total dispersion measure
-            src.dm = src.dm_mw + src.dm_igm + src.dm_host
+        # Get a random intrinsic pulse width [ms]
+        if self.w_model == 'lognormal':
+            frbs.w_int = np.random.lognormal(self.w_mu, self.w_sigma, n_gen)
 
-            # Add initial frb
-            attrs = dict(self.__dict__)
-            attrs.pop('time')
-            src.create_frb(**attrs)
+        if self.w_model == 'uniform':
+            frbs.w_int = np.random.uniform(self.w_min, self.w_max, n_gen)
 
-            # If repeating add another FRB
-            if random.random() < self.repeat:
+        # Calculate the pulse width upon arrival to Earth
+        frbs.w_arr = frbs.w_int*(1+frbs.z)
 
-                times = dis.oppermann_pen()
-                for t in times:
-                    src.create_frb(**attrs, time=t)
+        # Add bolometric luminosity [erg/s]
+        frbs.lum_bol = dis.powerlaw(self.lum_min,
+                                    self.lum_max,
+                                    self.lum_pow,
+                                    n_gen)
 
-            # Add source to population
-            self.add(src)
+        # Add spectral index
+        frbs.si = np.random.normal(si_mu, si_sigma)
 
-        pprint(f'Finished')
+        pprint('Finished')
+
+
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    p = CosmicPopulation(10000)
+
+    for arg in p.frbs.__dict__:
+        print(arg)
+
+        values = getattr(p.frbs, arg)
+
+        if values is not None:
+            plt.hist(values, bins=50)
+            plt.xlabel(arg)
+            plt.savefig(f'./{arg}.png')
+            plt.clf()

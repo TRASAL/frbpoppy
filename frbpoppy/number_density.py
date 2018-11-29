@@ -1,6 +1,6 @@
 """Group together various number density descriptors."""
 import random
-import math
+import numpy as np
 import frbpoppy.distributions as dis
 import frbpoppy.precalc as pc
 
@@ -11,8 +11,9 @@ class NumberDensity:
     def __init__(self,
                  model='vol_co',
                  z_max=6.0,
-                 vol_co_max=8.42669369583847,
-                 dist_co_max=2506.29189915721,
+                 H_0=69.6,
+                 W_m=0.286,
+                 W_v=0.714,
                  alpha=-1.5):
         """Draw from particular number density distributions.
 
@@ -24,12 +25,16 @@ class NumberDensity:
             alpha (float, optional): Desired log N log S slope for a perfect,
                 non-cosmological population.
         """
-
         self.z_max = z_max
-        self.vol_co_max = vol_co_max
-        self.dist_co_max = dist_co_max
+
+        # Convert various maximum distance values
+        self.dt = pc.DistanceTable(H_0=H_0, W_m=W_m, W_v=W_v).lookup
+        _, self.dist_co_max, self.vol_co_max = self.dt(z=np.array([z_max]))
+        self.dist_co_max = self.dist_co_max[0]
+        self.vol_co_max = self.vol_co_max[0]
         self.alpha = alpha
 
+        # Determine from which type of distribution to draw
         if model == 'vol_co':
             self.draw = self.from_vol_co
         elif model == 'sfr':
@@ -37,41 +42,35 @@ class NumberDensity:
         elif model == 'smd':
             self.draw = self.from_smd
 
+        # Allow for the steepness of log N log S to be adapted
         if alpha != -1.5:
             self.draw = self.sloped_dist
             self.power = -self.alpha/1.5
             self.maxi = self.vol_co_max**self.power
 
-    def sloped_dist(self):
-        """Draw from a sloped distribution to create a certain logNlogS slope.
+    def sloped_dist(self, n_gen=1):
+        """Draw from a sloped distribution to create a logNlogS slope."""
+        vol_co = (self.maxi*np.random.random(n_gen))**(1/self.power)  # [Gpc]
+        z, dist_co, _ = self.dt(vol_co=vol_co)
+        return z, dist_co
 
-        For PDF=a*x+b, and CDF=c*((a/2)*x**2+b*x) with c=2 so that P(.5)=.5
-        """
-        vol_co = (self.maxi*random.random())**(1/self.power)  # [Gpc]
-        r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
-        dist_co = r['dist_co']
-        z = r['z']
-        return dist_co, z
-
-    def from_vol_co(self):
+    def from_vol_co(self, n_gen=1):
         """Use constant number density of sources per comoving volume.
 
         Can be influenced by changing alpha.
         """
-        vol_co = self.vol_co_max*random.random()  # [Gpc]
-        r = pc.dist_table(vol_co=vol_co, z=True, dist_co=True)
-        dist_co = r['dist_co']
-        z = r['z']
-        return dist_co, z
+        vol_co = self.vol_co_max*np.random.random(n_gen)  # [Gpc]
+        z, dist_co, _ = self.dt(vol_co=vol_co)
+        return z, dist_co
 
-    def from_sfr(self):
+    def from_sfr(self, n_gen=1):
         """Get sources to follow star forming rate."""
-        z = dis.z_from_sfr(z_max=self.z_max)
-        dist_co = pc.dist_table(z=z, dist_co=True)
-        return dist_co, z
+        z = dis.z_from_sfr(z_max=self.z_max, n_gen=n_gen)
+        _, dist_co, _ = self.dt(z=z)
+        return z, dist_co
 
-    def from_smd(self):
+    def from_smd(self, n_gen=1):
         """Get sources to follow stellar mass density."""
-        z = dis.z_from_csmd(z_max=self.z_max)
-        dist_co = pc.dist_table(z=z, dist_co=True)
-        return dist_co, z
+        z = dis.z_from_csmd(z_max=self.z_max, n_gen=n_gen)
+        _, dist_co, _ = self.dt(z=z)
+        return z, dist_co

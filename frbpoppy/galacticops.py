@@ -9,6 +9,7 @@ import csv
 import math
 import os
 import random
+import numpy as np
 
 from frbpoppy.paths import paths
 from frbpoppy.log import pprint
@@ -50,12 +51,12 @@ def lb_to_xyz(gl, gb, dist):
     """
     rsun = 8.5e-6  # Gpc
 
-    L = math.radians(gl)
-    B = math.radians(gb)
+    L = np.radians(gl)
+    B = np.radians(gb)
 
-    gx = dist * math.cos(B) * math.sin(L)
-    gy = rsun - dist * math.cos(B) * math.cos(L)
-    gz = dist * math.sin(B)
+    gx = dist * np.cos(B) * np.sin(L)
+    gy = rsun - dist * np.cos(B) * np.cos(L)
+    gz = dist * np.sin(B)
 
     return gx, gy, gz
 
@@ -82,30 +83,29 @@ def lb_to_radec(l, b):
         ra, dec (float): Right ascension and declination [fractional degrees]
 
     """
-    gl = math.radians(l)
-    gb = math.radians(b)
+    gl = np.radians(l)
+    gb = np.radians(b)
 
     # Coordinates of the galactic north pole (J2000)
-    a_ngp = math.radians(12.9406333 * 15.)
-    d_ngp = math.radians(27.1282500)
-    l_ngp = math.radians(123.9320000)
+    a_ngp = np.radians(12.9406333 * 15.)
+    d_ngp = np.radians(27.1282500)
+    l_ngp = np.radians(123.9320000)
 
-    sd_ngp = math.sin(d_ngp)
-    cd_ngp = math.cos(d_ngp)
-    sb = math.sin(gb)
-    cb = math.cos(gb)
+    sd_ngp = np.sin(d_ngp)
+    cd_ngp = np.cos(d_ngp)
+    sb = np.sin(gb)
+    cb = np.cos(gb)
 
     # Calculate right ascension
-    y = cb*math.sin(l_ngp - gl)
-    x = cd_ngp*sb - sd_ngp*cb*math.cos(l_ngp - gl)
-    ra = math.atan2(y, x) + a_ngp
-    ra = math.degrees(ra) % 360
+    y = cb*np.sin(l_ngp - gl)
+    x = cd_ngp*sb - sd_ngp*cb*np.cos(l_ngp - gl)
+    ra = np.arctan2(y, x) + a_ngp
+    ra = np.degrees(ra) % 360
 
     # Calculate declination
-    dec = math.asin(sd_ngp*sb + cd_ngp*cb*math.cos(l_ngp - gl))
-    dec = math.degrees(dec) % 360.
-    if dec > 270:
-        dec = -(360 - dec)
+    dec = np.arcsin(sd_ngp*sb + cd_ngp*cb*np.cos(l_ngp - gl))
+    dec = np.degrees(dec) % 360.
+    dec[dec > 270] = -(360 - dec[dec > 270])
 
     return ra, dec
 
@@ -505,142 +505,11 @@ def dist_to_z(dist, H_0=69.6):
     return z
 
 
-def dist_lookup(cosmology=True, H_0=69.6, W_m=0.286, W_v=0.714, z_max=6.0):
-    """
-    Create a list of tuples to lookup the corresponding redshift for a comoving
-    distance [Gpc]. Uses formulas from Hoggs et al. (1999) for the cosmological
-    calculations, assuming a flat universe. To avoid long calculation times,
-    it will check if a previous run with the same parameters has been done,
-    which it will then load it. If not, it will calculate a new table, and save
-    the table for later runs.
-
-    Args:
-        cosmology (boolean, optional): Whether to use cosmology or not.
-        H_0 (float, optional): Hubble parameter. Defaults to 69.6
-        W_m (float, optional): Omega matter. Defaults to 0.286
-        W_k (float, optional): Omega vacuum. Defaults to 0.714
-        z_max (float, optional): Maximum redshift. Defaults to 8.0
-    Returns:
-        None: If cosmology is not enabled
-        ds (list): Comoving distances [Gpc]
-        zs (list): Corresponding redshifts
-    """
-    # Initializing
-    c = 299792.458  # Velocity of light [km/sec]
-    ds = []
-    zs = []
-
-    if not cosmology:
-        return None, None
-
-    def cvt(value):
-        """Convert a value to a string without a period"""
-        return str(value).replace('.', 'd')
-
-    # Filename
-    paras = ['h0', cvt(H_0),
-             'wm', cvt(W_m),
-             'wv', cvt(W_v),
-             'zmax', cvt(z_max)]
-    f = '-'.join(paras) + '.csv'
-
-    # Check whether frbpoppy can avoid creating new tables
-    if os.path.isfile(uni_mods + f):
-        with open(uni_mods + f, 'r') as f:
-            data = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
-            for r in data:
-                ds.append(r[0])
-                zs.append(r[1])
-
-    # If unavoidable, proceed with integration...
-    else:
-
-        # Knowingly put imports here
-        from scipy.integrate import quad as integrate
-        import numpy as np
-
-        # Initialize parameters
-        step = 0.001
-        W_k = 1.0 - W_m - W_v  # Omega curvature
-
-        if W_k != 0.0:
-            pprint('Careful - Your cosmological parameters do not sum to 1.0')
-
-        # Numerically integrate the following function
-        def d_c(x):
-            """Comoving distance (Hogg et al, 1999)"""
-            return 1/math.sqrt((W_m*(1+x)**3 + W_k*(1+x)**2 + W_v))
-
-        for z in np.arange(0,z_max+step,step):
-            d = c/H_0*integrate(d_c, 0, z)[0]
-            d /= 1e3  # Covert from Mpc to Gpc
-            ds.append(d)
-            zs.append(z)
-
-        # Save distance and redshift
-        with open(uni_mods + f, 'w+') as df:
-            d = '\n'.join('{},{}'.format(ds[i],zs[i]) for i in range(len(ds)))
-            df.write(d)
-
-    return ds, zs
-
-
-def interpolate_z(d, ds, zs, H_0=69.6):
-    """
-    Interpolate between two comoving distances.
-
-    Obtain an approximate redshift, unless dzs is none (i.e. cosmology has
-    been set to False in the function dist_lookup), in which case use an
-    approximation that works to z<2.
-
-    Args:
-        d (float): Comoving distance [Gpc]
-        ds (list): Comoving distances [Gpc]
-        zs (list): Corresponding redshifts
-        H_0 (float, optional): The value of the Hubble expansion, only required
-            when using a non-cosmology approximation. Defaults to 69.6
-    Returns:
-        z (float): Redshift
-
-    """
-    z = 0
-
-    if not ds:
-        # Convert distance in Gpc to z. Holds for z <= 2
-        # Formulas from 'An Introduction to Modern Astrophysics (2nd Edition)'
-        # by Bradley W. Carroll, Dale A. Ostlie. (Eq. 27.7)
-        c = 299792.458  # Velocity of light [km/sec]
-        d *= 1e3
-        dhc = d*H_0/c
-        det = math.sqrt(1 - dhc**2)
-        z = -(det + dhc - 1)/(dhc - 1)
-        return z
-
-    # Interpolate between values
-    for i,e in enumerate(ds):
-
-        if d < e:
-            i2 = i
-            i1 = i-1
-
-            # Return lowest z if before first value
-            if i1 < 0:
-                return zs[0]
-
-            slope = (zs[i2] - zs[i1]) / (ds[i2] - ds[i1])
-            z = zs[i1] + slope*(d - ds[i1])
-
-            return z
-
-    pprint('Gone over your maximum redshift', d)
-    # Return highest z if beyond the largest redshift
-    return zs[-1]
-
-
 def ioka_dm_igm(z, slope=1200, sigma=None):
     """
-    Calculate the contribution of the intergalactic electron density to the
-    dispersion measure, following Ioka (2003) and Inoue (2004)
+    Calculate the contribution of the igm to the dispersion measure.
+
+    Follows Ioka (2003) and Inoue (2004)
 
     Args:
         z (float): Redshift of source
@@ -650,4 +519,4 @@ def ioka_dm_igm(z, slope=1200, sigma=None):
     """
     if sigma is None:
         sigma = 0.2*slope*z
-    return random.gauss(slope*z, sigma)
+    return np.random.normal(slope*z, sigma)
