@@ -1,6 +1,6 @@
 """Class to hold FRB source properties."""
 import numpy as np
-
+import pandas as pd
 
 class FRBs:
     """Class containing FRB properties"""
@@ -41,3 +41,26 @@ class FRBs:
         self.T_sky = 0
         self.T_tot = 0
         self.w_eff = None
+
+    def apply(self, mask):
+        """Apply a Numpy array to all parameters.
+
+        Args:
+            mask (array): Masking array to apply to all frb parameters.
+
+        """
+        for attr in self.__dict__.keys():
+            parm = getattr(self, attr)
+            if type(parm) is np.ndarray:
+                setattr(self, attr, parm[mask])
+
+    def to_df(self):
+        """Convert properties over to a Pandas DataFrame."""
+        # Find all source properties
+        df = pd.DataFrame()
+        for attr in self.__dict__.keys():
+            parm = getattr(self, attr)
+            if type(parm) is np.ndarray:
+                df[attr] = parm
+
+        return df

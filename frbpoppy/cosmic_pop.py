@@ -193,14 +193,17 @@ class CosmicPopulation(Population):
                                     n_gen)
 
         # Add spectral index
-        frbs.si = np.random.normal(si_mu, si_sigma)
+        frbs.si = np.random.normal(si_mu, si_sigma, n_gen)
 
         pprint('Finished')
 
 
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
+
+    # Quick test whether everything seems to be working or not
     p = CosmicPopulation(10000)
+
+    import matplotlib.pyplot as plt
 
     for arg in p.frbs.__dict__:
         print(arg)
@@ -210,5 +213,5 @@ if __name__ == '__main__':
         if values is not None:
             plt.hist(values, bins=50)
             plt.xlabel(arg)
-            plt.savefig(f'./{arg}.png')
+            plt.savefig(f'./tests/plots/{arg}.png')
             plt.clf()

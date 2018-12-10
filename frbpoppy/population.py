@@ -2,6 +2,7 @@
 from io import StringIO
 import os
 import pickle
+import numpy as np
 import pandas as pd
 
 from frbpoppy.log import pprint
@@ -38,7 +39,7 @@ class Population:
         self.si_mu = None
         self.si_sigma = None
 
-        # Pulse width
+        # Pulse width [ms]
         self.w_model = None
         self.w_mu = None
         self.w_sigma = None
@@ -66,10 +67,6 @@ class Population:
 
         return s
 
-    def get(self, par):
-        """Get a list of a parameter."""
-        pass  # TODO Code this up
-        
     def to_df(self):
         """Gather source values into a pandas dataframe."""
         values = self._values()
@@ -115,7 +112,7 @@ class Population:
             path += '.dat'
             self._to_csv(path, sep=' ')
 
-    def _to_csv(self, path, sep=','):
+    def to_csv(self, path, sep=','):
         """Write a population to a csv file.
 
         Args:
@@ -123,55 +120,8 @@ class Population:
             sep (str): Seperator character
 
         """
-        with open(path, 'w') as f:
-            v = self._values(sep=sep)
-            if not v:
-                v = ' '
-            f.write(v)
-
-    def _values(self, sep=','):
-        """
-        Gather source values into table in string format.
-
-        Args:
-            sep (str, optional): Define the seperator between values
-
-        Returns:
-            data (str): Data table with the values of all attributes, including
-                a header at the top
-
-        """
-        # Check the population contains sources
-        if len(self.sources) == 0:
-            m = 'Population {} contains no sources'
-            pprint(m.format(self.name))
-            return
-
-        # Find all source properties
-        a = self.sources[0].__dict__
-        src_attrs = sorted(list(a.keys()), key=lambda v: v.upper())
-        src_attrs.remove('detected')
-        src_attrs.remove('frbs')
-
-        # Add frb properties
-        a = self.sources[0].frbs[0].__dict__
-        frb_attrs = sorted(list(a.keys()), key=lambda v: v.upper())
-        frb_attrs.remove('detected')
-
-        # Create header
-        attrs = src_attrs + frb_attrs
-        data = sep.join(attrs) + '\n'
-
-        # Print values per source
-        for src in self.sources:
-
-            src_data = [str(src.__dict__[k]) for k in src_attrs]
-
-            for frb in src.frbs:
-                frb_data = [str(frb.__dict__[k]) for k in frb_attrs]
-                data += sep.join(src_data + frb_data) + '\n'
-
-        return data
+        df = self.frbs.to_df(sep=sep)
+        df.to_csv(path)
 
     def to_pickle(self, path):
         """Write a population to a pickled file for future use.

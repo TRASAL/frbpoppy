@@ -29,120 +29,94 @@ class SurveyPopulation(Population):
         """
         # Set up population
         Population.__init__(self)
-        self.cosmic_pop = cosmic_pop
-        self.survey = survey
 
-        self.name = self.survey.name
-        self.time = self.cosmic_pop.time
-        self.vol_co_max = self.cosmic_pop.vol_co_max
+        # Set attributes
+        self.name = survey.name
+        self.time = cosmic_pop.time
+        self.vol_co_max = cosmic_pop.vol_co_max
+        self.frbs = deepcopy(cosmic_pop.frbs)
+        self.rate = Rates()
 
-        # Set rate counters
-        self.frb_rates = Rates(rate_type='FRBs')
-        self.src_rates = Rates(rate_type='Sources')
+        pprint(f'Surveying {cosmic_pop.name} with {self.name}')
 
-        pprint(f'Surveying {self.cosmic_pop.name} with {self.name}')
+        frbs = self.frbs
 
-        for src in cosmic_pop.sources:
+        # Check whether source is in region
+        region_mask = survey.in_region(frbs)
+        frbs.apply(region_mask)
+        self.rate.out = np.size(region_mask) - np.count_nonzero(region_mask)
 
-            # Check whether source is in region
-            if not self.survey.in_region(src):
-                self.src_rates.out += 1
-                self.frb_rates.out += src.n_frbs
-                continue
+        # Calculate dispersion measure across single channel, with error
+        frbs.t_dm, frbs.t_dm_err = survey.dm_smear(frbs)
 
-            # Create a copy of the sourcce so it can be observed multiple times
-            src = deepcopy(src)
+        # Set scattering timescale
+        if scat:
+            frbs.t_scat = survey.calc_scat(frbs.dm)
 
-            # Calculate dispersion measure across single channel, with error
-            self.survey.dm_smear(src)
+        # Calculate total temperature
+        frbs.T_sky, frbs.T_tot = survey.calc_Ts(frbs)
 
-            # Set scattering timescale
-            if scat:
-                self.survey.scat(src)
+        # Calculate effective pulse width
+        frbs.w_eff = survey.calc_w_eff(frbs)
 
-            # Calculate total temperature
-            self.survey.calc_Ts(src)
+        # Calculate peak flux density
+        f_min = cosmic_pop.f_min
+        f_max = cosmic_pop.f_max
+        frbs.s_peak = survey.calc_s_peak(frbs, f_low=f_min, f_high=f_max)
 
-            # For rates
-            all_faint = True
-            all_late = True
+        # Account for beam offset
+        int_pro, _ = survey.intensity_profile(n_gen=len(frbs.s_peak))
+        frbs.s_peak *= int_pro
 
-            for frb in src.frbs:
+        # Calculate fluence [Jy*ms]
+        frbs.fluence = frbs.s_peak * frbs.w_eff
 
-                # Check if repeat FRBs are within an integration time
-                if frb.time:
-                    if frb.time > self.survey.t_obs:
-                        self.frb_rates.out += 1
-                        continue
+        # Caculate Signal to Noise Ratio
+        frbs.snr = survey.calc_snr(frbs)
 
-                # Calculate observing properties such as the S/R ratio
-                args = (frb, src, self.cosmic_pop.f_min, self.cosmic_pop.f_max)
-                self.survey.obs_prop(*args)
+        # Add scintillation
+        if scin:
+            frbs.snr = survey.calc_scint(frbs)
 
-                # Add scintillation
-                if scin:
-                    self.survey.scint(frb, src)
+        # Check whether frbs would be above detection threshold
+        snr_mask = (frbs.snr >= survey.snr_limit)
+        frbs.apply(snr_mask)
+        self.rate.faint = np.size(snr_mask) - np.count_nonzero(snr_mask)
 
-                # Check whether it has been detected
-                if frb.snr > self.survey.snr_limit:
+        if rate_limit is True:
+            limit = 1/(1+frbs.z)
+            rate_mask = np.random.random(len(frbs.z)) <= limit
+            frbs.apply(rate_mask)
+            self.rate.late = np.size(rate_mask) - np.count_nonzero(rate_mask)
 
-                    all_faint = False
+        self.rate.det = len(frbs.snr)
 
-                    if rate_limit is True:
-                        limit = 1/(1+src.z)
-                    else:
-                        limit = 1
-
-                    if random.random() <= limit:
-                        self.frb_rates.det += 1
-                        if not src.detected:
-                            self.src_rates.det += 1
-                            src.detected = True
-                        all_late = False
-                    else:
-                        self.frb_rates.late += 1
-                else:
-                    self.frb_rates.faint += 1
-
-            if src.detected:
-                self.add(src)
-            elif all_faint:
-                self.src_rates.faint += 1
-            elif all_late:
-                self.src_rates.late += 1
-
-        # Calculate scaling factors
+        # Calculate scaling factors for rates
         area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
-        f_area = (self.survey.beam_size * self.src_rates.tot())
-        inside = self.src_rates.det+self.src_rates.late+self.src_rates.faint
+        f_area = (survey.beam_size * self.rate.tot())
+        inside = self.rate.det+self.rate.late+self.rate.faint
         f_area /= (inside*area_sky)
         f_time = 86400 / self.time
 
         # Saving scaling factors
-        for r in (self.frb_rates, self.src_rates):
-            r.days = self.time/86400  # seconds -> days
-            r.f_area = f_area
-            r.f_time = f_time
-            r.name = self.name
-            r.vol = r.tot() / self.vol_co_max * (365.25*86400/self.time)
+        self.rate.days = self.time/86400  # seconds -> days
+        self.rate.f_area = f_area
+        self.rate.f_time = f_time
+        self.rate.name = self.name
+        self.rate.vol = self.rate.tot()
+        self.rate.vol /= self.vol_co_max * (365.25*86400/self.time)
 
-    def rates(self, scale_area=True, scale_time=False, type='frbs'):
-        """Adapt frb or source rates as needed."""
-        if type in ('frb', 'frbs'):
-            r = self.frb_rates
-        elif type in ('src', 'srcs', 'sources'):
-            r = self.src_rates
-
+    def rates(self, scale_area=True, scale_time=False):
+        """Scale the rates by the beam area and time."""
         if scale_area:
-            r = scale(r, area=True)
+            r = scale(self.rate, area=True)
         if scale_time:
-            r = scale(r, time=True)
-
+            r = scale(self.rate, time=True)
         return r
 
     def calc_logn_logs(self, parameter='fluence', min_p=None, max_p=None):
         """TODO. Currently unfinished."""
-        parms = np.array(self.get(parameter))
+        parms = getattr(self.frbs, parameter)
 
         if min_p is None:
             f_0 = min(parms)
@@ -160,3 +134,11 @@ class SurveyPopulation(Population):
         norm = n / (f_0**alpha)  # Normalisation at lowest parameter
 
         return alpha, alpha_err, norm
+
+
+if __name__ == '__main__':
+    from frbpoppy import CosmicPopulation, Survey
+    cosmic = CosmicPopulation(10000, days=4)
+    survey = Survey('APERTIF', gain_pattern='apertif')
+    surv_pop = SurveyPopulation(cosmic, survey)
+    print(surv_pop.rates())

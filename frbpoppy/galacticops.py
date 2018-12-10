@@ -219,49 +219,54 @@ def ne2001_get_smtau(dist, gl, gb):
     (1991, DOI: 10.1086/170261)
 
     Args:
-        dist (float): Distance to source [kpc]. Distance will be cut at 100 kpc
+        dist (array): Distance to source [kpc]. Distance will be cut at 100 kpc
                       as NE2001 can not cope with larger distances. Therefore
                       the calculated scattering will only be that from the
                       Milky Way.
-        gl (float): Galactic longitude [fractional degrees]
-        gb (float): Galactic latitude [fractional degrees]
+        gl (array): Galactic longitude [fractional degrees]
+        gb (array): Galactic latitude [fractional degrees]
     Returns:
-        sm (float): Scattering measure
-        smtau (float): Scattering measure, but unsure why different to sm
+        sm (array): Scattering measure
+        smtau (array): Scattering measure, but unsure why different to sm
 
     """
     # NE2001 gives errors if distance input is too large! 100 kpc ought to be
     # enough to clear the galaxy.
-    if dist > 100:
-        dist = 100
+    dist[dist > 100] = 100
+    sms = np.ones_like(dist)
+    smtaus = np.ones_like(dist)
 
-    dist = C.c_float(dist)
-    # Note the galactic coordinates need to be given in radians
-    gl = C.c_float(math.radians(gl))
-    gb = C.c_float(math.radians(gb))
+    for i, d in enumerate(dist):
 
-    ndir = C.c_int(-1)
-    sm = C.c_float(0.)
-    smtau = C.c_float(0.)
+        disti = C.c_float(d)
+        # Note the galactic coordinates need to be given in radians
+        gli = C.c_float(math.radians(gl[i]))
+        gbi = C.c_float(math.radians(gb[i]))
 
-    inpath = C.create_string_buffer(dm_mods.encode())
-    linpath = C.c_int(len(dm_mods))
+        ndir = C.c_int(-1)
+        sm = C.c_float(0.)
+        smtau = C.c_float(0.)
 
-    ne2001lib.dmdsm_(C.byref(gl),
-                     C.byref(gb),
-                     C.byref(ndir),
-                     C.byref(C.c_float(0.0)),
-                     C.byref(dist),
-                     C.byref(C.create_string_buffer(' '.encode())),
-                     C.byref(sm),
-                     C.byref(smtau),
-                     C.byref(C.c_float(0.0)),
-                     C.byref(C.c_float(0.0)),
-                     C.byref(inpath),
-                     C.byref(linpath)
-                     )
+        inpath = C.create_string_buffer(dm_mods.encode())
+        linpath = C.c_int(len(dm_mods))
 
-    return sm.value, smtau.value
+        ne2001lib.dmdsm_(C.byref(gli),
+                         C.byref(gbi),
+                         C.byref(ndir),
+                         C.byref(C.c_float(0.0)),
+                         C.byref(disti),
+                         C.byref(C.create_string_buffer(' '.encode())),
+                         C.byref(sm),
+                         C.byref(smtau),
+                         C.byref(C.c_float(0.0)),
+                         C.byref(C.c_float(0.0)),
+                         C.byref(inpath),
+                         C.byref(linpath)
+                         )
+
+        sms[i], smtaus[i] = sm.value, smtau.value
+
+    return sms, smtaus
 
 
 def ne2001_scint_time_bw(dist, gl, gb, freq):
@@ -269,34 +274,33 @@ def ne2001_scint_time_bw(dist, gl, gb, freq):
     Use the NE2001 model to get the diffractive scintillation timescale.
 
     Args:
-        dist (float): Distance to source [Gpc]. Distance will be cut at 100 kpc
+        dist (array): Distance to source [Gpc]. Distance will be cut at 100 kpc
                       as NE2001 can not cope with larger distances. Therefore
                       the calculated scintillation timescale will only be that
                       from the Milky Way.
-        gl (float): Galactic longitude [fractional degrees]
-        gb (float): Galactic latitude [fractional degrees]
+        gl (array): Galactic longitude [fractional degrees]
+        gb (array): Galactic latitude [fractional degrees]
         freq (float): Observing frequency [MHz]
     Returns:
         scint_time (float): Diffractive scintillation timescale [Hz]
         scint_bw (float): Scintillation bandwidth [Hz]
+
     """
     dist *= 1e6  # Convert from Gpc to kpc
 
     sm, smtau = ne2001_get_smtau(dist, gl, gb)
 
-    if smtau <= 0.:
-        scint_time = None
-    else:
-        # Eq. 46 of Cordes & Lazio 1991, ApJ, 376, 123 uses coefficient 3.3
-        # instead of 2.3. They do this in the code and mention it explicitly,
-        # so I trust it! <- From psrpoppy
-        scint_time = 3.3 * (freq/1e3)**1.2 * smtau**(-0.6)
+    scint_time = np.ones_like(dist)
+    scint_time[smtau <= 0.] = float('NaN')
+    # Eq. 46 of Cordes & Lazio 1991, ApJ, 376, 123 uses coefficient 3.3
+    # instead of 2.3. They do this in the code and mention it explicitly,
+    # so I trust it! <- From psrpoppy
+    scint_time[smtau > 0.] = 3.3 * (freq/1e3)**1.2 * smtau**(-0.6)
 
-    if sm <= 0.:
-        scint_bw = None
-    else:
-        # (eq. 48)
-        scint_bw = 223. * (freq/1e3)**4.4 * sm**(-1.2) / dist
+    scint_bw = np.ones_like(dist)
+    scint_bw[sm <= 0.] = float('NaN')
+    # (eq. 48)
+    scint_bw[sm > 0.] = 223. * (freq/1e3)**4.4 * sm**(-1.2) / dist
 
     return scint_time, scint_bw
 
@@ -308,20 +312,20 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
     relationship, draw from a Gaussian around this value.
 
     Args:
-        dm (float): Dispersion measure [pc*cm^-3]
+        dm (array): Dispersion measure [pc*cm^-3]
         offset (float): Offset of scattering relationship. Defaults to -6.46
         scindex (float): Scattering index. Defaults to -3.86
         freq (float): Frequency at which to evaluate scattering time [MHz].
                       Defaults to 1400 MHz
     Returns:
-        t_scat (float): Scattering timescale [ms]
+        array: Scattering timescale [ms]
     """
-
-    log_t = offset + 0.154*math.log10(dm) + 1.07*math.log10(dm)**2
-    log_t += scindex*math.log10(freq/1e3)
+    log_t = offset + 0.154*np.log10(dm) + 1.07*np.log10(dm)**2
+    log_t += scindex*np.log10(freq/1e3)
 
     # Width of Gaussian distribution based on values given Lorimer et al (2008)
-    t_scat = 10**random.gauss(log_t, 0.8)
+    n_gen = len(dm)
+    t_scat = 10**np.random.normal(log_t, 0.8, n_gen)
 
     return t_scat
 

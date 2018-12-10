@@ -1,17 +1,20 @@
 """Short example of how frbpoppy works."""
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 
-PLOT = False
+PLOT = True
 
 # Generate an FRB population
-population = CosmicPopulation(10000, days=2, name='example')
+cosmic_pop = CosmicPopulation(10000, days=3, name='example')
 
 # Setup a survey
-survey = Survey('APERTIF')
+survey = Survey('HTRU')
 
 # Observe the FRB population
-result = SurveyPopulation(population, survey)
+survey_pop = SurveyPopulation(cosmic_pop, survey)
+
+# Check the detection rates
+print(survey_pop.rates())
 
 # Plot populations
 if PLOT:
-    plot(population, result)
+    plot(cosmic_pop, survey_pop, frbcat='HTRU')

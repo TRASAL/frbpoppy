@@ -1,4 +1,7 @@
-"""Set of functions which adapt a population."""
+"""Set of functions which adapt a population.
+
+TODO: Update to new style of pop.frbs = numpy array
+"""
 
 import random
 
@@ -24,9 +27,8 @@ class Adapt:
             pop (Population): Population with new parameters
 
         """
-        for src in self.pop.sources:
-            src.dm_host = dm / (1+src.z)
-            src.dm = src.dm_mw + src.dm_igm + src.dm_host
+        frbs.dm_host = dm / (1+src.z)
+        frbs.dm = frbs.dm_mw + frbs.dm_igm + frbs.dm_host
 
         return self.pop
 
@@ -94,9 +96,7 @@ class Adapt:
             pop (Population): Population with new parameters
 
         """
-        for source in self.pop.sources:
-            for frb in source.frbs:
-                frb.si = random.gauss(si_mu, si_sigma)
+        self.pop.frb.si = random.gauss(si_mu, si_sigma)
 
         return self.pop
 

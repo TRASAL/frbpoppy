@@ -2,8 +2,15 @@
 import inspect
 
 
-def pprint(*s):
+def pprint(*s, output=True):
     """Hack to make for more informative print statements."""
     f = inspect.stack()[1][1].split('/')[-1]
     m = '{:13.13} |'.format(f)
-    print(m, *s)
+
+    if output:
+        print(m, *s)
+    else:
+        lines = []
+        for e in s:
+            lines.append('\n'.join([f'{m} {f}' for f in e.split('\n')]))
+        return '\n'.join(lines)

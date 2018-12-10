@@ -1,10 +1,11 @@
-"""Start up Bokeh server"""
+"""Start up Bokeh server."""
 import os
 import subprocess
 import sys
 
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
+
 
 def plot(*pops, files=[], frbcat=True, show=True,
          mute=True, port=5006, print_command=False):
@@ -14,9 +15,7 @@ def plot(*pops, files=[], frbcat=True, show=True,
     Args:
         *pops (Population, optional): Add the populations you would like to
             see plotted
-        files (list, optional): List of population files to plot (currently
-            only works with csv files - file an issue if you would like more
-            options)
+        files (list, optional): List of population files to plot.
         frbcat (bool, optional): Whether to plot frbcat parameters. Defaults to
             True
         show (bool, optional): Whether to display the plot or not. Mainly used
@@ -25,7 +24,6 @@ def plot(*pops, files=[], frbcat=True, show=True,
         print_command (bool): Whether to show the command do_plot is running
 
     """
-
     if len(pops) > 0:
 
         # Save populations
