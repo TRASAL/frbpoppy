@@ -109,7 +109,7 @@ class Plot():
             # Check whether file exists
             if os.path.isfile(f):
                 try:
-                    df = unpickle(f).to_df()
+                    df = unpickle(f).frbs.to_df()
                 except ValueError:
                     continue
                 if 'population' in f:
@@ -294,8 +294,6 @@ class Plot():
                     # Clean up data
                     df = dfs[i][cols]
                     df = df.replace('None', np.nan)
-                    for col in cols[:-2]:
-                        df[col].apply(pd.to_numeric, errors='coerce')
                     df = df.dropna()
 
                 # Update data

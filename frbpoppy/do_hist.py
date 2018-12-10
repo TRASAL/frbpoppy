@@ -16,13 +16,10 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
     Returns:
         hists (list): List of histogramed dataframes
     """
-    # Determine all column names
-    columns = [df.columns.values for df in dfs]
-    cols = list(min(columns, key=len))
-    for c in ['id', 'in_par', 'frbcat']:
-        if c in cols:
-            cols.remove(c)
-
+    cols = ['ra', 'dec', 'dist_co', 'gb', 'gl', 'gx', 'gy', 'gz', 'z', 'dm',
+            'dm_host', 'dm_igm', 'dm_mw', 'lum_bol', 'si', 'w_arr', 'w_int',
+            'fluence', 's_peak', 'snr', 't_dm', 't_dm_err', 'T_sky', 'T_tot',
+            'w_eff']
     # Determine bin limits
     limits = {}
 
@@ -55,18 +52,7 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
     # Bin each dataframe
     for df in dfs:
 
-        hist = pd.DataFrame(np.nan,
-                            index=np.arange(n_bins-1),
-                            columns=['empty'])
-
-        if not mc:
-            hist['color'] = df['color'].iloc[0]
-            hist['population'] = df['population'].iloc[0]
-
-        if log or not mc:
-            hist['bottom'] = 10**(round(np.log10(1/len(df))) - 1)
-        else:
-            hist['bottom'] = 0
+        hist = pd.DataFrame()
 
         for c in cols:
 
@@ -102,22 +88,14 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
             if cum:
                 h = [sum(h[i:]) for i in range(len(h))]
 
-            if mc:
-                hist['id'] = df['id'].iloc[0]
-                hist['in_par'] = df['in_par'].iloc[0]
-                hist['out_par'] = c
-                hist['survey'] = df['survey'].iloc[0]
-                hist['frbs'] = len(col)  # number of frbs in population
-                hist['frbcat'] = df['frbcat'].iloc[0]
-                hist['top'] = pd.Series(h)
-                hist['left'] = pd.Series(bins[:-1])
-                hist['right'] = pd.Series(bins[1:])
-            else:
-                hist[c] = pd.Series(h)
-                hist[f'{c}_left'] = pd.Series(bins[:-1])
-                hist[f'{c}_right'] = pd.Series(bins[1:])
+            hist[c] = pd.Series(h)
+            hist[f'{c}_left'] = pd.Series(bins[:-1])
+            hist[f'{c}_right'] = pd.Series(bins[1:])
 
-        del hist['empty']
+        hist['color'] = df['color'].iloc[0]
+        hist['population'] = df['population'].iloc[0]
+        hist['bottom'] = 10**(round(np.log10(1/len(df))) - 1)
+
         hists.append(hist)
 
     # Make the bottom of the bins line up
@@ -129,7 +107,4 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
     for hist in hists:
         hist['bottom'] = bottom
 
-    if mc:
-        return pd.concat(hists)
-    else:
-        return hists
+    return hists

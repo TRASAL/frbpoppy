@@ -1,14 +1,14 @@
 """Classes to hold rate counters."""
 from copy import deepcopy
+from frbpoppy import pprint
 
 
 class Rates:
     """Class to hold rate counters."""
 
-    def __init__(self, rate_type='FRBs'):
+    def __init__(self):
         """Initializing."""
         # Rates
-        self.type = rate_type
         self.det = 0  # Number detected
         self.faint = 0  # Number too faint to detect
         self.late = 0  # Number too late to detect
@@ -27,7 +27,7 @@ class Rates:
         """How to print the class."""
         # Set up title
         r = '{:20.19} {:>10} {:>10}\n'
-        t = r.format(self.name, 'Days', self.type)
+        t = r.format(self.name, 'Days', 'FRBs')
         line = '-'*len(t.split('\n')[-2].strip()) + '\n'
         t += line
 
@@ -42,7 +42,7 @@ class Rates:
         t += r.format('Expected', round(self.exp, 4), 1)
         t += line
 
-        return t
+        return pprint(t, output=False)
 
     def tot(self):
         """Calculate the total number of rates."""

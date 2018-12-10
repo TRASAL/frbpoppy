@@ -7,11 +7,9 @@ import pandas as pd
 import requests
 
 import frbpoppy.galacticops as go
-from frbpoppy.frb import FRB
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 from frbpoppy.population import Population
-from frbpoppy.source import Source
 
 
 class Frbcat():

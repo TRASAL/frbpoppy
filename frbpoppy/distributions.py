@@ -1,6 +1,7 @@
 """Define distributions from which to get random numbers."""
 import numpy as np
 import random
+import math
 import frbpoppy.precalc as pc
 
 
@@ -26,7 +27,7 @@ def powerlaw(low, high, power, n_gen=1):
         low, high = high, low
 
     if power == 0:
-        return 10**np.random.uniform(np.log10(low), np.log10(high), n_gen)
+        return 10**np.random.uniform(math.log10(low), math.log10(high), n_gen)
 
     return np.random.uniform(low, high, n_gen)**(1/power)
 
@@ -68,13 +69,6 @@ def z_from_csmd(z_max=6.0, n_gen=1):
     https://arxiv.org/pdf/1403.0007.pdf
 
     """
-    # z = None
-    #
-    # while not z:
-    #     x = random.random()*z_max
-    #     y = random.random()*0.00065
-    #     if y <= pc.csmd_table(x):
-    #         z = x
     csmd = pc.CSMDTable().lookup
 
     def sample(n_gen):
