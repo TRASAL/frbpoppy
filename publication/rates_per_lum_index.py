@@ -14,7 +14,7 @@ class Rates:
 
     def __init__(self):
         """Initializing."""
-        self.surveys = ('HTRU', 'APERTIF', 'UTMOST', 'ASKAP-FLY')
+        self.surveys = ('htru', 'apertif', 'utmost', 'askap-fly')
         self.lis = np.linspace(-3, 1, num=5)  # Luminosity Indices
 
         # Data Point

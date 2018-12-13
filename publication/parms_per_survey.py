@@ -15,7 +15,7 @@ class PlotSurveys(PlotParms):
         """Initializing."""
         PlotParms.__init__(self)
         self.patterns = ['parkes', 'apertif']
-        self.surveys = ['HTRU', 'APERTIF']
+        self.surveys = ['htru', 'apertif']
 
     def plot(self):
         """Generate plot over surveys."""

@@ -35,16 +35,8 @@ class Survey:
         self.gain_pattern = gain_pattern
         self.n_sidelobes = n_sidelobes
 
-        self.beam_array = None
-        self.T_sky_list = go.load_T_sky()
-
         # Parse survey file
         self.read_survey_parameters()
-
-        # Set beam file so that it is only imported once
-        if gain_pattern in ['parkes', 'apertif']:
-            place = paths.models() + f'/beams/{gain_pattern}.npy'
-            self.beam_array = np.load(place)
 
     def __str__(self):
         """Define how to print a survey object to a console."""
@@ -61,7 +53,6 @@ class Survey:
 
     def read_survey_parameters(self):
         """Read in survey parameters."""
-
         # Read the survey file
         path = os.path.join(paths.surveys(), 'surveys.csv')
         df = pd.read_csv(path)
@@ -151,7 +142,7 @@ class Survey:
             arcsin = math.asin(self.fwhm*kasin_nulls[x]/(60*180))
         except ValueError:
             m = f'Beamsize including sidelobes would be larger than sky \n'
-            A = (90/self._kasin_nulls[x])**2*math.pi
+            A = (90/kasin_nulls[x])**2*math.pi
             m += f'Ensure beamsize is smaller than {A}'
             raise ValueError(m)
 
@@ -204,10 +195,13 @@ class Survey:
             return int_pro, offset
 
         elif self.gain_pattern in ['parkes', 'apertif']:
-            shape = self.beam_array.shape
+
+            place = paths.models() + f'/beams/{self.gain_pattern}.npy'
+            beam_array = np.load(place)
+            shape = beam_array.shape
             ran_x = np.random.randint(0, shape[0], n_gen)
             ran_y = np.random.randint(0, shape[1], n_gen)
-            int_pro = self.beam_array[ran_x, ran_y]
+            int_pro = beam_array[ran_x, ran_y]
             offset = np.sqrt((ran_x-shape[0]/2)**2 + (ran_y-shape[1]/2)**2)
 
             # Scaling factors to correct for pixel scale
@@ -219,6 +213,9 @@ class Survey:
                 self.beam_size = 9.
 
             return int_pro, offset
+
+        else:
+            pprint(f'Gain pattern "{self.gain_pattern}" not recognised')
 
     def dm_smear(self, frbs, dm_err=0.2):
         """
@@ -281,6 +278,8 @@ class Survey:
         Returns:
             array: Sky temperature [K]
         """
+        T_sky_list = go.load_T_sky()
+
         # ensure l is in range 0 -> 360
         B = frbs.gb
         L = np.copy(frbs.gl)
@@ -295,7 +294,7 @@ class Survey:
         i = nl / 4.
 
         index = 180*i.astype(int) + j.astype(int)
-        T_sky_haslam = np.take(self.T_sky_list, index)
+        T_sky_haslam = np.take(T_sky_list, index)
 
         # scale temperature
         # Assuming dominated by syncrotron radiation

@@ -12,8 +12,8 @@ class PlotParms(object):
         """Initializing."""
         self.parms = ['fluence', 'dm', 's_peak', 'w_eff']
         self.n_bins = 50
-        # If one survey is ever needed, let the default be HTRU
-        self.survey = 'HTRU'
+        # If one survey is ever needed, let the default be htru
+        self.survey = 'htru'
 
     def generate(self):
         """Generate population."""

@@ -56,8 +56,6 @@ class Frbcat():
         """
         if internet:
             # BROKEN AS OF 13/11/2017
-            # Frbcat should be updated in January
-            # Try using the most recently published frbcat
             try:
                 url = 'http://www.astronomy.swin.edu.au/pulsar/frbcat/'
                 url += 'table.php?format=text&sep=comma'
@@ -206,31 +204,22 @@ class Frbcat():
 
         pop = Population()
         pop.name = 'frbcat'
+        frbs = pop.frbs
 
-        # For each source
-        for name, src_df in df.groupby('frb'):
-
-            source = Source()
-            source.name = name
-            source.dm = src_df.dm.iloc[0]
-            source.dm_mw = src_df.dm_mw.iloc[0]
-            source.gl = src_df.gl.iloc[0]
-            source.gb = src_df.gb.iloc[0]
-            source.ra = src_df.ra.iloc[0]
-            source.dec = src_df.dec.iloc[0]
-            source.z = src_df.z.iloc[0]
-            source.t_scat = src_df.t_scat.iloc[0]
-
-            for index, row in src_df.iterrows():
-                frb = FRB()
-                frb.w_eff = row.w_eff
-                frb.si = row.si
-                frb.snr = row.snr
-                frb.s_peak = row.s_peak
-                frb.fluence = row.fluence
-                source.add(frb)
-
-            pop.add(source)
+        frbs.name = df.frb
+        frbs.dm = df.dm
+        frbs.dm_mw = df.dm_mw
+        frbs.gl = df.gl
+        frbs.gb = df.gb
+        frbs.ra = df.ra
+        frbs.dec = df.dec
+        frbs.z = df.z
+        frbs.t_scat = df.t_scat
+        frbs.w_eff = df.w_eff
+        frbs.si = df.si
+        frbs.snr = df.snr
+        frbs.s_peak = df.s_peak
+        frbs.fluence = df.fluence
 
         pop.save()
 

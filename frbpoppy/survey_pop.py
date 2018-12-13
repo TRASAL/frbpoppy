@@ -139,6 +139,6 @@ class SurveyPopulation(Population):
 if __name__ == '__main__':
     from frbpoppy import CosmicPopulation, Survey
     cosmic = CosmicPopulation(10000, days=4)
-    survey = Survey('APERTIF', gain_pattern='apertif')
+    survey = Survey('apertif', gain_pattern='apertif')
     surv_pop = SurveyPopulation(cosmic, survey)
     print(surv_pop.rates())

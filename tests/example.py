@@ -1,7 +1,7 @@
 """Short example of how frbpoppy works."""
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 
-PLOT = True
+PLOT = False
 
 # Generate an FRB population
 cosmic_pop = CosmicPopulation(10000, days=3, name='example')

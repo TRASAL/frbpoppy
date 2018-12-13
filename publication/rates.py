@@ -8,10 +8,10 @@ from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
 MAKE = False
 SurveyProps = namedtuple('Survey', ['name', 'prior', 'pattern'])
 surveys = []
-surveys.append(SurveyProps('HTRU', 14, 'airy'))
-surveys.append(SurveyProps('APERTIF', 7, 'airy'))
-surveys.append(SurveyProps('UTMOST', 30, 'airy'))
-surveys.append(SurveyProps('ASKAP-FLY', 14, 'airy'))
+surveys.append(SurveyProps('htru', 14, 'airy'))
+surveys.append(SurveyProps('apertif', 7, 'airy'))
+surveys.append(SurveyProps('utmost', 30, 'airy'))
+surveys.append(SurveyProps('askap-fly', 14, 'airy'))
 
 if MAKE:
     n_per_day = 5000

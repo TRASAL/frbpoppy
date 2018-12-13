@@ -4,8 +4,8 @@ from scipy.stats import binned_statistic as bstat
 
 from frbpoppy.survey import Survey
 
-OBSERVATORIES = [('parkes', 'HTRU'),
-                 ('apertif', 'APERTIF')]
+OBSERVATORIES = [('parkes', 'htru'),
+                 ('apertif', 'apertif')]
 
 n = int(1e6)
 

@@ -29,7 +29,32 @@ def powerlaw(low, high, power, n_gen=1):
     if power == 0:
         return 10**np.random.uniform(math.log10(low), math.log10(high), n_gen)
 
-    return np.random.uniform(low, high, n_gen)**(1/power)
+    def sample(n_gen):
+        pl = np.random.uniform(0, 1, n_gen)**(1/power)
+        if power > 0:
+            addition = math.log10(high)
+        else:
+            addition = math.log10(low)
+        log_pl = np.log10(pl) + addition
+        pl = 10**log_pl
+        return pl
+
+    def accept(pl):
+        if power > 0:
+            return pl >= low
+        else:
+            return pl <= high
+
+    pl = sample(n_gen)
+    mask = accept(pl)
+    reject, = np.where(~mask)
+    while reject.size > 0:
+        fill = sample(reject.size)
+        mask = accept(fill)
+        pl[reject[mask]] = fill[mask]
+        reject = reject[~mask]
+
+    return pl
 
 
 def z_from_sfr(z_max=2.5, n_gen=1):

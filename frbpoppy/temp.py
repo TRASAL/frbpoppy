@@ -7,7 +7,6 @@ path = os.path.join(paths.surveys(), 'surveys.csv')
 
 df = pd.read_csv(path)
 df = df.set_index('survey')
-survey = df[df.index == 'APERTIF'].squeeze()
+survey = df[df.index == 'apertif'].squeeze()
 
-test = survey['sampling time (ms)']
-print(test)
+print(df.index)
