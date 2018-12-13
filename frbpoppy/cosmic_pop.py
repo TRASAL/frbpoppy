@@ -36,11 +36,9 @@ class CosmicPopulation(Population):
                  pulse_range=[0.1, 10],
                  pulse_mu=1.6,
                  pulse_sigma=1.,
-                 repeat=0.0,
                  si_mu=-1.4,
                  si_sigma=1.,
-                 z_max=2.5,
-                 test=False):
+                 z_max=2.5):
         """Generate a popuation of FRBs.
 
         Args:
@@ -69,11 +67,9 @@ class CosmicPopulation(Population):
             pulse_range (list): Pulse width range [ms].
             pulse_mu (float): Mean pulse width [ms].
             pulse_sigma (float): Deviation pulse width [ms].
-            repeat (float): Repeater fraction of population.
             si_mu (float): Mean spectral index.
             si_sigma (float): Standard deviation spectral index.
             z_max (float): Maximum redshift.
-            test (bool): Testing flag.
 
         Returns:
             Population: Population of FRBs.
@@ -97,7 +93,6 @@ class CosmicPopulation(Population):
         self.name = name
         self.n_gen = n_gen
         self.n_model = n_model
-        self.repeat = repeat
         self.si_mu = si_mu
         self.si_sigma = si_sigma
         self.time = days * 86400  # Convert to seconds
