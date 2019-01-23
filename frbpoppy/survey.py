@@ -28,7 +28,7 @@ class Survey:
     def __init__(self,
                  name,
                  gain_pattern='gaussian',
-                 n_sidelobes=0):
+                 n_sidelobes=0.5):
         """Initializing."""
         # Set up parameters
         self.name = name

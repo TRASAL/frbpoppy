@@ -1,15 +1,15 @@
 """Do things with frbcat."""
-
+import datetime
 import glob
 import io
 import os
 import pandas as pd
 import requests
 
-import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 from frbpoppy.population import Population
+import frbpoppy.galacticops as go
 
 
 class Frbcat():
@@ -24,7 +24,7 @@ class Frbcat():
                  frbpoppy=True,
                  one_per_frb=False,
                  repeat_bursts=True,
-                 repeater=True):
+                 repeaters=True):
         """Initializing."""
         # Set path
         self.data_dir = paths.frbcat()
@@ -34,10 +34,10 @@ class Frbcat():
 
         # Transform the data
         if frbpoppy is True:
+            self.clean()
             self.filter(one_per_frb=True,
                         repeat_bursts=False,
-                        repeater=True)
-            self.clean()
+                        repeaters=True)
             self.coor_trans()
             self.match_surveys()
 
@@ -45,7 +45,51 @@ class Frbcat():
         self.df = self.df.sort_values('utc', ascending=False)
         self.df = self.df.reindex(sorted(self.df.columns), axis=1)
 
-    def get(self, internet=False, local=True):
+    def url_to_df(self, url):
+        """Convert a url of a JSON table to a Pandas DataFrame.
+
+        Args:
+            url (str): URL to the webpage
+
+        Returns:
+            DataFrame: DataFrame of JSON table
+
+        """
+        try:
+            s = requests.get(url).content
+            f = io.StringIO(s.decode('utf-8'))
+
+            series = []
+            for entry in pd.read_json(f)['products']:
+                series.append(pd.Series(entry))
+            df = pd.concat(series, axis=1).T
+
+            return df
+
+        except ValueError:
+            pass
+
+    def urls_to_df(self, endings, url):
+        """
+        Use Series to loop over multiple webpages and concatenate them to a
+        single DataFrame
+
+        Args:
+            endings (iterables): The list/series/column over which to loop
+            url (str): The base url
+
+        Returns:
+            DataFrame
+
+        """
+        dfs = []
+        for ending in endings:
+            full_url = f'{url}{ending}'
+            df = self.url_to_df(full_url)
+            dfs.append(df)
+        return pd.concat(dfs, ignore_index=True)
+
+    def get(self, internet=True, save=True, local=False):
         """
         Get frbcat from online or from a local file.
 
@@ -54,14 +98,74 @@ class Frbcat():
             local (bool): Whether to use a local version of frbcat
 
         """
-        if internet:
-            # BROKEN AS OF 13/11/2017
-            try:
-                url = 'http://www.astronomy.swin.edu.au/pulsar/frbcat/'
-                url += 'table.php?format=text&sep=comma'
+        # Check whether a copy of FRBCAT has already been downloaded
+        # Ensures frbcat is only queried once a month
+        path = self.data_dir + '/frbcat_'
+        path += str(datetime.datetime.today()).split()[0][:-3]
+        path += '-??.csv'
+        exists = glob.glob(path)
+        if internet and exists:
+            internet = False
+            local = True
 
-                s = requests.get(url).content
-                f = io.StringIO(s.decode('utf-8'))
+        if internet:
+            try:
+                pprint('Attempting to retrieve FRBCAT from www.frbcat.org')
+
+                # First get all FRB names from the main page
+                url = 'http://frbcat.org/products/'
+                main_df = self.url_to_df(url)
+
+                # Then get any subsequent analyses (multiple entries per FRB)
+                url = 'http://frbcat.org/product/'
+                frb_df = self.urls_to_df(main_df.frb_name, url)
+
+                # Find all frb note properties
+                url = 'http://frbcat.org/frbnotes/'
+                frbnotes_df = self.urls_to_df(set(frb_df.index), url)
+                frbnotes_df = frbnotes_df.add_prefix('frb_notes_')
+
+                # Find all notes on radio observation parameters
+                url = 'http://frbcat.org/ropnotes/'
+                ropnotes_df = self.urls_to_df(set(frb_df.index), url)
+                ropnotes_df = ropnotes_df.add_prefix('rop_notes_')
+
+                # Find all radio measurement parameters
+                url = 'http://frbcat.org/rmppubs/'
+                rmppubs_df = self.urls_to_df(set(frb_df.index), url)
+                rmppubs_df = rmppubs_df.add_prefix('rmp_pub_')
+
+                # Have skipped
+                # 'http://frbcat.org/rmpimages/<rmp_id>' (images)
+                # 'http://frbcat.org/rmpnotes/<rmp_id>' (empty)
+
+                # Merge all databases together
+                df = pd.merge(frb_df,
+                              frbnotes_df,
+                              left_on='frb_id',
+                              right_on='frb_notes_frb_id',
+                              how='left')
+
+                df = pd.merge(df,
+                              ropnotes_df,
+                              left_on='rop_id',
+                              right_on='rop_notes_rop_id',
+                              how='left')
+
+                self.df = pd.merge(df,
+                                   rmppubs_df,
+                                   left_on='rmp_id',
+                                   right_on='rmp_pub_rmp_id',
+                                   how='left')
+
+                pprint('Succeeded')
+
+                if save:
+                    date = str(datetime.datetime.today()).split()[0]
+                    path = self.data_dir + f'/frbcat_{date}.csv'
+                    self.df.to_csv(path)
+
+                local = False
 
             # Unless there's no internet
             except requests.ConnectionError:
@@ -71,38 +175,23 @@ class Frbcat():
             # Find latest version of frbcat
             f = max(glob.glob(self.data_dir + '/frbcat*.csv'),
                     key=os.path.getctime)
-
-        self.df = pd.read_csv(f)
-
-    def filter(self,
-               one_per_frb=True,
-               repeat_bursts=False,
-               repeater=True):
-        """Filter frbcat in various ways."""
-        # Lower all column names
-        self.df.columns = map(str.lower, self.df.columns)
-
-        if one_per_frb:
-            # Only keep rows with the largest number of parameters
-            # so that only one row per FRB remains
-            self.df['count'] = self.df.count(axis=1)
-            self.df = self.df.sort_values('count', ascending=False)
-            self.df = self.df.drop_duplicates(subset=['utc'])
-
-        if not repeat_bursts:
-            # Only keeps one detection of the repeater
-            self.df = self.df.drop_duplicates(subset=['frb_name'])
-
-        if not repeater:
-            self.df = self.df[self.df.frb_name != 'FRB121102']
-
-        self.df = self.df.sort_index()
+            self.df = pd.read_csv(f)
 
     def clean(self):
         """Clean up the data."""
+        # Lower all column names
+        self.df.columns = map(str.lower, self.df.columns)
+
+        # Convert None's to Nan's
+        self.df.fillna(value=pd.np.nan, inplace=True)
+
         # Clean up column names
         self.df.columns = self.df.columns.str.replace('rop_', '')
         self.df.columns = self.df.columns.str.replace('rmp_', '')
+
+        # There's a problem with mulitple 'id' columns
+        cols = [c for c in self.df.columns if not c.endswith('id')]
+        self.df = self.df[cols]
 
         # Split out errors on values
         for c in self.df.columns:
@@ -111,6 +200,18 @@ class Frbcat():
                     val, err = self.df[c].str.split('&plusmn', 1).str
                     self.df[c] = pd.to_numeric(val)
                     self.df[c+'_err'] = pd.to_numeric(err)
+
+        # Split out asymetric errors on values
+        for c in self.df.columns:
+            if self.df[c].dtype == object:
+                if any(self.df[c].str.contains('<sup>', na=False)):
+                    upper = "<span className='supsub'><sup>"
+                    val, rest = self.df[c].str.split(upper, 1).str
+                    upper, rest = rest.str.split('</sup><sub>', 1).str
+                    lower, _ = rest.str.split('</sub></span>', 1).str
+                    self.df[c] = pd.to_numeric(val)
+                    self.df[c+'_err_up'] = pd.to_numeric(upper)
+                    self.df[c+'_err_down'] = pd.to_numeric(lower)
 
         # Conversion table
         convert = {'frb_name': 'frb',
@@ -126,14 +227,14 @@ class Frbcat():
 
         self.df.rename(columns=convert, inplace=True)
 
+        # Ensure columns are the right datatype
+        self.df.w_eff = pd.to_numeric(self.df.w_eff, errors='coerce')
+
         # Add some extra columns
         self.df['fluence'] = self.df['s_peak'] * self.df['w_eff']
         self.df['population'] = 'frbcat'
         self.df['t_dm_err'] = ((self.df['t_dm']/self.df['dm']) *
                                (self.df['dm_err']*self.df['dm']))
-
-        # Temporary fix to missing data on FRB170827 in frbcat
-        self.df['t_samp'] = self.df['t_samp'].fillna(0.06400)
 
         # Gives somewhat of an idea of the pulse width upon arrival at Earth
         self.df['w_arr'] = (self.df['w_eff']**2 -
@@ -148,6 +249,33 @@ class Frbcat():
 
         # Set utc as dates
         self.df['utc'] = pd.to_datetime(self.df['utc'])
+
+        # Replace chime/frb with chime
+        if any(self.df['telescope'].str.contains('chime/frb', na=False)):
+            val, _ = self.df['telescope'].str.split('/', 1).str
+            self.df['telescope'] = val
+
+    def filter(self,
+               one_per_frb=True,
+               repeat_bursts=False,
+               repeaters=True):
+        """Filter frbcat in various ways."""
+        if one_per_frb:
+            # Only keep rows with the largest number of parameters
+            # so that only one row per detected FRB remains
+            self.df['count'] = self.df.count(axis=1)
+            self.df = self.df.sort_values('count', ascending=False)
+            self.df = self.df.drop_duplicates(subset=['utc'])
+
+        if not repeaters:
+            # Drops any repeater sources
+            self.df = self.df.drop_duplicates(subset=['frb'], keep=False)
+
+        if not repeat_bursts:
+            # Only keeps one detection of repeaters
+            self.df = self.df.drop_duplicates(subset=['frb'])
+
+        self.df = self.df.sort_index()
 
     def coor_trans(self):
         """Apply coordinate transformations."""
@@ -169,29 +297,29 @@ class Frbcat():
 
         self.df = self.df.apply(trans, axis=1)
 
-    def match_surveys(self):
+    def match_surveys(self, interrupt=True):
         """Match up frbs with surveys."""
         # Merge survey names
-        surf = os.path.join(self.data_dir, 'frb_survey.csv')
+        surf = os.path.join(self.data_dir, 'paper_survey.csv')
         self._surveys = pd.read_csv(surf)
-        self.df = pd.merge(self.df, self._surveys, on='frb', how='outer')
+        cols = ['frb', 'pub_description']
+        self.df = pd.merge(self.df, self._surveys, on=cols, how='outer')
+
+        # Clean up possible unnamed columns
+        self.df = self.df.loc[:, ~self.df.columns.str.contains('unnamed')]
 
         # Check whether any FRBs have not yet been assigned
         no_surveys = self.df['survey'].isnull()
 
-        if any(no_surveys):
-            names = []
-            for index, row in self.df[no_surveys].iterrows():
-                names.append(row['frb'])
-                m = '====> {} has not been linked to a survey <===='
-                n = m.format(row['frb'])
-                pprint(n)
-                pprint(row)
+        if interrupt:
+            if any(no_surveys):
+                ns_df = self.df[no_surveys]
 
-            pprint('Please add these frbs to {}'.format(surf))
+                pprint('Please add these frbs to {}'.format(surf))
 
-            for name in names:
-                print(name + ',')
+                for i, r in ns_df[['pub_description', 'frb']].iterrows():
+                    title, frb = r
+                    print(f'"{title}",{frb},')
 
     def to_pop(self, df=None):
         """
@@ -224,3 +352,7 @@ class Frbcat():
         pop.save()
 
         return pop
+
+
+if __name__ == '__main__':
+    f = Frbcat()
