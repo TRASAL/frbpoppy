@@ -139,7 +139,14 @@ class Plot():
             df = Frbcat().df
             # Filter by survey if wished
             if isinstance(self.frbcat, str):
-                df = df[df.survey == self.frbcat.upper()]
+                if df['survey'].str.match(self.frbcat).any():
+                    df = df[df.survey == self.frbcat]
+                elif df['telescope'].str.match(self.frbcat).any():
+                    df = df[df.telescope == self.frbcat]
+                else:
+                    m = 'Your chosen input for frbcat is not found.'
+                    raise ValueError(m)
+
                 df['population'] = f'frbcat {self.frbcat}'
 
             df['color'] = self.colours[len(self.dfs)]
