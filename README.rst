@@ -20,8 +20,9 @@ How can I install it?
 
 3. Install frbpoppy locally on Ubuntu by going to the downloaded directory and running:
    ::
-
-    $ sudo python3 setup.py develop
+   
+    $ pip3 install -r requirements.txt
+    $ python3 setup.py develop
 
    Macs should also be supported, however no tests have been done on Windows.
 

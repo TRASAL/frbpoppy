@@ -24,6 +24,8 @@ class NE2001Table:
         self.rounding = 2
         if os.path.exists(self.file_name):
             self.db = True
+        else:
+            self.create_table()
 
     def set_file_name(self):
         """Determine filename."""
@@ -47,6 +49,9 @@ class NE2001Table:
 
         results = []
 
+        # Give an update on the progress
+        pprint('Creating a DM lookup table (only needs to be done once)')
+
         for gl in gls:
             gl = round(gl, 1)
             for gb in gbs:
@@ -57,8 +62,6 @@ class NE2001Table:
                 r = (gl, gb, dm_mw)
                 results.append(r)
 
-            # Give an update on the progress
-            pprint('Creating a DM lookup table (only needs to be done once)')
             sys.stdout.write('\r{}'.format(gl))
             sys.stdout.flush()
 
@@ -140,6 +143,8 @@ class DistanceTable:
         self.z_max = 6.5
         if os.path.exists(self.file_name):
             self.db = True
+        else:
+            self.create_table()
 
     def set_file_name(self):
         """Determine filename."""
