@@ -14,14 +14,29 @@ OBSERVE = False
 
 
 def hist(parameter, bins='lin', n_bins=25):
+    """Bin up a parameter eith in a lin or log space.
 
+    Why is this not a standard option in numpy or matplotlib?
+
+    Args:
+        parameter (array): To be binned
+        bins (str): Either 'lin' or 'log'
+        n_bins (int): Number of bins. Can be overriden internally
+
+    Returns:
+        tuple: bin centers, values per bin
+
+    """
     # Drop NaN-values
     parameter = parameter[~np.isnan(parameter)]
 
-    n_bins = 30
+    # Determine number of bins
     if len(parameter) < 50:
         n_bins = 15
+    if len(parameter) > 500:
+        n_bins = 50
 
+    # Determine type of binning
     if bins == 'lin':
         bins = n_bins
     elif bins == 'log':
@@ -29,12 +44,19 @@ def hist(parameter, bins='lin', n_bins=25):
         max_f = np.log10(max(parameter))
         bins = np.logspace(min_f, max_f, n_bins)
 
+    # Bin
     n, bins = np.histogram(parameter, bins=bins)
-    n = n/max(n)
+    n = n/max(n)  # Normalise
     bin_centres = (bins[:-1] + bins[1:]) / 2
+
     return bin_centres, n
 
+
 def plot_dists(surv_pop, telescope):
+
+    # Use a nice font for axes
+    plt.rc('text', usetex=True)
+
     # Plot dm distribution
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 
