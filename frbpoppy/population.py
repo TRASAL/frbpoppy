@@ -95,9 +95,9 @@ class Population:
         """
         # Check if a population has been a survey name
         if not self.name:
-            file_name = 'population'
+            file_name = 'pop'
         else:
-            file_name = 'population_' + self.name.lower()
+            file_name = self.name.lower()
 
         path = paths.populations() + file_name
 
@@ -153,7 +153,7 @@ def unpickle(filename=None):
         # Find standard population files
         try:
             name = filename.lower()
-            p = paths.populations() + f'population_{name}.p'
+            p = paths.populations() + f'{name}.p'
             f = open(p, 'rb')
         except FileNotFoundError:
             s = 'Pickled population file "{0}" does not exist'.format(filename)

@@ -112,8 +112,8 @@ class Plot():
                     df = unpickle(f).frbs.to_df()
                 except ValueError:
                     continue
-                if 'population' in f:
-                    name = f.split('population_')[-1].split('.')[0]
+                if '.' in f:
+                    name = f.split('/')[-1].split('.')[0]
                 else:
                     name = f
             if df is not None:
@@ -125,7 +125,7 @@ class Plot():
 
             # Downsample population size if it's too large
             if df.shape[0] > 10000:
-                df = df.iloc[::10]
+                df = df.iloc[::1000]
 
             df['population'] = name
             df['color'] = self.colours[self.n_df]

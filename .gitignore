@@ -102,11 +102,11 @@ data/logs/*
 data/models/dm/libne2001\.so
 misc/
 tests/*.csv
-tests/*.csv
 tests/*.html
-tests/*.p
-tests/*.png
-tests/*/*
+tests/*/*.pkl
+tests/*/*.png
+tests/*/*.pdf
+tests/*/
 temp\.csv
 publication/plots/
 publication/build/
