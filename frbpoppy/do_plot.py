@@ -36,7 +36,7 @@ def plot(*pops, files=[], frbcat=True, show=True,
                 pop.save()
 
             # Save location
-            file_name = 'population_' + name + '.p'
+            file_name = name + '.p'
             out = os.path.join(paths.populations(), file_name)
             files.append(out)
 
