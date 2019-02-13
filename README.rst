@@ -20,7 +20,7 @@ How can I install it?
 
 3. Install frbpoppy locally on Ubuntu by going to the downloaded directory and running:
    ::
-   
+
     $ pip3 install -r requirements.txt
     $ python3 setup.py develop
 
@@ -32,7 +32,7 @@ How can I install it?
 ******************
 How do I use it?
 ******************
-Well, that's where things get more interesting.
+Check out the `example<https://github.com/davidgardenier/frbpoppy/blob/master/tests/example.py>`_ code in the test directory, or else ``frbpoppy``'s `webpage <https://davidgardenier.github.io/frbpoppy/>`_!
 
 ***************
 How can I help?
