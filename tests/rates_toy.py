@@ -1,0 +1,68 @@
+"""Use simple rate comparisions, try predicting event rates."""
+import numpy as np
+import matplotlib.pyplot as plt
+
+from frbpoppy import Survey
+
+ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
+SURVEYS = ('palfa', 'htru', 'askap-fly')
+
+
+def compare_surveys(surv1, surv2, alpha):
+    """Event rate surv1 / Event rate surv2 for an alpha."""
+    omega = surv1.beam_size_fwhm/surv2.beam_size_fwhm
+    f = (surv1.central_freq/surv2.central_freq)**-2.6
+    T_sys = surv1.T_sys/surv2.T_sys
+    gain = surv1.gain/surv2.gain
+    beta = surv1.beta/surv2.beta
+    SEFD = T_sys*beta/gain
+    bw = surv1.bw/surv2.bw
+    S_min = surv1.snr_limit/surv2.snr_limit
+    t_samp = surv1.t_samp/surv2.t_samp
+
+    ratio = omega * (SEFD * S_min)**alpha
+    ratio *= (bw*t_samp)**(-alpha/2)
+
+    return ratio
+
+
+def toy_rates(surveys=SURVEYS, alphas=ALPHAS):
+    """Use a toy model to scale detection rates to various alphas."""
+    rates = {}
+
+    for surv in surveys:
+
+        # Get survey parameters
+        surv1 = Survey(surv, gain_pattern='perfect', n_sidelobes=0.5)
+        surv2 = Survey('htru', gain_pattern='perfect', n_sidelobes=0.5)
+
+        # Calculate rate per alpha
+        rate = []
+        for alpha in alphas:
+            rate.append(compare_surveys(surv1, surv2, alpha))
+        rates[surv] = rate
+
+    return rates
+
+
+def main():
+
+    rates = toy_rates()
+
+    for surv in rates:
+        rate = rates[surv]
+        plt.plot(ALPHAS, rate, label=surv)
+
+        plt.xlabel(r'$\alpha$')
+        plt.ylabel(r'Events / htru')
+        plt.xlim((min(ALPHAS), max(ALPHAS)))
+        plt.yscale('log')
+        plt.legend()
+        plt.grid()
+        plt.gca().invert_xaxis()
+        plt.tight_layout()
+        plt.savefig('./plots/toy_rates.pdf')
+
+
+if __name__ == '__main__':
+    main()

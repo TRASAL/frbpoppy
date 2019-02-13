@@ -106,7 +106,6 @@ tests/*.html
 tests/*/*.pkl
 tests/*/*.png
 tests/*/*.pdf
-tests/*/
 temp\.csv
 publication/plots/
 publication/build/
