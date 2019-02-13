@@ -33,7 +33,6 @@ if CREATE:
                               pulse_range=[1., 1.],
                               pulse_mu=1.,
                               pulse_sigma=0.,
-                              repeat=0.,
                               si_mu=0.,
                               si_sigma=0.,
                               z_max=2.5)

@@ -1,59 +1,47 @@
-"""Reproduce event rates versus alpha plot from Connor et al (2017)."""
+"""Compare rate calculations per alpha for the two askap settings."""
 import numpy as np
-from collections import defaultdict
+import matplotlib.pyplot as plt
 
-from frbpoppy import Survey
-
-from quick import get_cosmic_pop, get_survey_pop
-from rates_alpha import plot_event_rates
+from rates_complex import complex_rates
 
 MAKE = False
-OBSERVE = True
-PLOT = True
-SIZE = 'medium'
+OBSERVE = False
+SIZE = 'large'
 SURVEYS = ('htru', 'askap-fly', 'askap-incoh')
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 
 
 def main():
-    """Run main part of code."""
-    # Be a bit smart about which populations need to be loaded
-    load = True
-    if not MAKE and not OBSERVE:
-        load = False
 
-    # Construct populations
-    pops = []
-    for alpha in ALPHAS:
-        pop = get_cosmic_pop('alpha',
-                             SIZE,
-                             load=load,
-                             overwrite=MAKE,
-                             alpha=alpha)
-        pops.append(pop)
-
-    # Survey populations
-    plot_data = defaultdict(list)
-    plot_data['alpha'] = [a for a in ALPHAS]
-    for i, pop in enumerate(pops):
-
-        alpha = ALPHAS[i]
-
-        for s in SURVEYS:
-
-            pattern = 'perfect'
-            n_sl = 0.5
-
-            survey = Survey(name=s, gain_pattern=pattern, n_sidelobes=n_sl)
-            surv_rates = get_survey_pop(pop, survey).rates()
-            print(f'Alpha:{alpha:.2}, Survey: {s}, Det: {surv_rates.det}')
-            events_per_week = (surv_rates.det / surv_rates.days) * 7
-            plot_data[s].append(events_per_week)
+    complex = complex_rates(make=MAKE,
+                            observe=OBSERVE,
+                            alphas=ALPHAS,
+                            size=SIZE,
+                            surveys=SURVEYS)
 
     # Plot population event rates
-    if PLOT:
-        plot_event_rates(plot_data, filename='plots/rates_askap.pdf',
-                         plot_exp=False)
+    plot_rates(complex)
+
+
+def plot_rates(rates):
+
+    fig, (ax1) = plt.subplots(1, 1)
+    cmap = plt.get_cmap('tab10')
+    ax1.set_xlim((min(ALPHAS)+.1, max(ALPHAS)-.1))
+    ax1.set_yscale('log', nonposy='mask')
+
+    # Plot complex versus toy
+    for i, surv in enumerate(SURVEYS):
+        ax1.plot(ALPHAS, rates[surv], color=cmap(i+1), label=surv)
+
+    # Plot layout options
+    # Set up axes
+    ax1.set_xlabel(r'$\alpha$')
+    ax1.invert_xaxis()
+    ax1.set_ylabel('Events / htru')
+
+    plt.legend()
+    plt.savefig('plots/askap_rates.pdf', bbox_inches='tight')
 
 
 if __name__ == '__main__':
