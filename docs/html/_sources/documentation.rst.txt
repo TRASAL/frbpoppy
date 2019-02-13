@@ -7,27 +7,37 @@ Where to start?
 Either browse through the basic modules down below, or browse through the :ref:`modindex`
 
 ===========
-Do populate
+Cosmic Population
 ===========
 
 |
 
-.. automodule:: do_populate
+.. automodule:: cosmic_pop
     :members:
     :noindex:
 
 =========
-Do survey
+Survey
 =========
 
 |
 
-.. automodule:: do_survey
+.. automodule:: survey
+    :members:
+    :noindex:
+
+=========
+Survey Population
+=========
+
+|
+
+.. automodule:: survey_pop
     :members:
     :noindex:
 
 =======
-Do plot
+Plot
 =======
 
 |

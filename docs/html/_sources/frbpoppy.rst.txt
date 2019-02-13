@@ -10,6 +10,14 @@ adapt\_pop
     :undoc-members:
     :show-inheritance:
 
+cosmic\_pop
+---------------------------
+
+.. automodule:: cosmic_pop
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 distributions
 ------------------------------
 
@@ -26,14 +34,6 @@ do\_hist
     :undoc-members:
     :show-inheritance:
 
-do\_monte\_carlo
----------------------------------
-
-.. automodule:: do_monte_carlo
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 do\_plot
 -------------------------
 
@@ -42,34 +42,18 @@ do\_plot
     :undoc-members:
     :show-inheritance:
 
-do\_populate
------------------------------
-
-.. automodule:: do_populate
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-do\_survey
----------------------------
-
-.. automodule:: do_survey
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-frb
---------------------
-
-.. automodule:: frb
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 frbcat
 -----------------------
 
 .. automodule:: frbcat
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+frbs
+--------------------
+
+.. automodule:: frbs
     :members:
     :undoc-members:
     :show-inheritance:
@@ -90,10 +74,10 @@ log
     :undoc-members:
     :show-inheritance:
 
-monte\_carlo
+number\_density
 -----------------------------
 
-.. automodule:: monte_carlo
+.. automodule:: number_density
     :members:
     :undoc-members:
     :show-inheritance:
@@ -114,14 +98,6 @@ plot
     :undoc-members:
     :show-inheritance:
 
-plot\_mc
--------------------------
-
-.. automodule:: plot_mc
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 population
 ---------------------------
 
@@ -138,10 +114,18 @@ precalc
     :undoc-members:
     :show-inheritance:
 
-source
------------------------
+rates
+------------------------
 
-.. automodule:: source
+.. automodule:: rates
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+survey\_pop
+-----------------------------
+
+.. automodule:: survey_pop
     :members:
     :undoc-members:
     :show-inheritance:

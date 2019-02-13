@@ -22,16 +22,20 @@ How can I install it?
      $ cd ./frbpoppy
 
 
-4. Run the following to get a local install - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.
+4. Install necessary external libraries
+   ::
+
+    $ pip3 install -r requirements.txt
+
+
+5. Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.
    ::
 
     $ sudo python3 setup.py develop
 
    Macs should also be supported, however no tests have been done on Windows.
 
-   *If receiving an ASCII error, this is* `a bug <https://github.com/bokeh/bokeh/issues/7272>`_ *in Bokeh.*
-
-5. Test whether frbpoppy is working with:
+6. Test whether frbpoppy is working with:
    ::
 
     $ python3
@@ -45,31 +49,39 @@ How do I use it?
 ****************
 Population synthesis always involves three steps:
 
-1. **Model population**
+1. **Model a population**
 
    Generating a population in ``frbpoppy`` can be done using the ``generate`` function:
    ::
 
-    from frbpoppy.do_populate import generate
-    pop = generate()
+    from frbpoppy import CosmicPopulation
+    pop = CosmicPopulation()
 
-   The generate function takes a number of parameters, allowing you generate the exact population you want, from a steep luminosity function to ultra-long intrinsic pulses. It's all possible. The population you've just generated is called your initial population. The next step will be to observe it with whichever survey takes your fancy.
+   The generate function takes a number of parameters, allowing you generate the exact population you want, from a steep luminosity function to ultra-long intrinsic pulses. It's all possible. The population you've just generated is called a cosmic population. The next step will be to observe it with whichever survey takes your fancy.
 
-2. **Survey modeled population**
+2. **Model a survey**
 
-   In ``frbpoppy``, a population can be observed with a number of different surveys. While many current surveys have been included within ``frbpoppy``, it is possible to define your own survey, or adapt the ones available. To observe a population simply add the following lines
+   In ``frbpoppy``, a population can be observed with a number of different surveys. While many current surveys have been included within ``frbpoppy``, it is possible to define your own survey, or adapt the ones available. To use a survey included in frbpoppy, simply use the code below. Options for adapting the survey, for instance its beam pattern, can also be given as options to the Survey class.
 
    ::
 
-    from frbpoppy.do_survey import observe
-    surv_pop = observe(pop, 'APERTIF')
+    from frbpoppy import Survey
+    survey = Survey('apertif')
 
+2. **Create a survey population**
+
+   Use the both the CosmicPopulation and Survey you've set up to create a surveyed population, incorporating all of the selection effects you didn't even know about. Simply
+
+   ::
+
+    from frbpoppy import SurveyPopulation
+    surv_pop = SurveyPopulation(pop, survey)
 
 3. **Compare obtained results with actual survey results**
    One of the easiest ways to compare the observed results to actual observations is to use the built in interactive viewer. Simply pass the populations as arguments in to the plot function, and explore away!
    ::
 
-    from frbpoppy.do_plot import plot
+    from frbpoppy import plot
     plot(pop, surv_pop)
 
 

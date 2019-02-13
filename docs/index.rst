@@ -19,7 +19,8 @@ How can I install it?
 
     git clone https://github.com/davidgardenier/frbpoppy
     cd ./frbpoppy/
-    sudo python3 setup.py develop
+    pip3 install -r requirements.txt
+    python3 setup.py develop
 
 Things not going quite as smoothly? Check the :doc:`get_started` guide for additional information on common installation problems.
 
