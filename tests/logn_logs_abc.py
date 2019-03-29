@@ -85,8 +85,8 @@ def plot_logn_logs(data):
         x, y = data[key]
         ax1.step(x, y, where='post', label=key)
 
-    plt.xlabel('S (Jy ms)')
-    plt.ylabel('N(>S)')
+    plt.xlabel('Fluence (Jy ms)')
+    plt.ylabel('N(>Fluence)')
     plt.xscale('log')
     plt.yscale('log')
     plt.xlim((1e-3,1e1))

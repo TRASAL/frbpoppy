@@ -101,11 +101,12 @@ ENV/
 data/logs/*
 data/models/dm/libne2001\.so
 misc/
-tests/*.csv
-tests/*.html
-tests/*/*.pkl
-tests/*/*.png
-tests/*/*.pdf
+tests/**/*.csv
+tests/**/*.html
+tests/**/*.pkl
+tests/**/*.png
+tests/**/*.pdf
+
 temp\.csv
 publication/plots/
 publication/build/

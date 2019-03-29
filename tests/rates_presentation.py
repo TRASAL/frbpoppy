@@ -14,6 +14,10 @@ OBSERVE = False
 SIZE = 'large'
 SURVEYS = ('palfa', 'htru', 'askap-fly')
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
+TOY = False
+REAL = True
+SIMPLE = False
+COMPLEX = False
 
 james = [-2.2-0.47, -2.2+0.47]  # James, Ekers et al. 2018
 
@@ -23,38 +27,39 @@ def plot(toy, simple, complex, real):
     fig, (ax1) = plt.subplots(1, 1, sharey=True)
     cmap = plt.get_cmap('tab10')
     ax1.set_xlim((min(ALPHAS)+.1, max(ALPHAS)-.1))
+    ax1.set_ylim(1e-2, 1e3)
     ax1.set_yscale('log', nonposy='mask')
 
-    # Plot simple versus toy
-    # for i, surv in enumerate(SURVEYS):
-    #     ax1.plot(ALPHAS, toy[surv], color=cmap(i), linestyle='dotted',
-    #              zorder=0)
-    #     ax1.plot(ALPHAS, simple[surv], zorder=1)
-
-    # Plot complex expectations
     for i, surv in enumerate(SURVEYS):
-        ax1.plot(ALPHAS, complex[surv], color=cmap(i), linestyle='dashed',
-                 zorder=1)
+        if TOY:
+            ax1.plot(ALPHAS, toy[surv], color=cmap(i), linestyle='dotted',
+                     zorder=0)
+        if SIMPLE:
+            ax1.plot(ALPHAS, simple[surv], zorder=1)
+        if COMPLEX:
+            ax1.plot(ALPHAS, complex[surv], color=cmap(i), linestyle='dashed',
+                     zorder=1)
 
     # Plot real event rate boxes
-    ma, mi = ax1.get_xlim()
-    ma -= 0.05
-    mi += 0.05
-    size = 0.13
-    z = 0
-    for i, surv in enumerate(SURVEYS):
+    REAL = True
+    if REAL:
+        ma, mi = ax1.get_xlim()
+        ma -= 0.05
+        mi += 0.05
+        size = 0.13
+        z = 0
+        for i, surv in enumerate(SURVEYS):
 
-        central, min_r, max_r = real[surv]
+            central, min_r, max_r = real[surv]
 
-        left = mi - size
-        right = ma + size
+            right = ma + size
 
-        x, y = zip(*[(ma, max_r), (right, max_r), (right, min_r), (ma, min_r)])
-        ax1.fill(x, y, color=cmap(i), zorder=z)
-        ax1.plot([ma, right+0.08], [central, central], color=cmap(i), zorder=z)
+            x, y = zip(*[(ma, max_r), (right, max_r), (right, min_r), (ma, min_r)])
+            ax1.fill(x, y, color=cmap(i), zorder=z)
+            ax1.plot([ma, right+0.08], [central, central], color=cmap(i), zorder=z)
 
-        size -= 0.02
-        z += 1
+            size -= 0.02
+            z += 1
 
     # Plot layout options
     # Set up axes
@@ -75,20 +80,26 @@ def plot(toy, simple, complex, real):
     elements.append((Line2D([0], [0], color='white'), ''))
 
     # Add line styles
-    n = 'analytical'
-    # elements.append((Line2D([0], [0], color='gray', linestyle='dotted'), n))
-    elements.append((Line2D([0], [0], color='gray', linestyle='dashed'),
-                     'complex'))
-    elements.append((Patch(facecolor='gray', edgecolor='gray', alpha=0.6),
-                     'real'))
-    # elements.append((Line2D([0], [0], color='gray'), 'simple'))
+    if TOY:
+        n = 'analytical'
+        elements.append((Line2D([0], [0], color='gray', linestyle='dotted'), n))
+    REAL = True
+    if REAL:
+        elements.append((Patch(facecolor='gray', edgecolor='gray', alpha=0.6),
+                         'measured'))
+    if SIMPLE:
+        elements.append((Line2D([0], [0], color='gray'), 'simple'))
+    if COMPLEX:
+        elements.append((Line2D([0], [0], color='gray', linestyle='dashed'),
+                         'complex'))
+
     # elements.append((Patch(facecolor='white', edgecolor='gray', hatch='+',
     #                        linewidth=0.1), 'prediction'))
 
     lines, labels = zip(*elements)
     plt.legend(lines, labels, bbox_to_anchor=(1.04, 0.5), loc="center left")
 
-    plt.savefig('plots/rates_presentation.pdf', bbox_inches='tight')
+    plt.savefig('plots/rates_real.pdf', bbox_inches='tight')
 
 
 def main():
