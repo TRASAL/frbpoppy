@@ -11,9 +11,9 @@ class NumberDensity:
     def __init__(self,
                  model='vol_co',
                  z_max=6.0,
-                 H_0=69.6,
-                 W_m=0.286,
-                 W_v=0.714,
+                 H_0=67.74,
+                 W_m=0.3089,
+                 W_v=0.6911,
                  alpha=-1.5):
         """Draw from particular number density distributions.
 
