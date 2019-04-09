@@ -9,8 +9,8 @@ from rates_real import real_rates
 from rates_simple import simple_rates
 from rates_complex import complex_rates
 
-MAKE = False
-OBSERVE = False
+MAKE = True
+OBSERVE = True
 SIZE = 'large'
 SURVEYS = ('palfa', 'htru', 'askap-fly')
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)

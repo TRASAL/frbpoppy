@@ -11,7 +11,7 @@ MAKE = True
 OBSERVE = True
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 SURVEYS = ('palfa', 'htru', 'askap-fly')
-SIZE = 'small'
+SIZE = 'large'
 
 def complex_rates(make=MAKE, observe=OBSERVE, alphas=ALPHAS, size=SIZE,
                   surveys=SURVEYS, output=False):

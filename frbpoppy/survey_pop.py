@@ -46,8 +46,8 @@ class SurveyPopulation(Population):
         frbs.apply(region_mask)
         self.rate.out = np.size(region_mask) - np.count_nonzero(region_mask)
 
-        # Calculate dispersion measure across single channel, with error
-        frbs.t_dm, frbs.t_dm_err = survey.dm_smear(frbs)
+        # Calculate dispersion measure across single channel
+        frbs.t_dm = survey.dm_smear(frbs)
 
         # Set scattering timescale
         if scat:
