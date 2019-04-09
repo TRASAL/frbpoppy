@@ -217,7 +217,7 @@ class Survey:
         else:
             pprint(f'Gain pattern "{self.gain_pattern}" not recognised')
 
-    def dm_smear(self, frbs, dm_err=0.2):
+    def dm_smear(self, frbs):
         """
         Calculate delay in pulse across a channel due to dm smearing.
 
@@ -227,18 +227,13 @@ class Survey:
 
         Args:
             frbs (FRBs): FRB object with a dm attribute
-            dm_err (float): Error on dispersion measure. Defaults to 0.2
 
         Returns:
-            t_dm, t_dm_err (arrays): Time of delay [ms] at central band
-                frequency, with its error assuming a 20% uncertainty in the
-                dispersion measure
-
+            t_dm (array): Time of delay [ms] at central band frequency
         """
-        t_dm = 8.297616e6 * self.bw_chan * frbs.dm * (self.central_freq)**-3
-        t_dm_err = t_dm*dm_err
 
-        return t_dm, t_dm_err
+        t_dm = 8.297616e6 * self.bw_chan * frbs.dm * (self.central_freq)**-3
+        return t_dm
 
     def calc_scat(self, dm):
         """Calculate scattering timescale for FRBs.
@@ -360,7 +355,6 @@ class Survey:
         """
         w_eff = np.sqrt(frbs.w_arr**2 +
                         frbs.t_dm**2 +
-                        frbs.t_dm_err**2 +
                         frbs.t_scat**2 +
                         self.t_samp**2)
         return w_eff

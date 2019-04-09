@@ -36,7 +36,6 @@ class FRBs:
         self.s_peak = None
         self.snr = None
         self.t_dm = 0
-        self.t_dm_err = 0
         self.t_scat = 0
         self.T_sky = 0
         self.T_tot = 0

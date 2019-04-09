@@ -365,7 +365,7 @@ def load_T_sky():
 class Redshift:
     """Class for converting redshift to other distance measures."""
 
-    def __init__(self, z, H_0=69.6, W_m=0.286, W_v=0.714):
+    def __init__(self, z, H_0=67.74, W_m=0.3089, W_v=0.6911):
         """
         Convert redshift to a various measures.
 
@@ -466,7 +466,7 @@ class Redshift:
         return self.v_gpc
 
 
-def z_to_d_approx(z, H_0=69.6):
+def z_to_d_approx(z, H_0=67.74):
     """
     Calculate distance in Gpc from a redshift.
 
@@ -476,7 +476,7 @@ def z_to_d_approx(z, H_0=69.6):
 
     Args:
         z (float): Redshift
-        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+        H_0 (float, optional): Hubble parameter. Defaults to 67.74
     Returns:
         dist (float): Associated distance [Gpc]
     """
@@ -487,7 +487,7 @@ def z_to_d_approx(z, H_0=69.6):
     return dist
 
 
-def dist_to_z(dist, H_0=69.6):
+def dist_to_z(dist, H_0=67.74):
     """
     Calculate redshift from a distance in Gpc.
 
@@ -497,7 +497,7 @@ def dist_to_z(dist, H_0=69.6):
 
     Args:
         dist (float): Distance [Gpc].
-        H_0 (float, optional): Hubble parameter. Defaults to 69.6
+        H_0 (float, optional): Hubble parameter. Defaults to 67.74
     Returns:
         z (float): Associated redshift
     """

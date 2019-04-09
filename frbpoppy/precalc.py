@@ -123,13 +123,13 @@ class DistanceTable:
     table, and save the table for later runs.
 
     Args:
-        H_0 (float, optional): Hubble parameter. Defaults to 69.6 km/s/Mpc
-        W_m (float, optional): Omega matter. Defaults to 0.286
-        W_k (float, optional): Omega vacuum. Defaults to 0.714
+        H_0 (float, optional): Hubble parameter. Defaults to 67.74 km/s/Mpc
+        W_m (float, optional): Omega matter. Defaults to 0.3089
+        W_k (float, optional): Omega vacuum. Defaults to 0.6911
 
     """
 
-    def __init__(self, H_0=69.6, W_m=0.286, W_v=0.714):
+    def __init__(self, H_0=67.74, W_m=0.3089, W_v=0.6911):
         """Initializing."""
         self.H_0 = H_0
         self.W_m = W_m
@@ -254,13 +254,13 @@ class CSMDTable:
     Create/use a stellar mass density lookup table for the FRB number density.
 
     Args:
-        H_0 (float, optional): Hubble parameter. Defaults to 69.6
-        W_m (float, optional): Omega matter. Defaults to 0.286
-        W_v (float, optional): Omega vacuum. Defaults to 0.714
+        H_0 (float, optional): Hubble parameter. Defaults to 67.74
+        W_m (float, optional): Omega matter. Defaults to 0.3089
+        W_v (float, optional): Omega vacuum. Defaults to 0.6911
 
     """
 
-    def __init__(self, H_0=69.6, W_m=0.286, W_v=0.714):
+    def __init__(self, H_0=67.74, W_m=0.3089, W_v=0.6911):
         """Initializing."""
         self.H_0 = H_0
         self.W_m = W_m

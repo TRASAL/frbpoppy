@@ -32,7 +32,8 @@ def plot_rates(rates):
 
     # Plot complex versus toy
     for i, surv in enumerate(SURVEYS):
-        ax1.plot(ALPHAS, rates[surv], color=cmap(i+1), label=surv)
+        ax1.plot(ALPHAS, rates[surv], color=cmap(i+1), label=surv,
+                 linestyle='dashed')
 
     # Plot layout options
     # Set up axes

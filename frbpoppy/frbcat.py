@@ -24,13 +24,14 @@ class Frbcat():
                  frbpoppy=True,
                  one_per_frb=False,
                  repeat_bursts=True,
-                 repeaters=True):
+                 repeaters=True,
+                 update=False):
         """Initializing."""
         # Set path
         self.data_dir = paths.frbcat()
 
         # Get frbcat data
-        self.get()
+        self.get(internet=update)
 
         # Transform the data
         if frbpoppy is True:
@@ -89,7 +90,7 @@ class Frbcat():
             dfs.append(df)
         return pd.concat(dfs, ignore_index=True)
 
-    def get(self, internet=True, save=True, local=False):
+    def get(self, internet=False, save=True, local=False):
         """
         Get frbcat from online or from a local file.
 
@@ -171,10 +172,11 @@ class Frbcat():
             except requests.ConnectionError:
                 local = True
 
-        if local:
+        if local or not internet:
             # Find latest version of frbcat
             f = max(glob.glob(self.data_dir + '/frbcat*.csv'),
                     key=os.path.getctime)
+            print(f)
             self.df = pd.read_csv(f)
 
     def clean(self):
@@ -233,13 +235,10 @@ class Frbcat():
         # Add some extra columns
         self.df['fluence'] = self.df['s_peak'] * self.df['w_eff']
         self.df['population'] = 'frbcat'
-        self.df['t_dm_err'] = ((self.df['t_dm']/self.df['dm']) *
-                               (self.df['dm_err']*self.df['dm']))
 
         # Gives somewhat of an idea of the pulse width upon arrival at Earth
         self.df['w_arr'] = (self.df['w_eff']**2 -
                             self.df['t_dm']**2 -
-                            self.df['t_dm_err']**2 -
                             self.df['t_scat']**2 -
                             self.df['t_samp']**2)**0.5
 

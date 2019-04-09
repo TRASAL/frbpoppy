@@ -1,6 +1,5 @@
 """Plot options of varying FRB number densities."""
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 import numpy as np
 
 from frbpoppy import CosmicPopulation, unpickle
@@ -8,8 +7,8 @@ from frbpoppy import CosmicPopulation, unpickle
 MAKE = False
 
 if MAKE:
-    days = 50
-    n_per_day = 5000
+    days = 1
+    n_per_day = 250000
 
     # Generate population following a constant number density / comoving volume
     pop_cst = CosmicPopulation(n_per_day*days,
@@ -61,8 +60,8 @@ plt.step(bincentres, n_sfr, where='mid', label='SFR')
 plt.step(bincentres, n_constant, where='mid', label='Constant')
 plt.step(bincentres, n_smd, where='mid', label='SMD')
 
-plt.xlabel('Redshift')
-plt.ylabel(r'$\rho_{FRB}(z)$')
+plt.xlabel('$z$')
+plt.ylabel(r'$\rho_{\text{FRB}}$')
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()

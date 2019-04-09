@@ -18,9 +18,9 @@ class CosmicPopulation(Population):
                  n_gen,
                  days=1,
                  name='cosmic',
-                 H_0=69.6,
-                 W_m=0.286,
-                 W_v=0.714,
+                 H_0=67.74,
+                 W_m=0.3089,
+                 W_v=0.6911,
                  dm_host_model='normal',
                  dm_host_mu=100,
                  dm_host_sigma=0,
@@ -34,7 +34,7 @@ class CosmicPopulation(Population):
                  alpha=-1.5,
                  pulse_model='lognormal',
                  pulse_range=[0.1, 10],
-                 pulse_mu=1.6,
+                 pulse_mu=0.1,
                  pulse_sigma=1.,
                  si_mu=-1.4,
                  si_sigma=1.,
@@ -162,9 +162,8 @@ class CosmicPopulation(Population):
             frbs.dm_host = np.random.normal(self.dm_host_mu,
                                             self.dm_host_sigma)
         elif self.dm_host_model == 'lognormal':
-            mu = math.log(self.dm_host_mu)
-            sigma = math.log(self.dm_host_sigma)
-            frbs.dm_host = np.random.lognormal(mu, sigma)
+            frbs.dm_host = np.random.lognormal(self.dm_host_mu,
+                                               self.dm_host_sigma)
 
         frbs.dm_host /= (1 + frbs.z)
 
