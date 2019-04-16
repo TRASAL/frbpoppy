@@ -96,7 +96,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'html']
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 #
-# add_function_parentheses = True
+add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
@@ -119,7 +119,7 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
-
+autoclass_content = 'both'
 
 # -- Options for HTML output ----------------------------------------------
 

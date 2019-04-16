@@ -55,6 +55,51 @@
 <dt>
 <em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=67.74, W_m=0.3089, W_v=0.6911, dm_host_model='normal', dm_host_mu=100, dm_host_sigma=200, dm_igm_index=1000, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+45], lum_index=0, n_model='sfr', alpha=-1.5, pulse_model='lognormal', pulse_range=[0.1, 10], pulse_mu=0.1, pulse_sigma=0.5, si_mu=-1.4, si_sigma=1.0, z_max=2.5</em><span class="sig-paren">)</span></dt>
 <dd><p>Generate a cosmic FRB population.</p>
+<p>Generate a popuation of FRBs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_gen</strong> (<em>int</em>) – Number of FRB sources/sky/time to generate.</li>
+<li><strong>days</strong> (<em>float</em>) – Number of days over which FRBs are generated.</li>
+<li><strong>name</strong> (<em>str</em>) – Population name.</li>
+<li><strong>H_0</strong> (<em>float</em>) – Hubble constant.</li>
+<li><strong>W_m</strong> (<em>float</em>) – Density parameter Ω_m.</li>
+<li><strong>W_v</strong> (<em>float</em>) – Cosmological constant Ω_Λ.</li>
+<li><strong>dm_host_model</strong> (<em>float</em>) – Dispersion measure host model. Options are
+‘normal’ or ‘lognormal’.</li>
+<li><strong>dm_host_mu</strong> (<em>float</em>) – Mean dispersion measure host [pc/cm^3].</li>
+<li><strong>dm_host_sigma</strong> (<em>float</em>) – Deviation dispersion measure host [pc/cm^3].</li>
+<li><strong>dm_igm_index</strong> (<em>float</em>) – Dispersion measure slope for IGM [pc/cm^3].</li>
+<li><strong>dm_igm_sigma</strong> (<em>float</em>) – Scatter around dm_igm. Defaults 0.2*slope*z</li>
+<li><strong>dm_mw_model</strong> (<em>str</em>) – Dispersion measure model for the Milky Way.
+Options are ‘ne2001’ or ‘zero’.</li>
+<li><strong>emission_range</strong> (<em>list</em>) – The frequency range [Hz] between which FRB
+sources should emit the given bolometric luminosity.</li>
+<li><strong>lum_range</strong> (<em>list</em>) – Bolometric luminosity (distance) range [erg/s].</li>
+<li><strong>lum_index</strong> (<em>float</em>) – Power law index.</li>
+<li><strong>n_model</strong> (<em>str</em>) – Number density model. Either ‘vol_co’, ‘sfr’ or
+‘smd’.</li>
+<li><strong>alpha</strong> (<em>float</em>) – Desired logN/logS of perfectly detected population.</li>
+<li><strong>pulse_model</strong> (<em>str</em>) – Pulse width model, ‘lognormal’ or ‘uniform’.</li>
+<li><strong>pulse_range</strong> (<em>list</em>) – Pulse width range [ms].</li>
+<li><strong>pulse_mu</strong> (<em>float</em>) – Mean pulse width [ms].</li>
+<li><strong>pulse_sigma</strong> (<em>float</em>) – Deviation pulse width [ms].</li>
+<li><strong>si_mu</strong> (<em>float</em>) – Mean spectral index.</li>
+<li><strong>si_sigma</strong> (<em>float</em>) – Standard deviation spectral index.</li>
+<li><strong>z_max</strong> (<em>float</em>) – Maximum redshift.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population of FRBs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population">Population</a></p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -85,6 +130,7 @@ pattern with a max number of sizelobes. If unwanted, set to False</li>
 </tr>
 </tbody>
 </table>
+<p>Initializing.</p>
 <dl class="method">
 <dt>
 <code class="descname">calc_T_sky</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
@@ -324,6 +370,25 @@ changed due to the central frequency being given in MHz.</p>
 <dt>
 <em class="property">class </em><code class="descclassname">survey_pop.</code><code class="descname">SurveyPopulation</code><span class="sig-paren">(</span><em>cosmic_pop</em>, <em>survey</em>, <em>scat=False</em>, <em>scin=False</em>, <em>rate_limit=True</em><span class="sig-paren">)</span></dt>
 <dd><p>Class to create a survey population of FRBs.</p>
+<p>Run a survey to detect FRB sources.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cosmic_pop</strong> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population"><em>Population</em></a>) – Population class of FRB sources to observe</li>
+<li><strong>survey</strong> (<a class="reference internal" href="frbpoppy.html#survey.Survey" title="survey.Survey"><em>Survey</em></a>) – Survey class with which to observe</li>
+<li><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include scattering in signal to
+noise calculations.</li>
+<li><strong>scin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply scintillation to
+observations.</li>
+<li><strong>rate_limit</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to limit detections by 1/(1+z)
+due to limitation in observing time</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt>
 <code class="descname">calc_logn_logs</code><span class="sig-paren">(</span><em>parameter='fluence'</em>, <em>min_p=None</em>, <em>max_p=None</em><span class="sig-paren">)</span></dt>

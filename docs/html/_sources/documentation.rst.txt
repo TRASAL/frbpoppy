@@ -6,9 +6,9 @@ Where to start?
 ***************
 Either browse through the basic modules down below, or browse through the :ref:`modindex`
 
-===========
+=================
 Cosmic Population
-===========
+=================
 
 |
 
@@ -26,9 +26,9 @@ Survey
     :members:
     :noindex:
 
-=========
+=================
 Survey Population
-=========
+=================
 
 |
 
