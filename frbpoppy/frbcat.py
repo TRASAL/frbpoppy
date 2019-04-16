@@ -72,8 +72,9 @@ class Frbcat():
 
     def urls_to_df(self, endings, url):
         """
-        Use Series to loop over multiple webpages and concatenate them to a
-        single DataFrame
+        Use Series to loop over multiple webpages.
+
+        Proceed to concatenate them to a single DataFrame
 
         Args:
             endings (iterables): The list/series/column over which to loop
@@ -176,7 +177,7 @@ class Frbcat():
             # Find latest version of frbcat
             f = max(glob.glob(self.data_dir + '/frbcat*.csv'),
                     key=os.path.getctime)
-            print(f)
+            pprint(f"Using {f.split('/')[-1]}")
             self.df = pd.read_csv(f)
 
     def clean(self):

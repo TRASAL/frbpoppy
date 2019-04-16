@@ -50,7 +50,7 @@ class StandardCosmicPops:
                                W_v=0.6911,
                                dm_host_model='normal',
                                dm_host_mu=100,
-                               dm_host_sigma=0,
+                               dm_host_sigma=200,
                                dm_igm_index=1000,
                                dm_igm_sigma=None,
                                dm_mw_model='ne2001',
@@ -59,10 +59,10 @@ class StandardCosmicPops:
                                lum_index=0.,
                                n_model='vol_co',
                                alpha=-1.5,
-                               pulse_model='uniform',
+                               pulse_model='lognormal',
                                pulse_range=[1., 1.],
-                               pulse_mu=1.6,
-                               pulse_sigma=1.,
+                               pulse_mu=0.1,
+                               pulse_sigma=0.5,
                                si_mu=-1.4,
                                si_sigma=1.,
                                z_max=2.5)
@@ -91,7 +91,7 @@ class StandardCosmicPops:
                                alpha=-1.5,
                                pulse_model='uniform',
                                pulse_range=[1., 1.],
-                               pulse_mu=1.6,
+                               pulse_mu=0.1,
                                pulse_sigma=0.,
                                si_mu=0.,
                                si_sigma=0.,
@@ -110,7 +110,7 @@ class StandardCosmicPops:
                                W_v=0.6911,
                                dm_host_model='normal',
                                dm_host_mu=100,
-                               dm_host_sigma=0,
+                               dm_host_sigma=200,
                                dm_igm_index=1000,
                                dm_igm_sigma=None,
                                dm_mw_model='ne2001',
@@ -119,10 +119,10 @@ class StandardCosmicPops:
                                lum_index=0.,
                                n_model='vol_co',
                                alpha=self.alpha,
-                               pulse_model='uniform',
+                               pulse_model='lognormal',
                                pulse_range=[1., 1.],
-                               pulse_mu=1.6,
-                               pulse_sigma=1.,
+                               pulse_mu=0.1,
+                               pulse_sigma=0.5,
                                si_mu=-1.4,
                                si_sigma=1.,
                                z_max=2.5)
@@ -145,13 +145,13 @@ class StandardCosmicPops:
                                dm_igm_sigma=None,
                                dm_mw_model='zero',
                                emission_range=[10e6, 10e9],
-                               lum_range=[1e39, 1e39],
+                               lum_range=[1e38, 1e38],
                                lum_index=0.,
                                n_model='vol_co',
                                alpha=self.alpha,
                                pulse_model='uniform',
-                               pulse_range=[0.01, 0.01],
-                               pulse_mu=1.6,
+                               pulse_range=[10, 10],
+                               pulse_mu=0.1,
                                pulse_sigma=1.,
                                si_mu=0.,
                                si_sigma=0.,
@@ -175,13 +175,13 @@ class StandardCosmicPops:
                                dm_igm_sigma=None,
                                dm_mw_model='zero',
                                emission_range=[10e6, 10e9],
-                               lum_range=[10**44.5, 10**44.5],
+                               lum_range=[10**42.5, 10**42.5],
                                lum_index=0.,
                                n_model='vol_co',
                                alpha=-1.5,
                                pulse_model='uniform',
-                               pulse_range=[0.1, 0.1],
-                               pulse_mu=1.6,
+                               pulse_range=[10, 10],
+                               pulse_mu=0.1,
                                pulse_sigma=1.,
                                si_mu=self.gamma,
                                si_sigma=0.,
@@ -219,7 +219,7 @@ def get_cosmic_pop(sort, size, load=True, overwrite=False,
             return unpickle(pop.path)
 
     # Else generate a standard population
-    if pop.sort == 'standard':
+    if pop.sort == 'standard':  # Also known as a complex population
         return pop.standard_pop()
     if pop.sort == 'standard_candle':
         return pop.standard_candle_pop()
@@ -263,7 +263,7 @@ def get_survey_pop(pop, survey, overwrite=False):
     if observe:
 
         if isinstance(pop, str):
-            m = 'No survey population exists, yet no surveying requested'
+            m = f'No survey population at {path}, yet no surveying requested'
             raise ValueError(m)
 
         surv_pop = SurveyPopulation(pop, survey)

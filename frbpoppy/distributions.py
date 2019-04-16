@@ -1,7 +1,7 @@
 """Define distributions from which to get random numbers."""
 import numpy as np
-import random
 import math
+from scipy.stats import truncnorm
 import frbpoppy.precalc as pc
 
 
@@ -113,3 +113,25 @@ def z_from_csmd(z_max=6.0, n_gen=1):
         reject = reject[~mask]
 
     return z
+
+
+def trunc_norm(mu, sigma, n_gen=1, lower=0, upper=np.inf):
+    """Draw from a truncated normal distribution.
+
+    Args:
+        mu (number): Mu
+        sigma (number): Sigma
+        n_gen (number): Number to generate
+        lower (number): Lower limit
+        upper (number): Upper limit
+
+    Returns:
+        array: Numpy of required length
+
+    """
+    if sigma == 0:
+        return np.full(n_gen, mu)
+    left = (lower-mu)/sigma
+    right = (upper-mu)/sigma
+    d = truncnorm.rvs(left, right, loc=mu, scale=sigma, size=n_gen)
+    return d

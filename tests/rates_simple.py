@@ -28,6 +28,7 @@ def simple_rates(make=MAKE, observe=OBSERVE, alphas=ALPHAS, size=SIZE,
                              load=load,
                              overwrite=make,
                              alpha=alpha)
+
         pops.append(pop)
 
     # Survey populations

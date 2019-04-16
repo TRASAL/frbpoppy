@@ -1,7 +1,5 @@
 """Class to generate a cosmic population of FRBs."""
 import numpy as np
-import math
-import random
 
 from frbpoppy.log import pprint
 from frbpoppy.number_density import NumberDensity
@@ -23,7 +21,7 @@ class CosmicPopulation(Population):
                  W_v=0.6911,
                  dm_host_model='normal',
                  dm_host_mu=100,
-                 dm_host_sigma=0,
+                 dm_host_sigma=200,
                  dm_igm_index=1000,
                  dm_igm_sigma=None,
                  dm_mw_model='ne2001',
@@ -35,7 +33,7 @@ class CosmicPopulation(Population):
                  pulse_model='lognormal',
                  pulse_range=[0.1, 10],
                  pulse_mu=0.1,
-                 pulse_sigma=1.,
+                 pulse_sigma=0.5,
                  si_mu=-1.4,
                  si_sigma=1.,
                  z_max=2.5):
@@ -159,11 +157,13 @@ class CosmicPopulation(Population):
 
         # Dispersion measure of the host (Tendulkar)
         if self.dm_host_model == 'normal':
-            frbs.dm_host = np.random.normal(self.dm_host_mu,
-                                            self.dm_host_sigma)
+            frbs.dm_host = dis.trunc_norm(self.dm_host_mu,
+                                          self.dm_host_sigma,
+                                          n_gen)
         elif self.dm_host_model == 'lognormal':
             frbs.dm_host = np.random.lognormal(self.dm_host_mu,
-                                               self.dm_host_sigma)
+                                               self.dm_host_sigma,
+                                               n_gen)
 
         frbs.dm_host /= (1 + frbs.z)
 

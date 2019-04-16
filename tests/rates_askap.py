@@ -7,7 +7,7 @@ from rates_complex import complex_rates
 MAKE = False
 OBSERVE = False
 SIZE = 'large'
-SURVEYS = ('htru', 'askap-fly', 'askap-incoh')
+SURVEYS = ['htru', 'askap-fly', 'askap-incoh']
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 
 
