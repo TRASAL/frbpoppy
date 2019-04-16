@@ -337,6 +337,9 @@ class Survey:
         # Convert to Janskys
         s_peak *= 1e26
 
+        # Add degradation factor due to pulse broadening (see Connor 2019)
+        s_peak *= (frbs.w_arr / frbs.w_eff)
+
         return s_peak
 
     def calc_w_eff(self, frbs):
@@ -371,9 +374,11 @@ class Survey:
                 equation for a single pulse.
 
         """
-        # Radiometer equation for single pulse (Dewey et al., 1984)
+        # Radiometer equation for single pulse (Dewey et al., 1984), but
+        # adapted to allow for a degradation factor reducing the peak flux
+        # as a pulse is stretched
         sp = frbs.s_peak
-        snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*frbs.w_eff*1e3)
+        snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*frbs.w_arr*1e3)
         snr /= (frbs.T_tot * self.beta)
         return snr
 

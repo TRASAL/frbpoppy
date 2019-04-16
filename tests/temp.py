@@ -11,6 +11,6 @@ from frbpoppy import Survey, SurveyPopulation, plot, unpickle
 # palfa = unpickle('alpha_large_-2.5_palfa')
 # plot(perfect, palfa, frbcat=False)
 
-large = unpickle('alpha_large_-2.5_palfa')
+large = unpickle('alpha_large_-2.5_askap-fly')
 
-plot(large, frbcat=False)
+plot(large, frbcat='askap-fly')

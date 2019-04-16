@@ -11,12 +11,12 @@ from quick import get_cosmic_pop, get_survey_pop
 MAKE = False
 OBSERVE = False
 PLOT = True
-SIZE = 'huge'
+SIZE = 'large'
 TELESCOPES = ['parkes', 'askap']
 
 
 def hist(parameter, bins='lin', n_bins=25):
-    """Bin up a parameter eith in a lin or log space.
+    """Bin up a parameter either in a lin or log space.
 
     Why is this not a standard option in numpy or matplotlib?
 
@@ -71,7 +71,7 @@ def plot_dists(surv_pop, telescope):
 
     dm_frbpoppy = surv_pop.frbs.dm
     pprint(f'Number of detected FRBs: {len(dm_frbpoppy)}')
-    ax1.step(*hist(dm_frbpoppy), where='mid')
+    ax1.step(*hist(dm_frbpoppy), where='mid', linestyle='dashed')
 
     df = Frbcat().df
     dm_frbcat = df[df.telescope == telescope].dm
@@ -91,7 +91,7 @@ def plot_dists(surv_pop, telescope):
     # Plot fluence distributions
     fluence_frbpoppy = surv_pop.frbs.fluence
     ax2.step(*hist(fluence_frbpoppy, bins='log'), where='mid',
-             label='frbpoppy')
+             label='frbpoppy', linestyle='dashed')
 
     fluence_frbcat = df[df.telescope == telescope].fluence
     ax2.step(*hist(fluence_frbcat, bins='log'), where='mid', label='frbcat')

@@ -8,7 +8,7 @@ from quick import get_cosmic_pop
 
 MAKE = False
 SIZE = 'small'
-GAMMAS = [-2, 1]
+GAMMAS = [-1.4, 1]
 
 
 def get_local(make=MAKE, size=SIZE):
@@ -37,7 +37,7 @@ def get_further(gamma, make=MAKE, size=SIZE):
                          gamma=gamma)
 
     if gamma == 1:
-        pop.frbs.lum_bol = np.ones_like(pop.frbs.lum_bol)*10**44
+        pop.frbs.lum_bol = np.ones_like(pop.frbs.lum_bol)*10**43
 
     # Survey populations
     survey = Survey(name='perfect', gain_pattern='perfect', n_sidelobes=0.5)
@@ -89,7 +89,7 @@ def plot_logn_logs(data):
     plt.ylabel('N(>Fluence)')
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlim((1e-3,1e1))
+    plt.xlim((1e-2, 1e2))
     plt.legend()
     plt.tight_layout()
     plt.savefig('plots/logn_logs_abc.pdf')

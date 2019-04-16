@@ -11,7 +11,8 @@ MAKE = True
 OBSERVE = True
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 SURVEYS = ('palfa', 'htru', 'askap-fly')
-SIZE = 'large'
+SIZE = 'small'
+
 
 def complex_rates(make=MAKE, observe=OBSERVE, alphas=ALPHAS, size=SIZE,
                   surveys=SURVEYS, output=False):
@@ -34,7 +35,7 @@ def complex_rates(make=MAKE, observe=OBSERVE, alphas=ALPHAS, size=SIZE,
     rates = defaultdict(list)
 
     for s in surveys:
-
+        
         survey = Survey(name=s, gain_pattern='airy', n_sidelobes=1)
 
         for i, pop in enumerate(pops):
@@ -60,7 +61,6 @@ def complex_rates(make=MAKE, observe=OBSERVE, alphas=ALPHAS, size=SIZE,
     return rates
 
 
-
 def main():
 
     rates = complex_rates(output=True)
@@ -75,6 +75,7 @@ def main():
         plt.legend()
         plt.gca().invert_xaxis()
         plt.tight_layout()
+        plt.grid()
         plt.savefig('./plots/complex_rates.pdf')
 
 

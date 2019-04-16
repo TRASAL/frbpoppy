@@ -9,7 +9,7 @@ from quick import get_cosmic_pop
 
 MAKE = False
 BEAMPATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-8']
-SIZE = 'small'
+SIZE = 'medium'
 
 
 def do_survey():
