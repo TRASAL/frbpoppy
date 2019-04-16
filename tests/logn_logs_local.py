@@ -29,8 +29,7 @@ if MAKE:
                                   pulse_model='uniform',
                                   pulse_range=[1., 1.],
                                   pulse_mu=1.,
-                                  pulse_sigma=0.,
-                                  repeat=0.)
+                                  pulse_sigma=0.)
     population.name = 'test'
 
     # Setup a survey
@@ -63,8 +62,8 @@ alpha, alpha_err, norm = surv_pop.calc_logn_logs(parameter='fluence',
 
 print(alpha, alpha_err, norm)
 xs = 10**((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)
-xs = xs[xs>=min_p]
-xs = xs[xs<=max_p]
+xs = xs[xs >= min_p]
+xs = xs[xs <= max_p]
 ys = [norm*x**(alpha) for x in xs]
 
 

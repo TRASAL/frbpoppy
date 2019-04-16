@@ -56,17 +56,7 @@ df.rename(columns=convert, inplace=True)
 df.set_index('Survey', inplace=True)
 df = df.T
 
-
 def convert_to_latex(df):
-    """Convert a Pandas Dataframe to a Latex string.
-
-    Args:
-        df (DataFrame): Table
-
-    Returns:
-        str: String of a Latex-ized DataFrame
-
-    """
     n_cols = df.shape[1]
 
     s = ['\\begin{tabular}{' + 'c'*(n_cols+2) + '}',
