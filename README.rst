@@ -26,9 +26,6 @@ How can I install it?
 
    Macs should also be supported, however no tests have been done on Windows.
 
-   *If receiving an ASCII error, this is an error from upstream plotting library: contact me on how to fix it.*
-
-
 ******************
 How do I use it?
 ******************
