@@ -1,4 +1,5 @@
 """Replicate middle plot of figure 3 of Niino (2018).
+
 This figure compares input luminosity vs apparent luminosity for a variety of
 cases.
 """
@@ -6,8 +7,8 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 
-from frbpoppy import CosmicPopulation, Adapt, Survey, SurveyPopulation
-from frbpoppy import unpickle, plot, Frbcat
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+from frbpoppy import unpickle
 import frbpoppy.distributions as dis
 
 CREATE = False
@@ -64,7 +65,8 @@ if OBSERVE:
             pop[n] = unpickle(f'sc-{n}')
 
         # Create Survey
-        perfect = Survey('perfect-small', gain_pattern='gaussian', n_sidelobes=8)
+        perfect = Survey('perfect-small', gain_pattern='gaussian',
+                         n_sidelobes=8)
 
         # Observe populations
         pop_obs[n] = SurveyPopulation(pop[n], perfect)

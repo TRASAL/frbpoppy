@@ -53,7 +53,7 @@
 <p>Class to generate a cosmic population of FRBs.</p>
 <dl class="class">
 <dt>
-<em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=69.6, W_m=0.286, W_v=0.714, dm_host_model='normal', dm_host_mu=100, dm_host_sigma=0, dm_igm_index=1200, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+50], lum_index=0, n_model='sfr', alpha=-1.5, pulse_model='lognormal', pulse_range=[0.1, 10], pulse_mu=1.6, pulse_sigma=1.0, si_mu=-1.4, si_sigma=1.0, z_max=2.5</em><span class="sig-paren">)</span></dt>
+<em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=67.74, W_m=0.3089, W_v=0.6911, dm_host_model='normal', dm_host_mu=100, dm_host_sigma=200, dm_igm_index=1000, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+45], lum_index=0, n_model='sfr', alpha=-1.5, pulse_model='lognormal', pulse_range=[0.1, 10], pulse_mu=0.1, pulse_sigma=0.5, si_mu=-1.4, si_sigma=1.0, z_max=2.5</em><span class="sig-paren">)</span></dt>
 <dd><p>Generate a cosmic FRB population.</p>
 </dd></dl>
 
@@ -248,7 +248,7 @@ thesis (2016), found here: <a class="reference external" href="http://hdl.handle
 
 <dl class="method">
 <dt>
-<code class="descname">dm_smear</code><span class="sig-paren">(</span><em>frbs</em>, <em>dm_err=0.2</em><span class="sig-paren">)</span></dt>
+<code class="descname">dm_smear</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate delay in pulse across a channel due to dm smearing.</p>
 <p>Formula’s based on ‘Handbook of Pulsar Astronomy” by Duncan Lorimer
 &amp; Michael Kramer, section A2.4. Note the power of the forefactor has
@@ -257,23 +257,11 @@ changed due to the central frequency being given in MHz.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>frbs</strong> (<a class="reference internal" href="frbpoppy.html#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRB object with a dm attribute</li>
-<li><strong>dm_err</strong> (<em>float</em>) – Error on dispersion measure. Defaults to 0.2</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<a class="reference internal" href="frbpoppy.html#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRB object with a dm attribute</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
-<dt>Time of delay [ms] at central band</dt>
-<dd><p class="first last">frequency, with its error assuming a 20% uncertainty in the
-dispersion measure</p>
-</dd>
-</dl>
-</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Time of delay [ms] at central band frequency</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">t_dm, t_dm_err (arrays)</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">t_dm (array)</td>
 </tr>
 </tbody>
 </table>
@@ -388,7 +376,6 @@ for debugging purposes. Defaults to True.</li>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="frbpoppy.html">All Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-adapt_pop">adapt_pop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-cosmic_pop">cosmic_pop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-distributions">distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_hist">do_hist</a></li>

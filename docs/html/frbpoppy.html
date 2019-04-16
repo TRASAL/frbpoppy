@@ -41,157 +41,12 @@
             
   <div class="section" id="all-modules">
 <h1>All Modules<a class="headerlink" href="#all-modules" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-adapt_pop">
-<span id="adapt-pop"></span><h2>adapt_pop<a class="headerlink" href="#module-adapt_pop" title="Permalink to this headline">¶</a></h2>
-<p>Set of functions which adapt a population.</p>
-<p>TODO: Update to new style of pop.frbs = numpy array</p>
-<dl class="class">
-<dt id="adapt_pop.Adapt">
-<em class="property">class </em><code class="descclassname">adapt_pop.</code><code class="descname">Adapt</code><span class="sig-paren">(</span><em>pop</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Adapt a population.</p>
-<dl class="method">
-<dt id="adapt_pop.Adapt.dm_host">
-<code class="descname">dm_host</code><span class="sig-paren">(</span><em>dm</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.dm_host" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adapt the default dispersion measure of an frb.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dm</strong> (<em>int</em>) – Dispersion measure host</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Population with new parameters</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">pop (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="adapt_pop.Adapt.dm_igm">
-<code class="descname">dm_igm</code><span class="sig-paren">(</span><em>slope</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.dm_igm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adapt the slope of the intergalactic dispersion measure.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>slope</strong> (<em>int</em>) – Dispersion measure slope</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Population with new parameters</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">pop (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="adapt_pop.Adapt.freq">
-<code class="descname">freq</code><span class="sig-paren">(</span><em>freq_min</em>, <em>freq_max</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.freq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adapt the range of frequencies over which an frb emits.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>freq_min</strong> (<em>int</em>) – Minimum frequency</li>
-<li><strong>freq_max</strong> (<em>int</em>) – Maximum frequency</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pop (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="adapt_pop.Adapt.lum_bol">
-<code class="descname">lum_bol</code><span class="sig-paren">(</span><em>lum_min</em>, <em>lum_max</em>, <em>lum_pow</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.lum_bol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adapt the range of luminosities over which an frb can be emitted.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>lum_min</strong> (<em>int</em>) – Minimum luminosity</li>
-<li><strong>lum_max</strong> (<em>int</em>) – Maximum luminosity</li>
-<li><strong>lum_pow</strong> (<em>int</em>) – Power of the luminosity slope</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pop (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="adapt_pop.Adapt.si">
-<code class="descname">si</code><span class="sig-paren">(</span><em>si_mu</em>, <em>si_sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.si" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adapt the population’s mean spectral index and the standard deviation.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>si_mu</strong> (<em>float</em>) – Mean spectral index</li>
-<li><strong>si_sigma</strong> (<em>float</em>) – Mean standard deviation of the spectral index</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pop (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="adapt_pop.Adapt.w_int">
-<code class="descname">w_int</code><span class="sig-paren">(</span><em>w_int_min</em>, <em>w_int_max</em><span class="sig-paren">)</span><a class="headerlink" href="#adapt_pop.Adapt.w_int" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adapt the pulse width of a population.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>w_int_min</strong> (<em>float</em>) – Minimum pulse width [ms]</li>
-<li><strong>w_int_max</strong> (<em>float</em>) – Maximum pulse width [ms]</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population with new parameters</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pop (<a class="reference internal" href="#population.Population" title="population.Population">Population</a>)</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-</dd></dl>
-
-</div>
 <div class="section" id="module-cosmic_pop">
 <span id="cosmic-pop"></span><h2>cosmic_pop<a class="headerlink" href="#module-cosmic_pop" title="Permalink to this headline">¶</a></h2>
 <p>Class to generate a cosmic population of FRBs.</p>
 <dl class="class">
 <dt id="cosmic_pop.CosmicPopulation">
-<em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=69.6, W_m=0.286, W_v=0.714, dm_host_model='normal', dm_host_mu=100, dm_host_sigma=0, dm_igm_index=1200, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+50], lum_index=0, n_model='sfr', alpha=-1.5, pulse_model='lognormal', pulse_range=[0.1, 10], pulse_mu=1.6, pulse_sigma=1.0, si_mu=-1.4, si_sigma=1.0, z_max=2.5</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=67.74, W_m=0.3089, W_v=0.6911, dm_host_model='normal', dm_host_mu=100, dm_host_sigma=200, dm_igm_index=1000, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+45], lum_index=0, n_model='sfr', alpha=-1.5, pulse_model='lognormal', pulse_range=[0.1, 10], pulse_mu=0.1, pulse_sigma=0.5, si_mu=-1.4, si_sigma=1.0, z_max=2.5</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">frbpoppy.population.Population</span></code></p>
 <p>Generate a cosmic FRB population.</p>
 </dd></dl>
@@ -220,6 +75,33 @@ be created by taking setting power to zero.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Random variable picked from power law distribution</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="distributions.trunc_norm">
+<code class="descclassname">distributions.</code><code class="descname">trunc_norm</code><span class="sig-paren">(</span><em>mu</em>, <em>sigma</em>, <em>n_gen=1</em>, <em>lower=0</em>, <em>upper=inf</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.trunc_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw from a truncated normal distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mu</strong> (<em>number</em>) – Mu</li>
+<li><strong>sigma</strong> (<em>number</em>) – Sigma</li>
+<li><strong>n_gen</strong> (<em>number</em>) – Number to generate</li>
+<li><strong>lower</strong> (<em>number</em>) – Lower limit</li>
+<li><strong>upper</strong> (<em>number</em>) – Upper limit</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Numpy of required length</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
@@ -310,7 +192,7 @@ for debugging purposes. Defaults to True.</li>
 <p>Do things with frbcat.</p>
 <dl class="class">
 <dt id="frbcat.Frbcat">
-<em class="property">class </em><code class="descclassname">frbcat.</code><code class="descname">Frbcat</code><span class="sig-paren">(</span><em>frbpoppy=True</em>, <em>one_per_frb=False</em>, <em>repeat_bursts=True</em>, <em>repeaters=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">frbcat.</code><code class="descname">Frbcat</code><span class="sig-paren">(</span><em>frbpoppy=True</em>, <em>one_per_frb=False</em>, <em>repeat_bursts=True</em>, <em>repeaters=True</em>, <em>update=False</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Do things with the frbcat.</p>
 <p>Mostly used for playing nicely with frbpoppy. Get the pandas dataframe
@@ -335,7 +217,7 @@ with Frbcat().df</p>
 
 <dl class="method">
 <dt id="frbcat.Frbcat.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>internet=True</em>, <em>save=True</em>, <em>local=False</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.get" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get</code><span class="sig-paren">(</span><em>internet=False</em>, <em>save=True</em>, <em>local=False</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get frbcat from online or from a local file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -385,8 +267,8 @@ with Frbcat().df</p>
 <dl class="method">
 <dt id="frbcat.Frbcat.urls_to_df">
 <code class="descname">urls_to_df</code><span class="sig-paren">(</span><em>endings</em>, <em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.urls_to_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use Series to loop over multiple webpages and concatenate them to a
-single DataFrame</p>
+<dd><p>Use Series to loop over multiple webpages.</p>
+<p>Proceed to concatenate them to a single DataFrame</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -444,7 +326,7 @@ single DataFrame</p>
 <p>…as in converting coordinates, calculating DM etc.</p>
 <dl class="class">
 <dt id="galacticops.Redshift">
-<em class="property">class </em><code class="descclassname">galacticops.</code><code class="descname">Redshift</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.Redshift" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">galacticops.</code><code class="descname">Redshift</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.Redshift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Class for converting redshift to other distance measures.</p>
 <dl class="method">
@@ -469,7 +351,7 @@ single DataFrame</p>
 
 <dl class="function">
 <dt id="galacticops.dist_to_z">
-<code class="descclassname">galacticops.</code><code class="descname">dist_to_z</code><span class="sig-paren">(</span><em>dist</em>, <em>H_0=69.6</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.dist_to_z" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">galacticops.</code><code class="descname">dist_to_z</code><span class="sig-paren">(</span><em>dist</em>, <em>H_0=67.74</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.dist_to_z" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate redshift from a distance in Gpc.</p>
 <p>Only holds for z &lt;= 2. Formulas from ‘An Introduction to Modern
 Astrophysics (2nd Edition)’ by Bradley W. Carroll, Dale A. Ostlie.
@@ -480,7 +362,7 @@ Astrophysics (2nd Edition)’ by Bradley W. Carroll, Dale A. Ostlie.
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>dist</strong> (<em>float</em>) – Distance [Gpc].</li>
-<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 69.6</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 67.74</li>
 </ul>
 </td>
 </tr>
@@ -524,7 +406,7 @@ Astrophysics (2nd Edition)’ by Bradley W. Carroll, Dale A. Ostlie.
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Dispersion measure of intergalactic medium [pc/cm^3]</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#adapt_pop.Adapt.dm_igm" title="adapt_pop.Adapt.dm_igm">dm_igm</a> (float)</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dm_igm (float)</p>
 </td>
 </tr>
 </tbody>
@@ -761,7 +643,7 @@ Defaults to 1400 MHz</li>
 
 <dl class="function">
 <dt id="galacticops.z_to_d_approx">
-<code class="descclassname">galacticops.</code><code class="descname">z_to_d_approx</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=69.6</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.z_to_d_approx" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">galacticops.</code><code class="descname">z_to_d_approx</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=67.74</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.z_to_d_approx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate distance in Gpc from a redshift.</p>
 <p>Only holds for z &lt;= 2. Formulas from ‘An Introduction to Modern
 Astrophysics (2nd Edition)’ by Bradley W. Carroll, Dale A. Ostlie.
@@ -772,7 +654,7 @@ Astrophysics (2nd Edition)’ by Bradley W. Carroll, Dale A. Ostlie.
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>z</strong> (<em>float</em>) – Redshift</li>
-<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 69.6</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 67.74</li>
 </ul>
 </td>
 </tr>
@@ -802,7 +684,7 @@ Astrophysics (2nd Edition)’ by Bradley W. Carroll, Dale A. Ostlie.
 <p>Group together various number density descriptors.</p>
 <dl class="class">
 <dt id="number_density.NumberDensity">
-<em class="property">class </em><code class="descclassname">number_density.</code><code class="descname">NumberDensity</code><span class="sig-paren">(</span><em>model='vol_co'</em>, <em>z_max=6.0</em>, <em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em>, <em>alpha=-1.5</em><span class="sig-paren">)</span><a class="headerlink" href="#number_density.NumberDensity" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">number_density.</code><code class="descname">NumberDensity</code><span class="sig-paren">(</span><em>model='vol_co'</em>, <em>z_max=6.0</em>, <em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em>, <em>alpha=-1.5</em><span class="sig-paren">)</span><a class="headerlink" href="#number_density.NumberDensity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Class for cosmic number density.</p>
 <dl class="method">
@@ -1064,7 +946,7 @@ or give the population name</td>
 <p>Create a lookup tables for redshift and the NE2001 dispersion measure.</p>
 <dl class="class">
 <dt id="precalc.CSMDTable">
-<em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">CSMDTable</code><span class="sig-paren">(</span><em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.CSMDTable" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">CSMDTable</code><span class="sig-paren">(</span><em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.CSMDTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Create/use a stellar mass density lookup table for the FRB number density.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1072,9 +954,9 @@ or give the population name</td>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 69.6</li>
-<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter. Defaults to 0.286</li>
-<li><strong>W_v</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum. Defaults to 0.714</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 67.74</li>
+<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter. Defaults to 0.3089</li>
+<li><strong>W_v</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum. Defaults to 0.6911</li>
 </ul>
 </td>
 </tr>
@@ -1114,7 +996,7 @@ or give the population name</td>
 
 <dl class="class">
 <dt id="precalc.DistanceTable">
-<em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">DistanceTable</code><span class="sig-paren">(</span><em>H_0=69.6</em>, <em>W_m=0.286</em>, <em>W_v=0.714</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">DistanceTable</code><span class="sig-paren">(</span><em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Create/use a lookup table for comoving distance, volume &amp; redshift.</p>
 <p>Create a list of tuples to lookup the corresponding redshift for a comoving
@@ -1128,9 +1010,9 @@ table, and save the table for later runs.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 69.6 km/s/Mpc</li>
-<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter. Defaults to 0.286</li>
-<li><strong>W_k</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum. Defaults to 0.714</li>
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 67.74 km/s/Mpc</li>
+<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter. Defaults to 0.3089</li>
+<li><strong>W_k</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum. Defaults to 0.6911</li>
 </ul>
 </td>
 </tr>
@@ -1440,7 +1322,7 @@ thesis (2016), found here: <a class="reference external" href="http://hdl.handle
 
 <dl class="method">
 <dt id="survey.Survey.dm_smear">
-<code class="descname">dm_smear</code><span class="sig-paren">(</span><em>frbs</em>, <em>dm_err=0.2</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.dm_smear" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dm_smear</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.dm_smear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate delay in pulse across a channel due to dm smearing.</p>
 <p>Formula’s based on ‘Handbook of Pulsar Astronomy” by Duncan Lorimer
 &amp; Michael Kramer, section A2.4. Note the power of the forefactor has
@@ -1449,23 +1331,11 @@ changed due to the central frequency being given in MHz.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>frbs</strong> (<a class="reference internal" href="#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRB object with a dm attribute</li>
-<li><strong>dm_err</strong> (<em>float</em>) – Error on dispersion measure. Defaults to 0.2</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<a class="reference internal" href="#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRB object with a dm attribute</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
-<dt>Time of delay [ms] at central band</dt>
-<dd><p class="first last">frequency, with its error assuming a 20% uncertainty in the
-dispersion measure</p>
-</dd>
-</dl>
-</p>
-</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Time of delay [ms] at central band frequency</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">t_dm, t_dm_err (arrays)</p>
-</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">t_dm (array)</td>
 </tr>
 </tbody>
 </table>

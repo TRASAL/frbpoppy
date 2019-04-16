@@ -1,15 +1,6 @@
 All Modules
 ===========
 
-
-adapt\_pop
----------------------------
-
-.. automodule:: adapt_pop
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 cosmic\_pop
 ---------------------------
 

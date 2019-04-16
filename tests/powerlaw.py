@@ -1,3 +1,4 @@
+"""Check a powerlaw implementation generates the right numbers."""
 import numpy as np
 import matplotlib.pyplot as plt
 

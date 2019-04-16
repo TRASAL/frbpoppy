@@ -1,5 +1,4 @@
 """Plot the change in DM distributions due to differing beampatterns."""
-from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 
