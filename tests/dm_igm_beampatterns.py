@@ -3,9 +3,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from frbpoppy import CosmicPopulation, Adapt, Survey, SurveyPopulation
-from frbpoppy import unpickle, plot, Frbcat
-import frbpoppy.distributions as dis
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+from frbpoppy import unpickle
 
 CREATE = False
 OBSERVE = True
@@ -17,26 +16,26 @@ if CREATE:
 
     # Generate population with standard candles
     pop = CosmicPopulation(n_per_day*days,
-                              days=days,
-                              name='simple',
-                              dm_host_model='normal',
-                              dm_host_mu=0,
-                              dm_host_sigma=0,
-                              dm_igm_index=1200,
-                              dm_igm_sigma=0,
-                              dm_mw_model='zero',
-                              emission_range=[10e6, 10e9],
-                              lum_range=[1e36, 1e36],
-                              lum_index=0,
-                              n_model='sfr',
-                              pulse_model='uniform',
-                              pulse_range=[1., 1.],
-                              pulse_mu=1.,
-                              pulse_sigma=0.,
-                              repeat=0.,
-                              si_mu=0.,
-                              si_sigma=0.,
-                              z_max=2.5)
+                           days=days,
+                           name='simple',
+                           dm_host_model='normal',
+                           dm_host_mu=0,
+                           dm_host_sigma=0,
+                           dm_igm_index=1200,
+                           dm_igm_sigma=0,
+                           dm_mw_model='zero',
+                           emission_range=[10e6, 10e9],
+                           lum_range=[1e36, 1e36],
+                           lum_index=0,
+                           n_model='sfr',
+                           pulse_model='uniform',
+                           pulse_range=[1., 1.],
+                           pulse_mu=1.,
+                           pulse_sigma=0.,
+                           repeat=0.,
+                           si_mu=0.,
+                           si_sigma=0.,
+                           z_max=2.5)
     pop.save()
 
 pop_obs = {}
