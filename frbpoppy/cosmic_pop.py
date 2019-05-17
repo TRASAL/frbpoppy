@@ -36,7 +36,8 @@ class CosmicPopulation(Population):
                  pulse_sigma=0.5,
                  si_mu=-1.4,
                  si_sigma=1.,
-                 z_max=2.5):
+                 z_max=2.5,
+                 generate=True):
         """Generate a popuation of FRBs.
 
         Args:
@@ -68,6 +69,7 @@ class CosmicPopulation(Population):
             si_mu (float): Mean spectral index.
             si_sigma (float): Standard deviation spectral index.
             z_max (float): Maximum redshift.
+            generate (bool): Whether to create a population
 
         Returns:
             Population: Population of FRBs.
@@ -103,6 +105,12 @@ class CosmicPopulation(Population):
         self.W_v = W_v
         self.z_max = z_max
 
+        # Whether to start generating a Cosmic Population
+        if generate:
+            self.generate()
+
+    def generate(self):
+        """Create a CosmicPopulation."""
         # Cosmology calculations
         r = go.Redshift(self.z_max,
                         H_0=self.H_0,
@@ -128,15 +136,16 @@ class CosmicPopulation(Population):
         frbs = self.frbs
 
         # Add random directional coordinates
-        frbs.gl = np.random.random(n_gen) * 360.0 - 180
-        frbs.gb = np.degrees(np.arcsin(np.random.random(n_gen)))
+        r = np.random.random
+        frbs.gl = r(self.n_gen).astype(np.float32) * 360.0 - 180
+        frbs.gb = np.degrees(np.arcsin(r(self.n_gen).astype(np.float32)))
         frbs.gb[::2] *= -1
 
         # Convert
         frbs.ra, frbs.dec = go.lb_to_radec(frbs.gl, frbs.gb)
 
         # Draw from number density
-        frbs.z, frbs.dist_co = n_den(n_gen)
+        frbs.z, frbs.dist_co = n_den(self.n_gen)
 
         # Get the proper distance
         dist_pr = frbs.dist_co/(1+frbs.z)
@@ -159,11 +168,11 @@ class CosmicPopulation(Population):
         if self.dm_host_model == 'normal':
             frbs.dm_host = dis.trunc_norm(self.dm_host_mu,
                                           self.dm_host_sigma,
-                                          n_gen)
+                                          self.n_gen).astype(np.float32)
         elif self.dm_host_model == 'lognormal':
             frbs.dm_host = np.random.lognormal(self.dm_host_mu,
                                                self.dm_host_sigma,
-                                               n_gen)
+                                               self.n_gen).astype(np.float32)
 
         frbs.dm_host /= (1 + frbs.z)
 
@@ -172,10 +181,12 @@ class CosmicPopulation(Population):
 
         # Get a random intrinsic pulse width [ms]
         if self.w_model == 'lognormal':
-            frbs.w_int = np.random.lognormal(self.w_mu, self.w_sigma, n_gen)
+            frbs.w_int = np.random.lognormal(self.w_mu, self.w_sigma,
+                                             self.n_gen).astype(np.float32)
 
         if self.w_model == 'uniform':
-            frbs.w_int = np.random.uniform(self.w_min, self.w_max, n_gen)
+            frbs.w_int = np.random.uniform(self.w_min, self.w_max,
+                                           self.n_gen).astype(np.float32)
 
         # Calculate the pulse width upon arrival to Earth
         frbs.w_arr = frbs.w_int*(1+frbs.z)
@@ -184,12 +195,13 @@ class CosmicPopulation(Population):
         frbs.lum_bol = dis.powerlaw(self.lum_min,
                                     self.lum_max,
                                     self.lum_pow,
-                                    n_gen)
+                                    self.n_gen).astype(np.float64)
 
         # Add spectral index
-        frbs.si = np.random.normal(si_mu, si_sigma, n_gen)
+        frbs.si = np.random.normal(self.si_mu, self.si_sigma,
+                                   self.n_gen).astype(np.float32)
 
-        pprint('Finished')
+        pprint(f'Finished generating {self.name} population')
 
 
 if __name__ == '__main__':

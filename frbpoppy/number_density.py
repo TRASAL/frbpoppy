@@ -52,7 +52,7 @@ class NumberDensity:
         """Draw from a sloped distribution to create a logNlogS slope."""
         vol_co = (self.maxi*np.random.random(n_gen))**(1/self.power)  # [Gpc]
         z, dist_co, _ = self.dt(vol_co=vol_co)
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_vol_co(self, n_gen=1):
         """Use constant number density of sources per comoving volume.
@@ -61,16 +61,16 @@ class NumberDensity:
         """
         vol_co = self.vol_co_max*np.random.random(n_gen)  # [Gpc]
         z, dist_co, _ = self.dt(vol_co=vol_co)
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_sfr(self, n_gen=1):
         """Get sources to follow star forming rate."""
         z = dis.z_from_sfr(z_max=self.z_max, n_gen=n_gen)
         _, dist_co, _ = self.dt(z=z)
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_smd(self, n_gen=1):
         """Get sources to follow stellar mass density."""
         z = dis.z_from_csmd(z_max=self.z_max, n_gen=n_gen)
         _, dist_co, _ = self.dt(z=z)
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)

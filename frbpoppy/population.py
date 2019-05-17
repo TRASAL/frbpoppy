@@ -58,6 +58,7 @@ class Population:
         # Store FRB sources
         self.frbs = FRBs()
         self.n_frbs = 0
+        self.uid = None  # Unique Identifier
 
     def __str__(self):
         """Define how to print a population object to a console."""
@@ -99,6 +100,9 @@ class Population:
         else:
             file_name = self.name.lower()
 
+        if self.uid:
+            file_name += f'_{self.uid}'
+
         path = paths.populations() + file_name
 
         # Set file types
@@ -135,12 +139,13 @@ class Population:
         output.close()
 
 
-def unpickle(filename=None):
+def unpickle(filename=None, uid=None):
     """Quick function to unpickle a population.
 
     Args:
         filename (str, optional): Define the path to the pickled population,
             or give the population name
+        uid (str, optional): Unique Identifier
 
     Returns:
         Population: Population class
@@ -153,6 +158,8 @@ def unpickle(filename=None):
         # Find standard population files
         try:
             name = filename.lower()
+            if uid:
+                name += f'_{uid}'
             p = paths.populations() + f'{name}.p'
             f = open(p, 'rb')
         except FileNotFoundError:

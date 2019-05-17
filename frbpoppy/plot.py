@@ -114,6 +114,8 @@ class Plot():
                     continue
                 if '.' in f:
                     name = f.split('/')[-1].split('.')[0]
+                    if '_for_plottting' in name:
+                        name = name.split('_for_plottting')[0]
                 else:
                     name = f
             if df is not None:

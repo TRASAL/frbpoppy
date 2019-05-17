@@ -523,4 +523,4 @@ def ioka_dm_igm(z, slope=1200, sigma=None):
     """
     if sigma is None:
         sigma = 0.2*slope*z
-    return np.random.normal(slope*z, sigma)
+    return np.random.normal(slope*z, sigma).astype(np.float32)

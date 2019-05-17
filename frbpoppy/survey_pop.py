@@ -91,6 +91,10 @@ class SurveyPopulation(Population):
 
         self.rate.det = len(frbs.snr)
 
+        self.calc_rates(survey)
+
+    def calc_rates(self, survey):
+        """Calculate the relative detection rates."""
         # Calculate scaling factors for rates
         area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
         f_area = (survey.beam_size * self.rate.tot())

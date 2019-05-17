@@ -230,8 +230,8 @@ class Survey:
 
         Returns:
             t_dm (array): Time of delay [ms] at central band frequency
-        """
 
+        """
         t_dm = 8.297616e6 * self.bw_chan * frbs.dm * (self.central_freq)**-3
         return t_dm
 
@@ -289,7 +289,7 @@ class Survey:
         i = nl / 4.
 
         index = 180*i.astype(int) + j.astype(int)
-        T_sky_haslam = np.take(T_sky_list, index)
+        T_sky_haslam = np.take(T_sky_list, index).astype(np.float32)
 
         # scale temperature
         # Assuming dominated by syncrotron radiation
@@ -323,24 +323,23 @@ class Survey:
         sp = frbs.si + 1
         sm = frbs.si - 1
 
-        # Convert distance in Gpc to metres
-        dist = frbs.dist_co * 1e9 * 3.0856775814913673 * 1e16
+        # Convert distance in Gpc to 10^25 metres
+        dist = frbs.dist_co * 3.085678
+        dist = dist.astype(np.float64)
 
-        # Convert luminosity to Watts
-        lum = frbs.lum_bol * 1e-7
+        # Convert luminosity in 10^7 Watts such that s_peak will be in Janksys
+        lum = frbs.lum_bol * 1e-31
+        lum = lum.astype(np.float64)
 
         freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
         nom = lum * (1+frbs.z)**sm * freq_frac
         den = 4*np.pi*dist**2 * (f_high**sp - f_low**sp)
         s_peak = nom/den
 
-        # Convert to Janskys
-        s_peak *= 1e26
-
         # Add degradation factor due to pulse broadening (see Connor 2019)
         s_peak *= (frbs.w_arr / frbs.w_eff)
 
-        return s_peak
+        return s_peak.astype(np.float32)
 
     def calc_w_eff(self, frbs):
         """Calculate effective pulse width [ms].

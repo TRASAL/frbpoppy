@@ -32,7 +32,8 @@ def plot(*pops, files=[], frbcat=True, show=True,
             if type(pop) == str:
                 name = pop
             else:
-                name = pop.name.lower()
+                pop.name = pop.name.lower() + '_for_plottting'
+                name = pop.name
                 pop.save()
 
             # Save location

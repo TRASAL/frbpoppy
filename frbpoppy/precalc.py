@@ -39,8 +39,8 @@ class NE2001Table:
         c = conn.cursor()
 
         # Set array of coordinates
-        gls = np.arange(-180., 180. + self.step, self.step)
-        gbs = np.arange(-90., 90. + self.step, self.step)
+        gls = np.arange(-180., 180. + self.step, self.step).round(1)
+        gbs = np.arange(-90., 90. + self.step, self.step).round(1)
         dist = 0.1  # [Gpc]
 
         # Create database
@@ -53,12 +53,9 @@ class NE2001Table:
         pprint('Creating a DM lookup table (only needs to be done once)')
 
         for gl in gls:
-            gl = round(gl, 1)
             for gb in gbs:
-                gb = round(gb, 1)
 
                 dm_mw = go.ne2001_dist_to_dm(dist, gl, gb)
-
                 r = (gl, gb, dm_mw)
                 results.append(r)
 
@@ -103,7 +100,7 @@ class NE2001Table:
         query = 'select dm_mw from dm where gl=? and gb=? limit 1'
 
         for i, gl in enumerate(gal):
-            dm_mw[i] = c.execute(query, [gl, gab[i]]).fetchone()[0]
+            dm_mw[i] = c.execute(query, [str(gl), str(gab[i])]).fetchone()[0]
 
         # Close database
         conn.close()

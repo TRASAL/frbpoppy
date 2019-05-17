@@ -1,20 +1,23 @@
-"""Short example of how frbpoppy works."""
-from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
+@profile
+def main():
 
-PLOT = True
+    import numpy as np
+    from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 
-# Generate an FRB population
-cosmic_pop = CosmicPopulation(10000, days=7, name='example')
+    pop = CosmicPopulation(int(1e4))
+    s = Survey('apertif')
+    surv_pop = SurveyPopulation(pop, s)
+    del pop
+    tot = 0
 
-# Setup a survey
-survey = Survey('apertif')
+    for attr in surv_pop.frbs.__dict__.keys():
+        parm = getattr(surv_pop.frbs, attr)
+        if type(parm) is np.ndarray:
+            print(attr, parm.dtype, parm.nbytes)
+            tot += parm.nbytes
 
-# Observe the FRB population
-survey_pop = SurveyPopulation(cosmic_pop, survey)
+    print(tot)
 
-# Check the detection rates
-print(survey_pop.rates())
 
-# Plot populations
-if PLOT:
-    plot(cosmic_pop, survey_pop, mute=False)
+if __name__ == '__main__':
+    main()
