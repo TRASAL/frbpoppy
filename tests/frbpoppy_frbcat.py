@@ -15,7 +15,7 @@ SIZE = 'large'
 TELESCOPES = ['parkes', 'askap']
 
 
-def hist(parameter, bins='lin', n_bins=25):
+def hist(parameter, bins='lin', n_bins=25, norm=True):
     """Bin up a parameter either in a lin or log space.
 
     Why is this not a standard option in numpy or matplotlib?
@@ -24,6 +24,7 @@ def hist(parameter, bins='lin', n_bins=25):
         parameter (array): To be binned
         bins (str): Either 'lin' or 'log'
         n_bins (int): Number of bins. Can be overriden internally
+        norm (bool): Whether to normalise
 
     Returns:
         tuple: bin centers, values per bin
@@ -33,10 +34,13 @@ def hist(parameter, bins='lin', n_bins=25):
     parameter = parameter[~np.isnan(parameter)]
 
     # Determine number of bins
-    if len(parameter) < 50:
+    if n_bins != 25:
+        pass
+    elif len(parameter) < 50:
         n_bins = 15
-    if len(parameter) > 500:
+    elif len(parameter) > 500:
         n_bins = 50
+
 
     # Determine type of binning
     if bins == 'lin':
@@ -48,7 +52,9 @@ def hist(parameter, bins='lin', n_bins=25):
 
     # Bin
     n, bins = np.histogram(parameter, bins=bins)
-    n = n/max(n)  # Normalise
+
+    if norm:
+        n = n/max(n)  # Normalise
     bin_centres = (bins[:-1] + bins[1:]) / 2
 
     return bin_centres, n

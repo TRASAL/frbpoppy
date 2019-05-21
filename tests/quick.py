@@ -1,6 +1,6 @@
 """Use standard populations to speed up calculation times."""
 import os
-from frbpoppy import CosmicPopulation, SurveyPopulation, paths, unpickle
+from frbpoppy import CosmicPopulation, SurveyPopulation, paths, unpickle, pprint
 
 
 class StandardCosmicPops:
@@ -229,6 +229,8 @@ def get_cosmic_pop(sort, size, load=True, overwrite=False,
         return pop.gamma_pop()
     if pop.sort == 'alpha_simple':
         return pop.alpha_simple_pop()
+    else:
+        pprint('Population type not recognized')
 
 
 def get_survey_pop(pop, survey, overwrite=False):

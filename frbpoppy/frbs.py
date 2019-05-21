@@ -33,6 +33,7 @@ class FRBs:
 
         # Detection properties
         self.fluence = None
+        self.offset = None
         self.s_peak = None
         self.snr = None
         self.t_dm = 0

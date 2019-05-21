@@ -65,8 +65,9 @@ class SurveyPopulation(Population):
         frbs.s_peak = survey.calc_s_peak(frbs, f_low=f_min, f_high=f_max)
 
         # Account for beam offset
-        int_pro, _ = survey.intensity_profile(n_gen=len(frbs.s_peak))
+        int_pro, offset = survey.intensity_profile(n_gen=len(frbs.s_peak))
         frbs.s_peak *= int_pro
+        frbs.offset = offset / 60.  # In degrees
 
         # Calculate fluence [Jy*ms]
         frbs.fluence = frbs.s_peak * frbs.w_eff
@@ -112,6 +113,7 @@ class SurveyPopulation(Population):
 
     def rates(self, scale_area=True, scale_time=False):
         """Scale the rates by the beam area and time."""
+        r = self.rate
         if scale_area:
             r = scale(self.rate, area=True)
         if scale_time:
