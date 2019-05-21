@@ -107,6 +107,7 @@ tests/**/*.pkl
 tests/**/*.png
 tests/**/*.pdf
 tests/**/**
+tests/**/*.gif
 
 temp\.csv
 publication/plots/
