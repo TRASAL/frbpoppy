@@ -11,10 +11,10 @@ SURVEYS = ('palfa', 'htru', 'askap-fly')
 def compare_surveys(surv1, surv2, alpha):
     """Event rate surv1 / Event rate surv2 for an alpha."""
     omega = surv1.beam_size_fwhm/surv2.beam_size_fwhm
-    T_sys = surv1.T_sys/surv2.T_sys
+    T_rec = surv1.T_rec/surv2.T_rec
     gain = surv1.gain/surv2.gain
     beta = surv1.beta/surv2.beta
-    SEFD = T_sys*beta/gain
+    SEFD = T_rec*beta/gain
     bw = surv1.bw/surv2.bw
     S_min = surv1.snr_limit/surv2.snr_limit
 

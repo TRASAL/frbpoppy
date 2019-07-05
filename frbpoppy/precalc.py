@@ -110,7 +110,7 @@ class NE2001Table:
 
 class DistanceTable:
     """
-    Create/use a lookup table for comoving distance, volume & redshift.
+    Create/use a lookup table for comoving distance, volume, redshift etc.
 
     Create a list of tuples to lookup the corresponding redshift for a comoving
     distance [Gpc] (or the other way around). Uses formulas from
@@ -179,175 +179,116 @@ class DistanceTable:
         zs = np.arange(0, self.z_max+self.step, self.step)
 
         # Create database
-        c.execute('create table distances (z real, dist real, vol real)')
+        t = 'real'
+        par = f'(z {t}, dist {t}, vol {t}, dvol {t}, cdf_sfr {t}, cdf_smd {t})'
+        s = f'create table distances {par}'
+        c.execute(s)
 
         results = []
 
-        pprint('At redshift:')
+        conv = go.Redshift(zs, H_0=H_0, W_m=W_m, W_v=W_v)
+        dists = conv.dist_co()
+        vols = conv.vol_co()
 
-        for z in zs:
-            # Comoving distance [Gpc]
-            dist = go.Redshift(z, H_0=H_0, W_m=W_m, W_v=W_v)
-            results.append((z, dist.dist_co(), dist.vol_co()))
+        # Get dV
+        dvols = np.zeros_like(vols)
+        dvols[1:] = np.diff(vols)
 
-            # Give an update on the progress
-            sys.stdout.write('\r{}'.format(z))
-            sys.stdout.flush()
+        # Get pdf sfr
+        pdf_sfr = sfr(zs)*dvols
+        cdf_sfr = np.cumsum(pdf_sfr)  # Unnormalized
+        cdf_sfr /= cdf_sfr[-1]
+
+        # Get pdf csmd
+        pdf_smd = smd(zs, H_0=H_0, W_m=W_m, W_v=W_v)*dvols
+        cdf_smd = np.cumsum(pdf_smd)  # Unnormalized
+        cdf_smd /= cdf_smd[-1]
+
+        results = np.stack((zs, dists, vols, dvols, cdf_sfr, cdf_smd)).T
 
         # Save results to database
-        c.executemany('insert into distances values (?,?,?)', results)
+        data = map(tuple, results.tolist())
+        c.executemany('insert into distances values (?,?,?,?,?,?)', data)
 
         # Make for easier searching
+        # I don't really understand SQL index names...
         c.execute('create index ix on distances (z)')
         c.execute('create index ixx on distances (dist)')
         c.execute('create index ixxx on distances (vol)')
+        c.execute('create index ixxxx on distances (dvol)')
+        c.execute('create index ixxxxx on distances (cdf_sfr)')
+        c.execute('create index ixxxxxx on distances (cdf_smd)')
 
         # Save
         conn.commit()
 
         pprint('\nFinished distance table')
 
-    def lookup(self, z=None, dist_co=None, vol_co=None):
+    def lookup(self, z=None, dist_co=None, vol_co=None, dvol_co=None,
+               cdf_sfr=None, cdf_smd=None):
         """Look up associated values with input values."""
         # Connect to database
         conn = sqlite3.connect(self.file_name)
         c = conn.cursor()
 
-        # Check what's being looked up
-        if z is not None:
-            in_par = 'z'
-            dist_co = np.ones_like(z)
-            vol_co = np.ones_like(z)
-        elif dist_co is not None:
-            in_par = 'dist'
-            z = np.ones_like(dist_co)
-            vol_co = np.ones_like(dist_co)
-        else:
-            in_par = 'vol'
-            z = np.ones_like(vol_co)
-            dist_co = np.ones_like(vol_co)
+        # Check what's being looked up, set all other keywords to same length
+        kw = {'z': z,
+              'dist':  dist_co,
+              'vol': vol_co,
+              'dvol': dvol_co,
+              'cdf_sfr': cdf_sfr,
+              'cdf_smd': cdf_smd}
+
+        for key, value in kw.items():
+            if value is not None:
+                in_par = key
+                break
+
+        for key, value in kw.items():
+            if key != in_par:
+                kw[key] = np.ones_like(kw[in_par])
+
+        keys = list(kw.keys())
 
         # Search database
         query = f'select * from distances where {in_par} > ? limit 1'
 
-        if in_par == 'z':
-            for i, r in enumerate(z):
-                _, dist_co[i], vol_co[i] = c.execute(query, [r]).fetchone()
-        if in_par == 'dist':
-            for i, r in enumerate(dist_co):
-                z[i], _, vol_co[i] = c.execute(query, [r]).fetchone()
-        if in_par == 'vol':
-            for i, r in enumerate(vol_co):
-                z[i], dist_co[i], _ = c.execute(query, [r]).fetchone()
+        for i, r in enumerate(kw[in_par]):
+            d = c.execute(query, [r]).fetchone()
+            for ii, key in enumerate(keys):
+                if key == in_par:
+                    continue
+
+                kw[key][i] = d[ii]
 
         # Close database
         conn.close()
 
-        return z, dist_co, vol_co
+        return list(kw.values())
 
 
-class CSMDTable:
+def sfr(z):
+    """Return the number density of star forming rate at redshift z.
+
+    Follows Madau & Dickinson (2014), eq. 15. For more info see
+    https://arxiv.org/pdf/1403.0007.pdf
     """
-    Create/use a stellar mass density lookup table for the FRB number density.
+    return (1+z)**2.7/(1+((1+z)/2.9)**5.6)
 
-    Args:
-        H_0 (float, optional): Hubble parameter. Defaults to 67.74
-        W_m (float, optional): Omega matter. Defaults to 0.3089
-        W_v (float, optional): Omega vacuum. Defaults to 0.6911
 
+def smd(z, H_0=67.74, W_m=0.3089, W_v=0.6911):
+    """Return the number density of Stellar Mass Density at redshift z.
+
+    Follows Madau & Dickinson (2014), eq. 2 & 15. For more info see
+    https://arxiv.org/pdf/1403.0007.pdf
     """
+    def integral(z):
+        z1 = z + 1
+        return z1**1.7/(1+(z1/2.9)**5.6)*(1/(H_0*(W_m*z1**3+W_v)**0.5))
 
-    def __init__(self, H_0=67.74, W_m=0.3089, W_v=0.6911):
-        """Initializing."""
-        self.H_0 = H_0
-        self.W_m = W_m
-        self.W_v = W_v
+    def csmd(z):
+        return 0.01095*quad(integral, z, np.inf)[0]
 
-        self.set_file_name()
+    vec_csmd = np.vectorize(csmd)
 
-        # Setup database
-        self.db = False
-        self.rounding = 5
-        self.step = 1e-5
-        if os.path.exists(self.file_name):
-            self.db = True
-        else:
-            self.create_table()
-
-    def set_file_name(self):
-        """Determine filename."""
-        uni_mods = os.path.join(paths.models(), 'universe/')
-        self.file_name = uni_mods + 'csmd.db'
-
-    def create_table(self):
-        """Create a CSMD SQL table."""
-        # Connect to database
-        conn = sqlite3.connect(self.file_name)
-        c = conn.cursor()
-
-        # Set array of coordinates
-        zs = np.arange(0., 6. + self.step, self.step)
-
-        # Create database
-        self.c.execute('create table csmd (z real, csmd real)')
-
-        results = []
-
-        H_0 = self.H_0
-        W_m = self.W_m
-        W_v = self.W_v
-
-        def integral(z):
-            z1 = z + 1
-            return z1**1.7/(1+(z1/2.9)**5.6)*(1/(H_0*(W_m*z1**3+W_v)**0.5))
-
-        def csmd(z):
-            return 0.01095*quad(integral, z, np.inf)[0]
-
-        vec_csmd = np.vectorize(csmd)
-
-        # Give an update on the progress
-        pprint('Creating a CSMD lookup table (only needs to be done once)')
-
-        csmds = vec_csmd(zs)
-
-        results = list(zip(np.around(zs, decimals=self.rounding), csmds))
-
-        # Save results to database
-        c.executemany('insert into csmd values (?,?)', results)
-
-        # Make for easier searching
-        c.execute('create index ix on csmd (z, csmd)')
-
-        # Save
-        conn.commit()
-
-    def lookup(self, z):
-        """Look up associated values with input values.
-
-        Args:
-            z (array): Redshifts
-
-        Returns:
-            array: Stellar mass density at given redshift
-
-        """
-        # Connect to database
-        conn = sqlite3.connect(self.file_name)
-        c = conn.cursor()
-
-        smd = np.ones_like(z)
-
-        # Round values
-        z = np.round(z, self.rounding)
-
-        # Search database
-        query = 'select csmd from csmd where z=? limit 1'
-
-        for i, r in enumerate(z):
-            smd[i] = c.execute(query, [r]).fetchone()[0]
-
-        # Close database
-        conn.close()
-
-        return smd
+    return vec_csmd(z)

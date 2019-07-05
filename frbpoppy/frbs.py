@@ -39,7 +39,7 @@ class FRBs:
         self.t_dm = 0
         self.t_scat = 0
         self.T_sky = 0
-        self.T_tot = 0
+        self.T_sys = 0
         self.w_eff = None
 
     def apply(self, mask):

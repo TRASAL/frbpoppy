@@ -66,7 +66,7 @@ class Survey:
         self.gain = survey['antenna gain (K/Jy)']
         self.t_obs = survey['integration time (s)']
         self.t_samp = survey['sampling time (ms)']
-        self.T_sys = survey['system temperature (K)']
+        self.T_rec = survey['receiver temperature (K)']
         self.central_freq = int(survey['centre frequency (MHz)'])
         self.bw = survey['bandwidth (MHz)']
         self.bw_chan = survey['channel bandwidth (MHz)']
@@ -254,8 +254,8 @@ class Survey:
     def calc_Ts(self, frbs):
         """Set temperatures for frbs."""
         T_sky = self.calc_T_sky(frbs)
-        T_tot = self.T_sys + T_sky
-        return T_sky, T_tot
+        T_sys = self.T_rec + T_sky
+        return T_sky, T_sys
 
     def calc_T_sky(self, frbs):
         """
@@ -378,7 +378,7 @@ class Survey:
         # as a pulse is stretched
         sp = frbs.s_peak
         snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*frbs.w_arr*1e3)
-        snr /= (frbs.T_tot * self.beta)
+        snr /= (frbs.T_sys * self.beta)
         return snr
 
     def calc_scint(self, frbs):
@@ -467,7 +467,7 @@ class Survey:
             w_eff = self.max_w_eff
 
         # Line of constant S/N
-        self.s_peak_limit = self.snr_limit*self.T_sys*self.beta
+        self.s_peak_limit = self.snr_limit*self.T_rec*self.beta
         self.s_peak_limit /= self.gain*math.sqrt(self.n_pol*self.bw*1e3)
 
         # Line of constant fluence

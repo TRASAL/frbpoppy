@@ -1,7 +1,6 @@
 """Group together various number density descriptors."""
 import random
 import numpy as np
-import frbpoppy.distributions as dis
 import frbpoppy.precalc as pc
 
 
@@ -29,7 +28,11 @@ class NumberDensity:
 
         # Convert various maximum distance values
         self.dt = pc.DistanceTable(H_0=H_0, W_m=W_m, W_v=W_v).lookup
-        _, self.dist_co_max, self.vol_co_max = self.dt(z=np.array([z_max]))
+        m = self.dt(z=np.array([z_max]))
+        self.dist_co_max = m[1]
+        self.vol_co_max = m[2]
+        self.cdf_sfr_max = m[-2]
+        self.cdf_smd_max = m[-1]
         self.dist_co_max = self.dist_co_max[0]
         self.vol_co_max = self.vol_co_max[0]
         self.alpha = alpha
@@ -51,8 +54,10 @@ class NumberDensity:
     def sloped_dist(self, n_gen=1):
         """Draw from a sloped distribution to create a logNlogS slope."""
         vol_co = (self.maxi*np.random.random(n_gen))**(1/self.power)  # [Gpc]
-        z, dist_co, _ = self.dt(vol_co=vol_co)
-        return z.astype(np.float32), dist_co.astype(np.float32)
+        d = self.dt(vol_co=vol_co)
+        z = d[0]
+        dist_co = d[1]
+        return z, dist_co
 
     def from_vol_co(self, n_gen=1):
         """Use constant number density of sources per comoving volume.
@@ -60,17 +65,94 @@ class NumberDensity:
         Can be influenced by changing alpha.
         """
         vol_co = self.vol_co_max*np.random.random(n_gen)  # [Gpc]
-        z, dist_co, _ = self.dt(vol_co=vol_co)
-        return z.astype(np.float32), dist_co.astype(np.float32)
+        d = self.dt(vol_co=vol_co)
+        z = d[0]
+        dist_co = d[1]
+        return z, dist_co
 
     def from_sfr(self, n_gen=1):
-        """Get sources to follow star forming rate."""
-        z = dis.z_from_sfr(z_max=self.z_max, n_gen=n_gen)
-        _, dist_co, _ = self.dt(z=z)
-        return z.astype(np.float32), dist_co.astype(np.float32)
+        """Get sources to follow star forming rate.
+
+        Return a random redshift for sources following the Star Formation Rate.
+
+        Follows Madau & Dickinson (2014), eq. 15. For more info see
+        https://arxiv.org/pdf/1403.0007.pdf
+        """
+        sampling = np.random.uniform(0., self.cdf_sfr_max, size=n_gen)
+        d = self.dt(cdf_sfr=sampling)
+        z = d[0]
+        dist_co = d[1]
+        return z, dist_co
 
     def from_smd(self, n_gen=1):
-        """Get sources to follow stellar mass density."""
-        z = dis.z_from_csmd(z_max=self.z_max, n_gen=n_gen)
-        _, dist_co, _ = self.dt(z=z)
-        return z.astype(np.float32), dist_co.astype(np.float32)
+        """
+        Return a random redshift for sources following Stellar Mass Density.
+
+        Follows Madau & Dickinson (2014), eq. 2 & 15. For more info see
+        https://arxiv.org/pdf/1403.0007.pdf
+        """
+        sampling = np.random.uniform(0., self.cdf_smd_max, size=n_gen)
+        d = self.dt(cdf_smd=sampling)
+        z = d[0]
+        dist_co = d[1]
+        return z, dist_co
+
+# def z_from_sfr(z_max=2.5, n_gen=1):
+#     """
+#     Return a random redshift for sources following the Star Formation Rate.
+#
+#     Follows Madau & Dickinson (2014), eq. 15. For more info see
+#     https://arxiv.org/pdf/1403.0007.pdf
+#
+#     """
+#     dt = pc.DistanceTable(H_0=H_0, W_m=W_m, W_v=W_v).lookup
+#
+#     def sfr(z):
+#         _, _, _, dvol_co = dt(z=z)
+#         return (1+z)**2.7/(1+((1+z)/2.9)**5.6) * dvol_co
+#
+#     def sample(n_gen):
+#         return np.random.uniform(0, z_max, (n_gen,))
+#
+#     def accept(x):
+#         return np.random.rand(x.size)*9.0 <= sfr(x)
+#
+#     z = sample(n_gen)
+#     mask = accept(z)
+#     reject, = np.where(~mask)
+#     while reject.size > 0:
+#         fill = sample(reject.size)
+#         mask = accept(fill)
+#         z[reject[mask]] = fill[mask]
+#         reject = reject[~mask]
+#
+#     return z
+#
+#
+# def z_from_csmd(z_max=6.0, n_gen=1):
+#     """
+#     Return a random redshift for sources following the Stellar Mass Density.
+#
+#     Follows Madau & Dickinson (2014), eq. 2 & 15. For more info see
+#     https://arxiv.org/pdf/1403.0007.pdf
+#
+#     """
+#     csmd = pc.CSMDTable().lookup
+#
+#     def sample(n_gen):
+#         return np.random.uniform(0, z_max, (n_gen,))
+#
+#     def accept(x):
+#         return np.random.rand(x.size)*0.00065 <= csmd(x)
+#
+#     # Accept - rejct algorithm
+#     z = sample(n_gen)
+#     mask = accept(z)
+#     reject, = np.where(~mask)
+#     while reject.size > 0:
+#         fill = sample(reject.size)
+#         mask = accept(fill)
+#         z[reject[mask]] = fill[mask]
+#         reject = reject[~mask]
+#
+#     return z

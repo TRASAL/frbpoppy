@@ -54,7 +54,7 @@ class SurveyPopulation(Population):
             frbs.t_scat = survey.calc_scat(frbs.dm)
 
         # Calculate total temperature
-        frbs.T_sky, frbs.T_tot = survey.calc_Ts(frbs)
+        frbs.T_sky, frbs.T_sys = survey.calc_Ts(frbs)
 
         # Calculate effective pulse width
         frbs.w_eff = survey.calc_w_eff(frbs)

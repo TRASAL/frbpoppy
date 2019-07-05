@@ -57,64 +57,6 @@ def powerlaw(low, high, power, n_gen=1):
     return pl
 
 
-def z_from_sfr(z_max=2.5, n_gen=1):
-    """
-    Return a random redshift for sources following the Star Formation Rate.
-
-    Follows Madau & Dickinson (2014), eq. 15. For more info see
-    https://arxiv.org/pdf/1403.0007.pdf
-
-    """
-    def sfr(z):
-        return (1+z)**2.7/(1+((1+z)/2.9)**5.6)
-
-    def sample(n_gen):
-        return np.random.uniform(0, z_max, (n_gen,))
-
-    def accept(x):
-        return np.random.rand(x.size)*9.0 <= sfr(x)
-
-    z = sample(n_gen)
-    mask = accept(z)
-    reject, = np.where(~mask)
-    while reject.size > 0:
-        fill = sample(reject.size)
-        mask = accept(fill)
-        z[reject[mask]] = fill[mask]
-        reject = reject[~mask]
-
-    return z
-
-
-def z_from_csmd(z_max=6.0, n_gen=1):
-    """
-    Return a random redshift for sources following the Stellar Mass Density.
-
-    Follows Madau & Dickinson (2014), eq. 2 & 15. For more info see
-    https://arxiv.org/pdf/1403.0007.pdf
-
-    """
-    csmd = pc.CSMDTable().lookup
-
-    def sample(n_gen):
-        return np.random.uniform(0, z_max, (n_gen,))
-
-    def accept(x):
-        return np.random.rand(x.size)*0.00065 <= csmd(x)
-
-    # Accept - rejct algorithm
-    z = sample(n_gen)
-    mask = accept(z)
-    reject, = np.where(~mask)
-    while reject.size > 0:
-        fill = sample(reject.size)
-        mask = accept(fill)
-        z[reject[mask]] = fill[mask]
-        reject = reject[~mask]
-
-    return z
-
-
 def trunc_norm(mu, sigma, n_gen=1, lower=0, upper=np.inf):
     """Draw from a truncated normal distribution.
 
