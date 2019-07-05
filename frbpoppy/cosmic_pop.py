@@ -159,11 +159,11 @@ class CosmicPopulation(Population):
         if self.dm_host_model == 'normal':
             frbs.dm_host = dis.trunc_norm(self.dm_host_mu,
                                           self.dm_host_sigma,
-                                          n_gen)
+                                          n_gen).astype(np.float64)
         elif self.dm_host_model == 'lognormal':
             frbs.dm_host = np.random.lognormal(self.dm_host_mu,
                                                self.dm_host_sigma,
-                                               n_gen)
+                                               n_gen).astype(np.float64)
 
         frbs.dm_host /= (1 + frbs.z)
 

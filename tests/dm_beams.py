@@ -7,7 +7,7 @@ from frbpoppy import Survey, SurveyPopulation
 from quick import get_cosmic_pop
 
 MAKE = False
-BEAMPATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-8']
+BEAMPATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
 SIZE = 'medium'
 
 
@@ -40,17 +40,17 @@ def plot_dm(pops):
 
     f, (ax1) = plt.subplots(1, 1)
 
-    for beam in pops:
+    for i, beam in enumerate(pops):
         pop = pops[beam]
         dm = pop.frbs.dm
         s_peak = pop.frbs.s_peak
 
-        limit = 1e-9
+        limit = 1e-10
         dm = dm[(s_peak > limit)]
 
         print(f'{len(dm)} FRBs in graph of {pop.name}')
 
-        n, bins = np.histogram(dm, bins=50)
+        n, bins = np.histogram(dm, bins=75)
         n = n/max(n)
         bincentres = (bins[:-1] + bins[1:]) / 2
         ax1.step(bincentres, n, where='mid', label=beam)

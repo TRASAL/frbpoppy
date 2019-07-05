@@ -373,13 +373,13 @@ class Redshift:
         cosmology calculator.
 
         Args:
-            z (float): Redshift
+            z (array): Redshift
             self.H_0 (float, optional): Hubble parameter.
             self.W_m (float, optional): Omega matter.
             self.W_v (float, optional): Omega vacuum.
 
         Returns:
-            float: One of the distance measures [Gpc], or comoving volume from
+            array: One of the distance measures [Gpc], or comoving volume from
                 Earth to the source [Gpc^3]
 
         """
@@ -406,7 +406,7 @@ class Redshift:
         for i in range(n):
             a = self.az+(1-self.az)*(i+0.5)/n
             s = sum([self.W_k, self.W_m/a, self.W_r/(a*a), self.W_v*a*a])
-            adot = math.sqrt(s)
+            adot = np.sqrt(s)
             self.dcmr += 1/(a*adot)
 
         self.dcmr = (1.-self.az)*self.dcmr/n
@@ -417,23 +417,24 @@ class Redshift:
 
     def dist_lum(self):
         """Calculate the corresponding luminosity distance [Gpc]."""
-        if not self.dc_mpc:
+        if self.dc_mpc is None:
             self.dist_co()
 
         # Calculate luminosity distance
-        ratio = 1.
-        x = math.sqrt(abs(self.W_k))*self.dcmr
+        ratio = np.ones_like(self.dcmr)
+        x = np.sqrt(abs(self.W_k))*self.dcmr
 
-        if x > 0.1:
-            if self.W_k > 0:
-                ratio = 0.5*(math.exp(x)-math.exp(-x))/x
-            else:
-                ratio = math.sin(x)/x
+        mask = (x > 0.1)
+
+        if self.W_k > 0:
+            ratio[mask] = 0.5*(np.exp(x[mask])-np.exp(-x[mask]))/x[mask]
         else:
-            y = x*x
-            if self.W_k < 0:
-                y = -y
-            ratio = 1. + y/6. + y*y/120.
+            ratio[mask] = np.sin(x[mask])/x[mask]
+
+        y = x*x
+        if self.W_k < 0:
+            y = -y
+        ratio[~mask] = 1. + y[~mask]/6. + y[~mask]*y[~mask]/120.
 
         dcmt = ratio*self.dcmr
         da = self.az*dcmt
@@ -444,21 +445,24 @@ class Redshift:
 
     def vol_co(self):
         """Calculate the corresponding comoving volume [Gpc^3]."""
-        if not self.dl_mpc:
+        if self.dl_mpc is None:
             self.dist_lum()
 
-        ratio = 1.00
+        ratio = np.ones_like(self.dcmr)
         x = math.sqrt(abs(self.W_k))*self.dcmr
-        if x > 0.1:
-            if self.W_k > 0:
-                ratio = (0.125*(math.exp(2.*x)-math.exp(-2.*x))-x/2.)/(x**3/3)
-            else:
-                ratio = (x/2. - math.sin(2.*x)/4.)/(x**3/3)
+
+        mask = (x > 0.1)
+
+        if self.W_k > 0:
+            n = (0.125*(np.exp(2.*x[mask])-np.exp(-2.*x[mask]))-x[mask]/2.)
+            ratio[mask] = n/(x[mask]**3/3)
         else:
-            y = x*x
-            if self.W_k < 0:
-                y = -y
-            ratio = 1. + y/5. + (2./105.)*y*y
+            ratio[mask] = (x[mask]/2. - np.sin(2.*x[mask])/4.)/(x[mask]**3/3)
+
+        y = x*x
+        if self.W_k < 0:
+            y = -y
+        ratio[~mask] = 1. + y[~mask]/5. + (2./105.)*y[~mask]*y[~mask]
 
         v_cm = ratio*self.dcmr**3/3
         self.v_gpc = 4.*math.pi*((1e-3*self.c/self.H_0)**3)*v_cm
