@@ -57,7 +57,7 @@ class NumberDensity:
         d = self.dt(vol_co=vol_co)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_vol_co(self, n_gen=1):
         """Use constant number density of sources per comoving volume.
@@ -68,7 +68,7 @@ class NumberDensity:
         d = self.dt(vol_co=vol_co)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_sfr(self, n_gen=1):
         """Get sources to follow star forming rate.
@@ -82,7 +82,7 @@ class NumberDensity:
         d = self.dt(cdf_sfr=sampling)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_smd(self, n_gen=1):
         """
@@ -95,64 +95,4 @@ class NumberDensity:
         d = self.dt(cdf_smd=sampling)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
-
-# def z_from_sfr(z_max=2.5, n_gen=1):
-#     """
-#     Return a random redshift for sources following the Star Formation Rate.
-#
-#     Follows Madau & Dickinson (2014), eq. 15. For more info see
-#     https://arxiv.org/pdf/1403.0007.pdf
-#
-#     """
-#     dt = pc.DistanceTable(H_0=H_0, W_m=W_m, W_v=W_v).lookup
-#
-#     def sfr(z):
-#         _, _, _, dvol_co = dt(z=z)
-#         return (1+z)**2.7/(1+((1+z)/2.9)**5.6) * dvol_co
-#
-#     def sample(n_gen):
-#         return np.random.uniform(0, z_max, (n_gen,))
-#
-#     def accept(x):
-#         return np.random.rand(x.size)*9.0 <= sfr(x)
-#
-#     z = sample(n_gen)
-#     mask = accept(z)
-#     reject, = np.where(~mask)
-#     while reject.size > 0:
-#         fill = sample(reject.size)
-#         mask = accept(fill)
-#         z[reject[mask]] = fill[mask]
-#         reject = reject[~mask]
-#
-#     return z
-#
-#
-# def z_from_csmd(z_max=6.0, n_gen=1):
-#     """
-#     Return a random redshift for sources following the Stellar Mass Density.
-#
-#     Follows Madau & Dickinson (2014), eq. 2 & 15. For more info see
-#     https://arxiv.org/pdf/1403.0007.pdf
-#
-#     """
-#     csmd = pc.CSMDTable().lookup
-#
-#     def sample(n_gen):
-#         return np.random.uniform(0, z_max, (n_gen,))
-#
-#     def accept(x):
-#         return np.random.rand(x.size)*0.00065 <= csmd(x)
-#
-#     # Accept - rejct algorithm
-#     z = sample(n_gen)
-#     mask = accept(z)
-#     reject, = np.where(~mask)
-#     while reject.size > 0:
-#         fill = sample(reject.size)
-#         mask = accept(fill)
-#         z[reject[mask]] = fill[mask]
-#         reject = reject[~mask]
-#
-#     return z
+        return z.astype(np.float32), dist_co.astype(np.float32)
