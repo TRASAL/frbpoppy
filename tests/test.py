@@ -1,36 +1,50 @@
+"""Test calculating transit times for location on Earth."""
 import numpy as np
 import matplotlib.pyplot as plt
 
-np.set_printoptions(precision=2)
+latitude_obs = 0.  # deg
 
 
-def test_other(n, simple=False):
+def calc_transit_time(lat, dec, unit='deg', beamsize=20626.5):
+    """Calculate total time of an object above horizon.
 
-    # Each column is a burst, each row a source
-    if simple:
-        m = 5
-        times = np.random.random((n, m))
-        max_time = 1
-    else:
-        r = 5.7
-        k = 0.34
-        m = int(round(np.log10(n))*2-1)
-        if m < 1:
-            m = 1
-        print(n, m)
-        # Ensure intra-column dependance
-        times = 86400*r*np.random.weibull(k, (n, m)).astype(np.float32)
-        max_time = 12*60*60
-        plt.yscale('log')
+    Args:
+        lat (float): Latitude of observatory in radians.
+        dec (array): Declination of celestial object in radians.
+        unit (str): 'deg' or 'rad'
+        beamsize (float): Beam size in sq. deg
 
-    times = np.cumsum(times,axis=1)
-    cond = times < max_time
-    times[~cond] = np.nan
-    bursts = ~np.isnan(times)
-    n_bursts = np.count_nonzero(bursts, axis=1)
-    unique, counts = np.unique(n_bursts, return_counts=True)
-    print(dict(zip(unique, counts)))
-    plt.hist(n_bursts, bins=np.linspace(0, m, m+1), density=True)
-    plt.show()
+    Returns:
+        float: Fraction of time above horizon in fractional days
 
-test_other(int(1e6))
+    """
+    if unit == 'deg':
+        lat = np.deg2rad(lat)
+        dec = np.deg2rad(dec)
+
+    # Beamsize to radius in fractional degrees
+    r = np.sqrt(beamsize/np.pi)
+    extra_lim = np.deg2rad(90 - r)
+
+    times = np.ones_like(dec)
+    lim = np.pi/2. - lat
+    always_visible = dec > lim
+    never_visible = dec < -lim
+    sometimes_visible = ((dec > -lim) & (dec < lim))
+
+    sm = sometimes_visible
+    times[sm] = 2*np.rad2deg(np.arccos(-np.tan(dec[sm])*np.tan(lat)))/360.
+
+    times[always_visible] = 1.
+    times[never_visible] = 0.
+
+    return times
+
+
+decs = np.linspace(-90, 90, 100)
+lat = latitude_obs
+times = calc_transit_time(lat, decs)
+plt.ylabel('Fraction of day at which visible')
+plt.xlabel('Declination sources')
+plt.plot(decs, times)
+plt.show()
