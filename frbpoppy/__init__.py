@@ -9,6 +9,7 @@ from .paths import paths
 from .population import Population, unpickle
 from .precalc import *
 from .number_density import NumberDensity
+from .repeater_pop import RepeaterPopulation
 from .survey import Survey
 from .cosmic_pop import CosmicPopulation
 from .survey_pop import SurveyPopulation

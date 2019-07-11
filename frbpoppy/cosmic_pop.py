@@ -109,8 +109,8 @@ class CosmicPopulation(Population):
         if generate:
             self.generate()
 
-    def generate(self):
-        """Create a CosmicPopulation."""
+    def gen_dist(self):
+        """Generate distances."""
         # Cosmology calculations
         r = go.Redshift(self.z_max,
                         H_0=self.H_0,
@@ -129,9 +129,6 @@ class CosmicPopulation(Population):
                               H_0=self.H_0,
                               W_m=self.W_m,
                               W_v=self.W_v).draw
-
-        # Let user know what's happening
-        pprint(f'Generating {self.name} population')
 
         frbs = self.frbs
 
@@ -152,6 +149,10 @@ class CosmicPopulation(Population):
 
         # Convert into galactic coordinates
         frbs.gx, frbs.gy, frbs.gz = go.lb_to_xyz(frbs.gl, frbs.gb, dist_pr)
+
+    def gen_dm(self):
+        """Generate dispersion measures."""
+        frbs = self.frbs
 
         # Dispersion measure of the Milky Way
         if self.dm_mw_model == 'ne2001':
@@ -179,6 +180,9 @@ class CosmicPopulation(Population):
         # Total dispersion measure
         frbs.dm = frbs.dm_mw + frbs.dm_igm + frbs.dm_host
 
+    def gen_w(self):
+        """Generate pulse widths."""
+        frbs = self.frbs
         # Get a random intrinsic pulse width [ms]
         if self.w_model == 'lognormal':
             frbs.w_int = np.random.lognormal(self.w_mu, self.w_sigma,
@@ -191,16 +195,31 @@ class CosmicPopulation(Population):
         # Calculate the pulse width upon arrival to Earth
         frbs.w_arr = frbs.w_int*(1+frbs.z)
 
+    def gen_lum(self):
+        """Gerneate luminosities."""
+        frbs = self.frbs
         # Add bolometric luminosity [erg/s]
         frbs.lum_bol = dis.powerlaw(self.lum_min,
                                     self.lum_max,
                                     self.lum_pow,
                                     self.n_gen).astype(np.float64)
 
+    def gen_si(self):
+        """Generate spectral indices."""
+        frbs = self.frbs
         # Add spectral index
         frbs.si = np.random.normal(self.si_mu, self.si_sigma,
                                    self.n_gen).astype(np.float32)
 
+    def generate(self):
+        """Generate all manner of intrinsic parameters."""
+        # Let user know what's happening
+        pprint(f'Generating {self.name} population')
+        self.gen_dist()
+        self.gen_dm()
+        self.gen_w()
+        self.gen_lum()
+        self.gen_si()
         pprint(f'Finished generating {self.name} population')
 
 

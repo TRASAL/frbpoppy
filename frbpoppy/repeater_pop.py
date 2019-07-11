@@ -25,7 +25,7 @@ class RepeaterPopulation(CosmicPopulation):
         if generate:
             self.generate()
 
-    def gen_times(self):
+    def gen_clustered_times(self):
         """Generate burst times following Oppermann & Pen (2017).
 
         As most bursts will be beyond 12h, it uses a accept-reject algorithm to
@@ -80,6 +80,13 @@ class RepeaterPopulation(CosmicPopulation):
         self.frbs.bursts = ~np.isnan(time)
         self.frbs.time = time
 
+    def gen_regular_times(self):
+        """Generate a series of regular spaced times."""
+        # 24 bursts per day
+        day = np.linspace(0, 1, 24).astype(np.float32)
+        time = np.tile(day, (self.n_gen, 1))
+        self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
+
     def gen_dm(self):
         """Adapt initial DM values for subsequent bursts."""
         pass
@@ -91,7 +98,8 @@ class RepeaterPopulation(CosmicPopulation):
     def generate(self):
         """Gen Cosmic Population then transform into RepeaterPopulation."""
         super(RepeaterPopulation, self).generate()
-        self.gen_times()
+        # self.gen_clustered_times()
+        self.gen_regular_times()
 
 
 if __name__ == '__main__':

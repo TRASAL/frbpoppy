@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-latitude_obs = 0.  # deg
+TEST_TRANSIT = False
 
 
 def calc_transit_time(lat, dec, unit='deg', beamsize=20626.5):
@@ -41,10 +41,20 @@ def calc_transit_time(lat, dec, unit='deg', beamsize=20626.5):
     return times
 
 
-decs = np.linspace(-90, 90, 100)
-lat = latitude_obs
-times = calc_transit_time(lat, decs)
-plt.ylabel('Fraction of day at which visible')
-plt.xlabel('Declination sources')
-plt.plot(decs, times)
-plt.show()
+if TEST_TRANSIT:
+    latitude_obs = 52.  # deg
+    decs = np.linspace(-90, 90, 100)
+    lat = latitude_obs
+    times = calc_transit_time(lat, decs)
+    plt.ylabel('Fraction of day at which visible')
+    plt.xlabel('Declination sources')
+    plt.plot(decs, times)
+    plt.show()
+
+
+def gen_times(n):
+    """Generate n times (ms) for full day."""
+    return np.array([0, 0.25, 0.75]).astype(np.float32)
+
+def fraction_visible():
+    return 0.5
