@@ -32,7 +32,7 @@ def plot(*pops, files=[], frbcat=True, show=True,
             if type(pop) == str:
                 name = pop
             else:
-                pop.name = pop.name.lower() + '_for_plottting'
+                pop.name = pop.name.lower() + '_for_plotting'
                 name = pop.name
                 pop.save()
 
@@ -42,43 +42,43 @@ def plot(*pops, files=[], frbcat=True, show=True,
             files.append(out)
 
     # Command for starting up server
-    command = 'nice -n 19 '
+    command = 'nice -n 19'.split(' ')
 
     if show:
-        command += 'bokeh serve --show'
+        command.extend('bokeh serve --show'.split(' '))
     else:
-        command += 'python3'
+        command.append('python3')
 
     # Command for changing port
     if port != 5006:
-        command += f' --port={port}'
+        command.append(f'--port={port}')
 
     # Add script path
     script = 'plot.py'
     out = os.path.join(os.path.dirname(__file__), script)
-    command += ' ' + out
+    command.append(out)
 
     # For the arguments
-    command += ' --args'
+    command.append('--args')
 
     # Add frbcat
-    command += ' -frbcat'
+    command.append('-frbcat')
     if frbcat is False:
-        command += ' False'
+        command.append('False')
     if frbcat is True:
-        command += ' True'
+        command.append('True')
     elif type(frbcat) == str and len(frbcat) > 0:
-        command += f' {frbcat}'
+        command.append(f'{frbcat}')
 
     # Add in populations
     for f in files:
-        command += ' ' + f
+        command.append(f'"{f}"')
 
     # Let people know what's happening
     pprint('Plotting populations')
 
     if print_command:
-        pprint(command)
+        pprint(' '.join(command))
 
     pprint('Press Ctrl+C to quit')
 
@@ -89,7 +89,7 @@ def plot(*pops, files=[], frbcat=True, show=True,
                 out = f
             else:
                 out = None
-            subprocess.run(command.split(' '), stderr=out, stdout=out)
+            subprocess.run(command, stderr=out, stdout=out)
     except KeyboardInterrupt:
         print(' ')
         sys.exit()

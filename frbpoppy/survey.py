@@ -19,22 +19,27 @@ class Survey:
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
         gain_pattern (str): Set gain pattern
-        sidelobes (int): Number of sidelobes to include
-        equal_area (int/bool): Ensures beam area on sky can be equal to a beam
-            pattern with a max number of sizelobes. If unwanted, set to False
+        n_sidelobes (float): Number of sidelobes to include. Use 0.5 for
+            cutting beam at FWHM
+        pointings (list): List of (RA, Dec) coordinates
+        max_time (float): Maximum time spent surveying [days]
 
     """
 
     def __init__(self,
                  name,
                  gain_pattern='gaussian',
-                 n_sidelobes=0.5):
+                 n_sidelobes=0.5,
+                 pointings=[],
+                 max_time=1):
         """Initializing."""
         # Set up parameters
         self.name = name
         self.gain_pattern = gain_pattern
         self.n_sidelobes = n_sidelobes
-
+        self.pointings = pointings
+        self.max_time = max_time
+        self.pop_type = None
         # Parse survey file
         self.read_survey_parameters()
 
@@ -113,6 +118,38 @@ class Survey:
 
         return mask
 
+    def in_pointings(self, frbs):
+        """Whether within pointing."""
+        # Create mask with False
+        mask = np.zeros_like(frbs.ra, dtype=bool)
+
+        # Check whether FRBs are within pointing regions
+        r = np.sqrt(self.beam_size_fwhm/np.pi)
+        for ra, dec in self.pointings:
+            limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
+            mask[limit_pos] = True
+
+        return mask
+
+    def in_time(self, frbs):
+        """For RepeaterPopulation only."""
+        # Create mask with False
+        mask = np.zeros_like(frbs.time, dtype=bool)
+
+        t_step = self.max_time / len(self.pointings)
+        ts = np.arange(0-t_step, self.max_time, t_step) + t_step
+
+        # Check whether FRBs are within pointing regions
+        r = np.sqrt(self.beam_size_fwhm/np.pi)
+        for i, p in enumerate(self.pointings):
+            ra, dec = p
+            limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
+            limit_pos = limit_pos[:, None]
+            limit_time = ((frbs.time <= ts[i+1]) & (frbs.time >= ts[i]))
+            mask[(limit_pos & limit_time)] = True
+
+        return mask
+
     def max_offset(self, x):
         """Calculate the maximum offset of an FRB in an Airy disk.
 
@@ -148,20 +185,36 @@ class Survey:
 
         return 2/self.fwhm * 60*180/math.pi * arcsin
 
-    def intensity_profile(self, n_gen=1, dimensions=2):
-        """Calculate intensity profile."""
+    def intensity_profile(self, shape=1, dimensions=2, rep_loc='random'):
+        """Calculate intensity profile.
+
+        Args:
+            shape (tuple): Usually the shape of frbs.s_peak
+            dimensions (int): Use a 2D beampattern or a 1D one.
+            rep_loc (str): 'same' or 'random'. Whether repeaters are observed
+                in the same spot or a different spot
+
+        Returns:
+            array, array: intensity profile, offset from beam [arcmin]
+
+        """
         # Calculate Full Width Half Maximum from beamsize
         self.fwhm = 2*math.sqrt(self.beam_size_fwhm/math.pi) * 60  # [arcmin]
         offset = self.fwhm/2  # Radius = diameter/2.
 
+        if rep_loc == 'same':
+            r = r = np.random.random(shape[0])
+        else:
+            r = np.random.random(shape)
+
         if dimensions == 2:  # 2D
-            offset *= np.sqrt(np.random.random(n_gen))
+            offset *= np.sqrt(r)
         elif dimensions == 1:  # 1D
-            offset *= np.random.random(n_gen)
+            offset *= r
 
         # Allow for a perfect beam pattern in which all is detected
         if self.gain_pattern == 'perfect':
-            int_pro = np.ones(n_gen)
+            int_pro = np.ones(shape)
             self.beam_size = self.beam_size_fwhm
             return int_pro, offset
 
@@ -198,11 +251,11 @@ class Survey:
 
             place = paths.models() + f'/beams/{self.gain_pattern}.npy'
             beam_array = np.load(place)
-            shape = beam_array.shape
-            ran_x = np.random.randint(0, shape[0], n_gen)
-            ran_y = np.random.randint(0, shape[1], n_gen)
+            b_shape = beam_array.shape
+            ran_x = np.random.randint(0, b_shape[0], shape)
+            ran_y = np.random.randint(0, b_shape[1], shape)
             int_pro = beam_array[ran_x, ran_y]
-            offset = np.sqrt((ran_x-shape[0]/2)**2 + (ran_y-shape[1]/2)**2)
+            offset = np.sqrt((ran_x-b_shape[0]/2)**2 + (ran_y-b_shape[1]/2)**2)
 
             # Scaling factors to correct for pixel scale
             if self.gain_pattern == 'apertif':  # 1 pixel = 0.94'
@@ -320,24 +373,56 @@ class Survey:
         f_2 *= 1e6  # MHz -> Hz
 
         # Spectral index
-        sp = frbs.si + 1
-        sm = frbs.si - 1
+        si = frbs.si
+        lum_bol = frbs.lum_bol
+        if lum_bol.ndim == si.ndim:
+            pass
+        elif lum_bol.ndim > si.ndim:
+            si = si[:, None]
+        elif lum_bol.ndim < si.ndim:
+            lum_bol = lum_bol[:, None]
+
+        sp = si + 1
+        sm = si - 1
+
+        freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
+
+        z = frbs.z
 
         # Convert distance in Gpc to 10^25 metres
         dist = frbs.dist_co * 3.085678
         dist = dist.astype(np.float64)
 
-        # Convert luminosity in 10^7 Watts such that s_peak will be in Janksys
-        lum = frbs.lum_bol * 1e-31
+        # Convert luminosity in 10^7 Watts such that s_peak will be in Janskys
+        lum = lum_bol * 1e-31
         lum = lum.astype(np.float64)
 
-        freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
-        nom = lum * (1+frbs.z)**sm * freq_frac
+        if lum.ndim > 1:
+            z = z[:, None]
+            dist = dist[:, None]
+
+        nom = lum * (1+z)**sm * freq_frac
         den = 4*np.pi*dist**2 * (f_high**sp - f_low**sp)
+
+        if nom.ndim == den.ndim:
+            pass
+        elif nom.ndim > 1:
+            den = den[:, None]
+
         s_peak = nom/den
 
         # Add degradation factor due to pulse broadening (see Connor 2019)
-        s_peak *= (frbs.w_arr / frbs.w_eff)
+        w_frac = (frbs.w_arr / frbs.w_eff)
+
+        # Dimension conversions
+        if w_frac.ndim == s_peak.ndim:
+            pass
+        elif s_peak.ndim == 1:
+            s_peak = s_peak[:, None]
+        elif w_frac.ndim == 1:
+            w_frac = w_frac[:, None]
+
+        s_peak = s_peak * w_frac
 
         return s_peak.astype(np.float32)
 
@@ -355,15 +440,25 @@ class Survey:
             array: Effective pulse width [ms]
 
         """
-        w_eff = np.sqrt(frbs.w_arr**2 +
-                        frbs.t_dm**2 +
-                        frbs.t_scat**2 +
-                        self.t_samp**2)
+        w_arr = frbs.w_arr
+        t_dm = frbs.t_dm
+        t_scat = frbs.t_scat
+
+        if frbs.w_arr.ndim > 1:
+            t_dm = t_dm[:, None]
+            if isinstance(frbs.t_scat, np.ndarray):
+                t_scat = t_scat[:, None]
+
+        w_eff = np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
         return w_eff
 
     def calc_snr(self, frbs):
         """
         Caculate the SNR of several frbs.
+
+        Radiometer equation for single pulse (Dewey et al., 1984), but
+        adapted to allow for a degradation factor reducing the peak flux
+        as a pulse is stretched
 
         Args:
             frbs (FRBs): FRBs of which to calculate the signal to noise
@@ -373,13 +468,34 @@ class Survey:
                 equation for a single pulse.
 
         """
-        # Radiometer equation for single pulse (Dewey et al., 1984), but
-        # adapted to allow for a degradation factor reducing the peak flux
-        # as a pulse is stretched
         sp = frbs.s_peak
-        snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*frbs.w_arr*1e3)
-        snr /= (frbs.T_sys * self.beta)
+        w_arr = frbs.w_arr
+        T_sys = frbs.T_sys
+
+        # Dimension check
+        if sp.ndim == w_arr.ndim:
+            pass
+        elif sp.ndim == 1:
+            sp = sp[:, None]
+        elif w_arr.ndim == 1:
+            w_arr = w_arr[:, None]
+
+        if (sp.ndim or w_arr.ndim) > 1:
+            T_sys = T_sys[:, None]
+
+        snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
+        snr /= (T_sys * self.beta)
+
         return snr
+
+    def calc_fluence(self, frbs):
+        """Calculate fluence [Jy*ms]."""
+        if frbs.w_eff.ndim == frbs.s_peak.ndim:
+            return frbs.s_peak * frbs.w_eff
+        elif frbs.w_eff.ndim == 1:
+            return frbs.s_peak * frbs.w_eff[:, None]
+        elif frbs.s_peak.ndim == 1:
+            return frbs.s_peak[:, None] * frbs.w_eff
 
     def calc_scint(self, frbs):
         """

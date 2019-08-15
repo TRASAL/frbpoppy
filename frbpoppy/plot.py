@@ -65,8 +65,8 @@ class Plot():
                        'Dispersion Measure - Milky Way (pc/cm^3)': 'dm_mw',
                        'Dispersion Measure (pc/cm^3)': 'dm',
                        'Fluence (Jy*ms)': 'fluence',
-                       'Galactic Latitude (degrees)': 'gb',
-                       'Galactic Longitude (degrees)': 'gl',
+                       'Galactic Latitude (°)': 'gb',
+                       'Galactic Longitude (°)': 'gl',
                        'Galactic X (Gpc)': 'gx',
                        'Galactic Y (Gpc)': 'gy',
                        'Galactic Z (Gpc)': 'gz',
@@ -78,7 +78,7 @@ class Plot():
                        'Right Ascension (°)': 'ra',
                        'Spectral Index': 'si',
                        'Signal to Noise Ratio': 'snr',
-                       'Time (s)': 'time'}
+                       'Time (days)': 'time'}
 
         # Running plotting
         self.set_colours()
@@ -111,30 +111,37 @@ class Plot():
                 try:
                     df = unpickle(f).frbs.to_df()
                 except ValueError:
+                    pprint(f'Unpacking {f} seemed to have failed.')
                     continue
                 if '.' in f:
                     name = f.split('/')[-1].split('.')[0]
-                    if '_for_plottting' in name:
-                        name = name.split('_for_plottting')[0]
+                    if '_for_plotting' in name:
+                        name = name.split('_for_plotting')[0]
                 else:
                     name = f
-            if df is not None:
-                pass
-            else:
+
+            # If things haven't worked
+            if df is None:
                 m = 'Skipping population {} - contains no sources'.format(f)
                 pprint(m)
                 continue
 
             # Downsample population size if it's too large
             if df.shape[0] > 10000:
-                df = df.iloc[::1000]
+                pprint(f'Downsampling population {f} (else too big to plot)')
+                df = df.sample(n=10000)
 
             df['population'] = name
             df['color'] = self.colours[self.n_df]
             df['lum_bol'] = df['lum_bol'] / 1e30  # Sidestepping Bokeh issue
 
-            self.dfs.append(df)
-            self.n_df += 1
+            if df.empty:
+                m = 'Skipping population {} - contains no sources'.format(f)
+                pprint(m)
+                continue
+            else:
+                self.dfs.append(df)
+                self.n_df += 1
 
         # Add on frbcat
         if self.frbcat:
@@ -158,11 +165,11 @@ class Plot():
         """Set up widget details."""
         self.x_axis = Select(title='',
                              options=sorted(self.params.keys()),
-                             value='Galactic Longitude (degrees)')
+                             value='Right Ascension (°)')
 
         self.y_axis = Select(title='',
                              options=sorted(self.params.keys()),
-                             value='Galactic Latitude (degrees)')
+                             value='Declination (°)')
 
     def make_scatter(self):
         """Set up a scatter plot."""
@@ -374,6 +381,7 @@ else:
 # Which files to plot
 files = []
 for a in args:
+    a = a.strip('"')
     if a.endswith('.p'):
         files.append(a)
 

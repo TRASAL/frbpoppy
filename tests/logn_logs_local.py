@@ -26,10 +26,10 @@ if MAKE:
                                   dm_mw_model='zero',
                                   emission_range=[10e6, 10e9],
                                   lum_index=0,
-                                  pulse_model='uniform',
-                                  pulse_range=[1., 1.],
-                                  pulse_mu=1.,
-                                  pulse_sigma=0.)
+                                  w_model='uniform',
+                                  w_range=[1., 1.],
+                                  w_mu=1.,
+                                  w_sigma=0.)
     population.name = 'test'
 
     # Setup a survey

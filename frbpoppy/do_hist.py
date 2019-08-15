@@ -19,7 +19,7 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
     cols = ['ra', 'dec', 'dist_co', 'gb', 'gl', 'gx', 'gy', 'gz', 'z', 'dm',
             'dm_host', 'dm_igm', 'dm_mw', 'lum_bol', 'si', 'w_arr', 'w_int',
             'fluence', 's_peak', 'snr', 't_dm', 'T_sky', 'T_sys',
-            'w_eff']
+            'w_eff', 'time']
     # Determine bin limits
     limits = {}
 

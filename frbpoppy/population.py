@@ -4,6 +4,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
@@ -169,5 +170,22 @@ def unpickle(filename=None, uid=None):
     # Unpickle
     pop = pickle.load(f)
     f.close()
-
     return pop
+
+
+def split_pop(pop, mask):
+    """Split a population.
+
+    Args:
+        pop (Population): Population to be split
+        mask (Numpy): Numpy boolean mask
+
+    Returns:
+        tuple: Tuple of population classes
+
+    """
+    pop_true = deepcopy(pop)
+    pop_false = deepcopy(pop)
+    pop_true.frbs.apply(mask)
+    pop_false.frbs.apply(~mask)
+    return pop_true, pop_false

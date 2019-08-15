@@ -135,36 +135,74 @@ def radec_to_lb(ra, dec, frac=False):
     if not frac:
         ra, dec = frac_deg(ra, dec)
 
-    a = math.radians(ra)
-    d = math.radians(dec)
+    a = np.radians(ra)
+    d = np.radians(dec)
 
     # Coordinates of the galactic north pole (J2000)
-    a_ngp = math.radians(12.9406333 * 15.)
-    d_ngp = math.radians(27.1282500)
-    l_ngp = math.radians(123.9320000)
+    a_ngp = np.radians(12.9406333 * 15.)
+    d_ngp = np.radians(27.1282500)
+    l_ngp = np.radians(123.9320000)
 
-    sd_ngp = math.sin(d_ngp)
-    cd_ngp = math.cos(d_ngp)
-    sd = math.sin(d)
-    cd = math.cos(d)
+    sd_ngp = np.sin(d_ngp)
+    cd_ngp = np.cos(d_ngp)
+    sd = np.sin(d)
+    cd = np.cos(d)
 
     # Calculate galactic longitude
-    y = cd*math.sin(a - a_ngp)
-    x = cd_ngp*sd - sd_ngp*cd*math.cos(a - a_ngp)
-    gl = - math.atan2(y, x) + l_ngp
-    gl = math.degrees(gl) % 360
+    y = cd*np.sin(a - a_ngp)
+    x = cd_ngp*sd - sd_ngp*cd*np.cos(a - a_ngp)
+    gl = - np.arctan2(y, x) + l_ngp
+    gl = np.degrees(gl) % 360
 
     # Shift so in range -180 to 180
-    if gl > 180:
-        gl = -(360 - gl)
+    if isinstance(gl, np.ndarray):
+        gl[gl > 180] = -(360 - gl[gl > 180])
+    else:
+        if gl > 180:
+            gl = -(360 - gl)
 
     # Calculate galactic latitude
-    gb = math.asin(sd_ngp*sd + cd_ngp*cd*math.cos(a - a_ngp))
-    gb = math.degrees(gb) % 360.
-    if gb > 270:
-        gb = -(360 - gb)
+    gb = np.arcsin(sd_ngp*sd + cd_ngp*cd*np.cos(a - a_ngp))
+    gb = np.degrees(gb) % 360
+
+    if isinstance(gb, np.ndarray):
+        gb[gb > 270] = -(360 - gb[gb > 270])
+    else:
+        if gb > 270:
+            gb = -(360 - gb)
 
     return gl, gb
+
+
+def separation(ra_1, dec_1, ra_2, dec_2):
+    """Separation between points on sky [degree].
+
+    Using a special case of the Vincenty formula for an ellipsoid with equal
+    major and minor axes.
+
+    See https://en.wikipedia.org/wiki/Great-circle_distance for more info.
+
+    """
+    # Convert to radians
+    ra_1 = np.deg2rad(ra_1)
+    dec_1 = np.deg2rad(dec_1)
+    ra_2 = np.deg2rad(ra_2)
+    dec_2 = np.deg2rad(dec_2)
+
+    # Shortcuts
+    sdr = np.sin(ra_2 - ra_1)
+    cdr = np.cos(ra_2 - ra_1)
+    cd1 = np.cos(dec_1)
+    cd2 = np.cos(dec_2)
+    sd1 = np.sin(dec_1)
+    sd2 = np.sin(dec_2)
+
+    # Calculation
+    upper = np.sqrt((cd2*sdr)**2 + (cd1*sd2 - sd1*cd2*cdr)**2)
+    lower = sd1*sd2 + cd1*cd2*cdr
+    sep = np.arctan2(upper, lower)
+
+    return np.rad2deg(sep)
 
 
 def ergspers_to_watts(e):
@@ -324,8 +362,7 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
     log_t += scindex*np.log10(freq/1e3)
 
     # Width of Gaussian distribution based on values given Lorimer et al (2008)
-    n_gen = len(dm)
-    t_scat = 10**np.random.normal(log_t, 0.8, n_gen)
+    t_scat = 10**np.random.normal(log_t, 0.8)
 
     return t_scat
 

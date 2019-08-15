@@ -1,11 +1,11 @@
 """Class to generate a survey population of FRBs."""
 from copy import deepcopy
 import math
-import random
 import numpy as np
 
 from frbpoppy.log import pprint
 from frbpoppy.population import Population
+from frbpoppy.repeater_pop import RepeaterPopulation
 from frbpoppy.rates import Rates, scale
 
 
@@ -27,6 +27,10 @@ class SurveyPopulation(Population):
             rate_limit (bool, optional): Whether to limit detections by 1/(1+z)
                 due to limitation in observing time
         """
+        pprint(f'Surveying {cosmic_pop.name} with {survey.name}')
+        # Stops RuntimeWarnings about nan values
+        np.warnings.filterwarnings('ignore')
+
         # Set up population
         Population.__init__(self)
 
@@ -37,14 +41,22 @@ class SurveyPopulation(Population):
         self.frbs = deepcopy(cosmic_pop.frbs)
         self.rate = Rates()
 
-        pprint(f'Surveying {cosmic_pop.name} with {self.name}')
-
         frbs = self.frbs
 
         # Check whether source is in region
         region_mask = survey.in_region(frbs)
         frbs.apply(region_mask)
         self.rate.out = np.size(region_mask) - np.count_nonzero(region_mask)
+
+        if survey.pointings:
+            p_mask = survey.in_pointings(frbs)
+            frbs.apply(p_mask)
+            self.rate.out += np.size(p_mask) - np.count_nonzero(p_mask)
+
+        # Add a time filter on repeaters (must use pointings for this)
+        if isinstance(cosmic_pop, RepeaterPopulation):
+            time_mask = survey.in_time(frbs)
+            frbs.apply(time_mask)
 
         # Calculate dispersion measure across single channel
         frbs.t_dm = survey.dm_smear(frbs)
@@ -65,18 +77,22 @@ class SurveyPopulation(Population):
         frbs.s_peak = survey.calc_s_peak(frbs, f_low=f_min, f_high=f_max)
 
         # Account for beam offset
-        int_pro, offset = survey.intensity_profile(n_gen=len(frbs.s_peak))
-        frbs.s_peak *= int_pro
+        int_pro, offset = survey.intensity_profile(shape=frbs.s_peak.shape)
+        if int_pro.ndim == frbs.s_peak.ndim:
+            frbs.s_peak *= int_pro
+        else:
+            frbs.s_peak *= int_pro[:, None]
         frbs.offset = offset / 60.  # In degrees
 
         # Calculate fluence [Jy*ms]
-        frbs.fluence = frbs.s_peak * frbs.w_eff
+        frbs.fluence = survey.calc_fluence(frbs)
 
         # Caculate Signal to Noise Ratio
         frbs.snr = survey.calc_snr(frbs)
 
         # Add scintillation
         if scin:
+            # Not sure whether this can cope with 2D arrays
             frbs.snr = survey.calc_scint(frbs)
 
         # Check whether frbs would be above detection threshold

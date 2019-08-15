@@ -1,6 +1,7 @@
 """Class to hold FRB source properties."""
 import numpy as np
 import pandas as pd
+from frbpoppy.log import pprint
 
 class FRBs:
     """Class containing FRB properties"""
@@ -31,6 +32,9 @@ class FRBs:
         self.w_arr = None
         self.w_int = None
 
+        # Repeat properties
+        self.time = None
+
         # Detection properties
         self.fluence = None
         self.offset = None
@@ -52,7 +56,19 @@ class FRBs:
         for attr in self.__dict__.keys():
             parm = getattr(self, attr)
             if type(parm) is np.ndarray:
-                setattr(self, attr, parm[mask])
+                # 1D mask on 1D array
+                if mask.ndim == 1:
+                    setattr(self, attr, parm[mask])
+                else:
+                    # 2D mask on 1D array
+                    if parm.ndim == 1:
+                        setattr(self, attr, parm[mask.any(axis=1)])
+                    # 2D mask on 2D array
+                    else:
+                        parm_nan = np.where(mask, parm, np.nan)
+                        row_mask = ~np.isnan(parm_nan).all(axis=1)
+                        parm_nan = parm_nan[row_mask]
+                        setattr(self, attr, parm_nan)
 
     def to_df(self):
         """Convert properties over to a Pandas DataFrame."""
@@ -61,6 +77,14 @@ class FRBs:
         for attr in self.__dict__.keys():
             parm = getattr(self, attr)
             if type(parm) is np.ndarray:
-                df[attr] = parm
+                # 2D arrays to 1D
+                if parm.ndim > 1:
+                    df[attr] = parm[~np.isnan(self.time)]
+                # 1D array to match length 2D->1D arrays
+                elif type(self.time) is np.ndarray:
+                    concate = np.array([parm, ]*self.time.shape[1]).transpose()
+                    df[attr] = concate[~np.isnan(self.time)]
+                else:
+                    df[attr] = parm
 
         return df

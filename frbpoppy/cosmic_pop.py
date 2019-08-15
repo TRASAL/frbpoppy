@@ -30,10 +30,10 @@ class CosmicPopulation(Population):
                  lum_index=0,
                  n_model='sfr',
                  alpha=-1.5,
-                 pulse_model='lognormal',
-                 pulse_range=[0.1, 10],
-                 pulse_mu=0.1,
-                 pulse_sigma=0.5,
+                 w_model='lognormal',
+                 w_range=[0.1, 10],
+                 w_mu=0.1,
+                 w_sigma=0.5,
                  si_mu=-1.4,
                  si_sigma=1.,
                  z_max=2.5,
@@ -62,10 +62,10 @@ class CosmicPopulation(Population):
             n_model (str): Number density model. Either 'vol_co', 'sfr' or
                 'smd'.
             alpha (float): Desired logN/logS of perfectly detected population.
-            pulse_model (str): Pulse width model, 'lognormal' or 'uniform'.
-            pulse_range (list): Pulse width range [ms].
-            pulse_mu (float): Mean pulse width [ms].
-            pulse_sigma (float): Deviation pulse width [ms].
+            w_model (str): Pulse width model, 'lognormal' or 'uniform'.
+            w_range (list): Pulse width range [ms].
+            w_mu (float): Mean pulse width [ms].
+            w_sigma (float): Deviation pulse width [ms].
             si_mu (float): Mean spectral index.
             si_sigma (float): Standard deviation spectral index.
             z_max (float): Maximum redshift.
@@ -96,11 +96,11 @@ class CosmicPopulation(Population):
         self.si_mu = si_mu
         self.si_sigma = si_sigma
         self.time = days * 86400  # Convert to seconds
-        self.w_model = pulse_model
-        self.w_max = pulse_range[1]
-        self.w_min = pulse_range[0]
-        self.w_mu = pulse_mu
-        self.w_sigma = pulse_sigma
+        self.w_model = w_model
+        self.w_max = w_range[1]
+        self.w_min = w_range[0]
+        self.w_mu = w_mu
+        self.w_sigma = w_sigma
         self.W_m = W_m
         self.W_v = W_v
         self.z_max = z_max
@@ -132,23 +132,44 @@ class CosmicPopulation(Population):
 
         frbs = self.frbs
 
-        # Add random directional coordinates
-        r = np.random.random
-        frbs.gl = r(self.n_gen).astype(np.float32) * 360.0 - 180
-        frbs.gb = np.degrees(np.arcsin(r(self.n_gen).astype(np.float32)))
-        frbs.gb[::2] *= -1
-
-        # Convert
-        frbs.ra, frbs.dec = go.lb_to_radec(frbs.gl, frbs.gb)
-
         # Draw from number density
         frbs.z, frbs.dist_co = n_den(self.n_gen)
 
+    def gen_direction(self):
+        """Generate the direction of frbs."""
+        frbs = self.frbs
+
+        # Add random directional coordinates
+        u = np.random.uniform
+        frbs.ra = u(0, 360, self.n_gen)
+        frbs.dec = np.rad2deg(np.arccos(u(-1, 1, self.n_gen))) - 90
+
+        # Convert to galactic coordinates
+        frbs.gl, frbs.gb = go.radec_to_lb(frbs.ra, frbs.dec, frac=True)
+
+    def gen_gal_coords(self):
+        """Generate galactic coordinates."""
+        frbs = self.frbs
         # Get the proper distance
         dist_pr = frbs.dist_co/(1+frbs.z)
 
         # Convert into galactic coordinates
         frbs.gx, frbs.gy, frbs.gz = go.lb_to_xyz(frbs.gl, frbs.gb, dist_pr)
+
+    def gen_dm_host(self):
+        """Generate dm host contributions."""
+        frbs = self.frbs
+        # Dispersion measure of the host (Tendulkar)
+        if self.dm_host_model == 'normal':
+            frbs.dm_host = dis.trunc_norm(self.dm_host_mu,
+                                          self.dm_host_sigma,
+                                          self.n_gen).astype(np.float32)
+        elif self.dm_host_model == 'lognormal':
+            frbs.dm_host = np.random.lognormal(self.dm_host_mu,
+                                               self.dm_host_sigma,
+                                               self.n_gen).astype(np.float32)
+
+        frbs.dm_host = frbs.dm_host / (1 + frbs.z)
 
     def gen_dm(self):
         """Generate dispersion measures."""
@@ -166,60 +187,56 @@ class CosmicPopulation(Population):
                                      sigma=self.dm_igm_sigma)
 
         # Dispersion measure of the host (Tendulkar)
-        if self.dm_host_model == 'normal':
-            frbs.dm_host = dis.trunc_norm(self.dm_host_mu,
-                                          self.dm_host_sigma,
-                                          self.n_gen).astype(np.float32)
-        elif self.dm_host_model == 'lognormal':
-            frbs.dm_host = np.random.lognormal(self.dm_host_mu,
-                                               self.dm_host_sigma,
-                                               self.n_gen).astype(np.float32)
-
-        frbs.dm_host /= (1 + frbs.z)
+        self.gen_dm_host()
 
         # Total dispersion measure
         frbs.dm = frbs.dm_mw + frbs.dm_igm + frbs.dm_host
 
-    def gen_w(self):
+    def gen_w(self, shape):
         """Generate pulse widths."""
         frbs = self.frbs
         # Get a random intrinsic pulse width [ms]
         if self.w_model == 'lognormal':
             frbs.w_int = np.random.lognormal(self.w_mu, self.w_sigma,
-                                             self.n_gen).astype(np.float32)
+                                             shape).astype(np.float32)
 
         if self.w_model == 'uniform':
             frbs.w_int = np.random.uniform(self.w_min, self.w_max,
-                                           self.n_gen).astype(np.float32)
+                                           shape).astype(np.float32)
 
         # Calculate the pulse width upon arrival to Earth
-        frbs.w_arr = frbs.w_int*(1+frbs.z)
+        if isinstance(shape, tuple):
+            frbs.w_arr = frbs.w_int*(1+frbs.z[:, None])
+        else:
+            frbs.w_arr = frbs.w_int*(1+frbs.z)
 
-    def gen_lum(self):
-        """Gerneate luminosities."""
+    def gen_lum(self, shape):
+        """Generate luminosities."""
         frbs = self.frbs
         # Add bolometric luminosity [erg/s]
         frbs.lum_bol = dis.powerlaw(self.lum_min,
                                     self.lum_max,
                                     self.lum_pow,
-                                    self.n_gen).astype(np.float64)
+                                    shape).astype(np.float64)
 
-    def gen_si(self):
+    def gen_si(self, shape):
         """Generate spectral indices."""
         frbs = self.frbs
         # Add spectral index
         frbs.si = np.random.normal(self.si_mu, self.si_sigma,
-                                   self.n_gen).astype(np.float32)
+                                   shape).astype(np.float32)
 
     def generate(self):
         """Generate all manner of intrinsic parameters."""
         # Let user know what's happening
         pprint(f'Generating {self.name} population')
         self.gen_dist()
+        self.gen_direction()
+        self.gen_gal_coords()
         self.gen_dm()
-        self.gen_w()
-        self.gen_lum()
-        self.gen_si()
+        self.gen_w(self.n_gen)
+        self.gen_lum(self.n_gen)
+        self.gen_si(self.n_gen)
         pprint(f'Finished generating {self.name} population')
 
 

@@ -6,7 +6,7 @@ from .frbcat import *
 from .galacticops import *
 from .log import pprint
 from .paths import paths
-from .population import Population, unpickle
+from .population import Population, unpickle, split_pop
 from .precalc import *
 from .number_density import NumberDensity
 from .repeater_pop import RepeaterPopulation
