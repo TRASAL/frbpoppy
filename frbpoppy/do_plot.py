@@ -7,7 +7,7 @@ from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 
 
-def plot(*pops, files=[], frbcat=True, show=True,
+def plot(*pops, files=[], frbcat=True, show=True, no_browser=False,
          mute=True, port=5006, print_command=False):
     """
     Plot populations with bokeh. Has to save populations before plotting.
@@ -44,7 +44,10 @@ def plot(*pops, files=[], frbcat=True, show=True,
     command = 'nice -n 19 '
 
     if show:
-        command += 'bokeh serve --show'
+        command += 'bokeh serve'
+        # Pop up a browser
+        if not no_browser:
+            command += ' --show'
     else:
         command += 'python3'
 
