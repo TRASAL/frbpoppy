@@ -131,25 +131,6 @@ class Survey:
 
         return mask
 
-    def in_time(self, frbs):
-        """For RepeaterPopulation only."""
-        # Create mask with False
-        mask = np.zeros_like(frbs.time, dtype=bool)
-
-        t_step = self.max_time / len(self.pointings)
-        ts = np.arange(0-t_step, self.max_time, t_step) + t_step
-
-        # Check whether FRBs are within pointing regions
-        r = np.sqrt(self.beam_size_fwhm/np.pi)
-        for i, p in enumerate(self.pointings):
-            ra, dec = p
-            limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
-            limit_pos = limit_pos[:, None]
-            limit_time = ((frbs.time <= ts[i+1]) & (frbs.time >= ts[i]))
-            mask[(limit_pos & limit_time)] = True
-
-        return mask
-
     def max_offset(self, x):
         """Calculate the maximum offset of an FRB in an Airy disk.
 

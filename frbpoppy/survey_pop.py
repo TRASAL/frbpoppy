@@ -5,7 +5,6 @@ import numpy as np
 
 from frbpoppy.log import pprint
 from frbpoppy.population import Population
-from frbpoppy.repeater_pop import RepeaterPopulation
 from frbpoppy.rates import Rates, scale
 
 
@@ -52,11 +51,6 @@ class SurveyPopulation(Population):
             p_mask = survey.in_pointings(frbs)
             frbs.apply(p_mask)
             self.rate.out += np.size(p_mask) - np.count_nonzero(p_mask)
-
-        # Add a time filter on repeaters (must use pointings for this)
-        if isinstance(cosmic_pop, RepeaterPopulation):
-            time_mask = survey.in_time(frbs)
-            frbs.apply(time_mask)
 
         # Calculate dispersion measure across single channel
         frbs.t_dm = survey.dm_smear(frbs)
