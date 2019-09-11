@@ -34,6 +34,7 @@ Check out the `example <https://github.com/davidgardenier/frbpoppy/blob/master/t
 Which dependencies does `frbpoppy` have?
 ****************************************
 All requirements can be found in `setup.py <https://github.com/davidgardenier/frbpoppy/blob/master/setup.py>`_ but are also expanded upon in the following list:
+
  - `bokeh >= 1.3.4` for interactive plotting
  - `numpy >= 1.17.0` for array calculations
  - `pandas >= 0.23.4` for interactive plotting and easy import of csvs
