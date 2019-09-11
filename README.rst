@@ -21,7 +21,6 @@ How can I install it?
 3. Install frbpoppy locally on Ubuntu by going to the downloaded directory and running:
    ::
 
-    $ pip3 install -r requirements.txt
     $ python3 setup.py develop
 
    Macs should also be supported, however no tests have been done on Windows.
@@ -30,6 +29,19 @@ How can I install it?
 How do I use it?
 ******************
 Check out the `example <https://github.com/davidgardenier/frbpoppy/blob/master/tests/example.py>`_ code in the test directory, or else ``frbpoppy``'s `webpage <https://davidgardenier.github.io/frbpoppy/>`_!
+
+**************************************
+Which dependencies does frbpoppy have?
+**************************************
+All requirements can be found in `setup.py <https://github.com/davidgardenier/frbpoppy/blob/master/setup.py>`_ but are also expanded upon in the following list:
+ * `bokeh >= 1.3.4` for interactive plotting
+ * `numpy >= 1.17.0` for array calculations
+ * `pandas >= 0.23.4` for interactive plotting and easy import of csvs
+ * `scipy >= 1.1.0` for Bessel functions and integrations
+ * `SQLAlchemy >= 1.3.0` for creating and querying  cosmological databases
+ * `matplotlib >= 2.2.3` for plotting
+ * `requests >= 2.20.0.` for downloading new versions of frbcat
+ * `future-fstrings >= 1.2.0` for using f-strings in old Python versions
 
 ***************
 How can I help?
