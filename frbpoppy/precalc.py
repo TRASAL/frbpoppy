@@ -117,7 +117,8 @@ class DistanceTable:
     Hoggs et al. (1999) for the cosmological calculations. To avoid long
     calculation times, it will check if a previous run with the same parameters
     has been done, which it will then load it. If not, it will calculate a new
-    table, and save the table for later runs.
+    table, and save the table for later runs. Covers z, dist, vol, dvol,
+    cdf_sfr and cdf_smd.
 
     Args:
         H_0 (float, optional): Hubble parameter. Defaults to 67.74 km/s/Mpc
@@ -254,7 +255,7 @@ class DistanceTable:
         query = f'select * from distances where {in_par} > ? limit 1'
 
         for i, r in enumerate(kw[in_par]):
-            d = c.execute(query, [r]).fetchone()
+            d = c.execute(query, [str(r)]).fetchone()
             for ii, key in enumerate(keys):
                 if key == in_par:
                     continue

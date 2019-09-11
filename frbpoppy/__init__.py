@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 from .distributions import *
 from .do_hist import histogram
 from .do_plot import plot

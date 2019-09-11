@@ -12,7 +12,6 @@ class PostDevelopCommand(develop):
 
     def run(self):
         """Compile fortran libraries for NE2001."""
-
         def loc(f):
             """Full location path to file."""
             return os.path.join(os.path.dirname(__file__), f)
@@ -66,7 +65,7 @@ class PostDevelopCommand(develop):
 
 
 setup(name='frbpoppy',
-      version='0.0.1',
+      version='1.0.0',
       description='Fast Radio Burst Population Synthesis',
       long_description=open('README.rst').read(),
       url='http://github.com/davidgardenier/frbpoppy',
@@ -76,73 +75,12 @@ setup(name='frbpoppy',
       packages=['frbpoppy'],
       zip_safe=False,
       python_requires='>=3.0',
-      install_requires=['bokeh == 0.12.14',
-                        'numpy >= 1.13.0',
-                        'pandas >= 0.17.1',
-                        'scipy >= 0.18.1',
-                        'SQLAlchemy >= 1.1.14'],
+      install_requires=['bokeh >= 1.3.4',
+                        'numpy >= 1.17.0',
+                        'pandas >= 0.23.4',
+                        'scipy >= 1.1.0',
+                        'SQLAlchemy >= 1.3.0',
+                        'matplotlib >= 2.2.3',
+                        'requests >= 2.20.0.',
+                        'future-fstrings >= 1.2.0'],
       cmdclass={'develop': PostDevelopCommand})
-
-#
-#
-# #
-# # import glob
-# # import os
-# # import subprocess
-# # import sys
-# #
-# # assert sys.version_info >= (3, 0), 'Please run with python3 or higher'
-# #
-# #
-# def loc(f):
-#     """Returns full location path to file"""
-#     return os.path.join(os.path.dirname(__file__), f)
-# #
-# #
-# # def run(command):
-# #     """Run a console command given as a list"""
-# #     p = subprocess.Popen(command, stdout=subprocess.PIPE)
-# #     out = p.stdout.read().decode()
-# #     if out:
-# #         print(out)
-# #
-# #
-# # # Magic to compile fortran code to something called a shared library
-#
-# all_fortran = glob.glob(loc('./data/models/dm/*.f'))
-#
-# for f in all_fortran:
-#
-#     folder = '/'.join(f.split('/')[:-1]) + '/'
-#     fortran = f.split('/')[-1].split('.')[0]
-#
-#     setup = ['gfortran',
-#              '-O2',
-#              '-fPIC',
-#              '-fno-second-underscore',
-#              '-c',
-#              '-I.',
-#              '-std=legacy',
-#              f,
-#              '-o',
-#              folder + fortran + '.o',
-#              ]
-#
-#     #run(setup)
-#
-# # Convert .o file to something with which python can interact
-# gf = ['gfortran',
-#       '-shared',
-#       '-o',
-#       loc('./data/models/dm/libne2001.so'),
-#       '-fno-second-underscore',
-#       loc('./data/models/dm/dm.o'),
-#       loc('./data/models/dm/ne2001.o'),
-#       loc('./data/models/dm/psr_ne.o'),
-#       loc('./data/models/dm/dist.o'),
-#       loc('./data/models/dm/calc_xyz.o'),
-#       loc('./data/models/dm/density.o'),
-#       loc('./data/models/dm/glun.o'),
-#       ]
-#
-# run(gf)

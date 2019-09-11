@@ -50,10 +50,18 @@ def plot_dm(pops):
 
         print(f'{len(dm)} FRBs in graph of {pop.name}')
 
-        n, bins = np.histogram(dm, bins=75)
+        n, bin_edges = np.histogram(dm, bins=75)
         n = n/max(n)
-        bincentres = (bins[:-1] + bins[1:]) / 2
-        ax1.step(bincentres, n, where='mid', label=beam)
+        bins = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+        # Add edges to histogram
+        bin_diff = np.diff(bins)[-1]
+        bins = np.insert(bins, 0, bins[0] - bin_diff)
+        bins = np.insert(bins, len(bins), bins[-1] + bin_diff)
+        n = np.insert(n, 0, 0)
+        n = np.insert(n, len(n), 0)
+
+        ax1.step(bins, n, where='mid', label=beam)
 
     ax1.set_xlabel(r'DM (pc cm$^{-3}$)')
     ax1.set_xlim([0, 3000])

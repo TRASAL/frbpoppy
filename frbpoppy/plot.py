@@ -230,9 +230,7 @@ class Plot():
             cum = True
 
         # Set up interactive tools
-        props = [("pop", "@population"), ("frac", "@top")]
-        hover = HoverTool(tooltips=props)
-        tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
+        tools = ['box_zoom', 'pan', 'save', 'reset', 'wheel_zoom']
 
         # Create histogram plot
         tab.fig = figure(plot_height=self.height,
@@ -246,25 +244,19 @@ class Plot():
         # Create Column Data Sources for interacting with the plot
         hists = histogram(self.dfs, log=log, cum=cum)
 
-        props = dict(top=[],
-                     left=[],
-                     right=[],
-                     bottom=[],
-                     color=[],
-                     population=[])
+        props = dict(x=[], y=[], population=[])
         tab.sources = [ColumnDataSource(props) for hist in hists]
 
         # Plot histogram values
-        for source in tab.sources:
-            tab.fig.quad(bottom='bottom',
-                         left='left',
-                         right='right',
-                         top='top',
-                         color='color',
-                         line_color='color',
+        for i, source in enumerate(tab.sources):
+            tab.fig.step(x='x',
+                         y='y',
+                         color=self.colours[i],
+                         alpha=0.8,
                          legend='population',
-                         alpha=0.4,
-                         source=source)
+                         line_width=2.5,
+                         source=source,
+                         mode='before')
 
         if kind == 'lin':
             self.hists_lin = hists
@@ -289,8 +281,7 @@ class Plot():
 
             for i, source in enumerate(tab.sources):
 
-                cols = [x_abr, f'{x_abr}_left', f'{x_abr}_right',
-                        'bottom', 'color', 'population']
+                cols = [f'{x_abr}_x', f'{x_abr}', 'population']
 
                 if tab.name == 'Scatter':
                     cols = [x_abr, y_abr, 'color', 'population']
@@ -319,11 +310,8 @@ class Plot():
                                        color=df['color'],
                                        population=df['population'])
                 else:
-                    source.data = dict(top=df[x_abr],
-                                       left=df[f'{x_abr}_left'],
-                                       right=df[f'{x_abr}_right'],
-                                       bottom=df['bottom'],
-                                       color=df['color'],
+                    source.data = dict(x=df[f'{x_abr}_x'],
+                                       y=df[f'{x_abr}'],
                                        population=df['population']
                                        )
 
@@ -344,7 +332,7 @@ class Plot():
         text_bottom = Div(text=path('text_bottom'))
 
         sidebar = [text_top, self.x_axis, self.y_axis, text_bottom]
-        s = widgetbox(sidebar, width=350)
+        s = widgetbox(sidebar, width=380)
 
         # Set up tabs
         panels = []
@@ -354,14 +342,14 @@ class Plot():
         tabs = Tabs(tabs=panels, width=self.width)
 
         # Add sidebar and tabs
-        L = layout([[s, tabs]], sizing_mode='fixed')
+        L = layout([[s, tabs]])
 
         # Initial load of data
         self.update()
 
         # Showtime
-        curdoc().add_root(L)
         curdoc().title = 'frbpoppy'
+        curdoc().add_root(L)
 
 
 # Parse system arguments
