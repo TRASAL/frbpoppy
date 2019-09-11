@@ -65,8 +65,8 @@ class Plot():
                        'Dispersion Measure - Milky Way (pc/cm^3)': 'dm_mw',
                        'Dispersion Measure (pc/cm^3)': 'dm',
                        'Fluence (Jy*ms)': 'fluence',
-                       'Galactic Latitude (degrees)': 'gb',
-                       'Galactic Longitude (degrees)': 'gl',
+                       'Galactic Latitude (°)': 'gb',
+                       'Galactic Longitude (°)': 'gl',
                        'Galactic X (Gpc)': 'gx',
                        'Galactic Y (Gpc)': 'gy',
                        'Galactic Z (Gpc)': 'gz',
@@ -78,7 +78,7 @@ class Plot():
                        'Right Ascension (°)': 'ra',
                        'Spectral Index': 'si',
                        'Signal to Noise Ratio': 'snr',
-                       'Time (s)': 'time'}
+                       'Time (days)': 'time'}
 
         # Running plotting
         self.set_colours()
@@ -111,28 +111,37 @@ class Plot():
                 try:
                     df = unpickle(f).frbs.to_df()
                 except ValueError:
+                    pprint(f'Unpacking {f} seemed to have failed.')
                     continue
                 if '.' in f:
                     name = f.split('/')[-1].split('.')[0]
+                    if '_for_plotting' in name:
+                        name = name.split('_for_plotting')[0]
                 else:
                     name = f
-            if df is not None:
-                pass
-            else:
+
+            # If things haven't worked
+            if df is None:
                 m = 'Skipping population {} - contains no sources'.format(f)
                 pprint(m)
                 continue
 
             # Downsample population size if it's too large
             if df.shape[0] > 10000:
-                df = df.iloc[::1000]
+                pprint(f'Downsampling population {f} (else too big to plot)')
+                df = df.sample(n=10000)
 
             df['population'] = name
             df['color'] = self.colours[self.n_df]
             df['lum_bol'] = df['lum_bol'] / 1e30  # Sidestepping Bokeh issue
 
-            self.dfs.append(df)
-            self.n_df += 1
+            if df.empty:
+                m = 'Skipping population {} - contains no sources'.format(f)
+                pprint(m)
+                continue
+            else:
+                self.dfs.append(df)
+                self.n_df += 1
 
         # Add on frbcat
         if self.frbcat:
@@ -156,11 +165,11 @@ class Plot():
         """Set up widget details."""
         self.x_axis = Select(title='',
                              options=sorted(self.params.keys()),
-                             value='Galactic Longitude (degrees)')
+                             value='Right Ascension (°)')
 
         self.y_axis = Select(title='',
                              options=sorted(self.params.keys()),
-                             value='Galactic Latitude (degrees)')
+                             value='Declination (°)')
 
     def make_scatter(self):
         """Set up a scatter plot."""
@@ -221,9 +230,7 @@ class Plot():
             cum = True
 
         # Set up interactive tools
-        props = [("pop", "@population"), ("frac", "@top")]
-        hover = HoverTool(tooltips=props)
-        tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
+        tools = ['box_zoom', 'pan', 'save', 'reset', 'wheel_zoom']
 
         # Create histogram plot
         tab.fig = figure(plot_height=self.height,
@@ -237,25 +244,19 @@ class Plot():
         # Create Column Data Sources for interacting with the plot
         hists = histogram(self.dfs, log=log, cum=cum)
 
-        props = dict(top=[],
-                     left=[],
-                     right=[],
-                     bottom=[],
-                     color=[],
-                     population=[])
+        props = dict(x=[], y=[], population=[])
         tab.sources = [ColumnDataSource(props) for hist in hists]
 
         # Plot histogram values
-        for source in tab.sources:
-            tab.fig.quad(bottom='bottom',
-                         left='left',
-                         right='right',
-                         top='top',
-                         color='color',
-                         line_color='color',
+        for i, source in enumerate(tab.sources):
+            tab.fig.step(x='x',
+                         y='y',
+                         color=self.colours[i],
+                         alpha=0.8,
                          legend='population',
-                         alpha=0.4,
-                         source=source)
+                         line_width=2.5,
+                         source=source,
+                         mode='before')
 
         if kind == 'lin':
             self.hists_lin = hists
@@ -280,8 +281,7 @@ class Plot():
 
             for i, source in enumerate(tab.sources):
 
-                cols = [x_abr, f'{x_abr}_left', f'{x_abr}_right',
-                        'bottom', 'color', 'population']
+                cols = [f'{x_abr}_x', f'{x_abr}', 'population']
 
                 if tab.name == 'Scatter':
                     cols = [x_abr, y_abr, 'color', 'population']
@@ -310,11 +310,8 @@ class Plot():
                                        color=df['color'],
                                        population=df['population'])
                 else:
-                    source.data = dict(top=df[x_abr],
-                                       left=df[f'{x_abr}_left'],
-                                       right=df[f'{x_abr}_right'],
-                                       bottom=df['bottom'],
-                                       color=df['color'],
+                    source.data = dict(x=df[f'{x_abr}_x'],
+                                       y=df[f'{x_abr}'],
                                        population=df['population']
                                        )
 
@@ -335,7 +332,7 @@ class Plot():
         text_bottom = Div(text=path('text_bottom'))
 
         sidebar = [text_top, self.x_axis, self.y_axis, text_bottom]
-        s = widgetbox(sidebar, width=350)
+        s = widgetbox(sidebar, width=380)
 
         # Set up tabs
         panels = []
@@ -345,14 +342,14 @@ class Plot():
         tabs = Tabs(tabs=panels, width=self.width)
 
         # Add sidebar and tabs
-        L = layout([[s, tabs]], sizing_mode='fixed')
+        L = layout([[s, tabs]])
 
         # Initial load of data
         self.update()
 
         # Showtime
-        curdoc().add_root(L)
         curdoc().title = 'frbpoppy'
+        curdoc().add_root(L)
 
 
 # Parse system arguments
@@ -372,6 +369,7 @@ else:
 # Which files to plot
 files = []
 for a in args:
+    a = a.strip('"')
     if a.endswith('.p'):
         files.append(a)
 

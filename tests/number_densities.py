@@ -8,69 +8,85 @@ MAKE = False
 NUM_FRBS = True
 DENSITY_FRBS = True
 
+pop = {}
+pop_types = ('cst', 'sfr', 'smd', 'shallow', 'steep')
+titles = ('Constant', 'SFR', 'SMD', r'$\alpha_{in}=-0.5$',
+          r'$\alpha_{in}=-2.0$')
+
 if MAKE:
     days = 1
     n_per_day = int(1e6)
 
     # Generate population following a constant number density / comoving volume
-    pop_cst = CosmicPopulation(n_per_day*days,
+    pop['cst'] = CosmicPopulation(n_per_day*days,
                                days=days,
                                z_max=3.,
                                n_model='vol_co',
-                               name='vol_co')
+                               name='cst')
 
     # Generate population following star forming rate
-    pop_sfr = CosmicPopulation(n_per_day*days,
+    pop['sfr'] = CosmicPopulation(n_per_day*days,
                                days=days,
                                z_max=3.,
                                n_model='sfr',
                                name='sfr')
 
     # Generate population following stellar mass density
-    pop_smd = CosmicPopulation(n_per_day*days,
+    pop['smd'] = CosmicPopulation(n_per_day*days,
                                days=days,
                                z_max=3.,
                                n_model='smd',
                                name='smd')
 
-    pop_cst.save()
-    pop_sfr.save()
-    pop_smd.save()
+    # Generate population following stellar mass density
+    pop['shallow'] = CosmicPopulation(n_per_day*days,
+                                   days=days,
+                                   z_max=3.,
+                                   n_model='vol_co',
+                                   alpha=-0.5,
+                                   name='shallow')
+
+    # Generate population following stellar mass density
+    pop['steep'] = CosmicPopulation(n_per_day*days,
+                                 days=days,
+                                 z_max=3.,
+                                 n_model='vol_co',
+                                 alpha=-2.0,
+                                 name='steep')
+
+    for k, v in pop.items():
+        v.save()
 
 else:
-    pop_cst = unpickle('vol_co')
-    pop_sfr = unpickle('sfr')
-    pop_smd = unpickle('smd')
+    for s in pop_types:
+        pop[s] = unpickle(s)
 
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-
-# Get redshift of population
-zs = {}
-zs['sfr'] = pop_sfr.frbs.z
-zs['smd'] = pop_smd.frbs.z
-zs['vol_co'] = pop_cst.frbs.z
-
-n_sfr, bins = np.histogram(zs['sfr'], bins=100, density=False)
-n_smd, bins = np.histogram(zs['smd'], bins=100, density=False)
-n_constant, bins = np.histogram(zs['vol_co'], bins=100, density=False)
-
-# Remove lowest bins due to noise
-n_sfr = n_sfr[1:]
-n_constant = n_constant[1:]
-n_smd = n_smd[1:]
-bins = bins[1:]
-
-bincentres = (bins[:-1] + bins[1:]) / 2
 
 if NUM_FRBS:
-    plt.step(bincentres, n_sfr, where='mid', label='SFR')
-    plt.step(bincentres, n_constant, where='mid', label='Constant')
-    plt.step(bincentres, n_smd, where='mid', label='SMD')
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    # Get redshift of population
+    zs = {}
+    ns = {}
+    i = 0
+    for s in pop_types:
+        zs[s] = pop[s].frbs.z
+        ns[s], bins = np.histogram(zs[s], bins=50)
+
+        # Remove lowest bins due to noise
+        ns[s] = ns[s][1:]
+        bins = bins[1:]
+
+        bincentres = (bins[:-1] + bins[1:]) / 2
+
+        title = titles[i]
+        plt.step(bincentres, ns[s], where='mid', label=title)
+
+        i += 1
 
     plt.xlabel('$z$')
-    plt.ylabel(r'$n_{\text{FRB}}$')
+    plt.ylabel(r'$\text{d}n_{\text{FRB}}/\text{d}z$')
     plt.yscale('log')
     plt.legend()
     plt.tight_layout()
@@ -85,13 +101,14 @@ if DENSITY_FRBS:
     import frbpoppy.precalc as pc
     d = pc.DistanceTable().lookup(z=bincentres)
     dvols = d[3]
-    den_sfr = n_sfr / dvols
-    den_con = n_constant / dvols
-    den_smd = n_smd / dvols
+    dens = {}
+    i = 0
+    for s in pop_types:
+        dens[s] = ns[s] / dvols
 
-    plt.step(bincentres, den_sfr/den_sfr[0], where='mid', label='SFR')
-    plt.step(bincentres, den_con/den_con[0], where='mid', label='Constant')
-    plt.step(bincentres, den_smd/den_smd[0], where='mid', label='SMD')
+        title = titles[i]
+        plt.step(bincentres, dens[s]/dens[s][0], where='mid', label=title)
+        i += 1
 
     plt.xlabel('$z$')
     plt.ylabel(r'$\rho_{\text{FRB}} / \rho_{\text{FRB}}(0)$')

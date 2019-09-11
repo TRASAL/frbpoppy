@@ -4,6 +4,7 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
+from copy import deepcopy
 
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
@@ -58,6 +59,7 @@ class Population:
         # Store FRB sources
         self.frbs = FRBs()
         self.n_frbs = 0
+        self.uid = None  # Unique Identifier
 
     def __str__(self):
         """Define how to print a population object to a console."""
@@ -99,6 +101,9 @@ class Population:
         else:
             file_name = self.name.lower()
 
+        if self.uid:
+            file_name += f'_{self.uid}'
+
         path = paths.populations() + file_name
 
         # Set file types
@@ -135,12 +140,13 @@ class Population:
         output.close()
 
 
-def unpickle(filename=None):
+def unpickle(filename=None, uid=None):
     """Quick function to unpickle a population.
 
     Args:
         filename (str, optional): Define the path to the pickled population,
             or give the population name
+        uid (str, optional): Unique Identifier
 
     Returns:
         Population: Population class
@@ -153,6 +159,8 @@ def unpickle(filename=None):
         # Find standard population files
         try:
             name = filename.lower()
+            if uid:
+                name += f'_{uid}'
             p = paths.populations() + f'{name}.p'
             f = open(p, 'rb')
         except FileNotFoundError:
@@ -162,5 +170,22 @@ def unpickle(filename=None):
     # Unpickle
     pop = pickle.load(f)
     f.close()
-
     return pop
+
+
+def split_pop(pop, mask):
+    """Split a population.
+
+    Args:
+        pop (Population): Population to be split
+        mask (Numpy): Numpy boolean mask
+
+    Returns:
+        tuple: Tuple of population classes
+
+    """
+    pop_true = deepcopy(pop)
+    pop_false = deepcopy(pop)
+    pop_true.frbs.apply(mask)
+    pop_false.frbs.apply(~mask)
+    return pop_true, pop_false

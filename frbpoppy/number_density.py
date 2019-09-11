@@ -57,7 +57,7 @@ class NumberDensity:
         d = self.dt(vol_co=vol_co)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_vol_co(self, n_gen=1):
         """Use constant number density of sources per comoving volume.
@@ -68,7 +68,7 @@ class NumberDensity:
         d = self.dt(vol_co=vol_co)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_sfr(self, n_gen=1):
         """Get sources to follow star forming rate.
@@ -82,7 +82,7 @@ class NumberDensity:
         d = self.dt(cdf_sfr=sampling)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)
 
     def from_smd(self, n_gen=1):
         """
@@ -95,4 +95,4 @@ class NumberDensity:
         d = self.dt(cdf_smd=sampling)
         z = d[0]
         dist_co = d[1]
-        return z, dist_co
+        return z.astype(np.float32), dist_co.astype(np.float32)

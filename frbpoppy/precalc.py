@@ -39,8 +39,8 @@ class NE2001Table:
         c = conn.cursor()
 
         # Set array of coordinates
-        gls = np.arange(-180., 180. + self.step, self.step)
-        gbs = np.arange(-90., 90. + self.step, self.step)
+        gls = np.arange(-180., 180. + self.step, self.step).round(1)
+        gbs = np.arange(-90., 90. + self.step, self.step).round(1)
         dist = 0.1  # [Gpc]
 
         # Create database
@@ -53,12 +53,9 @@ class NE2001Table:
         pprint('Creating a DM lookup table (only needs to be done once)')
 
         for gl in gls:
-            gl = round(gl, 1)
             for gb in gbs:
-                gb = round(gb, 1)
 
                 dm_mw = go.ne2001_dist_to_dm(dist, gl, gb)
-
                 r = (gl, gb, dm_mw)
                 results.append(r)
 
@@ -103,7 +100,7 @@ class NE2001Table:
         query = 'select dm_mw from dm where gl=? and gb=? limit 1'
 
         for i, gl in enumerate(gal):
-            dm_mw[i] = c.execute(query, [gl, gab[i]]).fetchone()[0]
+            dm_mw[i] = c.execute(query, [str(gl), str(gab[i])]).fetchone()[0]
 
         # Close database
         conn.close()
@@ -120,7 +117,8 @@ class DistanceTable:
     Hoggs et al. (1999) for the cosmological calculations. To avoid long
     calculation times, it will check if a previous run with the same parameters
     has been done, which it will then load it. If not, it will calculate a new
-    table, and save the table for later runs.
+    table, and save the table for later runs. Covers z, dist, vol, dvol,
+    cdf_sfr and cdf_smd.
 
     Args:
         H_0 (float, optional): Hubble parameter. Defaults to 67.74 km/s/Mpc
@@ -257,7 +255,7 @@ class DistanceTable:
         query = f'select * from distances where {in_par} > ? limit 1'
 
         for i, r in enumerate(kw[in_par]):
-            d = c.execute(query, [r]).fetchone()
+            d = c.execute(query, [str(r)]).fetchone()
             for ii, key in enumerate(keys):
                 if key == in_par:
                     continue

@@ -1,20 +1,60 @@
-"""Short example of how frbpoppy works."""
-from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
+"""Test calculating transit times for location on Earth."""
+import numpy as np
+import matplotlib.pyplot as plt
 
-PLOT = True
+TEST_TRANSIT = False
 
-# Generate an FRB population
-cosmic_pop = CosmicPopulation(10000, days=7, name='example')
 
-# Setup a survey
-survey = Survey('apertif')
+def calc_transit_time(lat, dec, unit='deg', beamsize=20626.5):
+    """Calculate total time of an object above horizon.
 
-# Observe the FRB population
-survey_pop = SurveyPopulation(cosmic_pop, survey)
+    Args:
+        lat (float): Latitude of observatory in radians.
+        dec (array): Declination of celestial object in radians.
+        unit (str): 'deg' or 'rad'
+        beamsize (float): Beam size in sq. deg
 
-# Check the detection rates
-print(survey_pop.rates())
+    Returns:
+        float: Fraction of time above horizon in fractional days
 
-# Plot populations
-if PLOT:
-    plot(cosmic_pop, survey_pop, mute=False)
+    """
+    if unit == 'deg':
+        lat = np.deg2rad(lat)
+        dec = np.deg2rad(dec)
+
+    # Beamsize to radius in fractional degrees
+    r = np.sqrt(beamsize/np.pi)
+    extra_lim = np.deg2rad(90 - r)
+
+    times = np.ones_like(dec)
+    lim = np.pi/2. - lat
+    always_visible = dec > lim
+    never_visible = dec < -lim
+    sometimes_visible = ((dec > -lim) & (dec < lim))
+
+    sm = sometimes_visible
+    times[sm] = 2*np.rad2deg(np.arccos(-np.tan(dec[sm])*np.tan(lat)))/360.
+
+    times[always_visible] = 1.
+    times[never_visible] = 0.
+
+    return times
+
+
+if TEST_TRANSIT:
+    latitude_obs = 52.  # deg
+    decs = np.linspace(-90, 90, 100)
+    lat = latitude_obs
+    times = calc_transit_time(lat, decs)
+    plt.ylabel('Fraction of day at which visible')
+    plt.xlabel('Declination sources')
+    plt.plot(decs, times)
+    plt.show()
+
+
+def gen_times(n):
+    """Generate n times (ms) for full day."""
+    return np.array([0, 0.25, 0.75]).astype(np.float32)
+
+def fraction_visible():
+    return 0.5

@@ -15,15 +15,16 @@ SIZE = 'large'
 TELESCOPES = ['parkes', 'askap']
 
 
-def hist(parameter, bins='lin', n_bins=25):
+def hist(parameter, bin_type='lin', n_bins=25, norm=True, edges=True):
     """Bin up a parameter either in a lin or log space.
 
     Why is this not a standard option in numpy or matplotlib?
 
     Args:
         parameter (array): To be binned
-        bins (str): Either 'lin' or 'log'
+        bin_type (str): Either 'lin' or 'log'
         n_bins (int): Number of bins. Can be overriden internally
+        norm (bool): Whether to normalise
 
     Returns:
         tuple: bin centers, values per bin
@@ -33,25 +34,46 @@ def hist(parameter, bins='lin', n_bins=25):
     parameter = parameter[~np.isnan(parameter)]
 
     # Determine number of bins
-    if len(parameter) < 50:
+    if n_bins != 25:
+        pass
+    elif len(parameter) < 50:
         n_bins = 15
-    if len(parameter) > 500:
+    elif len(parameter) > 500:
         n_bins = 50
 
     # Determine type of binning
-    if bins == 'lin':
+    if bin_type == 'lin':
         bins = n_bins
-    elif bins == 'log':
+    elif bin_type == 'log':
         min_f = np.log10(min(parameter))
         max_f = np.log10(max(parameter))
         bins = np.logspace(min_f, max_f, n_bins)
 
     # Bin
-    n, bins = np.histogram(parameter, bins=bins)
-    n = n/max(n)  # Normalise
-    bin_centres = (bins[:-1] + bins[1:]) / 2
+    n, bin_edges = np.histogram(parameter, bins=bins)
 
-    return bin_centres, n
+    if norm:
+        n = n/max(n)  # Normalise
+
+    # Centre bins
+    bins = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+    # Ensure there are edges on the outer bins of the histograms
+    if edges:
+        if bin_type == 'lin':
+            bin_diff = np.diff(bins)[-1]
+            bins = np.insert(bins, 0, bins[0] - bin_diff)
+            bins = np.insert(bins, len(bins), bins[-1] + bin_diff)
+            n = np.insert(n, 0, 0)
+            n = np.insert(n, len(n), 0)
+        else:
+            bin_diff = np.diff(np.log10(bins))[-1]
+            bins = np.insert(bins, 0, 10**(np.log10(bins[0]) - bin_diff))
+            bins = np.insert(bins, len(bins), 10**(np.log10(bins[-1]) + bin_diff))
+            n = np.insert(n, 0, 0)
+            n = np.insert(n, len(n), 0)
+
+    return bins, n
 
 
 def plot_dists(surv_pop, telescope):
@@ -90,11 +112,11 @@ def plot_dists(surv_pop, telescope):
 
     # Plot fluence distributions
     fluence_frbpoppy = surv_pop.frbs.fluence
-    ax2.step(*hist(fluence_frbpoppy, bins='log'), where='mid',
+    ax2.step(*hist(fluence_frbpoppy, bin_type='log'), where='mid',
              label='frbpoppy', linestyle='dashed')
 
     fluence_frbcat = df[df.telescope == telescope].fluence
-    ax2.step(*hist(fluence_frbcat, bins='log'), where='mid', label='frbcat')
+    ax2.step(*hist(fluence_frbcat, bin_type='log'), where='mid', label='frbcat')
 
     # Compare distributions
     ks = ks_2samp(fluence_frbpoppy, fluence_frbcat)
