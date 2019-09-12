@@ -63,6 +63,9 @@ class NE2001Table:
         gbs = np.arange(-90., 90. + self.step, self.step).round(1)
         dist = 0.1  # [Gpc]
 
+        gls = gls.astype(np.float32)
+        gbs = gbs.astype(np.float32)
+
         # Create database
         c.execute('create table dm ' +
                   '(gl real, gb real, dm_mw real)')
@@ -115,6 +118,7 @@ class NE2001Table:
                 dm_tot(i, dm_mw)
 
             # Save results to database
+            dm_mw = dm_mw.astype(np.float32)
             r = np.concatenate((options, dm_mw[:, np.newaxis]), axis=1)
             results = map(tuple, r.tolist())
 
