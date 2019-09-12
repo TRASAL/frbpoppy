@@ -22,20 +22,15 @@ How can I install it?
      $ cd ./frbpoppy
 
 
-4. Install necessary external libraries
-   ::
 
-    $ pip3 install -r requirements.txt
-
-
-5. Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.
+4. Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.
    ::
 
     $ sudo python3 setup.py develop
 
    Macs should also be supported, however no tests have been done on Windows.
 
-6. Test whether frbpoppy is working with:
+5. Test whether frbpoppy is working with:
    ::
 
     $ python3
@@ -43,6 +38,12 @@ How can I install it?
 
    If you don't get any errors - hurray, all should be working!
 
+6. Put frbpoppy through its paces:
+  ::
+
+   $ python3 tests/example.py
+
+   The first time you run frbpoppy it will generate lookup tables to speed up future runs. This can take up to 2h on a standard 4 core laptop.
 
 ****************
 How do I use it?

@@ -53,8 +53,8 @@
 <h2>How can I install it?<a class="headerlink" href="#how-can-i-install-it" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-bash"><div class="highlight"><pre><span></span>git clone https://github.com/davidgardenier/frbpoppy
 <span class="nb">cd</span> ./frbpoppy/
-pip3 install -r requirements.txt
 python3 setup.py develop
+python3 tests/example.py
 </pre></div>
 </div>
 <p>Things not going quite as smoothly? Check the <a class="reference internal" href="get_started.html"><span class="doc">Get Started</span></a> guide for additional information on common installation problems.</p>
@@ -87,7 +87,7 @@ python3 setup.py develop
 <span class="n">PLOT</span> <span class="o">=</span> <span class="kc">True</span>
 
 <span class="c1"># Generate an FRB population</span>
-<span class="n">cosmic_pop</span> <span class="o">=</span> <span class="n">CosmicPopulation</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;example&#39;</span><span class="p">)</span>
+<span class="n">cosmic_pop</span> <span class="o">=</span> <span class="n">CosmicPopulation</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;example&#39;</span><span class="p">)</span>
 
 <span class="c1"># Setup a survey</span>
 <span class="n">survey</span> <span class="o">=</span> <span class="n">Survey</span><span class="p">(</span><span class="s1">&#39;htru&#39;</span><span class="p">)</span>

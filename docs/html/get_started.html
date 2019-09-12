@@ -57,11 +57,6 @@
 </pre></div>
 </div>
 </li>
-<li><p class="first">Install necessary external libraries</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip3 install -r requirements.txt
-</pre></div>
-</div>
-</li>
 <li><p class="first">Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo python3 setup.py develop
 </pre></div>
@@ -75,7 +70,16 @@
 </div>
 <p>If you don’t get any errors - hurray, all should be working!</p>
 </li>
+<li><p class="first">Put frbpoppy through its paces:</p>
+</li>
 </ol>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>$ python3 tests/example.py
+
+The first time you run frbpoppy it will generate lookup tables to speed up future runs. This can take up to 2h on a standard 4 core laptop.
+</pre></div>
+</div>
+</div></blockquote>
 </div>
 <div class="section" id="how-do-i-use-it">
 <h2>How do I use it?<a class="headerlink" href="#how-do-i-use-it" title="Permalink to this headline">¶</a></h2>

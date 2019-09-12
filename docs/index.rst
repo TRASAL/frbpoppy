@@ -19,8 +19,8 @@ How can I install it?
 
     git clone https://github.com/davidgardenier/frbpoppy
     cd ./frbpoppy/
-    pip3 install -r requirements.txt
     python3 setup.py develop
+    python3 tests/example.py
 
 Things not going quite as smoothly? Check the :doc:`get_started` guide for additional information on common installation problems.
 

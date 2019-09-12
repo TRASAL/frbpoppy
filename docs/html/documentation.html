@@ -53,7 +53,7 @@
 <p>Class to generate a cosmic population of FRBs.</p>
 <dl class="class">
 <dt>
-<em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=67.74, W_m=0.3089, W_v=0.6911, dm_host_model='normal', dm_host_mu=100, dm_host_sigma=200, dm_igm_index=1000, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+45], lum_index=0, n_model='sfr', alpha=-1.5, pulse_model='lognormal', pulse_range=[0.1, 10], pulse_mu=0.1, pulse_sigma=0.5, si_mu=-1.4, si_sigma=1.0, z_max=2.5</em><span class="sig-paren">)</span></dt>
+<em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=67.74, W_m=0.3089, W_v=0.6911, dm_host_model='normal', dm_host_mu=100, dm_host_sigma=200, dm_igm_index=1000, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+45], lum_index=0, n_model='sfr', alpha=-1.5, w_model='lognormal', w_range=[0.1, 10], w_mu=0.1, w_sigma=0.5, si_mu=-1.4, si_sigma=1.0, z_max=2.5, generate=True</em><span class="sig-paren">)</span></dt>
 <dd><p>Generate a cosmic FRB population.</p>
 <p>Generate a popuation of FRBs.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -82,13 +82,14 @@ sources should emit the given bolometric luminosity.</li>
 <li><strong>n_model</strong> (<em>str</em>) – Number density model. Either ‘vol_co’, ‘sfr’ or
 ‘smd’.</li>
 <li><strong>alpha</strong> (<em>float</em>) – Desired logN/logS of perfectly detected population.</li>
-<li><strong>pulse_model</strong> (<em>str</em>) – Pulse width model, ‘lognormal’ or ‘uniform’.</li>
-<li><strong>pulse_range</strong> (<em>list</em>) – Pulse width range [ms].</li>
-<li><strong>pulse_mu</strong> (<em>float</em>) – Mean pulse width [ms].</li>
-<li><strong>pulse_sigma</strong> (<em>float</em>) – Deviation pulse width [ms].</li>
+<li><strong>w_model</strong> (<em>str</em>) – Pulse width model, ‘lognormal’ or ‘uniform’.</li>
+<li><strong>w_range</strong> (<em>list</em>) – Pulse width range [ms].</li>
+<li><strong>w_mu</strong> (<em>float</em>) – Mean pulse width [ms].</li>
+<li><strong>w_sigma</strong> (<em>float</em>) – Deviation pulse width [ms].</li>
 <li><strong>si_mu</strong> (<em>float</em>) – Mean spectral index.</li>
 <li><strong>si_sigma</strong> (<em>float</em>) – Standard deviation spectral index.</li>
 <li><strong>z_max</strong> (<em>float</em>) – Maximum redshift.</li>
+<li><strong>generate</strong> (<em>bool</em>) – Whether to create a population</li>
 </ul>
 </td>
 </tr>
@@ -100,6 +101,60 @@ sources should emit the given bolometric luminosity.</li>
 </tr>
 </tbody>
 </table>
+<dl class="method">
+<dt>
+<code class="descname">gen_direction</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate the direction of frbs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">gen_dist</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate distances.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">gen_dm</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate dispersion measures.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">gen_dm_host</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate dm host contributions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">gen_gal_coords</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate galactic coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">gen_lum</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span></dt>
+<dd><p>Generate luminosities.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">gen_si</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span></dt>
+<dd><p>Generate spectral indices.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">gen_w</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span></dt>
+<dd><p>Generate pulse widths.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">generate</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate all manner of intrinsic parameters.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -111,7 +166,7 @@ sources should emit the given bolometric luminosity.</li>
 <p>Class holding survey properties.</p>
 <dl class="class">
 <dt>
-<em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Survey</code><span class="sig-paren">(</span><em>name</em>, <em>gain_pattern='gaussian'</em>, <em>n_sidelobes=0.5</em><span class="sig-paren">)</span></dt>
+<em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Survey</code><span class="sig-paren">(</span><em>name</em>, <em>gain_pattern='gaussian'</em>, <em>n_sidelobes=0.5</em>, <em>pointings=[]</em>, <em>max_time=1</em><span class="sig-paren">)</span></dt>
 <dd><p>Method containing survey parameters and functions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -122,9 +177,10 @@ sources should emit the given bolometric luminosity.</li>
 either be a predefined survey present in frbpoppy or a path name to
 a new survey filename</li>
 <li><strong>gain_pattern</strong> (<em>str</em>) – Set gain pattern</li>
-<li><strong>sidelobes</strong> (<em>int</em>) – Number of sidelobes to include</li>
-<li><strong>equal_area</strong> (<em>int/bool</em>) – Ensures beam area on sky can be equal to a beam
-pattern with a max number of sizelobes. If unwanted, set to False</li>
+<li><strong>n_sidelobes</strong> (<em>float</em>) – Number of sidelobes to include. Use 0.5 for
+cutting beam at FWHM</li>
+<li><strong>pointings</strong> (<em>list</em>) – List of (RA, Dec) coordinates</li>
+<li><strong>max_time</strong> (<em>float</em>) – Maximum time spent surveying [days]</li>
 </ul>
 </td>
 </tr>
@@ -159,6 +215,12 @@ figure it out.</p>
 <dt>
 <code class="descname">calc_Ts</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
 <dd><p>Set temperatures for frbs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
+<code class="descname">calc_fluence</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate fluence [Jy*ms].</p>
 </dd></dl>
 
 <dl class="method">
@@ -253,6 +315,9 @@ rigorous testing has been applied to this.</p>
 <dt>
 <code class="descname">calc_snr</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
 <dd><p>Caculate the SNR of several frbs.</p>
+<p>Radiometer equation for single pulse (Dewey et al., 1984), but
+adapted to allow for a degradation factor reducing the peak flux
+as a pulse is stretched</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -315,6 +380,12 @@ changed due to the central frequency being given in MHz.</p>
 
 <dl class="method">
 <dt>
+<code class="descname">in_pointings</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
+<dd><p>Whether within pointing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
 <code class="descname">in_region</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
 <dd><p>Check if the given frbs are within the survey region.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -333,8 +404,28 @@ changed due to the central frequency being given in MHz.</p>
 
 <dl class="method">
 <dt>
-<code class="descname">intensity_profile</code><span class="sig-paren">(</span><em>n_gen=1</em>, <em>dimensions=2</em><span class="sig-paren">)</span></dt>
+<code class="descname">intensity_profile</code><span class="sig-paren">(</span><em>shape=1</em>, <em>dimensions=2</em>, <em>rep_loc='random'</em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate intensity profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>shape</strong> (<em>tuple</em>) – Usually the shape of frbs.s_peak</li>
+<li><strong>dimensions</strong> (<em>int</em>) – Use a 2D beampattern or a 1D one.</li>
+<li><strong>rep_loc</strong> (<em>str</em>) – ‘same’ or ‘random’. Whether repeaters are observed
+in the same spot or a different spot</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">intensity profile, offset from beam [arcmin]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array, array</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -397,6 +488,12 @@ due to limitation in observing time</li>
 
 <dl class="method">
 <dt>
+<code class="descname">calc_rates</code><span class="sig-paren">(</span><em>survey</em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate the relative detection rates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt>
 <code class="descname">rates</code><span class="sig-paren">(</span><em>scale_area=True</em>, <em>scale_time=False</em><span class="sig-paren">)</span></dt>
 <dd><p>Scale the rates by the beam area and time.</p>
 </dd></dl>
@@ -412,7 +509,7 @@ due to limitation in observing time</li>
 <p>Start up Bokeh server.</p>
 <dl class="function">
 <dt>
-<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>mute=True</em>, <em>port=5006</em>, <em>print_command=False</em><span class="sig-paren">)</span></dt>
+<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>no_browser=False</em>, <em>mute=True</em>, <em>port=5006</em>, <em>print_command=False</em><span class="sig-paren">)</span></dt>
 <dd><p>Plot populations with bokeh. Has to save populations before plotting.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
