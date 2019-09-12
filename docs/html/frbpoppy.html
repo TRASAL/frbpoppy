@@ -219,22 +219,6 @@ be created by taking setting power to zero.</p>
 </table>
 </dd></dl>
 
-<dl class="function">
-<dt id="distributions.z_from_csmd">
-<code class="descclassname">distributions.</code><code class="descname">z_from_csmd</code><span class="sig-paren">(</span><em>z_max=6.0</em>, <em>n_gen=1</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.z_from_csmd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a random redshift for sources following the Stellar Mass Density.</p>
-<p>Follows Madau &amp; Dickinson (2014), eq. 2 &amp; 15. For more info see
-<a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
-</dd></dl>
-
-<dl class="function">
-<dt id="distributions.z_from_sfr">
-<code class="descclassname">distributions.</code><code class="descname">z_from_sfr</code><span class="sig-paren">(</span><em>z_max=2.5</em>, <em>n_gen=1</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.z_from_sfr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a random redshift for sources following the Star Formation Rate.</p>
-<p>Follows Madau &amp; Dickinson (2014), eq. 15. For more info see
-<a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
-</dd></dl>
-
 </div>
 <div class="section" id="module-do_hist">
 <span id="do-hist"></span><h2>do_hist<a class="headerlink" href="#module-do_hist" title="Permalink to this headline">¶</a></h2>
@@ -271,7 +255,7 @@ be created by taking setting power to zero.</p>
 <p>Start up Bokeh server.</p>
 <dl class="function">
 <dt id="do_plot.plot">
-<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>no_browser=False</em>, <em>mute=True</em>, <em>port=5006</em>, <em>print_command=False</em><span class="sig-paren">)</span><a class="headerlink" href="#do_plot.plot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>mute=True</em>, <em>port=5006</em>, <em>print_command=False</em><span class="sig-paren">)</span><a class="headerlink" href="#do_plot.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot populations with bokeh. Has to save populations before plotting.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -447,7 +431,7 @@ cosmology calculator.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>z</strong> (<em>float</em>) – Redshift</li>
+<li><strong>z</strong> (<em>array</em>) – Redshift</li>
 <li><strong>self.H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter.</li>
 <li><strong>self.W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter.</li>
 <li><strong>self.W_v</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum.</li>
@@ -462,7 +446,7 @@ cosmology calculator.</p>
 </p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
 </td>
 </tr>
 </tbody>
@@ -908,12 +892,17 @@ non-cosmological population.</li>
 <dt id="number_density.NumberDensity.from_sfr">
 <code class="descname">from_sfr</code><span class="sig-paren">(</span><em>n_gen=1</em><span class="sig-paren">)</span><a class="headerlink" href="#number_density.NumberDensity.from_sfr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get sources to follow star forming rate.</p>
+<p>Return a random redshift for sources following the Star Formation Rate.</p>
+<p>Follows Madau &amp; Dickinson (2014), eq. 15. For more info see
+<a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="number_density.NumberDensity.from_smd">
 <code class="descname">from_smd</code><span class="sig-paren">(</span><em>n_gen=1</em><span class="sig-paren">)</span><a class="headerlink" href="#number_density.NumberDensity.from_smd" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get sources to follow stellar mass density.</p>
+<dd><p>Return a random redshift for sources following Stellar Mass Density.</p>
+<p>Follows Madau &amp; Dickinson (2014), eq. 2 &amp; 15. For more info see
+<a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
 </dd></dl>
 
 <dl class="method">
@@ -1196,61 +1185,10 @@ or give the population name</li>
 <span id="precalc"></span><h2>precalc<a class="headerlink" href="#module-precalc" title="Permalink to this headline">¶</a></h2>
 <p>Create a lookup tables for redshift and the NE2001 dispersion measure.</p>
 <dl class="class">
-<dt id="precalc.CSMDTable">
-<em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">CSMDTable</code><span class="sig-paren">(</span><em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.CSMDTable" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Create/use a stellar mass density lookup table for the FRB number density.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 67.74</li>
-<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter. Defaults to 0.3089</li>
-<li><strong>W_v</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum. Defaults to 0.6911</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Initializing.</p>
-<dl class="method">
-<dt id="precalc.CSMDTable.create_table">
-<code class="descname">create_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#precalc.CSMDTable.create_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a CSMD SQL table.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="precalc.CSMDTable.lookup">
-<code class="descname">lookup</code><span class="sig-paren">(</span><em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.CSMDTable.lookup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Look up associated values with input values.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>z</strong> (<em>array</em>) – Redshifts</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Stellar mass density at given redshift</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="precalc.CSMDTable.set_file_name">
-<code class="descname">set_file_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#precalc.CSMDTable.set_file_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine filename.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="precalc.DistanceTable">
 <em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">DistanceTable</code><span class="sig-paren">(</span><em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em>, <em>test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Create/use a lookup table for comoving distance, volume &amp; redshift.</p>
+<p>Create/use a lookup table for comoving distance, volume, redshift etc.</p>
 <p>Create a list of tuples to lookup the corresponding redshift for a comoving
 distance [Gpc] (or the other way around). Uses formulas from
 Hoggs et al. (1999) for the cosmological calculations. To avoid long
@@ -1280,7 +1218,7 @@ cdf_sfr and cdf_smd.</p>
 
 <dl class="method">
 <dt id="precalc.DistanceTable.lookup">
-<code class="descname">lookup</code><span class="sig-paren">(</span><em>z=None</em>, <em>dist_co=None</em>, <em>vol_co=None</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable.lookup" title="Permalink to this definition">¶</a></dt>
+<code class="descname">lookup</code><span class="sig-paren">(</span><em>z=None</em>, <em>dist_co=None</em>, <em>vol_co=None</em>, <em>dvol_co=None</em>, <em>cdf_sfr=None</em>, <em>cdf_smd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable.lookup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Look up associated values with input values.</p>
 </dd></dl>
 
@@ -1334,6 +1272,22 @@ cdf_sfr and cdf_smd.</p>
 <dd><p>Determine filename.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="precalc.sfr">
+<code class="descclassname">precalc.</code><code class="descname">sfr</code><span class="sig-paren">(</span><em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.sfr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number density of star forming rate at redshift z.</p>
+<p>Follows Madau &amp; Dickinson (2014), eq. 15. For more info see
+<a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="precalc.smd">
+<code class="descclassname">precalc.</code><code class="descname">smd</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.smd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number density of Stellar Mass Density at redshift z.</p>
+<p>Follows Madau &amp; Dickinson (2014), eq. 2 &amp; 15. For more info see
+<a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
 </dd></dl>
 
 </div>
@@ -1655,6 +1609,12 @@ changed due to the central frequency being given in MHz.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.in_time">
+<code class="descname">in_time</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.in_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>For RepeaterPopulation only.</p>
 </dd></dl>
 
 <dl class="method">
