@@ -5,6 +5,8 @@ import numpy as np
 import sqlite3
 import sys
 from scipy.integrate import quad
+from tqdm import tqdm
+from joblib import Parallel, delayed
 
 import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
@@ -14,25 +16,43 @@ from frbpoppy.paths import paths
 class NE2001Table:
     """Create/use a NE2001 lookup table for dispersion measure."""
 
-    def __init__(self):
+    def __init__(self, test=False):
         """Initializing."""
+        self.test = test
         self.set_file_name()
 
         # Setup database
         self.db = False
         self.step = 0.1
         self.rounding = 2
-        if os.path.exists(self.file_name):
+
+        if self.test:
+            self.step = 0.1
+            if os.path.exists(self.file_name):
+                os.remove(self.file_name)
+
+        if os.path.exists(self.file_name) and self.test is False:
             self.db = True
         else:
-            self.create_table()
+            # Calculations take quite some time
+            # Provide a way for people to quit
+            try:
+                self.create_table()
+            except KeyboardInterrupt:
+                pprint('Losing all progress in calculations')
+                os.remove(self.file_name)
+                sys.exit()
 
     def set_file_name(self):
         """Determine filename."""
         uni_mods = os.path.join(paths.models(), 'universe/')
         self.file_name = uni_mods + 'dm_mw.db'
 
-    def create_table(self):
+        if self.test:
+            uni_mods = os.path.join(paths.models(), 'universe/')
+            self.file_name = uni_mods + 'test_dm_mw.db'
+
+    def create_table(self, parallel=True):
         """Create a lookup table for dispersion measure."""
         # Connect to database
         conn = sqlite3.connect(self.file_name)
@@ -47,22 +67,58 @@ class NE2001Table:
         c.execute('create table dm ' +
                   '(gl real, gb real, dm_mw real)')
 
-        results = []
-
         # Give an update on the progress
-        pprint('Creating a DM lookup table (only needs to be done once)')
+        m = ['Creating a DM lookup table',
+             '  - Only needs to happen once',
+             '  - Unfortunately pretty slow',
+             '  - Prepare to wait for ~1.5h (4 cores)',
+             '  - Time given as [time_spent<time_left] in (hh:)mm:ss',
+             'Starting to calculate DM values']
+        for n in m:
+            pprint(n)
 
-        for gl in gls:
-            for gb in gbs:
+        n_opt = len(gls)*len(gbs)
+        options = np.array(np.meshgrid(gls, gbs)).T.reshape(-1, 2)
+        dm_mw = np.zeros(len(options)).astype(np.float32)
 
-                dm_mw = go.ne2001_dist_to_dm(dist, gl, gb)
-                r = (gl, gb, dm_mw)
-                results.append(r)
+        def dm_tot(i, dm_mw):
+            gl, gb = options[i]
+            dm_mw[i] = go.ne2001_dist_to_dm(dist, gl, gb)
 
-            sys.stdout.write('\r{}'.format(gl))
-            sys.stdout.flush()
+        if parallel:
 
-        # Save results to database
+            temp_path = os.path.join(paths.models(), 'universe/') + 'temp.mmap'
+
+            # Make a temp memmap to have a sharedable memory object
+            temp = np.memmap(temp_path, dtype=dm_mw.dtype,
+                             shape=len(dm_mw),
+                             mode='w+')
+
+            # Parallel process in order to populate array
+            r = range(n_opt)
+            j = min([4, os.cpu_count() - 1])
+            print(os.cpu_count())
+            Parallel(n_jobs=j)(delayed(dm_tot)(i, temp) for i in tqdm(r))
+
+            # Map results
+            r = np.concatenate((options, temp[:, np.newaxis]), axis=1)
+            results = map(tuple, r.tolist())
+
+            # Delete the temporary directory and contents
+            try:
+                os.remove(temp_path)
+            except FileNotFoundError:
+                print(f'Unable to remove {temp_path}')
+
+        else:
+            for i in tqdm(range(n_opt)):
+                dm_tot(i, dm_mw)
+
+            # Save results to database
+            r = np.concatenate((options, dm_mw[:, np.newaxis]), axis=1)
+            results = map(tuple, r.tolist())
+
+        pprint('  - Saving results')
         c.executemany('insert into dm values (?,?,?)', results)
 
         # Make for easier searching
@@ -70,6 +126,8 @@ class NE2001Table:
 
         # Save
         conn.commit()
+
+        pprint('Finished DM table')
 
     def lookup(self, gal, gab):
         """Look up associated milky way dispersion measure with gal coords.
@@ -127,11 +185,12 @@ class DistanceTable:
 
     """
 
-    def __init__(self, H_0=67.74, W_m=0.3089, W_v=0.6911):
+    def __init__(self, H_0=67.74, W_m=0.3089, W_v=0.6911, test=False):
         """Initializing."""
         self.H_0 = H_0
         self.W_m = W_m
         self.W_v = W_v
+        self.test = test
 
         self.set_file_name()
 
@@ -139,10 +198,24 @@ class DistanceTable:
         self.db = False
         self.step = 0.00001
         self.z_max = 6.5
-        if os.path.exists(self.file_name):
+
+        if self.test:
+            self.step = 0.001
+            self.z_max = 6.5
+            if os.path.exists(self.file_name):
+                os.remove(self.file_name)
+
+        if os.path.exists(self.file_name) and self.test is False:
             self.db = True
         else:
-            self.create_table()
+            # Calculations take quite some time
+            # Provide a way for people to quit
+            try:
+                self.create_table()
+            except KeyboardInterrupt:
+                pprint('Losing all progress in calculations')
+                os.remove(self.file_name)
+                sys.exit()
 
     def set_file_name(self):
         """Determine filename."""
@@ -158,11 +231,18 @@ class DistanceTable:
                  'wv', cvt(self.W_v)]
         f = '-'.join(paras)
 
-        self.file_name = uni_mods + f + '.db'
+        self.file_name = uni_mods + f'{f}.db'
+
+        if self.test:
+            self.file_name = uni_mods + 'cosmo_test.db'
 
     def create_table(self):
         """Create a lookup table for distances."""
-        pprint('Creating a distance table (only needs to happen once)')
+        m = ['Creating a distance table',
+             '  - Only needs to happen once',
+             '  - May take up to 2m on a single core']
+        for n in m:
+            pprint(n)
 
         # Connect to database
         conn = sqlite3.connect(self.file_name)
@@ -187,6 +267,7 @@ class DistanceTable:
 
         results = []
 
+        pprint('  - Calculating parameters at various redshifts')
         conv = go.Redshift(zs, H_0=H_0, W_m=W_m, W_v=W_v)
         dists = conv.dist_co()
         vols = conv.vol_co()
@@ -195,11 +276,13 @@ class DistanceTable:
         dvols = np.zeros_like(vols)
         dvols[1:] = np.diff(vols)
 
+        pprint('  - Calculating Star Formation Rate')
         # Get pdf sfr
         pdf_sfr = sfr(zs)*dvols
         cdf_sfr = np.cumsum(pdf_sfr)  # Unnormalized
         cdf_sfr /= cdf_sfr[-1]
 
+        pprint('  - Calculating Stellar Mass Density')
         # Get pdf csmd
         pdf_smd = smd(zs, H_0=H_0, W_m=W_m, W_v=W_v)*dvols
         cdf_smd = np.cumsum(pdf_smd)  # Unnormalized
@@ -207,6 +290,7 @@ class DistanceTable:
 
         results = np.stack((zs, dists, vols, dvols, cdf_sfr, cdf_smd)).T
 
+        pprint('  - Saving values to database')
         # Save results to database
         data = map(tuple, results.tolist())
         c.executemany('insert into distances values (?,?,?,?,?,?)', data)
@@ -223,7 +307,7 @@ class DistanceTable:
         # Save
         conn.commit()
 
-        pprint('\nFinished distance table')
+        pprint('Finished distance table')
 
     def lookup(self, z=None, dist_co=None, vol_co=None, dvol_co=None,
                cdf_sfr=None, cdf_smd=None):

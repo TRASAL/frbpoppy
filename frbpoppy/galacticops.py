@@ -5,10 +5,8 @@ Series of galactic operations (doesn't that sound cool?!).
 """
 
 import ctypes as C
-import csv
 import math
 import os
-import random
 import numpy as np
 
 from frbpoppy.paths import paths
