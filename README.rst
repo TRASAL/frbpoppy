@@ -26,10 +26,12 @@ How can I install it?
 
    Macs should also be supported, however no tests have been done on Windows.
 
+
 4. Run frbpoppy for the first time. Frbpoppy will automatically create lookup tables for complex calculations. Note this can take up to 2h on a modern machine (4 cores). Subsequent runs will be orders of magnitude faster.
     ::
 
      $ python3 tests/example.py
+
 
 ******************
 How do I use it?
