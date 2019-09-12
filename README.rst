@@ -18,12 +18,18 @@ How can I install it?
     $ git clone https://github.com/davidgardenier/frbpoppy
 
 
-3. Install frbpoppy locally on Ubuntu by going to the downloaded directory and running:
+3. It's important that frbpoppy is installed locally. Why? It means that you can play around with the code without having to dig into a system wide install. It also allows frbpoppy to create data files more easily.
+   Install frbpoppy locally by going to the downloaded directory and running:
    ::
 
     $ python3 setup.py develop
 
    Macs should also be supported, however no tests have been done on Windows.
+
+4. Run frbpoppy for the first time. Frbpoppy will automatically create lookup tables for complex calculations. Note this can take up to 2h on a modern machine (4 cores). Subsequent runs will be orders of magnitude faster.
+    ::
+
+     $ python3 tests/example.py
 
 ******************
 How do I use it?
