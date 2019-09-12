@@ -32,13 +32,13 @@ class Rates:
         t += line
 
         # Format rates
-        rdays = round(self.days)
+        rdays = round(self.days, 3)
         t += r.format('In population', rdays, round(self.tot()))
-        t += r.format('Detected', rdays, round(self.det))
-        t += r.format('Too late', rdays, round(self.late))
-        t += r.format('Too faint', rdays, round(self.faint))
-        t += r.format('Outside survey', rdays, round(self.out))
-        t += r.format('/Gpc^3', 365.25, round(self.vol))
+        t += r.format('Detected', rdays, round(self.det, 3))
+        t += r.format('Too late', rdays, round(self.late, 3))
+        t += r.format('Too faint', rdays, round(self.faint, 3))
+        t += r.format('Outside survey', rdays, round(self.out, 3))
+        t += r.format('/Gpc^3', 365.25, round(self.vol, 3))
         t += r.format('Expected', round(self.exp, 4), 1)
         t += line
 
