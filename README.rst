@@ -47,7 +47,7 @@ All requirements can be found in `setup.py <https://github.com/davidgardenier/fr
  - `requests >= 2.20.0.` for downloading new versions of frbcat
  - `future-fstrings >= 1.2.0` for using f-strings in old Python versions
  - `tqdm >= 4.35.0` for nice progress bars during long calculations
- - 'joblib >= 0.13.2' for parallel processing of long calculations
+ - `joblib >= 0.13.2` for parallel processing of long calculations
 
 ***************
 How can I help?
