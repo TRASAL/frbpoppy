@@ -26,6 +26,9 @@ class NE2001Table:
         self.step = 0.1
         self.rounding = 2
 
+        # For parallel processes
+        self.temp_path = None
+
         if self.test:
             self.step = 0.1
             if os.path.exists(self.file_name):
@@ -41,6 +44,8 @@ class NE2001Table:
             except KeyboardInterrupt:
                 pprint('Losing all progress in calculations')
                 os.remove(self.file_name)
+                if self.temp:
+                    os.remove(self.temp_path)
                 sys.exit()
 
     def set_file_name(self):
@@ -91,6 +96,7 @@ class NE2001Table:
         if parallel:
 
             temp_path = os.path.join(paths.models(), 'universe/') + 'temp.mmap'
+            self.temp_path = temp_path
 
             # Make a temp memmap to have a sharedable memory object
             temp = np.memmap(temp_path, dtype=dm_mw.dtype,
