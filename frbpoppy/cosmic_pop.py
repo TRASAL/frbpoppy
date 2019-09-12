@@ -91,7 +91,7 @@ class CosmicPopulation(Population):
         self.lum_min = lum_range[0]
         self.lum_pow = lum_index
         self.name = name
-        self.n_gen = n_gen
+        self.n_gen = int(n_gen)
         self.n_model = n_model
         self.si_mu = si_mu
         self.si_sigma = si_sigma

@@ -4,7 +4,7 @@ from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 PLOT = False
 
 # Generate an FRB population
-cosmic_pop = CosmicPopulation(10000, name='example')
+cosmic_pop = CosmicPopulation(1e5, name='example', days=0.23)
 
 # Setup a survey
 survey = Survey('htru')
