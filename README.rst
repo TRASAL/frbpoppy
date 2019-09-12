@@ -21,7 +21,6 @@ How can I install it?
    ::
 
     $ python3 setup.py develop
-
 4. Run frbpoppy for the first time. Frbpoppy will automatically create lookup tables for complex calculations. Note this can take up to 2h on a modern machine (4 cores). Subsequent runs will be orders of magnitude faster.
     ::
 
