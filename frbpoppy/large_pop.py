@@ -14,7 +14,7 @@ class LargePopulation:
     Basically splits it up, and merges the results.
     """
 
-    def __init__(self, pop, *surveys, max_size=1e4, run=True):
+    def __init__(self, pop, *surveys, max_size=1e6, run=True):
         """Set arguments."""
         self.pop = pop
         self.surveys = surveys
@@ -110,6 +110,8 @@ def main():
         surveys.append(Survey(s))
 
     large_pops = LargePopulation(pop, *surveys).pops
+
+    # For comparison
     surv_pop = SurveyPopulation(pop, surveys[0])
 
     plot(*large_pops, surv_pop, mute=False, frbcat=False)
