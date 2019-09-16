@@ -21,18 +21,18 @@ A polarized fast radio burst at low Galactic latitude,FRB150215,trns
 The host galaxy of a fast radio burst,FRB150418,superb
 The SUrvey for Pulsars and Extragalactic Radio Bursts II: New FRB discoveries and their follow-up,FRB150610,superb
 The magnetic field and turbulence of the cosmic web measured using a brilliant fast radio burst,FRB150807,party
-First detection of FRBs at the frequency 111 MHz at the radio telescope BSA LPI,FRB151018,pushchino 
+First detection of FRBs at the frequency 111 MHz at the radio telescope BSA LPI,FRB151018,pushchino
 The SUrvey for Pulsars and Extragalactic Radio Bursts II: New FRB discoveries and their follow-up,FRB151206,superb
 The SUrvey for Pulsars and Extragalactic Radio Bursts II: New FRB discoveries and their follow-up,FRB151230,superb
 The SUrvey for Pulsars and Extragalactic Radio Bursts II: New FRB discoveries and their follow-up,FRB160102,superb
 The first interferometric detection of fast radio bursts,FRB160317,utmost
 The first interferometric detection of fast radio bursts,FRB160410,utmost
 The first interferometric detection of fast radio bursts,FRB160608,utmost
-First detection of FRBs at the frequency 111 MHz at the radio telescope BSA LPI,FRB160920,pushchino 
+First detection of FRBs at the frequency 111 MHz at the radio telescope BSA LPI,FRB160920,pushchino
 The dispersion-brightness relation for fast radio bursts from a wide-field survey,FRB170107,askap-fly
 The dispersion-brightness relation for fast radio bursts from a wide-field survey,FRB170416,askap-fly
 The dispersion-brightness relation for fast radio bursts from a wide-field survey,FRB170428,askap-fly
-First detection of FRBs at the frequency 111 MHz at the radio telescope BSA LPI,FRB170606,pushchino 
+First detection of FRBs at the frequency 111 MHz at the radio telescope BSA LPI,FRB170606,pushchino
 The dispersion-brightness relation for fast radio bursts from a wide-field survey,FRB170707,askap-fly
 The dispersion-brightness relation for fast radio bursts from a wide-field survey,FRB170712,askap-fly
 FRB microstructure revealed by the real-time detection of FRB170827,FRB170827,utmost
@@ -79,3 +79,30 @@ Discovery of FRB 180923 at the Parkes Radio Telescope,FRB180923,superb
 Two new FRBs discovered by UTMOST,FRB181016,utmost
 Two new FRBs discovered by UTMOST,FRB181017,utmost
 Detection of FRB181228 at the Molonglo Radio Telescope,FRB181228,utmost
+"A new fast radio burst in the data sets containing the Lorimer burst",FRB010312,pmsurv
+"Five new real-time detections of Fast Radio Bursts with UTMOST",FRB170922,utmost
+"Commensal discovery of four Fast Radio Bursts during Parkes Pulsar Timing Array observations",FRB171209,ppta
+"Commensal discovery of four Fast Radio Bursts during Parkes Pulsar Timing Array observations",FRB180309,ppta
+"Commensal discovery of four Fast Radio Bursts during Parkes Pulsar Timing Array observations",FRB180311,ppta
+"A survey of the Galactic plane for dispersed radio pulses with the Australian Square Kilometre Array Pathfinder",FRB180430,askap-fly
+"A Southern sky search for repeating Fast Radio Bursts using the Australian SKA Pathfinder",FRB180515,askap-fly
+"Five new real-time detections of Fast Radio Bursts with UTMOST",FRB180528,utmost
+"Commensal discovery of four Fast Radio Bursts during Parkes Pulsar Timing Array observations",FRB180714,ppta
+"CHIME/FRB Detection of Eight New Repeating Fast Radio Burst Sources",FRB180916.J0158+65,chime
+"Single fast radio burst localized to a massive galaxy at cosmological distance",FRB180924,askap-incoh
+"Five new real-time detections of Fast Radio Bursts with UTMOST",FRB181016,utmost
+"Five new real-time detections of Fast Radio Bursts with UTMOST",FRB181017,utmost
+"nan",FRB181017.J1705+68,chime
+"CHIME/FRB Detection of Eight New Repeating Fast Radio Burst Sources",FRB181030.J1054+73,chime
+"CHIME/FRB Detection of Eight New Repeating Fast Radio Burst Sources",FRB181119.J12+65,chime
+"CHIME/FRB Detection of Eight New Repeating Fast Radio Burst Sources",FRB181128.J0456+63,chime
+"Five new real-time detections of Fast Radio Bursts with UTMOST",FRB181228,utmost
+"nan",FRB190116.J1249+27,chime
+"nan",FRB190209.J0937+77,chime
+"nan",FRB190222.J2052+69,chime
+"FRB190322 found at UTMOST",FRB190322,utmost
+"A fast radio burst localized to a massive galaxy",FRB190523,dsa10
+"ASKAP detection of FRB190711",FRB190711,askap-incoh
+"ASKAP detection of FRB 190714",FRB190714,askap-incoh
+"Detection of Fast Radio Bursts on the Large Scanning Antenna of the Lebedev Physical Institute",FRB160920,lebedev
+"Detection of Fast Radio Bursts on the Large Scanning Antenna of the Lebedev Physical Institute",FRB170606,lebedev
