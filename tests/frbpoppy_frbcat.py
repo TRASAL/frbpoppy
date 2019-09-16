@@ -4,14 +4,13 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 from scipy.stats import ks_2samp
 
-from frbpoppy import Survey, Frbcat, pprint
+from frbpoppy import CosmicPopulation, Survey, Frbcat, pprint, LargePopulation
+from frbpoppy import paths, unpickle
 
-from quick import get_cosmic_pop, get_survey_pop
-
-MAKE = False
-OBSERVE = False
 PLOT = True
-SIZE = 'large'
+PLOT_COLS = 2
+SIZE = 1e8
+REMAKE = True
 TELESCOPES = ['parkes', 'askap']
 
 
@@ -87,6 +86,10 @@ def plot_dists(surv_pop, telescope):
     """
     # Use a nice font for axes
     plt.rc('text', usetex=True)
+    if PLOT_COLS == 1:
+        plt.rcParams["figure.figsize"] = (3.556, 3.556)
+    else:
+        plt.rcParams["figure.figsize"] = (5.75373, 3.556)
 
     # Plot dm distribution
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
@@ -136,15 +139,26 @@ def plot_dists(surv_pop, telescope):
     plt.clf()
 
 
-def main():
-    """Run main part of code."""
-    # Be a bit smart about which populations need to be loaded
-    load = True
-    if not MAKE and not OBSERVE:
-        load = False
+def get_data():
+    """Get survey populations."""
 
-    pop = get_cosmic_pop('standard', SIZE, load=load, overwrite=MAKE)
+    # Don't always regenerate a population
+    if REMAKE == False:
+        # Check where a possible population would be located
+        path = ''
+        surv_pops = []
+        for telescope in TELESCOPES:
+            if telescope == 'askap':
+                telescope = 'askap-fly'
+            name = f'{telescope}'
+            path = paths.populations() + name + '.p'
+            surv_pops.append(unpickle(path))
 
+        return surv_pops
+
+    cosmic_pop = CosmicPopulation.complex(SIZE, generate=False)
+
+    surveys = []
     for telescope in TELESCOPES:
 
         pattern = 'airy'
@@ -155,12 +169,19 @@ def main():
         if telescope == 'askap':
             s = 'askap-fly'
 
-        survey = Survey(s, gain_pattern=pattern, n_sidelobes=1)
+        surveys.append(Survey(s, gain_pattern=pattern, n_sidelobes=1))
 
-        surv_pop = get_survey_pop(pop, survey, overwrite=OBSERVE)
+    return LargePopulation(cosmic_pop, *surveys).pops
 
-        if PLOT:
-            plot_dists(surv_pop, telescope)
+
+def main():
+    """Run main part of code."""
+
+    surv_pops = get_data()
+
+    if PLOT:
+        for i, telescope in enumerate(TELESCOPES):
+            plot_dists(surv_pops[i], telescope)
 
 
 if __name__ == '__main__':

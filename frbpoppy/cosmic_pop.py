@@ -239,6 +239,96 @@ class CosmicPopulation(Population):
         self.gen_si(self.n_gen)
         pprint(f'Finished generating {self.name} population')
 
+    @classmethod
+    def complex(cls, n, generate=False):
+        """Set up a complex population."""
+        pop = cls(n,
+                  days=1,
+                  name='complex',
+                  H_0=67.74,
+                  W_m=0.3089,
+                  W_v=0.6911,
+                  dm_host_model='normal',
+                  dm_host_mu=100,
+                  dm_host_sigma=200,
+                  dm_igm_index=1000,
+                  dm_igm_sigma=None,
+                  dm_mw_model='ne2001',
+                  emission_range=[10e6, 10e9],
+                  lum_range=[1e40, 1e45],
+                  lum_index=0.,
+                  n_model='vol_co',
+                  alpha=-1.5,
+                  w_model='lognormal',
+                  w_range=[1., 1.],
+                  w_mu=0.1,
+                  w_sigma=0.5,
+                  si_mu=-1.4,
+                  si_sigma=1.,
+                  z_max=2.5,
+                  generate=generate)
+        return pop
+
+    @classmethod
+    def standard_candles(cls, n, generate=False):
+        """Setup a population of standard candles."""
+        pop = cls(n,
+                  days=1,
+                  name='standard_candles',
+                  H_0=67.74,
+                  W_m=0.3089,
+                  W_v=0.6911,
+                  dm_host_model='normal',
+                  dm_host_mu=100,
+                  dm_host_sigma=0,
+                  dm_igm_index=1000,
+                  dm_igm_sigma=None,
+                  dm_mw_model='ne2001',
+                  emission_range=[10e6, 10e9],
+                  lum_range=[1e36, 1e36],
+                  lum_index=0.,
+                  n_model='sfr',
+                  alpha=-1.5,
+                  w_model='uniform',
+                  w_range=[1., 1.],
+                  w_mu=0.1,
+                  w_sigma=0.,
+                  si_mu=0.,
+                  si_sigma=0.,
+                  z_max=2.5,
+                  generate=generate)
+        return pop
+
+    @classmethod
+    def simple(cls, n, generate=False):
+        """Set up a simple, local population."""
+        pop = cls(n,
+                  days=1,
+                  name='simple',
+                  H_0=67.74,
+                  W_m=0.3089,
+                  W_v=0.6911,
+                  dm_host_model='normal',
+                  dm_host_mu=0.,
+                  dm_host_sigma=0.,
+                  dm_igm_index=0.,
+                  dm_igm_sigma=None,
+                  dm_mw_model='zero',
+                  emission_range=[10e6, 10e9],
+                  lum_range=[1e38, 1e38],
+                  lum_index=0.,
+                  n_model='vol_co',
+                  alpha=-1.5,
+                  w_model='uniform',
+                  w_range=[10, 10],
+                  w_mu=0.1,
+                  w_sigma=1.,
+                  si_mu=0.,
+                  si_sigma=0.,
+                  z_max=0.01,
+                  generate=generate)
+        return pop
+
 
 if __name__ == '__main__':
 
