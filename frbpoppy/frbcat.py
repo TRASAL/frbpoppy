@@ -25,7 +25,7 @@ class Frbcat():
                  one_per_frb=False,
                  repeat_bursts=True,
                  repeaters=True,
-                 update=False):
+                 update=True):
         """Initializing."""
         # Set path
         self.data_dir = paths.frbcat()
@@ -91,7 +91,7 @@ class Frbcat():
             dfs.append(df)
         return pd.concat(dfs, ignore_index=True)
 
-    def get(self, internet=False, save=True, local=False):
+    def get(self, internet=True, save=True, local=False):
         """
         Get frbcat from online or from a local file.
 
@@ -315,7 +315,10 @@ class Frbcat():
             if any(no_surveys):
                 ns_df = self.df[no_surveys]
 
-                pprint('Please add these frbs to {}'.format(surf))
+                pprint('It seems there are new FRBs!')
+                pprint("  - Frbcat doesn't know which *survey* was running when the FRB was seen")
+                pprint("  - To use these recent detections, please link the FRB to a survey by:")
+                pprint('  - Adding these frbs to {}'.format(surf))
 
                 for i, r in ns_df[['pub_description', 'frb']].iterrows():
                     title, frb = r
