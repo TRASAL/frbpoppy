@@ -271,7 +271,7 @@ class CosmicPopulation(Population):
 
     @classmethod
     def standard_candles(cls, n, generate=False):
-        """Setup a population of standard candles."""
+        """Set up a population of standard candles."""
         pop = cls(n,
                   days=1,
                   name='standard_candles',
