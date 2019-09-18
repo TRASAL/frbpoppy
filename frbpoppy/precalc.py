@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Create a lookup tables for redshift and the NE2001 dispersion measure."""
 
 import os

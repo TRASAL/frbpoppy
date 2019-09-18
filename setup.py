@@ -62,21 +62,27 @@ class PostDevelopCommand(develop):
 
         check_call(gf)
 
-        develop.run(self)
-
         # Some additional information of users of Python 3.5 or older
         v = sys.version_info
-        if v[0] == 3 and v[1] <= 6:
-
-            m = 'It seems you are using an old Python installation (v{}.{}). \n'
+        if v[0] == 3 and v[1] < 6:
+            m = 'Note from frbpoppy\n'
+            m += '==================\n'
+            m += ' - It seems you are using an old Python version (v{}.{}) \n'
             m = m.format(v[0], v[1])
             m += (
-                 'We recommend upgrading to v3.6 or higher if possible. \n'
-                 "If you can't, then this information is relevant for you: \n"
-                 'Seeing errors about f-strings? Try running '
+                 ' - We recommend upgrading to >=3.6 if possible \n'
+                 " - As a work around we have prepared a bash script to "
+                 'backport frbpoppy to versions 3.0<=v<=3.5 \n'
+                 ' - This will pip3 install a library called future_fstrings '
+                 'and remove all f-strings from the code '
                  )
-            m += '`pip3 un{0}; pip3 {0}`'.format('install future_fstrings')
             print(m)
+            i = input(' > Would you like frbpoppy to run this script? [y/n]')
+            if i == 'y' or i == 'Y':
+                c = ['bash', 'backport.sh']
+                check_call(c)
+
+        develop.run(self)
 
 
 setup(name='frbpoppy',

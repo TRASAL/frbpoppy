@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Define distributions from which to get random numbers."""
 import numpy as np
 import math
@@ -62,7 +61,7 @@ def powerlaw(low, high, power, shape=1):
 
     if isinstance(shape, tuple):
         pl = pl.reshape(shape)
-        
+
     return pl
 
 

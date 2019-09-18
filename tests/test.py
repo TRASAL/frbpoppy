@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Test calculating transit times for location on Earth."""
 import numpy as np
 import matplotlib.pyplot as plt

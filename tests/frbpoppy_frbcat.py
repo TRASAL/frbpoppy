@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Plot the DM distribution obtained with frbpoppy against frbcat results."""
 import numpy as np
 import matplotlib.pyplot as plt

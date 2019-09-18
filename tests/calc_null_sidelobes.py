@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Calculate where null points of an Airy pattern lie."""
 from scipy.special import j1
 import numpy as np

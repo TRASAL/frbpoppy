@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Allow FRB populations to be explored interactively.
 
 Can be run with:

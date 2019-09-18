@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Allow for repeating FRB sources."""
 import numpy as np
 from frbpoppy.cosmic_pop import CosmicPopulation

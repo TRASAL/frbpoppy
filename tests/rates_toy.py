@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Use simple rate comparisions, try predicting event rates."""
 import numpy as np
 import matplotlib.pyplot as plt

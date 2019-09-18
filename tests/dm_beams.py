@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Plot the change in DM distributions due to differing beampatterns."""
 import numpy as np
 import matplotlib.pyplot as plt

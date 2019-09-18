@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Plot intensity profile of sidelobes."""
 import matplotlib.pyplot as plt
 import numpy as np
