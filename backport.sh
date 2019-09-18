@@ -6,7 +6,6 @@ pip3 install future-fstrings[rewrite]
 for e in ./frbpoppy ./tests; do
   cd $e
   for f in *.py; do
-    echo $f
     tmpfile=$(mktemp)
     future-fstrings-show $f > ${tmpfile}
     cat ${tmpfile} > $f
