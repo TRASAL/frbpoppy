@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Do things with frbcat."""
 import datetime
 import glob

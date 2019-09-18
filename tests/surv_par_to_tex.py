@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Grab survey parameters, and output to a latex table."""
 import pandas as pd
 from frbpoppy import paths

@@ -1,6 +1,7 @@
 """Script to do a local install of frbpoppy."""
 
 import os
+import sys
 import glob
 from setuptools import setup
 from setuptools.command.develop import develop
@@ -62,6 +63,20 @@ class PostDevelopCommand(develop):
         check_call(gf)
 
         develop.run(self)
+
+        # Some additional information of users of Python 3.5 or older
+        v = sys.version_info
+        if v[0] == 3 and v[1] <= 6:
+
+            m = 'It seems you are using an old Python installation (v{}.{}). \n'
+            m = m.format(v[0], v[1])
+            m += (
+                 'We recommend upgrading to v3.6 or higher if possible. \n'
+                 "If you can't, then this information is relevant for you: \n"
+                 'Seeing errors about f-strings? Try running '
+                 )
+            m += '`pip3 un{0}; pip3 {0}`'.format('install future_fstrings')
+            print(m)
 
 
 setup(name='frbpoppy',

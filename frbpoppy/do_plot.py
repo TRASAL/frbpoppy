@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Start up Bokeh server."""
 import os
 import subprocess

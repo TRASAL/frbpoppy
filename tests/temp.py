@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Survey brightness distribution."""
 from frbpoppy import plot, unpickle
 

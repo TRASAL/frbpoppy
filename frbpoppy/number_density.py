@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Group together various number density descriptors."""
 import random
 import numpy as np

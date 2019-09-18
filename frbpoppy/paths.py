@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Set all possible needed paths."""
 import os.path
 from frbpoppy.log import pprint
