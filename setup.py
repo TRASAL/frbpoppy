@@ -81,9 +81,10 @@ class PostDevelopCommand(develop):
             if i == 'y' or i == 'Y':
                 c = ['bash', 'backport.sh']
                 check_call(c)
+            else:
+                ' - Avoiding runing bash script.'
 
         develop.run(self)
-
 
 setup(name='frbpoppy',
       version='1.0.0',
@@ -101,9 +102,8 @@ setup(name='frbpoppy',
                         'pandas >= 0.23.4',
                         'scipy >= 1.1.0',
                         'SQLAlchemy >= 1.3.0',
-                        'matplotlib >= 2.2.3',
+                        'matplotlib >= 2.2.3,<3.1',
                         'requests >= 2.20.0.',
-                        'future-fstrings >= 1.2.0',
                         'tqdm',
                         'joblib'],
       cmdclass={'develop': PostDevelopCommand})
