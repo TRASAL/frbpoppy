@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Methods to deal with large populations."""
 import numpy as np
 import os

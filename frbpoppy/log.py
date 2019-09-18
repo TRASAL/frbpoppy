@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Quick and dirty logging functions."""
 import inspect
 import sys

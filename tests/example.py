@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Short example of how frbpoppy works."""
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 

@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Bin up Pandas DataFrames into histograms ready for Bokeh plotting."""
 import numpy as np
 import pandas as pd

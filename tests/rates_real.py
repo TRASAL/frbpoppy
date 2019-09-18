@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Calculate the real frb detection rates."""
 from scipy.stats import chi2, norm
 from scipy.integrate import quad

@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Calculate rates for a local population."""
 from collections import defaultdict
 import matplotlib.pyplot as plt

@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Event rates for CHIME versus spectral index over alpha."""
 import numpy as np
 import matplotlib.pyplot as plt

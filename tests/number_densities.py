@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Plot options of varying FRB number densities."""
 import matplotlib.pyplot as plt
 import numpy as np

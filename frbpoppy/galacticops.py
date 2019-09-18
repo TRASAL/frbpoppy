@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """
 Series of galactic operations (doesn't that sound cool?!).
 

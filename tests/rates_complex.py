@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Try creating the most realistic event rates."""
 from collections import defaultdict
 import matplotlib.pyplot as plt
@@ -36,7 +35,7 @@ def complex_rates(make=MAKE, observe=OBSERVE, alphas=ALPHAS, size=SIZE,
     rates = defaultdict(list)
 
     for s in surveys:
-        
+
         survey = Survey(name=s, gain_pattern='airy', n_sidelobes=1)
 
         for i, pop in enumerate(pops):

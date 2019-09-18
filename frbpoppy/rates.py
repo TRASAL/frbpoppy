@@ -1,4 +1,3 @@
-# -*- coding: future_fstrings -*-
 """Classes to hold rate counters."""
 from copy import deepcopy
 from frbpoppy import pprint
