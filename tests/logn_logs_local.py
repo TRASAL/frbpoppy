@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Check the log N log S slope of a population."""
 import numpy as np
 import matplotlib.pyplot as plt

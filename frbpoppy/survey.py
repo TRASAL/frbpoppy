@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Class holding survey properties."""
 import math
 import numpy as np

@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Plot a log N / log S graph for three different populations."""
 import numpy as np
 import matplotlib.pyplot as plt

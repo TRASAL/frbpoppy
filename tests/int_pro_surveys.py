@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Plot intensity profile of theoretical beam patterns."""
 import matplotlib.pyplot as plt
 import numpy as np

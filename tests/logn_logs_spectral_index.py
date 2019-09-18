@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Script to reproduce Fig. 6 of Connor et al. 2017.
 
 Plot N(>S) over log S (S being the flux density) for various spectral indices.

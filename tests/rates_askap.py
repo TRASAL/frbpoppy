@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Compare rate calculations per alpha for the two askap settings."""
 import numpy as np
 import matplotlib.pyplot as plt

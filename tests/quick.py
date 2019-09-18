@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Use standard populations to speed up calculation times."""
 import os
 from frbpoppy import CosmicPopulation, SurveyPopulation, paths, unpickle, pprint

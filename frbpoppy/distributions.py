@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Define distributions from which to get random numbers."""
 import numpy as np
 import math

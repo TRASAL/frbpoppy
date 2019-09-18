@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Class to hold FRB source properties."""
 import numpy as np
 import pandas as pd

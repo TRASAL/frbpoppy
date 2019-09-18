@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Class to generate a cosmic population of FRBs."""
 import numpy as np
 

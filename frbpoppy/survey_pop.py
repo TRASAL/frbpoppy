@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Class to generate a survey population of FRBs."""
 from copy import deepcopy
 import math

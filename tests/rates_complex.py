@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Try creating the most realistic event rates."""
 from collections import defaultdict
 import matplotlib.pyplot as plt

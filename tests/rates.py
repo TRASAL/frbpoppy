@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Show frbpoppy matches analytical models and predict the event rates."""
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D

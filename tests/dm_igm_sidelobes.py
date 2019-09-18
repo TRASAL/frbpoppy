@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Plot how beampatterns can change the IGM DM distribution."""
 
 import numpy as np

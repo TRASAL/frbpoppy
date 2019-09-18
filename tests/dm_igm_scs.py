@@ -1,3 +1,4 @@
+# -*- coding: future_fstrings -*-
 """Replicate middle plot of figure 3 of Niino (2018).
 
 This figure compares input luminosity vs apparent luminosity for a variety of
