@@ -112,7 +112,7 @@ class Population:
             self.to_pickle(path)
         if extention == 'csv':
             path += '.csv'
-            self._to_csv(path)
+            self.to_csv(path)
 
     def to_csv(self, path):
         """Write a population to a csv file.
