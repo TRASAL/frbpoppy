@@ -46,6 +46,9 @@ class FRBs:
         self.T_sys = 0
         self.w_eff = None
 
+        # Software properties
+        self.index = None
+
     def apply(self, mask):
         """Apply a Numpy array to all parameters.
 

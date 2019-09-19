@@ -139,6 +139,9 @@ class CosmicPopulation(Population):
         """Generate the direction of frbs."""
         frbs = self.frbs
 
+        # Keep frb indices
+        frbs.index = np.arange(self.n_gen)
+
         # Add random directional coordinates
         u = np.random.uniform
         frbs.ra = u(0, 360, self.n_gen)
