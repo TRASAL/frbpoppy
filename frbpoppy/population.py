@@ -113,19 +113,15 @@ class Population:
         if extention == 'csv':
             path += '.csv'
             self._to_csv(path)
-        elif extention == 'dat':
-            path += '.dat'
-            self._to_csv(path, sep=' ')
 
-    def to_csv(self, path, sep=','):
+    def to_csv(self, path):
         """Write a population to a csv file.
 
         Args:
             path (str): Path to which to write
-            sep (str): Seperator character
 
         """
-        df = self.frbs.to_df(sep=sep)
+        df = self.frbs.to_df()
         df.to_csv(path)
 
     def to_pickle(self, path):
