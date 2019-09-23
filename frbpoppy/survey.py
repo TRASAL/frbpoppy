@@ -43,6 +43,10 @@ class Survey:
         # Parse survey file
         self.read_survey_parameters()
 
+        # Special treatment for perfect survey
+        if self.name == 'perfect':
+            self.gain_pattern = 'perfect'
+
     def __str__(self):
         """Define how to print a survey object to a console."""
         s = 'Survey properties:'
@@ -287,8 +291,14 @@ class Survey:
 
     def calc_Ts(self, frbs):
         """Set temperatures for frbs."""
-        T_sky = self.calc_T_sky(frbs)
-        T_sys = self.T_rec + T_sky
+        # Special treatment for a perfect telescope
+        if self.name == 'perfect':
+            T_sky = np.zeros_like(frbs.index)
+            T_sys = np.ones_like(frbs.index)*self.T_rec
+        else:
+            T_sky = self.calc_T_sky(frbs)
+            T_sys = self.T_rec + T_sky
+
         return T_sky, T_sys
 
     def calc_T_sky(self, frbs):
