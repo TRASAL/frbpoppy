@@ -109,6 +109,6 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
 
         for hist in hists:
             if c in hist:
-                hist.loc[hist[c] == 0., c] = 10**(int(np.log10(min_c)))
+                hist.loc[hist[c] == 0., c] = 10**(int(np.log10(min_c)) - 1)
 
     return hists

@@ -49,6 +49,16 @@ class FRBs:
         # Software properties
         self.index = None
 
+    def __str__(self):
+        """Define how to print an FRB object to a console."""
+        s = 'FRBs properties:'
+        for key, value in vars(self).items():
+            if isinstance(value, np.ndarray):
+                value = f'{len(value)} elements - {value[:2]} etc.'
+            s = '\n\t'.join([s, f"{key}: {value}"])
+
+        return s
+
     def apply(self, mask):
         """Apply a Numpy array to all parameters.
 
@@ -79,15 +89,17 @@ class FRBs:
         df = pd.DataFrame()
         for attr in self.__dict__.keys():
             parm = getattr(self, attr)
-            if type(parm) is np.ndarray:
-                # 2D arrays to 1D
-                if parm.ndim > 1:
-                    df[attr] = parm[~np.isnan(self.time)]
-                # 1D array to match length 2D->1D arrays
-                elif type(self.time) is np.ndarray:
-                    concate = np.array([parm, ]*self.time.shape[1]).transpose()
-                    df[attr] = concate[~np.isnan(self.time)]
-                else:
-                    df[attr] = parm
+            if type(parm) is not np.ndarray:
+                continue
+
+            # 2D arrays to 1D
+            if parm.ndim > 1:
+                df[attr] = parm[~np.isnan(self.time)]
+            # 1D array to match length 2D->1D arrays
+            elif type(self.time) is np.ndarray:
+                concate = np.array([parm, ]*self.time.shape[1]).transpose()
+                df[attr] = concate[~np.isnan(self.time)]
+            else:
+                df[attr] = parm
 
         return df

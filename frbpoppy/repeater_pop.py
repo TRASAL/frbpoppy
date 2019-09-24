@@ -31,7 +31,7 @@ class RepeaterPopulation(CosmicPopulation):
         super(RepeaterPopulation, self).__init__(n_gen, **kw)
         self.name = 'repeater'
         self.days = days
-        self.n_gen = n_gen
+        self.n_gen = int(n_gen)
 
         # Time parameters
         self.times_rep_model = times_rep_model

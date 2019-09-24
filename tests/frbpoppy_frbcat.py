@@ -44,7 +44,7 @@ def hist(parameter, bin_type='lin', n_bins=25, norm=True, edges=True):
     if bin_type == 'lin':
         bins = n_bins
     elif bin_type == 'log':
-        min_f = np.log10(min(parameter))
+        min_f = np.log10(np.min(parameter[parameter != 0]))
         max_f = np.log10(max(parameter))
         bins = np.logspace(min_f, max_f, n_bins)
 

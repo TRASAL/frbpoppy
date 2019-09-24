@@ -11,14 +11,24 @@ from rates_complex import complex_rates
 
 MAKE = False
 OBSERVE = False
-SIZE = 'large'
+PREDICTION = False
+SIZE = 'small'
 SURVEYS = ('palfa', 'htru', 'askap-fly')
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
+PLOT_COLS = 2
 
-james = [-2.2-0.47, -2.2+0.47]  # James, Ekers et al. 2018
+if PREDICTION:
+    james = [-2.2-0.47, -2.2+0.47]  # James, Ekers et al. 2018
 
 
 def plot(toy, simple, complex, real):
+    # Use a nice font for axes
+    plt.rc('text', usetex=True)
+    if PLOT_COLS == 1:
+        plt.rcParams["figure.figsize"] = (3.556, 3.556)
+    else:
+        plt.rcParams["figure.figsize"] = (5.75373, 3.556)
+
 
     fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
     cmap = plt.get_cmap('tab10')
@@ -39,13 +49,14 @@ def plot(toy, simple, complex, real):
                  zorder=1)
 
     # Plot prediction region
-    top, bottom = ax2.get_ylim()
-    ax2.set_ylim((top, bottom))
-    left, right = james[0], james[1]
-    x = [left, right, right, left]
-    y = [top, top, bottom, bottom]
-    ax2.fill(x, y, hatch='+', facecolor="none", edgecolor="k", linewidth=0.0,
-             alpha=0.25, zorder=0)
+    if PREDICTION:
+        top, bottom = ax2.get_ylim()
+        ax2.set_ylim((top, bottom))
+        left, right = james[0], james[1]
+        x = [left, right, right, left]
+        y = [top, top, bottom, bottom]
+        ax2.fill(x, y, hatch='+', facecolor="none", edgecolor="k", linewidth=0.0,
+                 alpha=0.25, zorder=0)
 
     # Plot real event rate boxes
     ma, mi = ax2.get_xlim()
@@ -73,15 +84,17 @@ def plot(toy, simple, complex, real):
 
     # Plot layout options
     # Set up axes
-    ax1.set_xlabel(r'$\alpha$')
+    ax1.set_xlabel(r'$\alpha_{\mathrm{in}}$')
     ax1.invert_xaxis()
     ax1.set_ylabel('Events / htru')
     ax1.yaxis.set_ticks_position('left')
+    ax1.title.set_text(r'\textit{Simple} populations')
 
-    ax2.set_xlabel(r'$\alpha$')
+    ax2.set_xlabel(r'$\alpha_{\mathrm{in}}$')
     ax2.invert_xaxis()
     ax2.yaxis.set_ticks_position('right')
     ax2.tick_params(labelright=False)
+    ax2.title.set_text(r'\textit{Complex} populations')
 
     # Set up layout options
     fig.subplots_adjust(hspace=0)
@@ -104,10 +117,15 @@ def plot(toy, simple, complex, real):
     elements.append((Line2D([0], [0], color='gray'), 'simple'))
     elements.append((Line2D([0], [0], color='gray', linestyle='dashed'),
                      'complex'))
+
+    # Add gap in legend
+    elements.append((Line2D([0], [0], color='white'), ''))
+
     elements.append((Patch(facecolor='gray', edgecolor='gray', alpha=0.6),
                      'real'))
-    elements.append((Patch(facecolor='white', edgecolor='gray', hatch='+',
-                           linewidth=0.1), 'prediction'))
+    if PREDICTION:
+        elements.append((Patch(facecolor='white', edgecolor='gray', hatch='+',
+                               linewidth=0.1), 'prediction'))
 
     lines, labels = zip(*elements)
     plt.legend(lines, labels, bbox_to_anchor=(1.04, 0.5), loc="center left")
