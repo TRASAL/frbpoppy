@@ -71,48 +71,29 @@ class Population:
 
     def to_df(self):
         """Gather source values into a pandas dataframe."""
-        values = self._values()
-
-        if not values:
-            return None
-
-        if len(values) >= 200000:
-            # Take quarter of the values
-            pprint(f'Quartering {self.name} population')
-            values = values[:len(values)//4]
-            index = values.rfind('\n')
-            values = values[:index]
-
-        data = StringIO(values)
-        df = pd.read_csv(data)
+        df = self.frbs.to_df()
         return df
 
-    def save(self, extention='p'):
+    def save(self, path=None):
         """
         Write out source properties as data file.
 
         Args:
-            extention (str): Type of file to save.
-                Choice from ['csv', 'dat', 'p']
+            path (str): Path to which to save.
         """
-        # Check if a population has been a survey name
-        if not self.name:
-            file_name = 'pop'
-        else:
-            file_name = self.name.lower()
+        if path is None:
+            # Check if a population has been a survey name
+            if not self.name:
+                file_name = 'pop'
+            else:
+                file_name = self.name.lower()
 
-        if self.uid:
-            file_name += f'_{self.uid}'
+            if self.uid:
+                file_name += f'_{self.uid}'
 
-        path = paths.populations() + file_name
+            path = paths.populations() + f'{file_name}.p'
 
-        # Set file types
-        if extention == 'p':
-            path += '.p'
-            self.to_pickle(path)
-        if extention == 'csv':
-            path += '.csv'
-            self.to_csv(path)
+        self.to_pickle(path)
 
     def to_csv(self, path):
         """Write a population to a csv file.

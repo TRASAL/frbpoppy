@@ -1,8 +1,12 @@
 """Test calculating transit times for location on Earth."""
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-TEST_TRANSIT = False
+TEST_TRANSIT = True
+
+# Change working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def calc_transit_time(lat, dec, unit='deg', beamsize=20626.5):
@@ -46,15 +50,18 @@ if TEST_TRANSIT:
     decs = np.linspace(-90, 90, 100)
     lat = latitude_obs
     times = calc_transit_time(lat, decs)
+    plt.style.use('./aa.mplstyle')  # Use A&A styling for plots
     plt.ylabel('Fraction of day at which visible')
     plt.xlabel('Declination sources')
     plt.plot(decs, times)
-    plt.show()
+    plt.tight_layout()
+    plt.savefig('plots/transit_times.pdf')
 
 
 def gen_times(n):
     """Generate n times (ms) for full day."""
     return np.array([0, 0.25, 0.75]).astype(np.float32)
+
 
 def fraction_visible():
     return 0.5

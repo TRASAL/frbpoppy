@@ -57,6 +57,14 @@ galacticops
     :undoc-members:
     :show-inheritance:
 
+large\_pop
+--------------------
+
+.. automodule:: large_pop
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 log
 --------------------
 

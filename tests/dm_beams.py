@@ -1,23 +1,41 @@
 """Plot the change in DM distributions due to differing beampatterns."""
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
-from frbpoppy import Survey, SurveyPopulation
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 
-from quick import get_cosmic_pop
-
-MAKE = False
 BEAMPATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
-SIZE = 'medium'
+SIZE = 1e6
 
 
-def do_survey():
-
+def get_data():
+    """Get the population data."""
     # Construct population
-    pop = get_cosmic_pop('standard_candle',
-                         SIZE,
-                         load=True,
-                         overwrite=MAKE)
+    pop = CosmicPopulation(SIZE,
+                           days=1,
+                           name='standard_candle',
+                           H_0=67.74,
+                           W_m=0.3089,
+                           W_v=0.6911,
+                           dm_host_model='normal',
+                           dm_host_mu=100,
+                           dm_host_sigma=0,
+                           dm_igm_index=1000,
+                           dm_igm_sigma=None,
+                           dm_mw_model='ne2001',
+                           emission_range=[10e6, 10e9],
+                           lum_range=[1e36, 1e36],
+                           lum_index=0.,
+                           n_model='sfr',
+                           alpha=-1.5,
+                           w_model='uniform',
+                           w_range=[1., 1.],
+                           w_mu=0.1,
+                           w_sigma=0.,
+                           si_mu=0.,
+                           si_sigma=0.,
+                           z_max=2.5)
 
     # Survey population
     pops = {}
@@ -29,7 +47,9 @@ def do_survey():
             bp, n_s = b.split('-')
             n_s = int(n_s)
 
-        survey = Survey(name='perfect-small', gain_pattern=bp, n_sidelobes=n_s)
+        survey = Survey(name='perfect-small')
+        survey.gain_pattern = bp
+        survey.n_sidelobes = n_s
         surv_pop = SurveyPopulation(pop, survey)
         pops[b] = surv_pop
 
@@ -37,7 +57,12 @@ def do_survey():
 
 
 def plot_dm(pops):
+    """Plot resulting dispersion measure."""
 
+    # Change working directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    plt.style.use('./aa.mplstyle')
     f, (ax1) = plt.subplots(1, 1)
 
     for i, beam in enumerate(pops):
@@ -70,11 +95,11 @@ def plot_dm(pops):
     ax1.legend()
 
     plt.tight_layout()
-    plt.savefig(f'plots/dm_beams.pdf')
+    plt.savefig(f'./plots/dm_beams.pdf')
 
 
 def main():
-    pops = do_survey()
+    pops = get_data()
     plot_dm(pops)
 
 

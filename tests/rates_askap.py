@@ -1,20 +1,19 @@
 """Compare rate calculations per alpha for the two askap settings."""
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from rates_complex import complex_rates
 
-MAKE = False
-OBSERVE = False
-SIZE = 'large'
+REMAKE = False
+SIZE = 1e8
 SURVEYS = ['htru', 'askap-fly', 'askap-incoh']
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 
 
 def main():
-
-    complex = complex_rates(make=MAKE,
-                            observe=OBSERVE,
+    """Get detection rates for surveys."""
+    complex = complex_rates(remake=REMAKE,
                             alphas=ALPHAS,
                             size=SIZE,
                             surveys=SURVEYS)
@@ -24,6 +23,11 @@ def main():
 
 
 def plot_rates(rates):
+    """Plot detection rates for askap surveys."""
+    # Change working directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    # Use A&A styling for plotting
+    plt.style.use('./aa.mplstyle')
 
     fig, (ax1) = plt.subplots(1, 1)
     cmap = plt.get_cmap('tab10')

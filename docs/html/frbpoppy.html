@@ -95,6 +95,12 @@ sources should emit the given bolometric luminosity.</li>
 </tr>
 </tbody>
 </table>
+<dl class="classmethod">
+<dt id="cosmic_pop.CosmicPopulation.complex">
+<em class="property">classmethod </em><code class="descname">complex</code><span class="sig-paren">(</span><em>n</em>, <em>generate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up a complex population.</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="cosmic_pop.CosmicPopulation.gen_direction">
 <code class="descname">gen_direction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_direction" title="Permalink to this definition">¶</a></dt>
@@ -147,6 +153,12 @@ sources should emit the given bolometric luminosity.</li>
 <dt id="cosmic_pop.CosmicPopulation.generate">
 <code class="descname">generate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.generate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all manner of intrinsic parameters.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cosmic_pop.CosmicPopulation.simple">
+<em class="property">classmethod </em><code class="descname">simple</code><span class="sig-paren">(</span><em>n</em>, <em>generate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.simple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up a simple, local population.</p>
 </dd></dl>
 
 </dd></dl>
@@ -284,7 +296,7 @@ for debugging purposes. Defaults to True.</li>
 <p>Do things with frbcat.</p>
 <dl class="class">
 <dt id="frbcat.Frbcat">
-<em class="property">class </em><code class="descclassname">frbcat.</code><code class="descname">Frbcat</code><span class="sig-paren">(</span><em>frbpoppy=True</em>, <em>one_per_frb=False</em>, <em>repeat_bursts=True</em>, <em>repeaters=True</em>, <em>update=False</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">frbcat.</code><code class="descname">Frbcat</code><span class="sig-paren">(</span><em>frbpoppy=True</em>, <em>one_per_frb=True</em>, <em>repeat_bursts=True</em>, <em>repeaters=True</em>, <em>update=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Do things with the frbcat.</p>
 <p>Mostly used for playing nicely with frbpoppy. Get the pandas dataframe
@@ -310,7 +322,7 @@ with Frbcat().df</p>
 
 <dl class="method">
 <dt id="frbcat.Frbcat.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>internet=False</em>, <em>save=True</em>, <em>local=False</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.get" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get</code><span class="sig-paren">(</span><em>internet=True</em>, <em>save=True</em>, <em>local=False</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get frbcat from online or from a local file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -403,6 +415,12 @@ with Frbcat().df</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbs.FRBs.to_csv">
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#frbs.FRBs.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export properties to a csv file.</p>
 </dd></dl>
 
 <dl class="method">
@@ -800,6 +818,35 @@ Astrophysics (2nd Edition)’ by Bradley W. Carroll, Dale A. Ostlie.
 </dd></dl>
 
 </div>
+<div class="section" id="module-large_pop">
+<span id="large-pop"></span><h2>large_pop<a class="headerlink" href="#module-large_pop" title="Permalink to this headline">¶</a></h2>
+<p>Methods to deal with large populations.</p>
+<dl class="class">
+<dt id="large_pop.LargePopulation">
+<em class="property">class </em><code class="descclassname">large_pop.</code><code class="descname">LargePopulation</code><span class="sig-paren">(</span><em>pop</em>, <em>*surveys</em>, <em>max_size=10000000.0</em>, <em>run=True</em><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.LargePopulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Method to deal with a large population.</p>
+<p>Basically splits it up, and merges the results.</p>
+<p>Set arguments.</p>
+<dl class="method">
+<dt id="large_pop.LargePopulation.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.LargePopulation.merge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="large_pop.LargePopulation.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.LargePopulation.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="large_pop.main">
+<code class="descclassname">large_pop.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare a standard Survey Population with a Large Survey Population.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-log">
 <span id="log"></span><h2>log<a class="headerlink" href="#module-log" title="Permalink to this headline">¶</a></h2>
 <p>Quick and dirty logging functions.</p>
@@ -961,12 +1008,6 @@ non-cosmological population.</li>
 </dd></dl>
 
 <dl class="method">
-<dt id="paths.Paths.results">
-<code class="descname">results</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.results" title="Permalink to this definition">¶</a></dt>
-<dd><p>Where all results are to be stored.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="paths.Paths.store">
 <code class="descname">store</code><span class="sig-paren">(</span><em>name</em>, <em>default</em>, <em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Where files are to be stored.</p>
@@ -1078,14 +1119,13 @@ respectively not show the resulting plot, and to not overplot frbcat</p>
 <p>Initializing.</p>
 <dl class="method">
 <dt id="population.Population.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>extention='p'</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.save" title="Permalink to this definition">¶</a></dt>
+<code class="descname">save</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write out source properties as data file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>extention</strong> (<em>str</em>) – Type of file to save.
-Choice from [‘csv’, ‘dat’, ‘p’]</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) – Path to which to save.</td>
 </tr>
 </tbody>
 </table>
@@ -1093,17 +1133,13 @@ Choice from [‘csv’, ‘dat’, ‘p’]</td>
 
 <dl class="method">
 <dt id="population.Population.to_csv">
-<code class="descname">to_csv</code><span class="sig-paren">(</span><em>path</em>, <em>sep='</em>, <em>'</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.to_csv" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.to_csv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a population to a csv file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>path</strong> (<em>str</em>) – Path to which to write</li>
-<li><strong>sep</strong> (<em>str</em>) – Seperator character</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) – Path to which to write</td>
 </tr>
 </tbody>
 </table>

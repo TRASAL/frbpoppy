@@ -3,12 +3,11 @@ from scipy.stats import chi2, norm
 from scipy.integrate import quad
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 EXPECTED = {'htru': [9, 24 * 0.551 / 1549],  # N_frbs, scaling to get frbs/day
             'apertif': [1, 1 / 7],
             'askap-fly': [20, 24 / 32840 * 8],
-            'utmost': [0, 0],
-            'chime': [0, 0],
             'palfa': [1, 1 / 24.1],
             'guppi': [0.4, 1 / 81]  # 0.4 is my own assumption
             }
@@ -41,6 +40,10 @@ def real_rates(surveys=SURVEYS):
     rates = {}
 
     for surv in surveys:
+
+        if surv not in EXPECTED:
+            continue
+
         # Plot EXPECTED rate
         exp_n = EXPECTED[surv][0]
         exp_scaling = EXPECTED[surv][1]
@@ -59,6 +62,11 @@ def real_rates(surveys=SURVEYS):
 
 
 def main():
+    """Plot real rate regions per alpha."""
+    # Change working directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    # Use A&A styling for plots
+    plt.style.use('./aa.mplstyle')
 
     rates = real_rates()
 
@@ -71,13 +79,13 @@ def main():
         plt.fill(x, y, alpha=0.25)
         plt.plot([left, right], [middle]*2, label=surv, linestyle='dashed')
 
-        plt.xlabel(r'$\alpha$')
-        plt.ylabel(r'Events / htru')
-        plt.yscale('log')
-        plt.legend()
-        plt.gca().invert_xaxis()
-        plt.tight_layout()
-        plt.savefig('./plots/real_rates.pdf')
+    plt.xlabel(r'$\alpha_{\text{in}}$')
+    plt.ylabel(r'Events / htru')
+    plt.yscale('log')
+    plt.legend()
+    plt.gca().invert_xaxis()
+    plt.tight_layout()
+    plt.savefig('./plots/real_rates.pdf')
 
 
 if __name__ == '__main__':

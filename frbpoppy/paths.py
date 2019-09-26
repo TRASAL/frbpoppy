@@ -15,7 +15,6 @@ class Paths():
 
         self.subfolders = ['data',
                            'frbcat',
-                           'results',
                            'populations',
                            'surveys',
                            'models']
@@ -78,14 +77,9 @@ class Paths():
         default = os.path.realpath(os.path.join(self.code, '../data/')) + '/'
         return self.store('data', default, *args)
 
-    def results(self, *args):
-        """Where all results are to be stored."""
-        default = self.data() + 'results/'
-        return self.store('results', default, *args)
-
     def populations(self, *args):
         """Where all populations are to be stored."""
-        default = self.results()
+        default = self.data() + 'populations/'
         return self.store('populations', default, *args)
 
     def surveys(self, *args):

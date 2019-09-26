@@ -54,7 +54,7 @@
 <div class="highlight-bash"><div class="highlight"><pre><span></span>git clone https://github.com/davidgardenier/frbpoppy
 <span class="nb">cd</span> ./frbpoppy/
 python3 setup.py develop
-python3 tests/example.py
+python3 examples/_starting_with_frbpoppy_.py
 </pre></div>
 </div>
 <p>Things not going quite as smoothly? Check the <a class="reference internal" href="get_started.html"><span class="doc">Get Started</span></a> guide for additional information on common installation problems.</p>
@@ -81,13 +81,18 @@ python3 tests/example.py
 17
 18
 19
-20</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Short example of how frbpoppy works.&quot;&quot;&quot;</span>
+20
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Short example of how frbpoppy works.</span>
+
+<span class="sd">The first time you run frbpoppy, a series of cosmological databases will be</span>
+<span class="sd">constructed to set up subsequent runs. This first run can take ~2h on a 4 core</span>
+<span class="sd">machine. Subsequent runs will take mere seconds.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="k">import</span> <span class="n">CosmicPopulation</span><span class="p">,</span> <span class="n">Survey</span><span class="p">,</span> <span class="n">SurveyPopulation</span><span class="p">,</span> <span class="n">plot</span>
 
-<span class="n">PLOT</span> <span class="o">=</span> <span class="kc">False</span>
-
 <span class="c1"># Generate an FRB population</span>
-<span class="n">cosmic_pop</span> <span class="o">=</span> <span class="n">CosmicPopulation</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;example&#39;</span><span class="p">)</span>
+<span class="n">cosmic_pop</span> <span class="o">=</span> <span class="n">CosmicPopulation</span><span class="p">(</span><span class="mf">1e5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mf">0.23</span><span class="p">)</span>
 
 <span class="c1"># Setup a survey</span>
 <span class="n">survey</span> <span class="o">=</span> <span class="n">Survey</span><span class="p">(</span><span class="s1">&#39;htru&#39;</span><span class="p">)</span>
@@ -98,9 +103,8 @@ python3 tests/example.py
 <span class="c1"># Check the detection rates</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">survey_pop</span><span class="o">.</span><span class="n">rates</span><span class="p">())</span>
 
-<span class="c1"># Plot populations</span>
-<span class="k">if</span> <span class="n">PLOT</span><span class="p">:</span>
-    <span class="n">plot</span><span class="p">(</span><span class="n">cosmic_pop</span><span class="p">,</span> <span class="n">survey_pop</span><span class="p">,</span> <span class="n">frbcat</span><span class="o">=</span><span class="s1">&#39;parkes&#39;</span><span class="p">)</span>
+<span class="c1"># Plot populations in a browser</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">cosmic_pop</span><span class="p">,</span> <span class="n">survey_pop</span><span class="p">,</span> <span class="n">frbcat</span><span class="o">=</span><span class="s1">&#39;parkes&#39;</span><span class="p">)</span>
 </pre></div>
 </td></tr></table></div>
 <p>Curious about additional functionality in <code class="docutils literal"><span class="pre">frbpoppy</span></code>? Check the <a class="reference internal" href="get_started.html"><span class="doc">Get Started</span></a> guide, the <a class="reference internal" href="documentation.html"><span class="doc">Documentation</span></a>, or the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/tree/master/tests">tests</a> directory in <code class="docutils literal"><span class="pre">frbpoppy</span></code>.</p>

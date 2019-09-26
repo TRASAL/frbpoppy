@@ -1,7 +1,9 @@
 """Calculate where null points of an Airy pattern lie."""
 from scipy.special import j1
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+
 
 STEPSIZE = 1e-6
 PLOT = True
@@ -18,13 +20,20 @@ y_null = y_range[1:-1][ind > 0]
 print(x_null)
 
 if PLOT:
-    title = "Bessel function over x"
+    title = r"Bessel function over $\text{x}$"
+
+    # Change working directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+    # Use A&A styling for plots
+    plt.style.use('./aa.mplstyle')
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
     plt.title(title)
-    plt.plot(x_range, y_range)
+    plt.plot(x_range[::10], y_range[::10])
     plt.scatter(x_null, y_null)
     plt.yscale('log')
     plt.tight_layout()
-    plt.savefig('plots/null_sidelobes.pdf')
+
+    plt.savefig('./plots/null_sidelobes.pdf')
