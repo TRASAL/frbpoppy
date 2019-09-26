@@ -88,7 +88,6 @@ ENV/
 .ropeproject
 
 # User set files
-!data/logs/*.gitignore
 *.coverage
 *.egg-info/
 *.ipynb
@@ -101,15 +100,6 @@ ENV/
 data/logs/*
 data/models/dm/libne2001\.so
 misc/
-tests/**/*.csv
-tests/**/*.html
-tests/**/*.pkl
-tests/**/*.png
-tests/**/*.pdf
-tests/**/**
-tests/**/*.gif
-
+tests/plots/*
 temp\.csv
-publication/plots/
-publication/build/
 data/results/*

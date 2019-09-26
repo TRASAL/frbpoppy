@@ -1,0 +1,5 @@
+font.size:          11
+legend.fontsize:    11
+xtick.labelsize:    9
+ytick.labelsize:    9
+font.family:        serif
