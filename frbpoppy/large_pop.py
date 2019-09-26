@@ -14,9 +14,10 @@ class LargePopulation:
     Basically splits it up, and merges the results.
     """
 
-    def __init__(self, pop, *surveys, max_size=1e6, run=True):
+    def __init__(self, pop, *surveys, max_size=1e7, run=True):
         """Set arguments."""
         self.pop = pop
+        self.base_name = pop.name
         self.surveys = surveys
         self.max_size = int(max_size)
         self.uids = None
@@ -26,7 +27,7 @@ class LargePopulation:
             self.merge()
 
     def run(self):
-        pprint('Running a large population')
+        pprint(f'Running a large {self.base_name} population')
         d = divmod(self.pop.n_gen, self.max_size)
         sizes = [self.max_size for i in range(d[0])]
         if d[1] != 0:
@@ -42,6 +43,7 @@ class LargePopulation:
 
             for surv in self.surveys:
                 surv_pop = SurveyPopulation(pop, surv)
+                surv_pop.name = f'{self.base_name}_{surv_pop.name}'
                 surv_pop.uid = pop.uid
                 surv_pop.save()
 
@@ -50,11 +52,9 @@ class LargePopulation:
 
         self.pops = []
 
-        for surv in self.surveys:
-            # TODO: Look into file names creation, what if you wanted
-            # apertif_large_something_uid.p?
+        for s in self.surveys:
             pops = []
-            files = [f'{surv.name}_{uid}' for uid in self.uids]
+            files = [f'{self.base_name}_{s.name}_{uid}' for uid in self.uids]
             for f in files:
                 pops.append(unpickle(f))
 
@@ -79,7 +79,7 @@ class LargePopulation:
                 mp.rate.out += pop.rate.out
 
             # Recalculate detection rates
-            mp.calc_rates(surv)
+            mp.calc_rates(s)
 
             # Save the main population as one big population
             mp.uid = None
@@ -90,9 +90,6 @@ class LargePopulation:
                 p = paths.populations() + f'{f}.p'
                 os.remove(p)
 
-            # TODO: Figure out max population size
-
-            print(mp.rates())
             self.pops.append(mp)
 
 
@@ -103,7 +100,8 @@ def main():
     from frbpoppy.survey_pop import SurveyPopulation
     from frbpoppy.do_plot import plot
 
-    pop = CosmicPopulation(int(5e4), generate=False)
+    pop = CosmicPopulation(int(5e5), generate=False)
+    pop.name = 'test'
 
     surveys = []
     for s in ['apertif']:
