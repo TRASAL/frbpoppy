@@ -41,7 +41,7 @@ How can I install it?
 6. Put frbpoppy through its paces:
    ::
 
-    $ python3 tests/example.py
+    $ python3 examples/_starting_with_frbpoppy_.py
 
    The first time you run frbpoppy it will generate lookup tables to speed up future runs. This can take up to 2h on a standard 4 core laptop.
 

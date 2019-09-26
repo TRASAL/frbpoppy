@@ -1,7 +1,9 @@
-"""Define an easy to use histogram function."""
+"""Define covenience functions."""
+import numpy as np
 
 
-def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True):
+def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
+         bins=None):
     """Bin up a parameter either in a lin or log space.
 
     Why is this not a standard option in numpy or matplotlib?
@@ -29,18 +31,23 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True):
 
     # Determine type of binning
     if bin_type == 'lin':
-        bins = n_bins
+        _bins = n_bins
     elif bin_type == 'log':
         min_f = np.log10(np.min(parameter[parameter != 0]))
         max_f = np.log10(max(parameter))
-        bins = np.logspace(min_f, max_f, n_bins)
+        _bins = np.logspace(min_f, max_f, n_bins)
 
+    # Allow for custom bins
+    if bins is not None:
+        _bins = bins
+
+    # Allow for probability weighting
     weights = None
     if norm == 'prob':
         weights = np.ones(len(parameter)) / len(parameter)
 
     # Bin
-    n, bin_edges = np.histogram(parameter, bins=bins, weights=weights)
+    n, bin_edges = np.histogram(parameter, bins=_bins, weights=weights)
 
     if norm == 'max':
         n = n/max(n)  # Normalise
@@ -51,15 +58,15 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True):
     # Ensure there are edges on the outer bins of the histograms
     if edges:
         if bin_type == 'lin':
-            bin_diff = np.diff(bins)[-1]
-            bins = np.insert(bins, 0, bins[0] - bin_diff)
-            bins = np.insert(bins, len(bins), bins[-1] + bin_diff)
+            bin_dif = np.diff(bins)[-1]
+            bins = np.insert(bins, 0, bins[0] - bin_dif)
+            bins = np.insert(bins, len(bins), bins[-1] + bin_dif)
             n = np.insert(n, 0, 0)
             n = np.insert(n, len(n), 0)
         else:
-            bin_diff = np.diff(np.log10(bins))[-1]
-            bins = np.insert(bins, 0, 10**(np.log10(bins[0]) - bin_diff))
-            bins = np.insert(bins, len(bins), 10**(np.log10(bins[-1]) + bin_diff))
+            bin_dif = np.diff(np.log10(bins))[-1]
+            bins = np.insert(bins, 0, 10**(np.log10(bins[0])-bin_dif))
+            bins = np.insert(bins, len(bins), 10**(np.log10(bins[-1])+bin_dif))
             n = np.insert(n, 0, 0)
             n = np.insert(n, len(n), 0)
 

@@ -4,78 +4,48 @@ Plot N(>S) over log S (S being the flux density) for various spectral indices.
 """
 import copy
 import numpy as np
-import math
 import matplotlib.pyplot as plt
+import os
 from scipy.signal import savgol_filter
 
-from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, unpickle
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 
-CREATE = False
-OBSERVE = False
 SIS = (-2, 0, 2)  # Spectral indices
+n_tot = 1e5  # Number of sources
 
 pop = {}
 
-if CREATE:
-    days = 14
-    n_per_day = 5000
-    n_tot = n_per_day*days
-
-    for si in SIS:
-
-        if si == min(SIS):
-
-            pop[si] = CosmicPopulation(n_tot,
-                                       days=days,
-                                       name=f'si-{si}',
-                                       dm_host_model='normal',
-                                       dm_host_mu=0,
-                                       dm_host_sigma=0,
-                                       dm_igm_index=1200,
-                                       dm_igm_sigma=0,
-                                       dm_mw_model='zero',
-                                       emission_range=[10e6, 10e9],
-                                       lum_range=[1e40, 1e40],
-                                       lum_index=0,
-                                       n_model='vol_co',
-                                       w_model='uniform',
-                                       w_range=[1., 1.],
-                                       w_mu=1.,
-                                       w_sigma=0.,
-                                       repeat=0.,
-                                       si_mu=si,
-                                       si_sigma=0.,
-                                       z_max=2.5)
-            pop[si].save()
-
-        else:
-            pop[si] = copy.deepcopy(pop[min(SIS)])
-            pop[si].frbs.si = np.random.normal(si, 0, n_tot)
-            pop[si].name = f'si-{si}'
-            pop[si].save()
+for si in SIS:
+    if si == min(SIS):
+        pop[si] = CosmicPopulation.simple(n_tot)
+        pop[si].name = f'si-{si}'
+        pop[si].si_mu = si
+        pop[si].z_max = 2.5
+        pop[si].generate()
+        pop[si].save()
+    else:
+        pop[si] = copy.deepcopy(pop[min(SIS)])
+        pop[si].frbs.si = np.random.normal(si, 0, int(n_tot))
+        pop[si].name = f'si-{si}'
+        pop[si].save()
 
 pop_obs = {}
 
-if OBSERVE or CREATE:
+for si in SIS:
 
-    for si in SIS:
+    perfect = Survey('perfect')
 
-        if not CREATE:
-            pop[si] = unpickle(f'si-{si}')
+    # Observe populations
+    pop_obs[si] = SurveyPopulation(pop[si], perfect)
+    pop_obs[si].name = f'si-{si}-obs'
+    pop_obs[si].rates()
+    pop_obs[si].save()
 
-        # Create Survey
-        perfect = Survey('perfect', gain_pattern='perfect')
+# Change working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-        # Observe populations
-        pop_obs[si] = SurveyPopulation(pop[si], perfect)
-        pop_obs[si].name = f'si-{si}-obs'
-        pop_obs[si].rates()
-        pop_obs[si].save()
-
-else:
-    for si in SIS:
-        pop_obs[si] = unpickle(f'si-{si}-obs')
-
+# Use A&A styling for plots
+plt.style.use('./aa.mplstyle')
 
 # Plot log N and alpha versus log S
 f, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
@@ -128,7 +98,7 @@ y = np.ones_like(x) * -1.5
 ax2.step(x, y, where='mid', color='grey', alpha=0.5)
 
 
-ax1.set_ylabel(r'log N(>S$_{\text{peak}}$)')
+ax1.set_ylabel(r'log N($>$S$_{\text{peak}}$)')
 ax1.legend()
 ax2.set_xlabel(r'log S$_{\text{peak}}$')
 ax2.set_ylabel(r'$\alpha$')

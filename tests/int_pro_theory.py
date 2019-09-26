@@ -1,12 +1,18 @@
 """Plot intensity profile of theoretical beam patterns."""
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from frbpoppy.survey import Survey
 
 PATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
 SURVEY = 'apertif'
 MIN_Y = 1e-6
 n = 500000
+
+# Change working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+plt.style.use('./aa.mplstyle')
 
 for pattern in PATTERNS:
 
@@ -20,7 +26,7 @@ for pattern in PATTERNS:
             z = 10
 
     s = Survey(SURVEY, gain_pattern=p, n_sidelobes=n_sidelobes)
-    int_pro, offset = s.intensity_profile(n_gen=n)
+    int_pro, offset = s.intensity_profile(shape=n)
 
     # Sort the values
     sorted_int = np.argsort(offset)
@@ -34,12 +40,13 @@ for pattern in PATTERNS:
     # Offset in degrees
     offset = offset/60.
 
-    print(s.beam_size_fwhm, s.beam_size)
+    print(f'Beam size at FWHM: {s.beam_size_fwhm}')
+    print(f'Beam size with sidelobes: {s.beam_size}')
 
     plt.plot(offset, int_pro, label=pattern, zorder=z)
 
 
-plt.xlabel(f'Offset ($\degree$)')
+plt.xlabel(r'Offset ($\degree$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()

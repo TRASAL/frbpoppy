@@ -1,0 +1,8 @@
+font.size:             11
+legend.fontsize:       11
+xtick.labelsize:       9
+ytick.labelsize:       9
+figure.figsize:        3.556, 3.556
+font.family:           serif
+text.usetex:           True
+text.latex.preamble:   \usepackage{amsmath} \usepackage{gensymb}

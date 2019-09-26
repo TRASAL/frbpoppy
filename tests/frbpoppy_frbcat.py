@@ -1,13 +1,13 @@
 """Plot the DM distribution obtained with frbpoppy against frbcat results."""
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
+import os
 from scipy.stats import ks_2samp
 
 from frbpoppy import CosmicPopulation, Survey, Frbcat, pprint, LargePopulation
 from frbpoppy import paths, unpickle
 
-from easy_hist import hist
+from convenience import hist
 
 PLOT = True
 SIZE = 1e8
@@ -24,8 +24,10 @@ def plot_dists(surv_pop, telescope):
             distribution. Necessary for Frbcat.
 
     """
+    # Change working directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     # Use a nice font for axes
-    plt.rc('text', usetex=True)
+    plt.style.use('./aa.mplstyle')
     plt.rcParams["figure.figsize"] = (5.75373, 3.556)
 
     # Plot dm distribution
@@ -113,7 +115,6 @@ def get_data():
 
 def main():
     """Run main part of code."""
-
     surv_pops = get_data()
 
     if PLOT:

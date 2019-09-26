@@ -1,6 +1,8 @@
 """Plot intensity profile of sidelobes."""
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
 from frbpoppy.survey import Survey
 
 SIDELOBES = [0, 1, 2, 8]
@@ -8,13 +10,18 @@ SURVEY = 'apertif'
 MIN_Y = 1e-7
 n = 50000
 
+# Change working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+plt.style.use('./aa.mplstyle')
+
 for sidelobe in reversed(SIDELOBES):
 
     args = {'sidelobes': sidelobe}
 
     s = Survey(SURVEY, gain_pattern='airy', n_sidelobes=sidelobe)
 
-    int_pro, offset = s.intensity_profile(n_gen=n)
+    int_pro, offset = s.intensity_profile(shape=n)
 
     # Sort the values
     sorted_int = np.argsort(offset)
@@ -34,10 +41,9 @@ for sidelobe in reversed(SIDELOBES):
 
     plt.plot(offset, int_pro, label=label)
 
-plt.xlabel(f'Offset ($\degree$)')
+plt.xlabel(r'Offset ($\degree$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()
-# plt.show()
 plt.savefig('plots/int_pro_sidelobes.pdf')

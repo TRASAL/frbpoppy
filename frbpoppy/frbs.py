@@ -103,3 +103,7 @@ class FRBs:
                 df[attr] = parm
 
         return df
+
+    def to_csv(self, path):
+        """Export properties to a csv file."""
+        self.to_df().to_csv(path)

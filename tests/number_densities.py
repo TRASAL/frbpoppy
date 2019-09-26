@@ -1,10 +1,11 @@
 """Plot options of varying FRB number densities."""
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
 from frbpoppy import CosmicPopulation, unpickle
 
-MAKE = False
+MAKE = True
 NUM_FRBS = True
 DENSITY_FRBS = True
 
@@ -14,45 +15,39 @@ titles = ('Constant', 'SFR', 'SMD', r'$\alpha_{in}=-0.5$',
           r'$\alpha_{in}=-2.0$')
 
 if MAKE:
-    days = 1
-    n_per_day = int(1e6)
+    n_frbs = int(1e6)
 
     # Generate population following a constant number density / comoving volume
-    pop['cst'] = CosmicPopulation(n_per_day*days,
-                               days=days,
-                               z_max=3.,
-                               n_model='vol_co',
-                               name='cst')
+    pop['cst'] = CosmicPopulation(n_frbs,
+                                  z_max=3.,
+                                  n_model='vol_co',
+                                  name='cst')
 
     # Generate population following star forming rate
-    pop['sfr'] = CosmicPopulation(n_per_day*days,
-                               days=days,
-                               z_max=3.,
-                               n_model='sfr',
-                               name='sfr')
+    pop['sfr'] = CosmicPopulation(n_frbs,
+                                  z_max=3.,
+                                  n_model='sfr',
+                                  name='sfr')
 
     # Generate population following stellar mass density
-    pop['smd'] = CosmicPopulation(n_per_day*days,
-                               days=days,
-                               z_max=3.,
-                               n_model='smd',
-                               name='smd')
+    pop['smd'] = CosmicPopulation(n_frbs,
+                                  z_max=3.,
+                                  n_model='smd',
+                                  name='smd')
 
     # Generate population following stellar mass density
-    pop['shallow'] = CosmicPopulation(n_per_day*days,
-                                   days=days,
-                                   z_max=3.,
-                                   n_model='vol_co',
-                                   alpha=-0.5,
-                                   name='shallow')
+    pop['shallow'] = CosmicPopulation(n_frbs,
+                                      z_max=3.,
+                                      n_model='vol_co',
+                                      alpha=-0.5,
+                                      name='shallow')
 
     # Generate population following stellar mass density
-    pop['steep'] = CosmicPopulation(n_per_day*days,
-                                 days=days,
-                                 z_max=3.,
-                                 n_model='vol_co',
-                                 alpha=-2.0,
-                                 name='steep')
+    pop['steep'] = CosmicPopulation(n_frbs,
+                                    z_max=3.,
+                                    n_model='vol_co',
+                                    alpha=-2.0,
+                                    name='steep')
 
     for k, v in pop.items():
         v.save()
@@ -61,6 +56,11 @@ else:
     for s in pop_types:
         pop[s] = unpickle(s)
 
+# Change working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+# Use A&A styling for plots
+plt.style.use('./aa.mplstyle')
 
 if NUM_FRBS:
     fig = plt.figure()
@@ -94,6 +94,8 @@ if NUM_FRBS:
     plt.clf()
 
 if DENSITY_FRBS:
+    plt.style.use('./aa.mplstyle')  # Use A&A styling for plots
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
@@ -113,6 +115,5 @@ if DENSITY_FRBS:
     plt.xlabel('$z$')
     plt.ylabel(r'$\rho_{\text{FRB}} / \rho_{\text{FRB}}(0)$')
     plt.yscale('log')
-    plt.legend()
     plt.tight_layout()
     plt.savefig('plots/density_frbs.pdf')

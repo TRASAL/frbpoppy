@@ -2,64 +2,51 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
-from frbpoppy import unpickle
 
-CREATE = False
-OBSERVE = True
 BEAMPATTERNS = ['perfect', 'airy', 'gaussian']
 
-if CREATE:
-    days = 30
-    n_per_day = 5000
-
-    # Generate population with standard candles
-    pop = CosmicPopulation(n_per_day*days,
-                           days=days,
-                           name='simple',
-                           dm_host_model='normal',
-                           dm_host_mu=0,
-                           dm_host_sigma=0,
-                           dm_igm_index=1200,
-                           dm_igm_sigma=0,
-                           dm_mw_model='zero',
-                           emission_range=[10e6, 10e9],
-                           lum_range=[1e36, 1e36],
-                           lum_index=0,
-                           n_model='sfr',
-                           w_model='uniform',
-                           w_range=[1., 1.],
-                           w_mu=1.,
-                           w_sigma=0.,
-                           repeat=0.,
-                           si_mu=0.,
-                           si_sigma=0.,
-                           z_max=2.5)
-    pop.save()
+# Generate population with standard candles
+pop = CosmicPopulation(5e5,
+                       days=1,
+                       name='standard',
+                       dm_host_model='normal',
+                       dm_host_mu=0,
+                       dm_host_sigma=0,
+                       dm_igm_index=1200,
+                       dm_igm_sigma=0,
+                       dm_mw_model='zero',
+                       emission_range=[10e6, 10e9],
+                       lum_range=[1e36, 1e36],
+                       lum_index=0,
+                       n_model='sfr',
+                       w_model='uniform',
+                       w_range=[1., 1.],
+                       w_mu=1.,
+                       w_sigma=0.,
+                       si_mu=0.,
+                       si_sigma=0.,
+                       z_max=2.5)
 
 pop_obs = {}
 
-if OBSERVE:
+survey = Survey('perfect-small', n_sidelobes=0)
 
-    if not CREATE:
-        pop = unpickle(f'simple')
+for pattern in BEAMPATTERNS:
 
-    for pattern in BEAMPATTERNS:
+    survey.gain_pattern = pattern
 
-        # Create Survey
-        survey = Survey('perfect-small', gain_pattern=pattern, n_sidelobes=0)
+    # Observe populations
+    pop_obs[pattern] = SurveyPopulation(pop, survey)
+    pop_obs[pattern].name = f'obs-{pattern}'
+    pop_obs[pattern].rates()
+    pop_obs[pattern].save()
 
-        # Observe populations
-        pop_obs[pattern] = SurveyPopulation(pop, survey)
-        pop_obs[pattern].name = f'obs-{pattern}'
-        pop_obs[pattern].rates()
-        pop_obs[pattern].save()
-
-else:
-    for p in BEAMPATTERNS:
-        pop_obs[p] = unpickle(f'obs-{p}')
-
+# Change working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+plt.style.use('./aa.mplstyle')
 f, (ax1) = plt.subplots(1, 1)
 
 for p in BEAMPATTERNS:
@@ -84,10 +71,9 @@ for p in BEAMPATTERNS:
     bincentres = (bins[:-1] + bins[1:]) / 2
     ax1.step(bincentres, n, where='mid', label=p)
 
-ax1.set_xlabel('$DM_{IGM}$')
+ax1.set_xlabel(r'DM$_{\text{IGM}}$')
 ax1.set_ylabel(r'Fraction')
 ax1.set_ylim([0, 1])
 ax1.legend()
-
 plt.tight_layout()
-plt.savefig(f'plots/dm_igm_beampatterns.pdf')
+plt.savefig('./plots/dm_igm_beampatterns.pdf')

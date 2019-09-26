@@ -1,6 +1,7 @@
 """Plot intensity profile of theoretical beam patterns."""
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from scipy.stats import binned_statistic as bstat
 
 from frbpoppy.survey import Survey
@@ -10,13 +11,18 @@ OBSERVATORIES = [('parkes', 'htru'),
 
 n = int(1e6)
 
+# Change working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+plt.style.use('./aa.mplstyle')
+
 for obs in OBSERVATORIES:
 
     survey = obs[1]
     pattern = obs[0]
 
     s = Survey(survey, gain_pattern=pattern)
-    int_pro, offset = s.intensity_profile(n_gen=n)
+    int_pro, offset = s.intensity_profile(shape=n)
 
     # Sort the values
     sorted_int = np.argsort(offset)
@@ -42,7 +48,7 @@ for obs in OBSERVATORIES:
     plt.fill_between(center, bin_mins, bin_maxs, alpha=0.2)
 
 
-plt.xlabel(f'Offset ($\degree$)')
+plt.xlabel(r'Offset ($\degree$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()

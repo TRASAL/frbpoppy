@@ -1,6 +1,7 @@
 """Use simple rate comparisions, try predicting event rates."""
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 from frbpoppy import Survey
 
@@ -41,14 +42,21 @@ def toy_rates(surveys=SURVEYS, alphas=ALPHAS):
 
 
 def main():
-
+    """Plot toy rates."""
     rates = toy_rates()
+
+    # Change working directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     for surv in rates:
         rate = rates[surv]
+
+        # Use a nice font for axes
+        plt.style.use('./aa.mplstyle')  # Use A&A styling for plots
+
         plt.plot(ALPHAS, rate, label=surv)
 
-        plt.xlabel(r'$\alpha$')
+        plt.xlabel(r'$\alpha_{\text{in}}$')
         plt.ylabel(r'Events / htru')
         plt.xlim((min(ALPHAS), max(ALPHAS)))
         plt.yscale('log')

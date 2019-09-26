@@ -2,81 +2,85 @@
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-from frbpoppy import Survey
+from frbpoppy import (CosmicPopulation, Survey, LargePopulation, pprint,
+                      unpickle)
 
-from quick import get_cosmic_pop, get_survey_pop
-
-MAKE = True
-OBSERVE = True
+REMAKE = False
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 SURVEYS = ('palfa', 'htru', 'askap-fly')
-SIZE = 'small'
+SIZE = 1e5
 
-def simple_rates(make=MAKE, observe=OBSERVE, alphas=ALPHAS, size=SIZE,
-                surveys=SURVEYS, output=False):
-    # Be a bit smart about which populations need to be loaded
-    load = True
-    if not make and not observe:
-        load = False
 
-    # Construct populations
-    pops = []
-    for alpha in alphas:
-        pop = get_cosmic_pop('alpha_simple',
-                             size,
-                             load=load,
-                             overwrite=make,
-                             alpha=alpha)
-
-        pops.append(pop)
-
-    # Survey populations
+def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
+    """Calculate expected rates for a simple populations."""
     rates = defaultdict(list)
 
-    for s in surveys:
+    # Don't always regenerate a population
+    if remake is False:
+        for alpha in alphas:
+            for s in surveys:
+                surv_rates = unpickle(f'simple_alpha_{alpha}_{s}').rates()
+                pprint(f'Alpha:{alpha:.2}, Survey: {s}, Det: {surv_rates.det}')
+                rate = (surv_rates.det / surv_rates.days)
+                rates[s].append(rate)
+    else:
+        pops = []
+        for alpha in alphas:
+            pop = CosmicPopulation.simple(size)
+            pop.alpha = alpha
+            pop.name = f'simple_alpha_{alpha}'
+            pops.append(pop)
 
-        survey = Survey(name=s, gain_pattern='perfect', n_sidelobes=0.5)
+            # Set up surveys
+            ss = []
+            for s in surveys:
+                survey = Survey(name=s, gain_pattern='perfect',
+                                n_sidelobes=0.5)
+                ss.append(survey)
 
-        for i, pop in enumerate(pops):
-            surv_rates = get_survey_pop(pop, survey).rates()
+            surv_pops = LargePopulation(pop, *ss).pops
 
-            if output:
-                alpha = alphas[i]
-                print(f'Alpha:{alpha:.2}, Survey: {s}, Det: {surv_rates.det}')
-
-            rate = (surv_rates.det / surv_rates.days)
-            rates[s].append(rate)
+            for i, s in enumerate(surveys):
+                surv_rates = surv_pops[i].rates()
+                pprint(f'Alpha:{alpha:.2}, Survey: {s}, Det: {surv_rates.det}')
+                rate = (surv_rates.det / surv_rates.days)
+                rates[s].append(rate)
 
     # Scale rates to HTRU
-    for surv in surveys:
-        if surv != 'htru':
+    for s in surveys:
+        if s != 'htru':
             norm = []
-            for i, r in enumerate(rates[surv]):
+            for i, r in enumerate(rates[s]):
                 norm.append(r/rates['htru'][i])
-            rates[surv] = norm
+            rates[s] = norm
     rates['htru'] = [r/r for r in rates['htru']]
 
     return rates
 
 
 def main():
+    """Plot expected simple rates."""
+    # Change working directory
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    # Use A&A styling for plotting
+    plt.style.use('./aa.mplstyle')
 
-    rates = simple_rates(output=True)
-
+    rates = simple_rates()
     for surv in rates:
         rate = rates[surv]
         plt.plot(ALPHAS, rate, label=surv)
 
-        plt.xlabel(r'$\alpha$')
-        plt.ylabel(r'Events / htru')
-        plt.yscale('log')
-        plt.xlim((min(ALPHAS), max(ALPHAS)))
-        plt.legend()
-        plt.gca().invert_xaxis()
-        plt.tight_layout()
-        plt.grid()
-        plt.savefig('./plots/simple_rates.pdf')
+    plt.xlabel(r'$\alpha_{\text{in}}$')
+    plt.ylabel(r'Events / htru')
+    plt.yscale('log')
+    plt.xlim((min(ALPHAS), max(ALPHAS)))
+    plt.legend()
+    plt.gca().invert_xaxis()
+    plt.tight_layout()
+    plt.grid()
+    plt.savefig('./plots/simple_rates.pdf')
 
 
 if __name__ == '__main__':

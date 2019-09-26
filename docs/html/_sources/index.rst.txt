@@ -20,7 +20,7 @@ How can I install it?
     git clone https://github.com/davidgardenier/frbpoppy
     cd ./frbpoppy/
     python3 setup.py develop
-    python3 tests/example.py
+    python3 examples/_starting_with_frbpoppy_.py
 
 Things not going quite as smoothly? Check the :doc:`get_started` guide for additional information on common installation problems.
 
@@ -30,7 +30,7 @@ How do I use it?
 ******************
 Feeling confident? Start off with this:
 
-.. literalinclude:: ./../tests/example.py
+.. literalinclude:: ./../examples/_starting_with_frbpoppy_.py
    :linenos:
 
 Curious about additional functionality in ``frbpoppy``? Check the :doc:`get_started` guide, the :doc:`documentation`, or the `tests <https://github.com/davidgardenier/frbpoppy/tree/master/tests>`_ directory in ``frbpoppy``.
