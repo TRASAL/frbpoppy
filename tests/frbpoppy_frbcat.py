@@ -7,72 +7,12 @@ from scipy.stats import ks_2samp
 from frbpoppy import CosmicPopulation, Survey, Frbcat, pprint, LargePopulation
 from frbpoppy import paths, unpickle
 
+from easy_hist import hist
+
 PLOT = True
-PLOT_COLS = 2
 SIZE = 1e8
 REMAKE = True
 TELESCOPES = ['parkes', 'askap']
-
-
-def hist(parameter, bin_type='lin', n_bins=25, norm=True, edges=True):
-    """Bin up a parameter either in a lin or log space.
-
-    Why is this not a standard option in numpy or matplotlib?
-
-    Args:
-        parameter (array): To be binned
-        bin_type (str): Either 'lin' or 'log'
-        n_bins (int): Number of bins. Can be overriden internally
-        norm (bool): Whether to normalise
-
-    Returns:
-        tuple: bin centers, values per bin
-
-    """
-    # Drop NaN-values
-    parameter = parameter[~np.isnan(parameter)]
-
-    # Determine number of bins
-    if n_bins != 25:
-        pass
-    elif len(parameter) < 50:
-        n_bins = 15
-    elif len(parameter) > 500:
-        n_bins = 50
-
-    # Determine type of binning
-    if bin_type == 'lin':
-        bins = n_bins
-    elif bin_type == 'log':
-        min_f = np.log10(np.min(parameter[parameter != 0]))
-        max_f = np.log10(max(parameter))
-        bins = np.logspace(min_f, max_f, n_bins)
-
-    # Bin
-    n, bin_edges = np.histogram(parameter, bins=bins)
-
-    if norm:
-        n = n/max(n)  # Normalise
-
-    # Centre bins
-    bins = (bin_edges[:-1] + bin_edges[1:]) / 2
-
-    # Ensure there are edges on the outer bins of the histograms
-    if edges:
-        if bin_type == 'lin':
-            bin_diff = np.diff(bins)[-1]
-            bins = np.insert(bins, 0, bins[0] - bin_diff)
-            bins = np.insert(bins, len(bins), bins[-1] + bin_diff)
-            n = np.insert(n, 0, 0)
-            n = np.insert(n, len(n), 0)
-        else:
-            bin_diff = np.diff(np.log10(bins))[-1]
-            bins = np.insert(bins, 0, 10**(np.log10(bins[0]) - bin_diff))
-            bins = np.insert(bins, len(bins), 10**(np.log10(bins[-1]) + bin_diff))
-            n = np.insert(n, 0, 0)
-            n = np.insert(n, len(n), 0)
-
-    return bins, n
 
 
 def plot_dists(surv_pop, telescope):
@@ -86,10 +26,7 @@ def plot_dists(surv_pop, telescope):
     """
     # Use a nice font for axes
     plt.rc('text', usetex=True)
-    if PLOT_COLS == 1:
-        plt.rcParams["figure.figsize"] = (3.556, 3.556)
-    else:
-        plt.rcParams["figure.figsize"] = (5.75373, 3.556)
+    plt.rcParams["figure.figsize"] = (5.75373, 3.556)
 
     # Plot dm distribution
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
@@ -119,7 +56,8 @@ def plot_dists(surv_pop, telescope):
              label='frbpoppy', linestyle='dashed')
 
     fluence_frbcat = df[df.telescope == telescope].fluence
-    ax2.step(*hist(fluence_frbcat, bin_type='log'), where='mid', label='frbcat')
+    ax2.step(*hist(fluence_frbcat, bin_type='log'), where='mid',
+             label='frbcat')
 
     # Compare distributions
     ks = ks_2samp(fluence_frbpoppy, fluence_frbcat)
@@ -141,9 +79,8 @@ def plot_dists(surv_pop, telescope):
 
 def get_data():
     """Get survey populations."""
-
     # Don't always regenerate a population
-    if REMAKE == False:
+    if REMAKE is False:
         # Check where a possible population would be located
         path = ''
         surv_pops = []
