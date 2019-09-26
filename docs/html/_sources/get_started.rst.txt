@@ -43,7 +43,7 @@ How can I install it?
 
     $ python3 examples/_starting_with_frbpoppy_.py
 
-   The first time you run frbpoppy it will generate lookup tables to speed up future runs. This can take up to 2h on a standard 4 core laptop.
+   The first time you run frbpoppy it will generate lookup tables to speed up future runs. This can take up to 2h on a standard 4 core laptop. Subsequent runs will be mere seconds.
 
 ****************
 How do I use it?
