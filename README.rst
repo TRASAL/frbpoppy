@@ -31,7 +31,7 @@ How can I install it?
 ******************
 How do I use it?
 ******************
-Check out the `example <https://github.com/davidgardenier/frbpoppy/blob/master/tests/example.py>`_ code in the test directory, or else ``frbpoppy``'s `webpage <https://davidgardenier.github.io/frbpoppy/>`_!
+Check out the `examples` directory, the `tests` directory, or else ``frbpoppy``'s `webpage <https://davidgardenier.github.io/frbpoppy/>`_!
 
 ****************************************
 Which dependencies does `frbpoppy` have?
