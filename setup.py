@@ -86,6 +86,7 @@ class PostDevelopCommand(develop):
 
         develop.run(self)
 
+
 setup(name='frbpoppy',
       version='1.0.0',
       description='Fast Radio Burst Population Synthesis',
