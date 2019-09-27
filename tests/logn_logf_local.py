@@ -1,10 +1,11 @@
 """Check the log N log F slope of a population."""
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 from frbpoppy.population import unpickle
+
+from convenience import plot_aa_style, rel_path
 
 MAKE = True
 
@@ -41,10 +42,7 @@ xs = xs[xs >= min_p]
 xs = xs[xs <= max_p]
 ys = [norm*x**(alpha) for x in xs]
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
@@ -58,4 +56,4 @@ plt.xscale('log')
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()
-plt.savefig('plots/logn_logf_local.pdf')
+plt.savefig(rel_path('plots/logn_logf_local.pdf'))

@@ -2,9 +2,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+
+from convenience import plot_aa_style, rel_path
 
 BEAMPATTERNS = ['perfect', 'airy', 'gaussian']
 
@@ -44,9 +45,7 @@ for pattern in BEAMPATTERNS:
     pop_obs[pattern].rates()
     pop_obs[pattern].save()
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 f, (ax1) = plt.subplots(1, 1)
 
 for p in BEAMPATTERNS:
@@ -76,4 +75,4 @@ ax1.set_ylabel(r'Fraction')
 ax1.set_ylim([0, 1])
 ax1.legend()
 plt.tight_layout()
-plt.savefig('./plots/dm_igm_beampatterns.pdf')
+plt.savefig(rel_path('./plots/dm_igm_beampatterns.pdf'))

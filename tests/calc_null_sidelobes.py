@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from convenience import plot_aa_style, rel_path
 
 STEPSIZE = 1e-6
 PLOT = True
@@ -22,11 +23,7 @@ print(x_null)
 if PLOT:
     title = r"Bessel function over $\text{x}$"
 
-    # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-    # Use A&A styling for plots
-    plt.style.use('./aa.mplstyle')
+    plot_aa_style()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -36,4 +33,4 @@ if PLOT:
     plt.yscale('log')
     plt.tight_layout()
 
-    plt.savefig('./plots/null_sidelobes.pdf')
+    plt.savefig(rel_path('./plots/null_sidelobes.pdf'))

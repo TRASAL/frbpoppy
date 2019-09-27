@@ -1,9 +1,10 @@
 """Plot the change in DM distributions due to differing beampatterns."""
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+
+from convenience import plot_aa_style, rel_path
 
 BEAMPATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
 SIZE = 1e6
@@ -59,10 +60,7 @@ def get_data():
 def plot_dm(pops):
     """Plot resulting dispersion measure."""
 
-    # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-    plt.style.use('./aa.mplstyle')
+    plot_aa_style()
     f, (ax1) = plt.subplots(1, 1)
 
     for i, beam in enumerate(pops):
@@ -95,7 +93,7 @@ def plot_dm(pops):
     ax1.legend()
 
     plt.tight_layout()
-    plt.savefig(f'./plots/dm_beams.pdf')
+    plt.savefig(rel_path(f'./plots/dm_beams.pdf'))
 
 
 def main():

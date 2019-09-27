@@ -1,13 +1,12 @@
 """Plot the DM distribution obtained with frbpoppy against frbcat results."""
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
-import os
 from scipy.stats import ks_2samp
 
 from frbpoppy import CosmicPopulation, Survey, Frbcat, pprint, LargePopulation
 from frbpoppy import paths, unpickle
 
-from convenience import hist
+from convenience import hist, plot_aa_style, rel_path
 
 PLOT = True
 SIZE = 1e8
@@ -24,11 +23,7 @@ def plot_dists(surv_pop, telescope):
             distribution. Necessary for Frbcat.
 
     """
-    # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    # Use a nice font for axes
-    plt.style.use('./aa.mplstyle')
-    plt.rcParams["figure.figsize"] = (5.75373, 3.556)
+    plot_aa_style(cols=2)
 
     # Plot dm distribution
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
@@ -75,7 +70,7 @@ def plot_dists(surv_pop, telescope):
     plt.figlegend(loc='upper center', ncol=2, framealpha=1)
 
     plt.tight_layout()
-    plt.savefig(f'plots/frbpoppy_{telescope}.pdf')
+    plt.savefig(rel_path(f'plots/frbpoppy_{telescope}.pdf'))
     plt.clf()
 
 
@@ -90,7 +85,7 @@ def get_data():
             if telescope == 'askap':
                 telescope = 'askap-fly'
             name = f'{telescope}'
-            path = paths.populations() + name + '.p'
+            path = paths.populations() + f'complex_{name}.p'
             surv_pops.append(unpickle(path))
 
         return surv_pops

@@ -2,10 +2,11 @@
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 
 from frbpoppy import (CosmicPopulation, Survey, LargePopulation, pprint,
                       unpickle)
+
+from convenience import plot_aa_style, rel_path
 
 REMAKE = False
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
@@ -62,10 +63,7 @@ def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
 
 def main():
     """Plot expected simple rates."""
-    # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    # Use A&A styling for plotting
-    plt.style.use('./aa.mplstyle')
+    plot_aa_style()
 
     rates = simple_rates()
     for surv in rates:
@@ -80,7 +78,7 @@ def main():
     plt.gca().invert_xaxis()
     plt.tight_layout()
     plt.grid()
-    plt.savefig('./plots/simple_rates.pdf')
+    plt.savefig(rel_path('./plots/simple_rates.pdf'))
 
 
 if __name__ == '__main__':

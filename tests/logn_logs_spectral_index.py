@@ -5,10 +5,11 @@ Plot N(>S) over log S (S being the flux density) for various spectral indices.
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 from scipy.signal import savgol_filter
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+
+from convenience import plot_aa_style, rel_path
 
 SIS = (-2, 0, 2)  # Spectral indices
 n_tot = 1e5  # Number of sources
@@ -41,11 +42,7 @@ for si in SIS:
     pop_obs[si].rates()
     pop_obs[si].save()
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-# Use A&A styling for plots
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 
 # Plot log N and alpha versus log S
 f, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
@@ -105,4 +102,4 @@ ax2.set_ylabel(r'$\alpha$')
 ax2.set_ylim(ax2.get_ylim()[::-1])
 
 plt.tight_layout()
-plt.savefig(f'plots/logn_logs_si.pdf')
+plt.savefig(rel_path(f'plots/logn_logs_si.pdf'))

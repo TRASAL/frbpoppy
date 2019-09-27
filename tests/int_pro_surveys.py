@@ -1,20 +1,18 @@
 """Plot intensity profile of theoretical beam patterns."""
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 from scipy.stats import binned_statistic as bstat
 
 from frbpoppy.survey import Survey
+
+from convenience import plot_aa_style, rel_path
 
 OBSERVATORIES = [('parkes', 'htru'),
                  ('apertif', 'apertif')]
 
 n = int(1e6)
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 
 for obs in OBSERVATORIES:
 
@@ -48,9 +46,9 @@ for obs in OBSERVATORIES:
     plt.fill_between(center, bin_mins, bin_maxs, alpha=0.2)
 
 
-plt.xlabel(r'Offset ($\degree$)')
+plt.xlabel(r'Offset ($$^{\circ}$$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()
-plt.savefig('plots/int_pro_surveys.pdf')
+plt.savefig(rel_path('plots/int_pro_surveys.pdf'))

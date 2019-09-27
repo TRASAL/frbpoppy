@@ -3,7 +3,8 @@ from scipy.stats import chi2, norm
 from scipy.integrate import quad
 import matplotlib.pyplot as plt
 import numpy as np
-import os
+
+from convenience import plot_aa_style, rel_path
 
 EXPECTED = {'htru': [9, 24 * 0.551 / 1549],  # N_frbs, scaling to get frbs/day
             'apertif': [1, 1 / 7],
@@ -63,10 +64,7 @@ def real_rates(surveys=SURVEYS):
 
 def main():
     """Plot real rate regions per alpha."""
-    # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    # Use A&A styling for plots
-    plt.style.use('./aa.mplstyle')
+    plot_aa_style()
 
     rates = real_rates()
 
@@ -85,7 +83,7 @@ def main():
     plt.legend()
     plt.gca().invert_xaxis()
     plt.tight_layout()
-    plt.savefig('./plots/real_rates.pdf')
+    plt.savefig(rel_path('./plots/real_rates.pdf'))
 
 
 if __name__ == '__main__':

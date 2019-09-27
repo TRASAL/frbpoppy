@@ -1,7 +1,6 @@
 """Plot intensity profile of theoretical beam patterns."""
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 from frbpoppy.survey import Survey
 
 PATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
@@ -9,10 +8,7 @@ SURVEY = 'apertif'
 MIN_Y = 1e-6
 n = 500000
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 
 for pattern in PATTERNS:
 
@@ -46,9 +42,9 @@ for pattern in PATTERNS:
     plt.plot(offset, int_pro, label=pattern, zorder=z)
 
 
-plt.xlabel(r'Offset ($\degree$)')
+plt.xlabel(r'Offset ($$^{\circ}$$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()
-plt.savefig('plots/int_pro_theory.pdf')
+plt.savefig(rel_path('plots/int_pro_theory.pdf'))

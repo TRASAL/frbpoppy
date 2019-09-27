@@ -1,9 +1,8 @@
 """Plot options of varying FRB number densities."""
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-
 from frbpoppy import CosmicPopulation, unpickle
+from convenience import plot_aa_style, rel_path
 
 MAKE = True
 NUM_FRBS = True
@@ -15,7 +14,7 @@ titles = ('Constant', 'SFR', 'SMD', r'$\alpha_{in}=-0.5$',
           r'$\alpha_{in}=-2.0$')
 
 if MAKE:
-    n_frbs = int(1e6)
+    n_frbs = int(1e5)
 
     # Generate population following a constant number density / comoving volume
     pop['cst'] = CosmicPopulation(n_frbs,
@@ -56,11 +55,7 @@ else:
     for s in pop_types:
         pop[s] = unpickle(s)
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-# Use A&A styling for plots
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 
 if NUM_FRBS:
     fig = plt.figure()
@@ -90,11 +85,11 @@ if NUM_FRBS:
     plt.yscale('log')
     plt.legend()
     plt.tight_layout()
-    plt.savefig('plots/number_frbs.pdf')
+    plt.savefig(rel_path('plots/number_frbs.pdf'))
     plt.clf()
 
 if DENSITY_FRBS:
-    plt.style.use('./aa.mplstyle')  # Use A&A styling for plots
+    plot_aa_style()
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -116,4 +111,4 @@ if DENSITY_FRBS:
     plt.ylabel(r'$\rho_{\text{FRB}} / \rho_{\text{FRB}}(0)$')
     plt.yscale('log')
     plt.tight_layout()
-    plt.savefig('plots/density_frbs.pdf')
+    plt.savefig(rel_path('plots/density_frbs.pdf'))
