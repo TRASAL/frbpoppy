@@ -5,6 +5,8 @@ import os
 
 from frbpoppy import Survey
 
+from convenience import plot_aa_style, rel_path
+
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 SURVEYS = ('palfa', 'htru', 'askap-fly')
 
@@ -45,14 +47,10 @@ def main():
     """Plot toy rates."""
     rates = toy_rates()
 
-    # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
     for surv in rates:
         rate = rates[surv]
 
-        # Use a nice font for axes
-        plt.style.use('./aa.mplstyle')  # Use A&A styling for plots
+        plot_aa_style()
 
         plt.plot(ALPHAS, rate, label=surv)
 
@@ -64,7 +62,7 @@ def main():
         plt.grid()
         plt.gca().invert_xaxis()
         plt.tight_layout()
-        plt.savefig('./plots/toy_rates.pdf')
+        plt.savefig(rel_path('./plots/toy_rates.pdf'))
 
 
 if __name__ == '__main__':

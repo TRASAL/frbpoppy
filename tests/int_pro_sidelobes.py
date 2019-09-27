@@ -1,19 +1,17 @@
 """Plot intensity profile of sidelobes."""
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 
 from frbpoppy.survey import Survey
+
+from convenience import plot_aa_style, rel_path
 
 SIDELOBES = [0, 1, 2, 8]
 SURVEY = 'apertif'
 MIN_Y = 1e-7
 n = 50000
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 
 for sidelobe in reversed(SIDELOBES):
 
@@ -41,9 +39,9 @@ for sidelobe in reversed(SIDELOBES):
 
     plt.plot(offset, int_pro, label=label)
 
-plt.xlabel(r'Offset ($\degree$)')
+plt.xlabel(r'Offset ($$^{\circ}$$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()
-plt.savefig('plots/int_pro_sidelobes.pdf')
+plt.savefig(rel_path('./plots/int_pro_sidelobes.pdf'))

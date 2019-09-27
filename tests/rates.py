@@ -1,16 +1,16 @@
 """Show frbpoppy matches analytical models and predict the event rates."""
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+import matplotlib.pyplot as plt
 import numpy as np
-import os
 
-from rates_toy import toy_rates
+from convenience import plot_aa_style, rel_path
+from rates_complex import complex_rates
 from rates_real import real_rates
 from rates_simple import simple_rates
-from rates_complex import complex_rates
+from rates_toy import toy_rates
 
-REMAKE = True
+REMAKE = False
 SIZE = 1e8
 SURVEYS = ('palfa', 'htru', 'askap-fly', 'askap-incoh')
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
@@ -18,14 +18,9 @@ ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 
 def plot(toy, simple, complex, real):
     """Plot rates panel."""
-
     surveys = SURVEYS[:-1]
 
-    # Use a nice font for axes
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    plt.style.use('./aa.mplstyle')  # Use A&A styling for plots
-    plt.rcParams["figure.figsize"] = (5.75373, 3.556)
-
+    plot_aa_style(cols=2)
     fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
     cmap = plt.get_cmap('tab10')
     ax1.set_xlim((min(ALPHAS)+.1, max(ALPHAS)-.1))
@@ -113,10 +108,11 @@ def plot(toy, simple, complex, real):
     lines, labels = zip(*elements)
     plt.legend(lines, labels, bbox_to_anchor=(1.04, 0.5), loc="center left")
 
-    plt.savefig('plots/rates.pdf', bbox_inches='tight')
+    plt.savefig(rel_path('plots/rates.pdf'), bbox_inches='tight')
 
 
 def main():
+    """Get rates."""
     toy = toy_rates(surveys=SURVEYS,
                     alphas=ALPHAS)
 

@@ -2,9 +2,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+
+from convenience import plot_aa_style, rel_path
 
 SIDELOBES = [0, 1, 8]
 
@@ -44,10 +45,7 @@ for sidelobe in SIDELOBES:
     pop_obs[sidelobe].rates()
     pop_obs[sidelobe].save()
 
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 f, (ax1) = plt.subplots(1, 1)
 
 for p in SIDELOBES:
@@ -77,4 +75,4 @@ ax1.set_ylabel(r'Fraction')
 ax1.set_ylim([0, 1])
 ax1.legend()
 plt.tight_layout()
-plt.savefig(f'./plots/dm_igm_sidelobes.pdf')
+plt.savefig(rel_path(f'./plots/dm_igm_sidelobes.pdf'))

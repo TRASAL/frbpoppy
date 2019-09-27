@@ -1,12 +1,8 @@
 """Test perfect survey."""
 import matplotlib.pyplot as plt
-import os
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
-from convenience import hist
-
-# Change working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+from convenience import hist, plot_aa_style, rel_path
 
 cosmic_pop = CosmicPopulation.simple(1e4, generate=False)
 cosmic_pop.z_max = 0.01
@@ -17,8 +13,7 @@ survey = Survey('perfect')
 
 survey_pop = SurveyPopulation(cosmic_pop, survey)
 
-# Use A&A styling for plots
-plt.style.use('./aa.mplstyle')
+plot_aa_style()
 plt.rcParams["figure.figsize"] = (5.75373, 5.75373)
 
 f, axes = plt.subplots(2, 2)
@@ -46,4 +41,4 @@ for x in [0, 1]:
         axes[x, y].set_yscale('log')
 
 plt.tight_layout()
-plt.savefig('plots/perfect.pdf')
+plt.savefig(rel_path('plots/perfect.pdf'))

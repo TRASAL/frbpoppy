@@ -1,9 +1,10 @@
 """Plot a log N / log S graph for three different populations."""
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+
+from convenience import plot_aa_style, rel_path
 
 SIZE = 1e5
 GAMMAS = [-1.4, 1]
@@ -70,10 +71,7 @@ def calc_cum_hist(s_peaks):
 
 def plot_logn_logs(data):
     """Plot log N log S data in a cumlative histogram."""
-    # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-    plt.style.use('./aa.mplstyle')
+    plot_aa_style()
 
     fig, (ax1) = plt.subplots(1, 1)
 
@@ -88,7 +86,7 @@ def plot_logn_logs(data):
     plt.xlim((1e-3, 1e1))
     plt.legend()
     plt.tight_layout()
-    plt.savefig('plots/logn_logs_abc.pdf')
+    plt.savefig(rel_path('plots/logn_logs_abc.pdf'))
 
 
 def main():
