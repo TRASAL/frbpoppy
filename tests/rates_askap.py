@@ -38,7 +38,7 @@ def plot_rates(rates):
 
     # Plot layout options
     # Set up axes
-    ax1.set_xlabel(r'$\alpha$')
+    ax1.set_xlabel(r'$\alpha_{\text{in}}$')
     ax1.invert_xaxis()
     ax1.set_ylabel('Events / htru')
 

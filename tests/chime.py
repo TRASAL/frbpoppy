@@ -1,16 +1,13 @@
 """Determine whether frbpoppy can explain CHIME results."""
-
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 import numpy as np
-import os
-import pandas as pd
 
 from frbpoppy import Frbcat, RepeaterPopulation, Survey, SurveyPopulation
 from frbpoppy import split_pop
 
-from convenience import hist
+from convenience import hist, plot_aa_style, rel_path
 from repeaters import limit_ra_dec
 
 
@@ -20,6 +17,7 @@ def get_frbcat_data():
     Returns:
         dict: Two keys 'r' for repeater and 'o' for one-offs. Each
             with entries for 'dm' and 'snr'
+
     """
     fc = Frbcat(frbpoppy=False, repeaters=True)
     chime_df = fc.df[fc.df.telescope == 'chime']
@@ -49,6 +47,7 @@ def get_frbcat_data():
 
 
 def get_frbpoppy_data():
+    """Get frbpoppy data."""
     r = RepeaterPopulation(1e5,
                            days=1,
                            dm_host_model='normal',
@@ -93,7 +92,7 @@ def get_frbpoppy_data():
     surv_pop = SurveyPopulation(r, s)
 
     # Split population into seamingly one-off and repeater populations
-    mask = ((~np.isnan(surv_pop.frbs.time)).sum(1)>1)
+    mask = ((~np.isnan(surv_pop.frbs.time)).sum(1) > 1)
     pop_ngt1, pop_nle1 = split_pop(surv_pop, mask)
     pop_ngt1.name += ' (> 1 burst)'
     pop_nle1.name += ' (1 burst)'
@@ -110,11 +109,9 @@ def get_frbpoppy_data():
 
 
 def plot(frbcat, frbpop):
-    
+    """Plot distributions."""
     # Change working directory
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    plt.style.use('./aa.mplstyle')
-    plt.rcParams["figure.figsize"] = (5.75373, 3.556)
+    plot_aa_style(cols=2)
 
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 
@@ -131,8 +128,8 @@ def plot(frbcat, frbpop):
         for t in ['r', 'o']:
 
             # Line style
-            linestyle='solid'
-            label='one-offs'
+            linestyle = 'solid'
+            label = 'one-offs'
             if t == 'r':
                 linestyle = 'dashed'
                 label = 'repeaters'
@@ -176,8 +173,7 @@ def plot(frbcat, frbpop):
     # plt.tight_layout()
     # plt.legend(lines, labels, bbox_to_anchor=(0.5, 1.04), loc="upper center")
 
-    file_name = 'frbcat_chime.pdf'
-    path = os.path.dirname(os.path.abspath(__file__)) + f'/plots/{file_name}'
+    path = rel_path(f'./plots/frbcat_chime.pdf')
     plt.savefig(path, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
