@@ -3,7 +3,7 @@
 # Necessary for older Python installations of <=3.5
 
 pip3 install future-fstrings[rewrite]
-for e in ./frbpoppy ./tests; do
+for e in ./frbpoppy ./tests ./examples; do
   cd $e
   for f in *.py; do
     tmpfile=$(mktemp)
