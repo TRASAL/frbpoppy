@@ -14,7 +14,7 @@ from frbpoppy.log import pprint
 
 # Import fortran libraries
 uni_mods = os.path.join(paths.models(), 'universe/')
-dm_mods = os.path.join(paths.models(), 'dm/')
+dm_mods = os.path.join(paths.models(), 'ne2001/')
 loc = os.path.join(dm_mods, 'libne2001.so')
 ne2001lib = C.CDLL(loc)
 ne2001lib.dm_.restype = C.c_float

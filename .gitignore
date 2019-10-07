@@ -98,7 +98,7 @@ ENV/
 *logo.png
 *screenshot*.png
 data/logs/*
-data/models/dm/libne2001\.so
+data/models/ne2001/libne2001\.so
 misc/
 tests/plots/*
 tests/temp.py

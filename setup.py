@@ -17,7 +17,7 @@ class PostDevelopCommand(develop):
             """Full location path to file."""
             return os.path.join(os.path.dirname(__file__), f)
 
-        all_fortran = glob.glob(loc('./data/models/dm/*.f'))
+        all_fortran = glob.glob(loc('./data/models/ne2001/*.f'))
 
         for f in all_fortran:
 
@@ -49,15 +49,15 @@ class PostDevelopCommand(develop):
         gf = ['gfortran',
               flag,
               '-o',
-              loc('./data/models/dm/libne2001.so'),
+              loc('./data/models/ne2001/libne2001.so'),
               '-fno-second-underscore',
-              loc('./data/models/dm/dm.o'),
-              loc('./data/models/dm/ne2001.o'),
-              loc('./data/models/dm/psr_ne.o'),
-              loc('./data/models/dm/dist.o'),
-              loc('./data/models/dm/calc_xyz.o'),
-              loc('./data/models/dm/density.o'),
-              loc('./data/models/dm/glun.o'),
+              loc('./data/models/ne2001/dm.o'),
+              loc('./data/models/ne2001/ne2001.o'),
+              loc('./data/models/ne2001/psr_ne.o'),
+              loc('./data/models/ne2001/dist.o'),
+              loc('./data/models/ne2001/calc_xyz.o'),
+              loc('./data/models/ne2001/density.o'),
+              loc('./data/models/ne2001/glun.o'),
               ]
 
         check_call(gf)
