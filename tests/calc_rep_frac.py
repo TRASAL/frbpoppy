@@ -4,11 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from frbpoppy import RepeaterPopulation, Survey, SurveyPopulation, pprint
+from frbpoppy import RepeaterPopulation, Survey, LargePopulation, pprint
 
 from convenience import plot_aa_style, rel_path
 
-MAX_DAYS = 365*2
+MAX_DAYS = 2*365
 N_CHIME = {'rep': 10, 'one-offs': 200}
 SAVE = True
 USE_SAVE = False
@@ -18,7 +18,7 @@ if USE_SAVE:
     days = df.days.values
     fracs = df.fracs.values
 else:
-    r = RepeaterPopulation.simple(1e6)
+    r = RepeaterPopulation.simple(1e7)
     r.lum_min = 1e40
     r.lum_max = 1e45
     r.lum_pow = 0
@@ -27,18 +27,6 @@ else:
     r.times_rep_model = 'clustered'
     r.n_days = MAX_DAYS
 
-    # Generate population
-    pprint('Generating population')
-    r.gen_dist()
-    r.gen_direction()
-    r.gen_gal_coords()
-    r.gen_dm()
-    r.gen_rep_times()  # Leon: r=6.9, k=0.49
-    r.gen_rep_lum()
-    r.gen_rep_w()
-    r.gen_rep_si()
-    pprint('Finished generating population')
-
     # Set DM distributions
     r.dm_host_model = 'gaussian'
     r.dm_host_mu = 100
@@ -46,13 +34,13 @@ else:
     r.dm_igm_index = 950  # In between Cordes review & Petroff review
     r.dm_igm_sigma = 0
     r.dm_mw_model = 'ne2001'
-    r.generate()
 
+    # Set up survey
     survey = Survey('chime', strategy='regular')
     survey.n_days = MAX_DAYS
     survey.beam_pattern = 'chime'
 
-    surv_pop = SurveyPopulation(r, survey)
+    surv_pop = LargePopulation(r, survey, max_size=1e6).pops[0]
 
     # See how fraction changes over time
     days = np.linspace(0, MAX_DAYS, MAX_DAYS+1)
@@ -60,7 +48,6 @@ else:
     for day in days:
         t = surv_pop.frbs.time.copy()
         time = np.where(t < day, t, np.nan)
-
         n_rep = ((~np.isnan(time)).sum(1) > 1).sum()
         n_one_offs = ((~np.isnan(time)).sum(1) == 1).sum()
         frac = n_rep / (n_rep + n_one_offs)
@@ -70,7 +57,9 @@ else:
         # Save data for later plotting if necessary
         df = pd.DataFrame({'days': days, 'fracs': fracs})
         df.to_csv(rel_path(f'plots/rep_frac.csv'))
+        surv_pop.save()
 
+# Set up plot style
 plot_aa_style(cols=2)
 plt.plot(days, fracs)
 
@@ -78,7 +67,7 @@ plt.plot(days, fracs)
 chime_frac = N_CHIME['rep'] / (N_CHIME['rep'] + N_CHIME['one-offs'])
 line = 'horizontal'
 
-
+# Add CHIME detection line
 try:
     if line == 'horizontal':
         plt.axhline(y=chime_frac, color='r', linestyle='--')
@@ -88,6 +77,7 @@ try:
 except IndexError:
     pprint(f'CHIME fraction of {chime_frac:.1} not in plotting area')
 
+# Further plot details
 plt.xlabel(r'Time (days)')
 plt.ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
 plt.ylim(0, 1)

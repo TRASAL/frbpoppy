@@ -2,7 +2,9 @@
 import numpy as np
 import os
 import uuid
-from frbpoppy.log import pprint, progressbar
+from tqdm import tqdm
+
+from frbpoppy.log import pprint
 from frbpoppy.survey_pop import SurveyPopulation
 from frbpoppy.population import unpickle
 from frbpoppy.paths import paths
@@ -14,7 +16,7 @@ class LargePopulation:
     Basically splits it up, and merges the results.
     """
 
-    def __init__(self, pop, *surveys, max_size=1e7, run=True):
+    def __init__(self, pop, *surveys, max_size=1e6, run=True):
         """Set arguments."""
         self.pop = pop
         self.base_name = pop.name
@@ -27,6 +29,7 @@ class LargePopulation:
             self.merge()
 
     def run(self):
+        """Run the generating and surveying of a large population."""
         pprint(f'Running a large {self.base_name} population')
         d = divmod(self.pop.n_gen, self.max_size)
         sizes = [self.max_size for i in range(d[0])]
@@ -34,8 +37,7 @@ class LargePopulation:
             sizes.append(d[1])
         self.uids = [str(uuid.uuid4())[:8] for s in sizes]
 
-        m = 'Progress through populations:'
-        for i, n in enumerate(progressbar(sizes, m)):
+        for i, n in enumerate(tqdm(sizes, desc='Subpopulations')):
             pop = self.pop
             pop.n_gen = n
             pop.uid = self.uids[i]
@@ -48,6 +50,7 @@ class LargePopulation:
                 surv_pop.save()
 
     def merge(self):
+        """Merge populations."""
         pprint('Merging populations')
 
         self.pops = []
@@ -68,7 +71,26 @@ class LargePopulation:
                     parms = []
                     for pop in pops:
                         parms.append(getattr(pop.frbs, attr))
-                    merged_parm = np.concatenate(parms, axis=0)
+
+                    try:
+                        merged_parm = np.concatenate(parms, axis=0)
+                    except ValueError as e:
+                        # Check maximum size values should be padded to
+                        max_size = max([p.shape[1] for p in parms])
+                        new_parms = []
+
+                        # Ensure matrices are the same shapes by padding them
+                        for p in parms:
+                            if p.shape[1] != max_size:
+                                padded_p = np.zeros((p.shape[0], max_size))
+                                padded_p[:] = np.nan
+                                padded_p[:, :p.shape[1]] = p
+                                new_parms.append(padded_p)
+                            else:
+                                new_parms.append(p)
+
+                        merged_parm = np.concatenate(new_parms, axis=0)
+
                     setattr(mp.frbs, attr, merged_parm)
 
             # Add up detections

@@ -175,8 +175,7 @@ class SurveyPopulation(Population):
         snr_mask = np.ones_like(frbs.snr, dtype=bool)
 
         # Have to loop over the observing times
-        pprint('Starting to iterate over pointings')
-        for i, t_min in tqdm(enumerate(times[:-1]), total=len(times)-1):
+        for i, t_min in enumerate(tqdm(times[:-1], desc='Pointings')):
             ra_p = survey.pointings[0][p_i % max_n_pointings]  # Loops around
             dec_p = survey.pointings[1][p_i % max_n_pointings]
             lst = lsts[i]
