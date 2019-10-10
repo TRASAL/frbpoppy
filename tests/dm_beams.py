@@ -19,7 +19,7 @@ def get_data():
                            H_0=67.74,
                            W_m=0.3089,
                            W_v=0.6911,
-                           dm_host_model='normal',
+                           dm_host_model='gaussian',
                            dm_host_mu=100,
                            dm_host_sigma=0,
                            dm_igm_index=1000,

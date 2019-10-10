@@ -23,7 +23,7 @@ class RepeaterPopulation(CosmicPopulation):
 
         Args:
             lum_rep_model (str): Depenancy of bursts on prior bursts. Choice
-                of 'same', 'independent', 'normal' or 'lognormal'.
+                of 'same', 'independent', 'gaussian' or 'lognormal'.
             times_rep_model (str): 'even'-ly spaced intervals, or 'clustered'
             **kw (all): All of the arguments available to CosmicPopulation.
         """
@@ -99,7 +99,7 @@ class RepeaterPopulation(CosmicPopulation):
         elif self.w_rep_model == 'independent':
             self.gen_w(self.shape)
 
-        elif self.w_rep_model == 'normal':
+        elif self.w_rep_model == 'gaussian':
             self.gen_w(self.n_gen)
             mu = self.frbs.w_int
             sigma = self.w_rep_sigma
@@ -117,7 +117,7 @@ class RepeaterPopulation(CosmicPopulation):
         elif self.si_rep_model == 'independent':
             self.gen_si(self.shape)
 
-        elif self.si_rep_model == 'normal':
+        elif self.si_rep_model == 'gaussian':
             self.gen_si(self.n_gen)
             mu = self.frbs.si
             sigma = self.si_rep_sigma
@@ -133,8 +133,8 @@ class RepeaterPopulation(CosmicPopulation):
         elif self.lum_rep_model == 'independent':
             self.gen_lum(self.shape)
 
-        elif self.lum_rep_model in ('normal', 'lognormal'):
-            if self.lum_rep_model == 'normal':
+        elif self.lum_rep_model in ('gaussian', 'lognormal'):
+            if self.lum_rep_model == 'gaussian':
                 r = np.random.normal
             else:
                 r = np.random.lognormal
@@ -168,7 +168,7 @@ class RepeaterPopulation(CosmicPopulation):
                   H_0=67.74,
                   W_m=0.3089,
                   W_v=0.6911,
-                  dm_host_model='normal',
+                  dm_host_model='gaussian',
                   dm_host_mu=0.,
                   dm_host_sigma=0.,
                   dm_igm_index=0.,

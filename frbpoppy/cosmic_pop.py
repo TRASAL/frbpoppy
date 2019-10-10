@@ -19,7 +19,7 @@ class CosmicPopulation(Population):
                  H_0=67.74,
                  W_m=0.3089,
                  W_v=0.6911,
-                 dm_host_model='normal',
+                 dm_host_model='gaussian',
                  dm_host_mu=100,
                  dm_host_sigma=200,
                  dm_igm_index=1000,
@@ -48,7 +48,7 @@ class CosmicPopulation(Population):
             W_m (float): Density parameter Ω_m.
             W_v (float): Cosmological constant Ω_Λ.
             dm_host_model (float): Dispersion measure host model. Options are
-                'normal' or 'lognormal'.
+                'gaussian' or 'lognormal'.
             dm_host_mu (float): Mean dispersion measure host [pc/cm^3].
             dm_host_sigma (float): Deviation dispersion measure host [pc/cm^3].
             dm_igm_index (float): Dispersion measure slope for IGM [pc/cm^3].
@@ -163,7 +163,7 @@ class CosmicPopulation(Population):
         """Generate dm host contributions."""
         frbs = self.frbs
         # Dispersion measure of the host (Tendulkar)
-        if self.dm_host_model == 'normal':
+        if self.dm_host_model == 'gaussian':
             frbs.dm_host = dis.trunc_norm(self.dm_host_mu,
                                           self.dm_host_sigma,
                                           self.n_gen).astype(np.float32)
@@ -251,7 +251,7 @@ class CosmicPopulation(Population):
                   H_0=67.74,
                   W_m=0.3089,
                   W_v=0.6911,
-                  dm_host_model='normal',
+                  dm_host_model='gaussian',
                   dm_host_mu=0.,
                   dm_host_sigma=0.,
                   dm_igm_index=0.,
@@ -281,7 +281,7 @@ class CosmicPopulation(Population):
                   H_0=67.74,
                   W_m=0.3089,
                   W_v=0.6911,
-                  dm_host_model='normal',
+                  dm_host_model='gaussian',
                   dm_host_mu=100,
                   dm_host_sigma=200,
                   dm_igm_index=1000,
