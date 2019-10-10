@@ -52,58 +52,26 @@ class RepeaterPopulation(CosmicPopulation):
         if generate:
             self.generate()
 
-    def gen_clustered_times(self):
-        """Generate burst times following Oppermann & Pen (2017).
-
-        As most bursts will be beyond 12h, it uses a accept-reject algorithm to
-        ensure all frbs are useful in the surveys phase. It uses a counter to
-        keep track of the number of FRBs it has had to regenerate.
-        """
+    def gen_clustered_times(self, r=5.7, k=0.34):
+        """Generate burst times following Oppermann & Pen (2017)."""
         pprint('Adding burst times')
-        # Define parameters for Weibull distribution
-        r = 5.7
-        k = 0.34
-
-        # Determine the maximum possible number of bursts to include
-        # Would be minus one if bursts over 12h were included
-        m = int(round(np.log10(self.n_gen))*2)
+        # Determine the maximum possible number of bursts per source to include
+        m = int(round(np.log10(self.n_gen))*2) - 1
         if m < 1:
             m = 1
         dims = (self.n_gen, m)
 
-        def sample(n, m):
-            # Ensure unit per day
-            time = r*np.random.weibull(k, (n, m)).astype(np.float32)
-            time = np.cumsum(time, axis=1)
-            return time
+        # This is in fraction of days
+        time = r*np.random.weibull(k, dims).astype(np.float32)
+        time = np.cumsum(time, axis=1)
 
-        def accept(time, max_time=1.):
-            """Set a limit on the maximum total bursting time.
-
-            Args:
-                times (type): Burst times
-                max_time (type): Maximum time to still accept
-
-            Returns:
-                array: Mask with True if at least one burst under max time
-
-            """
-            time[time > max_time] = np.nan
-            return ~np.isnan(time[:, 0])
-
-        # Accept - reject algorithm
-        self.n_miss = 0
-        time = sample(*dims)
-        mask = accept(time)
-        reject, = np.where(~mask)
-        self.n_miss = reject.size
-        while reject.size > 0:
-            fill = sample(reject.size, m)
-            mask = accept(fill)
-            time[reject[mask]] = fill[mask]
-            reject = reject[~mask]
-
-        self.frbs.time = time
+        # The first burst time is actually the time since the previous one
+        # You want to be at in a random time in between those
+        time_offset = np.random.uniform(0, time[:, 0])
+        time -= time_offset[:, np.newaxis]
+        # This is interesting. The Weibull distribution was fit to an
+        # observed distribution, but here I'm setting the intrinsic one
+        self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
 
     def gen_regular_times(self):
         """Generate a series of regular spaced times."""
@@ -190,6 +158,42 @@ class RepeaterPopulation(CosmicPopulation):
         self.gen_rep_w()
         self.gen_rep_si()
         pprint(f'Finished generating {self.name} population')
+
+    @classmethod
+    def simple(cls, n, generate=False):
+        """Set up a simple, local population."""
+        pop = cls(n,
+                  days=1,
+                  name='simple',
+                  H_0=67.74,
+                  W_m=0.3089,
+                  W_v=0.6911,
+                  dm_host_model='normal',
+                  dm_host_mu=0.,
+                  dm_host_sigma=0.,
+                  dm_igm_index=0.,
+                  dm_igm_sigma=None,
+                  dm_mw_model='zero',
+                  emission_range=[10e6, 10e9],
+                  lum_range=[1e38, 1e38],
+                  lum_index=0.,
+                  n_model='vol_co',
+                  alpha=-1.5,
+                  w_model='uniform',
+                  w_range=[10, 10],
+                  w_mu=0.1,
+                  w_sigma=1.,
+                  si_mu=0.,
+                  si_sigma=0.,
+                  z_max=0.01,
+                  lum_rep_model='independent',
+                  lum_rep_sigma=1e3,
+                  si_rep_model='same',
+                  si_rep_sigma=0.1,
+                  times_rep_model='even',
+                  w_rep_model='independent',
+                  generate=generate)
+        return pop
 
 
 if __name__ == '__main__':

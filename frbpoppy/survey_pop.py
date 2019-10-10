@@ -48,16 +48,6 @@ class SurveyPopulation(Population):
         frbs.apply(region_mask)
         self.rate.out = np.size(region_mask) - np.count_nonzero(region_mask)
 
-        if survey.pointings:
-            p_mask = survey.in_pointings(frbs)
-            frbs.apply(p_mask)
-            self.rate.out += np.size(p_mask) - np.count_nonzero(p_mask)
-
-        # Add a time filter on repeaters (must use pointings for this)
-        if isinstance(cosmic_pop, RepeaterPopulation):
-            time_mask = survey.in_time(frbs)
-            frbs.apply(time_mask)
-
         # Calculate dispersion measure across single channel
         frbs.t_dm = survey.dm_smear(frbs)
 
@@ -106,9 +96,15 @@ class SurveyPopulation(Population):
             frbs.apply(rate_mask)
             self.rate.late = np.size(rate_mask) - np.count_nonzero(rate_mask)
 
+        # Add a time filter on repeaters
+        if isinstance(cosmic_pop, RepeaterPopulation):
+            obs_strategy_mask = survey.in_observation(frbs)
+            frbs.apply(obs_strategy_mask)
+
         self.rate.det = len(frbs.snr)
 
-        self.calc_rates(survey)
+        if not isinstance(cosmic_pop, RepeaterPopulation):
+            self.calc_rates(survey)
 
     def calc_rates(self, survey):
         """Calculate the relative detection rates."""

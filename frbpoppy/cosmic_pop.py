@@ -255,7 +255,7 @@ class CosmicPopulation(Population):
                   dm_host_mu=0.,
                   dm_host_sigma=0.,
                   dm_igm_index=0.,
-                  dm_igm_sigma=None,
+                  dm_igm_sigma=0.,
                   dm_mw_model='zero',
                   emission_range=[10e6, 10e9],
                   lum_range=[1e38, 1e38],

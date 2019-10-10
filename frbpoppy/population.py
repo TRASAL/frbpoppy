@@ -58,7 +58,6 @@ class Population:
 
         # Store FRB sources
         self.frbs = FRBs()
-        self.n_frbs = 0
         self.uid = None  # Unique Identifier
 
     def __str__(self):
@@ -115,6 +114,18 @@ class Population:
         output = open(path, 'wb')
         pickle.dump(self, output, 2)
         output.close()
+
+    def n_sources(self):
+        """Return the number of FRB sources."""
+        return len(self.frbs.ra)
+
+    def n_bursts(self):
+        """Return the number of bursts."""
+        try:  # Will only work for a repeater population
+            n = np.count_nonzero(~np.isnan(self.frbs.time))
+        except TypeError:
+            n = self.n_sources()
+        return n
 
 
 def unpickle(filename=None, uid=None):

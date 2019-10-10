@@ -31,6 +31,8 @@ class Survey:
                  gain_pattern='gaussian',
                  n_sidelobes=0.5,
                  pointings=[],
+                 n_days=1,
+                 strategy='follow-up',
                  max_time=1):
         """Initializing."""
         # Set up parameters
@@ -38,8 +40,10 @@ class Survey:
         self.gain_pattern = gain_pattern
         self.n_sidelobes = n_sidelobes
         self.pointings = pointings
-        self.max_time = max_time
+        self.n_days = n_days
+        self.strategy = strategy
         self.pop_type = None
+        self.beam_size = None
         # Parse survey file
         self.read_survey_parameters()
 
@@ -122,35 +126,69 @@ class Survey:
 
         return mask
 
-    def in_pointings(self, frbs):
-        """Whether within pointing."""
-        # Create mask with False
-        mask = np.zeros_like(frbs.ra, dtype=bool)
+    def in_observation(self, frbs, strategy=None, t_stick=None):
+        """Whether an FRB has been detected using an observing strategy.
 
-        # Check whether FRBs are within pointing regions
-        r = np.sqrt(self.beam_size_fwhm/np.pi)
-        for ra, dec in self.pointings:
-            limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
-            mask[limit_pos] = True
+        Args:
+            frbs (frbs): Frbs from a RepeaterPopulation
+            strategy (str): Either 'follow-up' or 'regular'
+            t_stick (float): Time in seconds to stick on same FRB if detected
 
-        return mask
+        Returns:
+            array: Mask with detections
 
-    def in_time(self, frbs):
-        """For RepeaterPopulation only."""
+        """
+        if strategy is None:
+            strategy = self.strategy
+
         # Create mask with False
         mask = np.zeros_like(frbs.time, dtype=bool)
 
-        t_step = self.max_time / len(self.pointings)
-        ts = np.arange(0-t_step, self.max_time, t_step) + t_step
+        # Set up a list of pointings if not given
+        if not self.pointings:
+            # TODO: This needs to be improved to a grid form
+            n_p = int(self.n_days*24*60*60 / self.t_obs)  # Number of pointings
+            decs = np.linspace(self.dec_min, self.dec_max, n_p+2)[1:n_p+1]
+            ras = np.linspace(self.ra_min, self.ra_max, n_p+2)[1:n_p+1]
+            self.pointings = list(zip(ras, decs))
 
-        # Check whether FRBs are within pointing regions
-        r = np.sqrt(self.beam_size_fwhm/np.pi)
-        for i, p in enumerate(self.pointings):
-            ra, dec = p
+        # Array with times of each pointing
+        ts = np.arange(0, self.n_days*24*60*60+self.t_obs, self.t_obs)
+        t_ranges = [(ts[i], ts[i+1]) for i in range(len(ts) - 1)]
+
+        # Calculate size of detection region
+        if self.beam_size is None:
+            self.beam_size = self.beam_size_fwhm
+        r = np.sqrt(self.beam_size/np.pi)
+
+        i_p = 0  # Iterator for pointings
+        if t_stick is None:
+            t_stick = 1*self.t_obs  # Time to stick on pointing
+        t_next_pointing = 0  # Time of next pointing
+        n_p = len(self.pointings)  # Number of pointings
+
+        for i_t, t_range in enumerate(t_ranges):
+            # Split out time range
+            t_min, t_max = t_range
+
+            # Check whether FRBs are within pointing regions
+            # The modulo means it will wrap back around to the first pointing
+            ra, dec = self.pointings[i_p % n_p]
             limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
             limit_pos = limit_pos[:, None]
-            limit_time = ((frbs.time <= ts[i+1]) & (frbs.time >= ts[i]))
-            mask[(limit_pos & limit_time)] = True
+            limit_time = ((frbs.time >= t_min) & (frbs.time <= t_max))
+            limit = (limit_pos & limit_time)
+            mask[limit] = True
+
+            if strategy == 'follow-up':  # Follow up FRB
+                if not np.any(limit):  # If no FRBs are detected
+                    if t_min >= t_next_pointing:  # If not sticking to field
+                        i_p += 1  # Go to next pointing
+                else:  # If there are FRBs
+                    # Set time after which you can head to the next pointing
+                    t_next_pointing = t_min + t_stick
+            elif strategy == 'regular':  # Just stick to your regular schedule
+                i_p += 1
 
         return mask
 
