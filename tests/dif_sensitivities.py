@@ -53,7 +53,7 @@ def main():
 
     r = RepeaterPopulation(N,
                            days=1,
-                           dm_host_model='normal',
+                           dm_host_model='gaussian',
                            dm_host_mu=100,
                            dm_host_sigma=0,
                            dm_igm_index=1000,
