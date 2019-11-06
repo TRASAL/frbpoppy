@@ -25,7 +25,7 @@ class CosmicPopulation(Population):
                  dm_igm_index=1000,
                  dm_igm_sigma=None,
                  dm_mw_model='ne2001',
-                 emission_range=[10e6, 10e9],
+                 emission_range=[100e6, 10e9],
                  lum_range=[1e40, 1e45],
                  lum_index=0,
                  n_model='sfr',

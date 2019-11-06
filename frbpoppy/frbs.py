@@ -1,14 +1,13 @@
 """Class to hold FRB source properties."""
 import numpy as np
 import pandas as pd
-from frbpoppy.log import pprint
+
 
 class FRBs:
-    """Class containing FRB properties"""
+    """Class containing FRB properties."""
 
     def __init__(self):
         """Initializing."""
-
         # Location properties
         self.ra = None
         self.dec = None

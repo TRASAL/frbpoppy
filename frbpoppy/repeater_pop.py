@@ -2,6 +2,7 @@
 import numpy as np
 from frbpoppy.cosmic_pop import CosmicPopulation
 from frbpoppy.log import pprint
+from scipy.special import gamma
 
 
 class RepeaterPopulation(CosmicPopulation):
@@ -52,26 +53,53 @@ class RepeaterPopulation(CosmicPopulation):
         if generate:
             self.generate()
 
+    def calc_m(self, days, n_gen):
+        """Calculate the number of expected bursts (Oppermann clustering).
+
+        Note this function only works if following the exact shape parameters
+        of the Oppermann and Pen paper. Ideally this would be derived.
+
+        Args:
+            days (float): Maximum amount of time spent on .
+            n_gen (type): Description of parameter `n_gen`.
+
+        Returns:
+            type: Description of returned object.
+
+        """
+        mu = 5.8*days + 4.86
+        sigma = -0.014*days**2+1.80*days+9.34
+        prob = 1/(sigma*np.sqrt(2*np.pi)*n_gen)
+        discrim = -2 * sigma**2 * np.log(prob * sigma * np.sqrt(2*np.pi))
+        return mu + np.sqrt(discrim)
+
     def gen_clustered_times(self, r=5.7, k=0.34):
         """Generate burst times following Oppermann & Pen (2017)."""
         pprint('Adding burst times')
         # Determine the maximum possible number of bursts per source to include
-        m = int(round(np.log10(self.n_gen))*2) - 1
-        if m < 1:
-            m = 1
+        # m = int(round(np.log10(self.n_gen))*2) - 1
+        m = self.calc_m(self.days, self.n_gen)
         dims = (self.n_gen, m)
 
-        # This is in fraction of days
-        time = r*np.random.weibull(k, dims).astype(np.float32)
-        time = np.cumsum(time, axis=1)
+        lam = 1/(r*gamma(1 + 1/k))
+        time = lam*np.random.weibull(k, dims).astype(np.float32)
+        time = np.cumsum(time, axis=1)  # This is in fraction of days
 
         # The first burst time is actually the time since the previous one
         # You want to be at in a random time in between those
         time_offset = np.random.uniform(0, time[:, 0])
         time -= time_offset[:, np.newaxis]
+
+        # Mask any frbs over the maximum time
+        mask = (time > self.days)
+        time[mask] = np.nan
+
         # This is interesting. The Weibull distribution was fit to an
         # observed distribution, but here I'm setting the intrinsic one
-        self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
+        if isinstance(self.frbs.z, np.ndarray):
+            self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
+        else:
+            self.frbs.time = time*(1+self.frbs.z)
 
     def gen_regular_times(self):
         """Generate a series of regular spaced times."""
@@ -198,10 +226,10 @@ class RepeaterPopulation(CosmicPopulation):
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    n = 2000
-    pop = RepeaterPopulation(n, times_rep_model='clustered', generate=True)
-    n_bursts = (~np.isnan(pop.frbs.time)).sum(1)
-    print(n_bursts)
-    plt.hist(n_bursts, bins=10)
+    pop = RepeaterPopulation.simple(1e4)
+    pop.frbs.z = 0
+    pop.gen_clustered_times()
+    # n_bursts = (~np.isnan(pop.frbs.time)).sum(1)
+    plt.hist(pop.frbs.time.flatten(), bins=100)
     plt.yscale('log')
-    # plt.show()
+    plt.show()

@@ -3,14 +3,15 @@ Series of galactic operations (doesn't that sound cool?!).
 
 ...as in converting coordinates, calculating DM etc.
 """
-
+from datetime import timedelta
 import ctypes as C
 import math
-import os
 import numpy as np
+import os
+import pandas as pd
+import random
 
 from frbpoppy.paths import paths
-from frbpoppy.log import pprint
 
 # Import fortran libraries
 uni_mods = os.path.join(paths.models(), 'universe/')
@@ -390,7 +391,7 @@ def load_T_sky():
                 temp_string = line[str_idx:str_idx+5]
                 try:
                     t_sky_list.append(float(temp_string))
-                except:
+                except ValueError:
                     pass
                 str_idx += 5
 
@@ -563,3 +564,57 @@ def ioka_dm_igm(z, slope=1200, sigma=None):
     if sigma is None:
         sigma = 0.2*slope*z
     return np.random.normal(slope*z, sigma).astype(np.float32)
+
+
+def datetime_to_julian(date):
+    """Convert a datetime object into julian float.
+
+    See https://aa.usno.navy.mil/faq/docs/JD_Formula.php for more info.
+
+    Args:
+        date (datetime-object): Date in question
+
+    Returns:
+        float: Julian calculated datetime.
+
+    """
+    # Add support for numpy arrays of datetime64
+    if np.issubdtype(date.dtype, np.datetime64):
+        date = pd.to_datetime(date)
+
+    # Define terms
+    y = date.year
+    m = date.month
+    d = date.day
+    h = date.hour
+    min = date.minute
+    sec = date.second
+
+    # Calculate julian day number
+    jdn = 367*y - ((7*(y + ((m+9)/12).astype(int)))/4).astype(int)
+    jdn += ((275*m)/9).astype(int) + d + 1721013.5
+    # Add fractional day
+    jd = jdn + h/24 + min/1440 + sec/86400
+
+    # Convert to a numpy array
+    if isinstance(jd, pd.Float64Index):
+        jd = jd.values
+
+    return jd
+
+
+def datetime_to_gmst(date):
+    """Calculate Greenwich Mean Sidereal Time.
+
+    See https://aa.usno.navy.mil/faq/docs/GAST.php for more info.
+    """
+    jd = datetime_to_julian(date)
+    return ((18.697374558 + 24.06570982441908*(jd - 2451545))*15) % 360
+
+
+def random_date(start, end):
+    """Generate a random datetime between two datetime objects."""
+    delta = end - start
+    int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
+    random_second = random.randrange(int_delta)
+    return start + timedelta(seconds=random_second)
