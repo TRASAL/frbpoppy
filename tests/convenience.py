@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+from frbpoppy.log import pprint
+import frbpoppy.galacticops as go
+
 
 def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
          bins=None):
@@ -96,3 +99,44 @@ def plot_aa_style(cols=1):
 def rel_path(path):
     """Return the relative path name for this directory."""
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), path)
+
+
+def limit_ra_dec(pop, pointings):
+    """Doesn't work at boundary coordinates."""
+    pprint('Limiting coordinates')
+
+    def sample(n_gen):
+        u = np.random.uniform
+        ra = u(0, 360, n_gen)
+        dec = np.rad2deg(np.arccos(u(-1, 1, n_gen))) - 90
+        return ra, dec
+
+    def accept(ra, dec):
+        coords = np.full(len(ra), False)
+        r = np.sqrt(180/np.pi)
+        for p_ra, p_dec in pointings:
+            limits = go.separation(ra, dec, p_ra, p_dec) < r
+            coords[limits] = True
+        return coords
+
+    # Limit population to smaller area
+    # Sample RA, dec
+    ra, dec = sample(pop.n_gen)
+    mask = accept(ra, dec)
+    reject, = np.where(~mask)
+    while reject.size > 0:
+        fill_ra, fill_dec = sample(reject.size)
+        mask = accept(fill_ra, fill_dec)
+        ra[reject[mask]] = fill_ra[mask]
+        dec[reject[mask]] = fill_dec[mask]
+        reject = reject[~mask]
+
+    frbs = pop.frbs
+    frbs.ra = ra
+    frbs.dec = dec
+
+    # Convert to galactic coordinates
+    frbs.gl, frbs.gb = go.radec_to_lb(frbs.ra, frbs.dec, frac=True)
+    pop.gen_gal_coords()
+
+    return pop

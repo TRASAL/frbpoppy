@@ -1,9 +1,11 @@
 """Class holding survey properties."""
+
+from datetime import datetime, timedelta
+from scipy.special import j1
 import math
 import numpy as np
 import os
 import pandas as pd
-from scipy.special import j1
 
 import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
@@ -19,10 +21,10 @@ class Survey:
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
         gain_pattern (str): Set gain pattern
-        n_sidelobes (float): Number of sidelobes to include. Use 0.5 for
-            cutting beam at FWHM
-        pointings (list): List of (RA, Dec) coordinates
-        max_time (float): Maximum time spent surveying [days]
+        n_sidelobes (float): Number of sidelobes to include. Use 0.5 to
+            cut beam at FWHM
+        n_days (float): Time spent surveying [days]
+        strategy (str): 'follow-up' or 'regular' (for RepeaterPopulation)
 
     """
 
@@ -30,26 +32,26 @@ class Survey:
                  name,
                  gain_pattern='gaussian',
                  n_sidelobes=0.5,
-                 pointings=[],
                  n_days=1,
-                 strategy='follow-up',
-                 max_time=1):
+                 strategy='follow-up'):
         """Initializing."""
         # Set up parameters
         self.name = name
         self.gain_pattern = gain_pattern
         self.n_sidelobes = n_sidelobes
-        self.pointings = pointings
         self.n_days = n_days
         self.strategy = strategy
-        self.pop_type = None
         self.beam_size = None
+
         # Parse survey file
         self.read_survey_parameters()
 
         # Special treatment for perfect survey
         if self.name == 'perfect':
             self.gain_pattern = 'perfect'
+
+        if self.transit is True:
+            self.strategy = 'regular'
 
     def __str__(self):
         """Define how to print a survey object to a console."""
@@ -87,6 +89,9 @@ class Survey:
         self.beam_size_fwhm = survey['beam size (deg^2)']
         self.snr_limit = survey['signal-to-noise ratio [0-1]']
         self.max_w_eff = survey['maximum pulse width (ms)']
+        self.latitude = survey['latitude (deg)']
+        self.longitude = survey['longitude (deg)']
+        self.transit = survey['transit telescope (bool)']
         self.ra_min = survey['minimum RA (deg)']
         self.ra_max = survey['maximum RA (deg)']
         self.dec_min = survey['minimum DEC (deg)']
@@ -97,28 +102,38 @@ class Survey:
         self.gb_max = survey['maximum Galactic latitude (deg)']
         self.up_time = survey['fractional uptime [0-1]']
 
-    def in_region(self, frbs):
+    def in_region(self, frbs=None, ra=None, dec=None, gl=None, gb=None):
         """
         Check if the given frbs are within the survey region.
 
         Args:
             frbs (Frbs): Frbs of which to check whether in survey region
+            ra, dec, gl, gb (float): Coordinates to use if not using frbs
 
         Returns:
             array: Boolean mask denoting whether frbs are within survey region
 
         """
+        # Check whether to use user input or frbs coordinates
+        if ra is None or dec is None:
+            ra = frbs.ra
+            dec = frbs.dec
+        if gl is None or gb is None:
+            gl = frbs.gl
+            gb = frbs.gb
+
         # Create mask with False
-        mask = np.ones_like(frbs.ra, dtype=bool)
+        mask = np.ones_like(ra, dtype=bool)
 
         # Ensure in correct format
-        frbs.gl[frbs.gl > 180.] -= 360.
+        gl[gl > 180.] -= 360.
 
         # Create region masks
-        gl_limits = (frbs.gl > self.gl_max) | (frbs.gl < self.gl_min)
-        gb_limits = (frbs.gb > self.gb_max) | (frbs.gb < self.gb_min)
-        ra_limits = (frbs.ra > self.ra_max) | (frbs.ra < self.ra_min)
-        dec_limits = (frbs.dec > self.dec_max) | (frbs.dec < self.dec_min)
+        gl_limits = (gl > self.gl_max) | (gl < self.gl_min)
+        gb_limits = (gb > self.gb_max) | (gb < self.gb_min)
+        ra_limits = (ra > self.ra_max) | (ra < self.ra_min)
+        dec_limits = (dec > self.dec_max) | (dec < self.dec_min)
+
         mask[gl_limits] = False
         mask[gb_limits] = False
         mask[ra_limits] = False
@@ -126,13 +141,15 @@ class Survey:
 
         return mask
 
-    def in_observation(self, frbs, strategy=None, t_stick=None):
+    def in_observation(self, frbs, strategy=None, t_stick=None,
+                       pointings=None):
         """Whether an FRB has been detected using an observing strategy.
 
         Args:
             frbs (frbs): Frbs from a RepeaterPopulation
             strategy (str): Either 'follow-up' or 'regular'
             t_stick (float): Time in seconds to stick on same FRB if detected
+            pointings (tuple): Tuple with arrays of ra, dec
 
         Returns:
             array: Mask with detections
@@ -145,15 +162,14 @@ class Survey:
         mask = np.zeros_like(frbs.time, dtype=bool)
 
         # Set up a list of pointings if not given
-        if not self.pointings:
-            # TODO: This needs to be improved to a grid form
-            n_p = int(self.n_days*24*60*60 / self.t_obs)  # Number of pointings
-            decs = np.linspace(self.dec_min, self.dec_max, n_p+2)[1:n_p+1]
-            ras = np.linspace(self.ra_min, self.ra_max, n_p+2)[1:n_p+1]
-            self.pointings = list(zip(ras, decs))
+        if pointings is None:
+            self.gen_pointings()
+
+        # t_obs in fractional days
+        t_obs = self.t_obs / 86400
 
         # Array with times of each pointing
-        ts = np.arange(0, self.n_days*24*60*60+self.t_obs, self.t_obs)
+        ts = np.arange(0, self.n_days+t_obs, t_obs)
         t_ranges = [(ts[i], ts[i+1]) for i in range(len(ts) - 1)]
 
         # Calculate size of detection region
@@ -163,7 +179,7 @@ class Survey:
 
         i_p = 0  # Iterator for pointings
         if t_stick is None:
-            t_stick = 1*self.t_obs  # Time to stick on pointing
+            t_stick = 1*t_obs  # Time to stick on pointing
         t_next_pointing = 0  # Time of next pointing
         n_p = len(self.pointings)  # Number of pointings
 
@@ -173,7 +189,9 @@ class Survey:
 
             # Check whether FRBs are within pointing regions
             # The modulo means it will wrap back around to the first pointing
-            ra, dec = self.pointings[i_p % n_p]
+            ra, dec = self.pointings
+            ra = ra[i_p % n_p]
+            dec = dec[i_p % n_p]
             limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
             limit_pos = limit_pos[:, None]
             limit_time = ((frbs.time >= t_min) & (frbs.time <= t_max))
@@ -192,6 +210,128 @@ class Survey:
 
         return mask
 
+    def gen_pointings(self):
+        """Generate pointings.
+
+        Returns:
+            ra, dec: Arrays with ra, dec of pointings
+
+        """
+        n_p = int(self.n_days*24*60*60 / self.t_obs)  # Number of pointings
+        if self.transit:
+            self.pointings = self.gen_transit_pointings(n_p,
+                                                        self.latitude,
+                                                        self.longitude,
+                                                        self.t_obs)
+        else:
+            self.pointings = self.gen_tracking_pointings(n_p)
+
+    def gen_transit_pointings(self, n_gen, lat=None, lon=None, t_obs=None):
+        """Generate RA and Dec pointing coordinates for a transit telescope.
+
+        Args:
+            n_gen (int): Number of pointings wanted.
+            lat (float): Latitude of telescope.
+            lon (float): Longitude of telescope (minus for west).
+            t_obs (type): Time for each pointing.
+
+        Returns:
+            ra, dec: Numpy arrays with coordinates of pointings
+
+        """
+        if lat is None:
+            lat = self.latitude
+            lon = self.longitude
+            t_obs = self.t_obs
+
+        # Pointings are randomly placed between the year 2000 and 2100
+        date_min = go.random_date(datetime(2000, 1, 1), datetime(2100, 1, 1))
+        date_max = date_min + timedelta(seconds=int(t_obs*n_gen))
+        time_delta = np.timedelta64(t_obs, 's')
+        times = np.arange(date_min, date_max, time_delta, dtype='datetime64')
+
+        ra = go.datetime_to_gmst(times) + lon
+        dec = np.ones(n_gen)*lat
+
+        return ra, dec
+
+    def gen_tracking_pointings(self, n_gen):
+        """Generate RA, Dec pointing coordinates for a tracking telescope.
+
+        Uses a try-accept algorithm to generate pointings with a survey. For
+        details on the sunflower algoritm used to distribute pointings see
+        See https://stackoverflow.com/a/44164075/11922471
+
+        Args:
+            n_gen (int): Number of pointings.
+
+        Returns:
+            ra, dec: Numpy arrays with coordinates of pointings
+
+        """
+        def sample(n=1000, random=True):
+            """Length of sunflower-like chain to sample."""
+            indices = np.arange(0, n, dtype=float) + 0.5
+
+            # Generate coordinates using golden ratio
+            ra = (np.pi * (1 + 5**0.5) * indices) % (2*np.pi)
+            dec = np.arccos(1 - 2*indices/n) - 0.5*np.pi
+
+            if random:
+                # Start from a random point rather than the south pole
+                phi = np.random.uniform(-np.pi, np.pi, 1)  # Random ra
+                theta = np.random.uniform(-np.pi/2, np.pi/2, 1)  # Random dec
+
+                # Shift ra from -180 to 180
+                ra[ra > np.pi] -= 2*np.pi
+
+                # Save on line length
+                sin = np.sin
+                cos = np.cos
+                arcsin = np.arcsin
+
+                y = sin(ra)
+                x = np.tan(dec)*sin(theta) + cos(ra)*cos(theta)
+                lon = np.arctan2(y, x) - phi
+                lat = arcsin(cos(theta)*sin(dec)-cos(ra)*sin(theta)*cos(dec))
+
+                # Shift ra back to 0-360
+                ra[ra < 0] += 2*np.pi
+                ra = lon % (2*np.pi)
+                dec = lat
+
+            # To degrees
+            ra = np.rad2deg(ra)
+            dec = np.rad2deg(dec)
+
+            return ra, dec
+
+        def accept(ra, dec):
+            gl, gb = go.radec_to_lb(ra, dec, frac=True)
+            return self.in_region(ra=ra, dec=dec, gl=gl, gb=gb)
+
+        # Accept-Reject
+        n = n_gen
+        ra, dec = sample(n)
+        mask = accept(ra, dec)
+
+        # While there are not enough valid points, keep generating
+        while sum(mask) < n_gen:
+            n += (n_gen - sum(mask))
+            ra, dec = sample(n)
+            mask = accept(ra, dec)
+        else:
+            # Only select valid points
+            ra = ra[mask]
+            dec = dec[mask]
+
+            # Evenly sample arrays
+            idx = np.round(np.linspace(0, len(ra) - 1, n_gen)).astype(int)
+            ra = ra[idx]
+            dec = dec[idx]
+
+        return ra, dec
+
     def max_offset(self, x):
         """Calculate the maximum offset of an FRB in an Airy disk.
 
@@ -200,18 +340,9 @@ class Survey:
 
         """
         # Null points of kasin for allow a number of sidelobes
-        kasin_nulls = [3.831706,
-                       7.015587,
-                       10.173468,
-                       13.323692,
-                       16.47063,
-                       19.615859,
-                       22.760084,
-                       25.903672,
-                       29.046829,
-                       32.18968,
-                       35.332308,
-                       38.474766]
+        kasin_nulls = [3.831706, 7.015587, 10.173468, 13.323692, 16.47063,
+                       19.615859, 22.760084, 25.903672, 29.046829, 32.18968,
+                       35.332308, 38.474766]
 
         # Allow for cut at FWHM
         if x == 0.5:
@@ -327,8 +458,7 @@ class Survey:
             t_dm (array): Time of delay [ms] at central band frequency
 
         """
-        t_dm = 8.297616e6 * self.bw_chan * frbs.dm * (self.central_freq)**-3
-        return t_dm
+        return 8.297616e6 * self.bw_chan * frbs.dm * (self.central_freq)**-3
 
     def calc_scat(self, dm):
         """Calculate scattering timescale for FRBs.
@@ -343,8 +473,7 @@ class Survey:
 
         """
         freq = self.central_freq
-        t_scat = go.scatter_bhat(dm, scindex=-3.86, offset=-9.5, freq=freq)
-        return t_scat
+        return go.scatter_bhat(dm, scindex=-3.86, offset=-9.5, freq=freq)
 
     def calc_Ts(self, frbs):
         """Set temperatures for frbs."""
@@ -398,7 +527,7 @@ class Survey:
 
         return T_sky
 
-    def calc_s_peak(self, frbs, f_low=10e6, f_high=10e9):
+    def calc_s_peak(self, frbs, f_low=100e6, f_high=10e9):
         """
         Calculate the mean spectral flux density.
 
@@ -497,8 +626,7 @@ class Survey:
             if isinstance(frbs.t_scat, np.ndarray):
                 t_scat = t_scat[:, None]
 
-        w_eff = np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
-        return w_eff
+        return np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
 
     def calc_snr(self, frbs):
         """

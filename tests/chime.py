@@ -8,7 +8,6 @@ from frbpoppy import Frbcat, RepeaterPopulation, Survey, SurveyPopulation
 from frbpoppy import split_pop
 
 from convenience import hist, plot_aa_style, rel_path
-from repeaters import limit_ra_dec
 
 
 def get_frbcat_data():
@@ -77,18 +76,10 @@ def get_frbpoppy_data():
                            w_rep_sigma=0.05,
                            generate=True)
 
-    s = Survey('chime')
+    s = Survey('chime', strategy='follow-up', n_days=1)
     s.gain_pattern = 'perfect'
     s.snr_limit = 1.
 
-    # Setup pointings
-    n_p = 1  # Number of pointings
-    decs = np.linspace(s.dec_min, s.dec_max, n_p+2)[1:n_p+1]
-    ras = np.linspace(s.ra_min, s.ra_max, n_p+2)[1:n_p+1]
-    s.pointings = list(zip(ras, decs))
-    pop = limit_ra_dec(r, s.pointings)
-    pop.name = 'cosmic'
-    pop.gen_lum(pop.shape)
     surv_pop = SurveyPopulation(r, s)
 
     # Split population into seamingly one-off and repeater populations
@@ -145,7 +136,6 @@ def plot(frbcat, frbpop):
                      where='mid', linestyle=linestyle, label=label,
                      color=cmap[i])
 
-
     # Set up layout options
     f.subplots_adjust(hspace=0)
     f.subplots_adjust(wspace=0.07)
@@ -167,9 +157,9 @@ def plot(frbcat, frbpop):
 
     lines, labels = zip(*elements)
 
-    lgd = plt.figlegend(lines, labels, loc='upper center', ncol=4, framealpha=1,
-                  bbox_to_anchor=(0.485, 1.04), columnspacing=1.1,
-                  handletextpad=0.3)
+    lgd = plt.figlegend(lines, labels, loc='upper center', ncol=4,
+                        framealpha=1,  bbox_to_anchor=(0.485, 1.04),
+                        columnspacing=1.1, handletextpad=0.3)
     # plt.tight_layout()
     # plt.legend(lines, labels, bbox_to_anchor=(0.5, 1.04), loc="upper center")
 
@@ -178,6 +168,7 @@ def plot(frbcat, frbpop):
 
 
 def main():
+    """Run code."""
     frbcat = get_frbcat_data()
     frbpop = get_frbpoppy_data()
     plot(frbcat, frbpop)
