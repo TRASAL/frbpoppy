@@ -78,7 +78,7 @@ class RepeaterPopulation(CosmicPopulation):
         pprint('Adding burst times')
         # Determine the maximum possible number of bursts per source to include
         # m = int(round(np.log10(self.n_gen))*2) - 1
-        m = self.calc_m(self.days, self.n_gen)
+        m = int(self.calc_m(self.days, self.n_gen))
         dims = (self.n_gen, m)
 
         lam = 1/(r*gamma(1 + 1/k))
@@ -90,16 +90,18 @@ class RepeaterPopulation(CosmicPopulation):
         time_offset = np.random.uniform(0, time[:, 0])
         time -= time_offset[:, np.newaxis]
 
+        # This is interesting. The Weibull distribution was fit to an
+        # observed distribution, but here I'm setting the intrinsic one
+        if isinstance(self.frbs.z, np.ndarray):
+            time = time*(1+self.frbs.z)[:, np.newaxis]
+        else:
+            time = time*(1+self.frbs.z)
+
         # Mask any frbs over the maximum time
         mask = (time > self.days)
         time[mask] = np.nan
 
-        # This is interesting. The Weibull distribution was fit to an
-        # observed distribution, but here I'm setting the intrinsic one
-        if isinstance(self.frbs.z, np.ndarray):
-            self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
-        else:
-            self.frbs.time = time*(1+self.frbs.z)
+        self.frbs.time = time
 
     def gen_regular_times(self):
         """Generate a series of regular spaced times."""

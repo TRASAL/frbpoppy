@@ -68,7 +68,7 @@ class FRBs:
         for attr in self.__dict__.keys():
             parm = getattr(self, attr)
             if type(parm) is np.ndarray:
-                # 1D mask on 1D array
+                # 1D mask on 1D or 2D array
                 if mask.ndim == 1:
                     setattr(self, attr, parm[mask])
                 else:
@@ -77,10 +77,34 @@ class FRBs:
                         setattr(self, attr, parm[mask.any(axis=1)])
                     # 2D mask on 2D array
                     else:
+                        # Apply mask in standard way
                         parm_nan = np.where(mask, parm, np.nan)
-                        row_mask = ~np.isnan(parm_nan).all(axis=1)
-                        parm_nan = parm_nan[row_mask]
+                        # Keep rows with any True values
+                        row_mask = np.any(mask, axis=1)
+                        parm_nan = parm_nan[row_mask, :]
+                        # Keep columns with any True values
+                        col_mask = np.any(mask[row_mask], axis=0)
+                        parm_nan = parm_nan[:, col_mask]
+                        # Set attribute
                         setattr(self, attr, parm_nan)
+
+    def clean_up(self):
+        """Clean up 2D parameter arrays by left justifying them."""
+        # First apply a time mask everywhere
+        if type(self.time) is np.ndarray:
+            time_mask = ~np.isnan(self.time)
+            self.apply(time_mask)
+
+        # Then left justify all 2D parameters
+        for attr in self.__dict__.keys():
+            parm = getattr(self, attr)
+            if (type(parm) is np.ndarray) and (parm.ndim == 2):
+                mask = ~np.isnan(parm)
+                justified_mask = np.sort(mask, 1)[:, ::-1]
+                out = np.full(parm.shape, np.nan)
+                out[justified_mask] = parm[mask]
+                out = out[:, ~np.all(np.isnan(out), axis=0)]
+                setattr(self, attr, out)
 
     def to_df(self):
         """Convert properties over to a Pandas DataFrame."""

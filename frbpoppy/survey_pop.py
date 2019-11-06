@@ -90,20 +90,21 @@ class SurveyPopulation(Population):
         frbs.apply(snr_mask)
         self.rate.faint = np.size(snr_mask) - np.count_nonzero(snr_mask)
 
-        if rate_limit is True:
+        if isinstance(cosmic_pop, RepeaterPopulation):
+            # Add a time filter on repeaters
+            obs_strategy_mask = survey.in_observation(frbs)
+            frbs.apply(obs_strategy_mask)
+            frbs.clean_up()
+        elif rate_limit is True:
             limit = 1/(1+frbs.z)
             rate_mask = np.random.random(len(frbs.z)) <= limit
             frbs.apply(rate_mask)
             self.rate.late = np.size(rate_mask) - np.count_nonzero(rate_mask)
 
-        # Add a time filter on repeaters
-        if isinstance(cosmic_pop, RepeaterPopulation):
-            obs_strategy_mask = survey.in_observation(frbs)
-            frbs.apply(obs_strategy_mask)
-
         self.rate.det = len(frbs.snr)
 
         if not isinstance(cosmic_pop, RepeaterPopulation):
+            # Scale rates by beam size etc if one-off population
             self.calc_rates(survey)
 
     def calc_rates(self, survey):
