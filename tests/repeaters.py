@@ -17,7 +17,7 @@ survey.snr_limit = 1.
 
 pops = []
 surv_pop = SurveyPopulation(r, survey)
-import IPython; IPython.embed()
+
 # Split population into seamingly one-off and repeater populations
 mask = ((~np.isnan(surv_pop.frbs.time)).sum(1) > 1)
 pop_ngt1, pop_nle1 = split_pop(surv_pop, mask)

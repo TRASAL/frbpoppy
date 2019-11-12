@@ -53,32 +53,12 @@ class RepeaterPopulation(CosmicPopulation):
         if generate:
             self.generate()
 
-    def calc_m(self, days, n_gen):
-        """Calculate the number of expected bursts (Oppermann clustering).
-
-        Note this function only works if following the exact shape parameters
-        of the Oppermann and Pen paper. Ideally this would be derived.
-
-        Args:
-            days (float): Maximum amount of time spent on .
-            n_gen (type): Description of parameter `n_gen`.
-
-        Returns:
-            type: Description of returned object.
-
-        """
-        mu = 5.8*days + 4.86
-        sigma = -0.014*days**2+1.80*days+9.34
-        prob = 1/(sigma*np.sqrt(2*np.pi)*n_gen)
-        discrim = -2 * sigma**2 * np.log(prob * sigma * np.sqrt(2*np.pi))
-        return mu + np.sqrt(discrim)
-
     def gen_clustered_times(self, r=5.7, k=0.34):
         """Generate burst times following Oppermann & Pen (2017)."""
         pprint('Adding burst times')
         # Determine the maximum possible number of bursts per source to include
-        # m = int(round(np.log10(self.n_gen))*2) - 1
-        m = int(self.calc_m(self.days, self.n_gen))
+        log_size = 1
+        m = int(10**log_size)
         dims = (self.n_gen, m)
 
         lam = 1/(r*gamma(1 + 1/k))
@@ -97,9 +77,37 @@ class RepeaterPopulation(CosmicPopulation):
         else:
             time = time*(1+self.frbs.z)
 
-        # Mask any frbs over the maximum time
-        mask = (time > self.days)
-        time[mask] = np.nan
+        # Mask any frbs over the maximum time (Earth perspective)
+        time[(time > self.days)] = np.nan
+
+        # Iteratively add extra bursts until over limit
+        mask = ~np.isnan(time[:, -1])  # Where more bursts are needed
+        sum_mask = np.count_nonzero(mask)
+        while sum_mask != 0:  # Add additional columns
+            m = int(10**log_size)
+            ms = np.full((self.n_gen, m), np.nan)
+            new = lam*np.random.weibull(k, (sum_mask, m)).astype(np.float32)
+            new = np.cumsum(new, axis=1)
+
+            # Add redshift correction
+            z = self.frbs.z
+            if isinstance(self.frbs.z, np.ndarray):
+                z = self.frbs.z[mask][:, np.newaxis]
+            new *= (1+z)
+
+            new += time[:, -1][mask][:, np.newaxis]  # Ensure cumulative
+            new[(new > self.days)] = np.nan  # Apply filter
+            ms[mask] = new  # Set up additional columns
+            time = np.hstack((time, ms))  # Add to original array
+
+            # Set up for next loop
+            if sum_mask == self.n_gen:
+                log_size += 0.5
+            mask = ~np.isnan(time[:, -1])
+            sum_mask = np.count_nonzero(mask)
+
+        # Remove any columns filled with NaNs
+        time = time[:, ~np.all(np.isnan(time), axis=0)]
 
         self.frbs.time = time
 
@@ -228,10 +236,10 @@ class RepeaterPopulation(CosmicPopulation):
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    pop = RepeaterPopulation.simple(1e4)
+    pop = RepeaterPopulation.simple(1e5)
     pop.frbs.z = 0
-    pop.gen_clustered_times()
-    # n_bursts = (~np.isnan(pop.frbs.time)).sum(1)
-    plt.hist(pop.frbs.time.flatten(), bins=100)
+    pop.gen_clustered_times(r=10, k=0.3)
+    n_bursts = (~np.isnan(pop.frbs.time)).sum(1)
+    plt.hist(n_bursts, bins=max(n_bursts))
     plt.yscale('log')
     plt.show()
