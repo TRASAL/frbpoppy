@@ -53,16 +53,14 @@ class RepeaterPopulation(CosmicPopulation):
         if generate:
             self.generate()
 
-    def gen_clustered_times(self, r=5.7, k=0.34):
-        """Generate burst times following Oppermann & Pen (2017)."""
+    def gen_iterative_times(self, dist):
+        """Generate burst times in an iterative manner using a distribution."""
         pprint('Adding burst times')
         # Determine the maximum possible number of bursts per source to include
         log_size = 1
         m = int(10**log_size)
         dims = (self.n_gen, m)
-
-        lam = 1/(r*gamma(1 + 1/k))
-        time = lam*np.random.weibull(k, dims).astype(np.float32)
+        time = dist(dims)
         time = np.cumsum(time, axis=1)  # This is in fraction of days
 
         # The first burst time is actually the time since the previous one
@@ -70,8 +68,6 @@ class RepeaterPopulation(CosmicPopulation):
         time_offset = np.random.uniform(0, time[:, 0])
         time -= time_offset[:, np.newaxis]
 
-        # This is interesting. The Weibull distribution was fit to an
-        # observed distribution, but here I'm setting the intrinsic one
         if isinstance(self.frbs.z, np.ndarray):
             time = time*(1+self.frbs.z)[:, np.newaxis]
         else:
@@ -86,7 +82,7 @@ class RepeaterPopulation(CosmicPopulation):
         while sum_mask != 0:  # Add additional columns
             m = int(10**log_size)
             ms = np.full((self.n_gen, m), np.nan)
-            new = lam*np.random.weibull(k, (sum_mask, m)).astype(np.float32)
+            new = dist((sum_mask, m))
             new = np.cumsum(new, axis=1)
 
             # Add redshift correction
@@ -111,11 +107,31 @@ class RepeaterPopulation(CosmicPopulation):
 
         self.frbs.time = time
 
-    def gen_regular_times(self):
+    def gen_clustered_times(self, r=5.7, k=0.34):
+        """Generate burst times following Oppermann & Pen (2017)."""
+        # Set distribution from which to draw
+        def weibull(dims, r=r, k=k):
+            lam = 1/(r*gamma(1 + 1/k))
+            return lam*np.random.weibull(k, dims).astype(np.float32)
+
+        self.gen_iterative_times(weibull)
+
+    def gen_poisson_times(self, lam=1e-1):
+        """Generate a series of poisson times.
+
+        Args:
+            lam (float): Expected number of events per day.
+        """
+        # Set distribution from which to draw
+        def poisson(dims, lam=lam):
+            return np.random.exponential(1/lam, dims).astype(np.float32)
+
+        self.gen_iterative_times(poisson)
+
+    def gen_regular_times(self, n_per_day=6):
         """Generate a series of regular spaced times."""
-        n = 6  # n bursts per day
         u = np.random.uniform
-        time = u(0, self.days, (self.n_gen, n)).astype(np.float32)
+        time = u(0, self.days, (self.n_gen, n_per_day)).astype(np.float32)
         time = np.sort(time)
         self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
 
@@ -123,6 +139,8 @@ class RepeaterPopulation(CosmicPopulation):
         """Generate repetition times."""
         if self.times_rep_model == 'clustered':
             self.gen_clustered_times()
+        elif self.times_rep_model == 'poisson':
+            self.gen_poisson_times()
         else:
             self.gen_regular_times()
 
@@ -224,12 +242,12 @@ class RepeaterPopulation(CosmicPopulation):
                   si_mu=0.,
                   si_sigma=0.,
                   z_max=0.01,
-                  lum_rep_model='independent',
+                  lum_rep_model='same',
                   lum_rep_sigma=1e3,
                   si_rep_model='same',
                   si_rep_sigma=0.1,
                   times_rep_model='even',
-                  w_rep_model='independent',
+                  w_rep_model='same',
                   generate=generate)
         return pop
 
@@ -238,7 +256,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     pop = RepeaterPopulation.simple(1e5)
     pop.frbs.z = 0
-    pop.gen_clustered_times(r=10, k=0.3)
+    pop.gen_poisson_times(lam=10)
     n_bursts = (~np.isnan(pop.frbs.time)).sum(1)
     plt.hist(n_bursts, bins=max(n_bursts))
     plt.yscale('log')

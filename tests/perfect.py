@@ -7,6 +7,7 @@ from convenience import hist, plot_aa_style, rel_path
 cosmic_pop = CosmicPopulation.simple(1e4, generate=False)
 cosmic_pop.z_max = 0.01
 cosmic_pop.lum_min = 1e38
+cosmic_pop.lum_max = 1e38
 cosmic_pop.generate()
 
 survey = Survey('perfect')

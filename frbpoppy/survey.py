@@ -42,6 +42,7 @@ class Survey:
         self.n_days = n_days
         self.strategy = strategy
         self.beam_size = None
+        self.pointings = None
 
         # Parse survey file
         self.read_survey_parameters()
@@ -157,6 +158,8 @@ class Survey:
         """
         if strategy is None:
             strategy = self.strategy
+        if pointings is None:
+            pointings = self.pointings
 
         # Create mask with False
         mask = np.zeros_like(frbs.time, dtype=bool)
@@ -175,7 +178,12 @@ class Survey:
         # Calculate size of detection region
         if self.beam_size is None:
             self.beam_size = self.beam_size_fwhm
-        r = np.sqrt(self.beam_size/np.pi)
+        # Check whether the full sky
+        if np.allclose(self.beam_size, 4*np.pi*(180/np.pi)**2):
+            r = 180
+        else:
+            cos_r = (1 - (self.beam_size*np.pi)/(2*180**2))
+            r = np.rad2deg(np.arccos(cos_r))
 
         i_p = 0  # Iterator for pointings
         if t_stick is None:
@@ -372,11 +380,12 @@ class Survey:
 
         """
         # Calculate Full Width Half Maximum from beamsize
-        self.fwhm = 2*math.sqrt(self.beam_size_fwhm/math.pi) * 60  # [arcmin]
-        offset = self.fwhm/2  # Radius = diameter/2.
+        cos_r = (1 - (self.beam_size_fwhm*np.pi)/(2*180**2))
+        offset = np.rad2deg(np.arccos(cos_r)) * 60  # [arcmin]
+        self.fwhm = 2*offset  # [arcmin]
 
         if rep_loc == 'same':
-            r = r = np.random.random(shape[0])
+            r = np.random.random(shape[0])
         else:
             r = np.random.random(shape)
 
@@ -478,9 +487,9 @@ class Survey:
     def calc_Ts(self, frbs):
         """Set temperatures for frbs."""
         # Special treatment for a perfect telescope
-        if self.name == 'perfect':
-            T_sky = np.zeros_like(frbs.index)
-            T_sys = np.ones_like(frbs.index)*self.T_rec
+        if self.name.startswith('perfect'):
+            T_sky = 0
+            T_sys = self.T_rec
         else:
             T_sky = self.calc_T_sky(frbs)
             T_sys = self.T_rec + T_sky
@@ -657,7 +666,8 @@ class Survey:
             w_arr = w_arr[:, None]
 
         if (sp.ndim or w_arr.ndim) > 1:
-            T_sys = T_sys[:, None]
+            if isinstance(T_sys, np.ndarray):
+                T_sys = T_sys[:, None]
 
         snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
         snr /= (T_sys * self.beta)
