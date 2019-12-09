@@ -9,15 +9,16 @@ from convenience import hist, plot_aa_style, rel_path
 
 DAYS = 1
 INTERACTIVE_PLOT = False
+PLOTTING_LIMIT_N_FRBS = 0
 
-r = RepeaterPopulation.simple(int(1e6))
+r = RepeaterPopulation.simple(int(1e5))
 r.lum_min = 1e40
 r.lum_max = 1e45
 r.lum_pow = 0
 r.lum_rep_model = 'independent'
 r.z_max = 0.01
 r.times_rep_model = 'poisson'
-r.days = DAYS
+r.n_days = DAYS
 
 # Set DM distributions
 r.dm_host_model = 'gaussian'
@@ -35,7 +36,6 @@ survey.snr_limit = 1e16
 
 surv_pop = SurveyPopulation(r, survey)
 
-
 # Check whether sufficient frbs
 n_frbs = len(surv_pop.frbs.index)
 
@@ -47,9 +47,9 @@ def n_bursts(pop):
 
 pprint(f'{n_bursts(r)}:{n_bursts(surv_pop)}')
 pprint(f'{n_frbs} sources detected')
-if n_frbs < 50:
+if n_frbs < PLOTTING_LIMIT_N_FRBS:
     pprint(f'Not sufficient FRBs for plotting')
-    # exit()
+    exit()
 
 # Split population into seamingly one-off and repeater populations
 mask = ((~np.isnan(surv_pop.frbs.time)).sum(1) > 1)
@@ -98,11 +98,12 @@ for i, pop in enumerate(pops):
 
 ax1.set_xlabel(r'DM ($\textrm{pc}\ \textrm{cm}^{-3}$)')
 ax1.set_ylabel('Fraction')
-ax1.set_ylim([0, 1.1])
+# ax1.set_ylim([0, 1.1])
 ax1.set_xlim([0, 10])
 
 ax2.set_xlabel(r'SNR')
 plt.xscale('log')
+plt.yscale('log')
 
 plt.figlegend(loc='upper center', ncol=len(pops), framealpha=1)
 

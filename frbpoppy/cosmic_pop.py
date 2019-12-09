@@ -14,7 +14,7 @@ class CosmicPopulation(Population):
 
     def __init__(self,
                  n_gen,
-                 days=1,
+                 n_days=1,
                  name='cosmic',
                  H_0=67.74,
                  W_m=0.3089,
@@ -42,7 +42,7 @@ class CosmicPopulation(Population):
 
         Args:
             n_gen (int): Number of FRB sources/sky/time to generate.
-            days (float): Number of days over which FRBs are generated.
+            n_days (float): Number of days over which FRBs are generated.
             name (str): Population name.
             H_0 (float): Hubble constant.
             W_m (float): Density parameter Ω_m.
@@ -95,7 +95,7 @@ class CosmicPopulation(Population):
         self.n_model = n_model
         self.si_mu = si_mu
         self.si_sigma = si_sigma
-        self.time = days * 86400  # Convert to seconds
+        self.time = n_days * 86400  # Convert to seconds
         self.w_model = w_model
         self.w_max = w_range[1]
         self.w_min = w_range[0]
@@ -246,7 +246,7 @@ class CosmicPopulation(Population):
     def simple(cls, n, generate=False):
         """Set up a simple, local population."""
         pop = cls(n,
-                  days=1,
+                  n_days=1,
                   name='simple',
                   H_0=67.74,
                   W_m=0.3089,
@@ -276,7 +276,7 @@ class CosmicPopulation(Population):
     def complex(cls, n, generate=False):
         """Set up a complex population."""
         pop = cls(n,
-                  days=1,
+                  n_days=1,
                   name='complex',
                   H_0=67.74,
                   W_m=0.3089,

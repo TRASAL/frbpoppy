@@ -4,6 +4,7 @@ import mpl_toolkits.mplot3d
 import numpy as np
 from frbpoppy import Survey
 
+N_POINTS = 10
 
 def plot_coordinates(ra, dec):
     """Plot coordinate in 3D plot."""
@@ -22,8 +23,8 @@ def plot_coordinates(ra, dec):
 
 
 if __name__ == '__main__':
-    transit = Survey('chime').gen_transit_pointings(1000)
+    transit = Survey('chime').gen_transit_pointings(N_POINTS)
     plot_coordinates(*transit)
 
-    tracking = Survey('apertif').gen_tracking_pointings(1000)
+    tracking = Survey('perfect-small').gen_tracking_pointings(N_POINTS)
     plot_coordinates(*tracking)

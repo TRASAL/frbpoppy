@@ -1,0 +1,14 @@
+followup_frac = 0
+followup_time = 0
+
+for t in times:
+  if followup_time/t > followup_frac:
+    continue to next pointing
+  else:
+    if multiple frbs detected in pointing over all time:
+      stick to pointing coords
+      followup_time += delta_t
+    if only one in pointing over all time:
+      change pointing coords to coords of burst
+      followup_time += delta_t
+    else:

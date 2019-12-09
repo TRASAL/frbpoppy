@@ -7,13 +7,13 @@ from frbpoppy import split_pop, pprint
 DAYS = 5
 
 r = RepeaterPopulation.simple(int(1e5))
-r.times_rep_model = 'clustered'
+r.times_rep_model = 'poisson'
 r.days = DAYS
 r.generate()
 
 survey = Survey('apertif', strategy='regular', n_days=DAYS)
 survey.gain_pattern = 'apertif'
-survey.snr_limit = 1.
+survey.snr_limit = 1e-5
 
 pops = []
 surv_pop = SurveyPopulation(r, survey)

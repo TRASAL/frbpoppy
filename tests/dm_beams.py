@@ -14,7 +14,7 @@ def get_data():
     """Get the population data."""
     # Construct population
     pop = CosmicPopulation(SIZE,
-                           days=1,
+                           n_days=1,
                            name='standard_candle',
                            H_0=67.74,
                            W_m=0.3089,

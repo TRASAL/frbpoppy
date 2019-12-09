@@ -34,7 +34,7 @@ def get_probabilities(normalise=False, r=5.7, k=0.34):
 
     # Mask any frbs over the maximum time
     pop = RepeaterPopulation.simple(n_frbs)
-    pop.days = DAYS
+    pop.n_days = DAYS
     pop.frbs.z = 0
     pop.gen_clustered_times(r=10, k=0.3)
     time = pop.frbs.time

@@ -11,7 +11,7 @@ BEAMPATTERNS = ['perfect', 'airy', 'gaussian']
 
 # Generate population with standard candles
 pop = CosmicPopulation(5e5,
-                       days=1,
+                       n_days=1,
                        name='standard',
                        dm_host_model='gaussian',
                        dm_host_mu=0,

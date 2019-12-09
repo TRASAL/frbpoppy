@@ -15,7 +15,7 @@ r.lum_pow = 0
 r.lum_rep_model = 'independent'
 r.z_max = 0.01
 r.times_rep_model = 'even'
-r.days = MAX_DAYS*2
+r.n_days = MAX_DAYS*2
 
 # Set DM distributions
 r.dm_host_model = 'gaussian'
@@ -28,7 +28,6 @@ r.generate()
 
 survey = Survey('perfect-small', strategy='regular')
 survey.n_days = MAX_DAYS
-survey.days = MAX_DAYS
 survey.gain_pattern = 'chime'
 survey.snr_limit = 1e12
 

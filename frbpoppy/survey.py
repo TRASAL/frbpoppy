@@ -92,7 +92,7 @@ class Survey:
         self.max_w_eff = survey['maximum pulse width (ms)']
         self.latitude = survey['latitude (deg)']
         self.longitude = survey['longitude (deg)']
-        self.transit = survey['transit telescope (bool)']
+        self.transit = bool(survey['transit telescope (bool)'])
         self.ra_min = survey['minimum RA (deg)']
         self.ra_max = survey['maximum RA (deg)']
         self.dec_min = survey['minimum DEC (deg)']
@@ -102,6 +102,21 @@ class Survey:
         self.gb_min = survey['minimum Galactic latitude (deg)']
         self.gb_max = survey['maximum Galactic latitude (deg)']
         self.up_time = survey['fractional uptime [0-1]']
+
+    def calc_beam_radius(self):
+        """Determine the radius of the beam pattern in degrees."""
+        # Calculate size of detection region
+        if self.beam_size is None:
+            self.beam_size = self.beam_size_fwhm
+
+        # Check whether the full sky
+        if np.allclose(self.beam_size, 4*np.pi*(180/np.pi)**2):
+            r = 180
+        else:
+            cos_r = (1 - (self.beam_size*np.pi)/(2*180**2))
+            r = np.rad2deg(np.arccos(cos_r))
+
+        return r
 
     def in_region(self, frbs=None, ra=None, dec=None, gl=None, gb=None):
         """
@@ -142,82 +157,6 @@ class Survey:
 
         return mask
 
-    def in_observation(self, frbs, strategy=None, t_stick=None,
-                       pointings=None):
-        """Whether an FRB has been detected using an observing strategy.
-
-        Args:
-            frbs (frbs): Frbs from a RepeaterPopulation
-            strategy (str): Either 'follow-up' or 'regular'
-            t_stick (float): Time in seconds to stick on same FRB if detected
-            pointings (tuple): Tuple with arrays of ra, dec
-
-        Returns:
-            array: Mask with detections
-
-        """
-        if strategy is None:
-            strategy = self.strategy
-        if pointings is None:
-            pointings = self.pointings
-
-        # Create mask with False
-        mask = np.zeros_like(frbs.time, dtype=bool)
-
-        # Set up a list of pointings if not given
-        if pointings is None:
-            self.gen_pointings()
-
-        # t_obs in fractional days
-        t_obs = self.t_obs / 86400
-
-        # Array with times of each pointing
-        ts = np.arange(0, self.n_days+t_obs, t_obs)
-        t_ranges = [(ts[i], ts[i+1]) for i in range(len(ts) - 1)]
-
-        # Calculate size of detection region
-        if self.beam_size is None:
-            self.beam_size = self.beam_size_fwhm
-        # Check whether the full sky
-        if np.allclose(self.beam_size, 4*np.pi*(180/np.pi)**2):
-            r = 180
-        else:
-            cos_r = (1 - (self.beam_size*np.pi)/(2*180**2))
-            r = np.rad2deg(np.arccos(cos_r))
-
-        i_p = 0  # Iterator for pointings
-        if t_stick is None:
-            t_stick = 1*t_obs  # Time to stick on pointing
-        t_next_pointing = 0  # Time of next pointing
-        n_p = len(self.pointings)  # Number of pointings
-
-        for i_t, t_range in enumerate(t_ranges):
-            # Split out time range
-            t_min, t_max = t_range
-
-            # Check whether FRBs are within pointing regions
-            # The modulo means it will wrap back around to the first pointing
-            ra, dec = self.pointings
-            ra = ra[i_p % n_p]
-            dec = dec[i_p % n_p]
-            limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
-            limit_pos = limit_pos[:, None]
-            limit_time = ((frbs.time >= t_min) & (frbs.time <= t_max))
-            limit = (limit_pos & limit_time)
-            mask[limit] = True
-
-            if strategy == 'follow-up':  # Follow up FRB
-                if not np.any(limit):  # If no FRBs are detected
-                    if t_min >= t_next_pointing:  # If not sticking to field
-                        i_p += 1  # Go to next pointing
-                else:  # If there are FRBs
-                    # Set time after which you can head to the next pointing
-                    t_next_pointing = t_min + t_stick
-            elif strategy == 'regular':  # Just stick to your regular schedule
-                i_p += 1
-
-        return mask
-
     def gen_pointings(self):
         """Generate pointings.
 
@@ -226,13 +165,13 @@ class Survey:
 
         """
         n_p = int(self.n_days*24*60*60 / self.t_obs)  # Number of pointings
-        if self.transit:
+        if not self.transit:
+            self.pointings = self.gen_tracking_pointings(n_p)
+        else:
             self.pointings = self.gen_transit_pointings(n_p,
                                                         self.latitude,
                                                         self.longitude,
                                                         self.t_obs)
-        else:
-            self.pointings = self.gen_tracking_pointings(n_p)
 
     def gen_transit_pointings(self, n_gen, lat=None, lon=None, t_obs=None):
         """Generate RA and Dec pointing coordinates for a transit telescope.
@@ -455,6 +394,9 @@ class Survey:
         else:
             pprint(f'Gain pattern "{self.gain_pattern}" not recognised')
 
+    def calc_int_pro(self, frbs, *args, **kwags):
+        return np.array([1])
+
     def dm_smear(self, frbs):
         """
         Calculate delay in pulse across a channel due to dm smearing.
@@ -640,7 +582,7 @@ class Survey:
 
         return np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
 
-    def calc_snr(self, frbs):
+    def calc_snr(self, s_peak, w_arr, T_sys):
         """
         Caculate the SNR of several frbs.
 
@@ -649,42 +591,49 @@ class Survey:
         as a pulse is stretched
 
         Args:
-            frbs (FRBs): FRBs of which to calculate the signal to noise
+            s_peak (array): Peak flux
+            w_arr (array): Pulse width at Earth [ms]
+            T_sys (array): System temperature [K]
 
         Returns:
             array: Signal to noise ratio based on the radiometer
                 equation for a single pulse.
 
         """
-        sp = frbs.s_peak
-        w_arr = frbs.w_arr
-        T_sys = frbs.T_sys
-
         # Dimension check
-        if sp.ndim == w_arr.ndim:
+        if s_peak.ndim == w_arr.ndim:
             pass
-        elif sp.ndim == 1:
-            sp = sp[:, None]
+        elif s_peak.ndim == 1:
+            s_peak = s_peak[:, None]
         elif w_arr.ndim == 1:
             w_arr = w_arr[:, None]
 
-        if (sp.ndim or w_arr.ndim) > 1:
+        if (s_peak.ndim or w_arr.ndim) > 1:
             if isinstance(T_sys, np.ndarray):
                 T_sys = T_sys[:, None]
 
-        snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
+        snr = s_peak*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
         snr /= (T_sys * self.beta)
 
         return snr
 
-    def calc_fluence(self, frbs):
-        """Calculate fluence [Jy*ms]."""
-        if frbs.w_eff.ndim == frbs.s_peak.ndim:
-            return frbs.s_peak * frbs.w_eff
-        elif frbs.w_eff.ndim == 1:
-            return frbs.s_peak * frbs.w_eff[:, None]
-        elif frbs.s_peak.ndim == 1:
-            return frbs.s_peak[:, None] * frbs.w_eff
+    def calc_fluence(self, s_peak, w_eff):
+        """Calculate fluence [Jy ms].
+
+        Args:
+            s_peak (array): Peak flux
+            w_eff (array): Effective pulse width
+
+        Returns:
+            array: Fluence in Jy*ms
+
+        """
+        if w_eff.ndim == s_peak.ndim:
+            return s_peak * w_eff
+        elif w_eff.ndim == 1:
+            return s_peak * w_eff[:, None]
+        elif s_peak.ndim == 1:
+            return s_peak[:, None] * w_eff
 
     def calc_scint(self, frbs):
         """

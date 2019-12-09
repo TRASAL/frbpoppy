@@ -356,6 +356,7 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
                       Defaults to 1400 MHz
     Returns:
         array: Scattering timescale [ms]
+
     """
     log_t = offset + 0.154*np.log10(dm) + 1.07*np.log10(dm)**2
     log_t += scindex*np.log10(freq/1e3)

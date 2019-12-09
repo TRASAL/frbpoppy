@@ -7,7 +7,7 @@ from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 
 
-def plot(*pops, files=[], frbcat=True, show=True,
+def plot(*pops, files=[], frbcat=False, show=True,
          mute=True, port=5006, print_command=False):
     """
     Plot populations with bokeh. Has to save populations before plotting.

@@ -10,7 +10,7 @@ class RepeaterPopulation(CosmicPopulation):
 
     def __init__(self,
                  n_gen=1,
-                 days=1,
+                 n_days=1,
                  generate=False,
                  lum_rep_model='independent',
                  lum_rep_sigma=1e3,
@@ -31,7 +31,7 @@ class RepeaterPopulation(CosmicPopulation):
         kw['generate'] = False
         super(RepeaterPopulation, self).__init__(n_gen, **kw)
         self.name = 'repeater'
-        self.days = days
+        self.n_days = n_days
         self.n_gen = int(n_gen)
 
         # Time parameters
@@ -74,7 +74,7 @@ class RepeaterPopulation(CosmicPopulation):
             time = time*(1+self.frbs.z)
 
         # Mask any frbs over the maximum time (Earth perspective)
-        time[(time > self.days)] = np.nan
+        time[(time > self.n_days)] = np.nan
 
         # Iteratively add extra bursts until over limit
         mask = ~np.isnan(time[:, -1])  # Where more bursts are needed
@@ -92,7 +92,7 @@ class RepeaterPopulation(CosmicPopulation):
             new *= (1+z)
 
             new += time[:, -1][mask][:, np.newaxis]  # Ensure cumulative
-            new[(new > self.days)] = np.nan  # Apply filter
+            new[(new > self.n_days)] = np.nan  # Apply filter
             ms[mask] = new  # Set up additional columns
             time = np.hstack((time, ms))  # Add to original array
 
@@ -130,10 +130,13 @@ class RepeaterPopulation(CosmicPopulation):
 
     def gen_regular_times(self, n_per_day=1):
         """Generate a series of regular spaced times."""
-        time = np.arange(0, self.days, n_per_day).astype(np.float32)
-        time = np.repeat(time[:, None].T, self.n_gen, axis=0)
-        time += np.random.uniform(0, 1, (self.n_gen, self.days*n_per_day))
-        self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
+        u = np.random.uniform
+        dim = (self.n_gen, n_per_day*self.n_days)
+        time = u(0, self.n_days, dim).astype(np.float32)
+        time = np.sort(time)
+        time = time*(1+self.frbs.z)[:, np.newaxis]
+        time[(time > self.n_days)] = np.nan
+        self.frbs.time = time
 
     def gen_rep_times(self):
         """Generate repetition times."""
@@ -219,7 +222,7 @@ class RepeaterPopulation(CosmicPopulation):
     def simple(cls, n, generate=False):
         """Set up a simple, local population."""
         pop = cls(n,
-                  days=1,
+                  n_days=1,
                   name='simple',
                   H_0=67.74,
                   W_m=0.3089,
