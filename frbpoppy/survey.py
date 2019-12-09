@@ -429,7 +429,7 @@ class Survey:
             int_pro = 4*(j1(kasin)/kasin)**2
             return int_pro, offset
 
-        elif self.gain_pattern in ['parkes', 'apertif']:
+        elif self.gain_pattern in ['parkes', 'apertif', 'chime']:
 
             place = paths.models() + f'/beams/{self.gain_pattern}.npy'
             beam_array = np.load(place)
@@ -446,6 +446,9 @@ class Survey:
             if self.gain_pattern == 'parkes':  # 1 pixel = 54"
                 offset *= 0.9  # [arcmin]
                 self.beam_size = 9.
+            if self.gain_pattern == 'chime':  # 1 pixel = 0.08 deg
+                offset *= 0.08*60  # [arcmin]
+                self.beam_size = 80*80
 
             return int_pro, offset
 

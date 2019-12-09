@@ -128,11 +128,11 @@ class RepeaterPopulation(CosmicPopulation):
 
         self.gen_iterative_times(poisson)
 
-    def gen_regular_times(self, n_per_day=6):
+    def gen_regular_times(self, n_per_day=1):
         """Generate a series of regular spaced times."""
-        u = np.random.uniform
-        time = u(0, self.days, (self.n_gen, n_per_day)).astype(np.float32)
-        time = np.sort(time)
+        time = np.arange(0, self.days, n_per_day).astype(np.float32)
+        time = np.repeat(time[:, None].T, self.n_gen, axis=0)
+        time += np.random.uniform(0, 1, (self.n_gen, self.days*n_per_day))
         self.frbs.time = time*(1+self.frbs.z)[:, np.newaxis]
 
     def gen_rep_times(self):
