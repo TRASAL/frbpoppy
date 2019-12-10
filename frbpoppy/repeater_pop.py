@@ -233,7 +233,7 @@ class RepeaterPopulation(CosmicPopulation):
                   dm_igm_index=0.,
                   dm_igm_sigma=None,
                   dm_mw_model='zero',
-                  emission_range=[10e6, 10e9],
+                  emission_range=[100e6, 10e9],
                   lum_range=[1e38, 1e38],
                   lum_index=0.,
                   n_model='vol_co',

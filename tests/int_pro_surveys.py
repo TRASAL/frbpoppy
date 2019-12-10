@@ -19,16 +19,13 @@ for obs in OBSERVATORIES:
     survey = obs[1]
     pattern = obs[0]
 
-    s = Survey(survey, gain_pattern=pattern)
+    s = Survey(survey, beam_pattern=pattern)
     int_pro, offset = s.intensity_profile(shape=n)
 
     # Sort the values
     sorted_int = np.argsort(offset)
     int_pro = int_pro[sorted_int]
     offset = offset[sorted_int]
-
-    # Offset in degrees
-    offset = offset/60.
 
     bins = 1e2
 
@@ -46,7 +43,7 @@ for obs in OBSERVATORIES:
     plt.fill_between(center, bin_mins, bin_maxs, alpha=0.2)
 
 
-plt.xlabel(r'Offset ($$^{\circ}$$)')
+plt.xlabel(r'Offset ($^{\circ}$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()

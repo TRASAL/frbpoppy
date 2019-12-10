@@ -20,7 +20,8 @@ class Survey:
         name (str): Name of survey with which to observe population. Can
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
-        gain_pattern (str): Set gain pattern
+        beam_pattern (str): Set beam pattern ('gaussian', 'airy', 'perfect',
+            'parkes', 'apertif' or 'chime')
         n_sidelobes (float): Number of sidelobes to include. Use 0.5 to
             cut beam at FWHM
         n_days (float): Time spent surveying [days]
@@ -30,26 +31,27 @@ class Survey:
 
     def __init__(self,
                  name,
-                 gain_pattern='gaussian',
+                 beam_pattern='gaussian',
                  n_sidelobes=0.5,
                  n_days=1,
-                 strategy='follow-up'):
+                 strategy='regular'):
         """Initializing."""
         # Set up parameters
         self.name = name
-        self.gain_pattern = gain_pattern
+        self.beam_pattern = beam_pattern
         self.n_sidelobes = n_sidelobes
         self.n_days = n_days
         self.strategy = strategy
         self.beam_size = None
         self.pointings = None
+        self.transit = False
 
         # Parse survey file
         self.read_survey_parameters()
 
         # Special treatment for perfect survey
-        if self.name == 'perfect':
-            self.gain_pattern = 'perfect'
+        if self.name.startswith('perfect'):
+            self.beam_pattern = 'perfect'
 
         if self.transit is True:
             self.strategy = 'regular'
@@ -101,7 +103,6 @@ class Survey:
         self.gl_max = survey['maximum Galactic longitude (deg)']
         self.gb_min = survey['minimum Galactic latitude (deg)']
         self.gb_max = survey['maximum Galactic latitude (deg)']
-        self.up_time = survey['fractional uptime [0-1]']
 
     def calc_beam_radius(self):
         """Determine the radius of the beam pattern in degrees."""
@@ -118,26 +119,17 @@ class Survey:
 
         return r
 
-    def in_region(self, frbs=None, ra=None, dec=None, gl=None, gb=None):
+    def in_region(self, ra, dec, gl, gb):
         """
         Check if the given frbs are within the survey region.
 
         Args:
-            frbs (Frbs): Frbs of which to check whether in survey region
-            ra, dec, gl, gb (float): Coordinates to use if not using frbs
+            ra, dec, gl, gb (float): Coordinates to check whether in region
 
         Returns:
             array: Boolean mask denoting whether frbs are within survey region
 
         """
-        # Check whether to use user input or frbs coordinates
-        if ra is None or dec is None:
-            ra = frbs.ra
-            dec = frbs.dec
-        if gl is None or gb is None:
-            gl = frbs.gl
-            gb = frbs.gb
-
         # Create mask with False
         mask = np.ones_like(ra, dtype=bool)
 
@@ -158,20 +150,15 @@ class Survey:
         return mask
 
     def gen_pointings(self):
-        """Generate pointings.
-
-        Returns:
-            ra, dec: Arrays with ra, dec of pointings
-
-        """
+        """Generate pointings via wrapper."""
         n_p = int(self.n_days*24*60*60 / self.t_obs)  # Number of pointings
-        if not self.transit:
-            self.pointings = self.gen_tracking_pointings(n_p)
-        else:
+        if self.transit:
             self.pointings = self.gen_transit_pointings(n_p,
                                                         self.latitude,
                                                         self.longitude,
                                                         self.t_obs)
+        else:
+            self.pointings = self.gen_tracking_pointings(n_p)
 
     def gen_transit_pointings(self, n_gen, lat=None, lon=None, t_obs=None):
         """Generate RA and Dec pointing coordinates for a transit telescope.
@@ -207,7 +194,10 @@ class Survey:
 
         Uses a try-accept algorithm to generate pointings with a survey. For
         details on the sunflower algoritm used to distribute pointings see
-        See https://stackoverflow.com/a/44164075/11922471
+        See https://stackoverflow.com/a/44164075/11922471. Pointings are not
+        always optimumly placed in the limit of small numbers. Takes no account
+        of source surveying time, merely creates a grid on the sky, and follows
+        that grid.
 
         Args:
             n_gen (int): Number of pointings.
@@ -267,23 +257,23 @@ class Survey:
             n += (n_gen - sum(mask))
             ra, dec = sample(n)
             mask = accept(ra, dec)
-        else:
-            # Only select valid points
-            ra = ra[mask]
-            dec = dec[mask]
 
-            # Evenly sample arrays
-            idx = np.round(np.linspace(0, len(ra) - 1, n_gen)).astype(int)
-            ra = ra[idx]
-            dec = dec[idx]
+        # Only select valid points
+        ra = ra[mask]
+        dec = dec[mask]
+
+        # Evenly sample arrays
+        idx = np.round(np.linspace(0, len(ra) - 1, n_gen)).astype(int)
+        ra = ra[idx]
+        dec = dec[idx]
 
         return ra, dec
 
-    def max_offset(self, x):
+    def max_offset(self, n):
         """Calculate the maximum offset of an FRB in an Airy disk.
 
         Args:
-            x (int): Maximum sidelobe wanted
+            n (int): Maximum number of wanted sidelobes
 
         """
         # Null points of kasin for allow a number of sidelobes
@@ -292,49 +282,38 @@ class Survey:
                        35.332308, 38.474766]
 
         # Allow for cut at FWHM
-        if x == 0.5:
+        if n == 0.5:
             return 1
 
         try:
-            arcsin = math.asin(self.fwhm*kasin_nulls[x]/(60*180))
+            arcsin = math.asin(self.fwhm*kasin_nulls[n]/180)
         except ValueError:
             m = f'Beamsize including sidelobes would be larger than sky \n'
-            A = (90/kasin_nulls[x])**2*math.pi
+            A = (90/kasin_nulls[n])**2*math.pi
             m += f'Ensure beamsize is smaller than {A}'
             raise ValueError(m)
 
-        return 2/self.fwhm * 60*180/math.pi * arcsin
+        return 2/self.fwhm * 180/math.pi * arcsin
 
-    def intensity_profile(self, shape=1, dimensions=2, rep_loc='random'):
+    def intensity_profile(self, shape=1, dimensions=2):
         """Calculate intensity profile.
 
         Args:
             shape (tuple): Usually the shape of frbs.s_peak
-            dimensions (int): Use a 2D beampattern or a 1D one.
-            rep_loc (str): 'same' or 'random'. Whether repeaters are observed
-                in the same spot or a different spot
 
         Returns:
             array, array: intensity profile, offset from beam [arcmin]
 
         """
         # Calculate Full Width Half Maximum from beamsize
-        cos_r = (1 - (self.beam_size_fwhm*np.pi)/(2*180**2))
-        offset = np.rad2deg(np.arccos(cos_r)) * 60  # [arcmin]
-        self.fwhm = 2*offset  # [arcmin]
+        offset = self.calc_beam_radius()
+        self.fwhm = 2*offset  # The diameter [deg]
 
-        if rep_loc == 'same':
-            r = np.random.random(shape[0])
-        else:
-            r = np.random.random(shape)
-
-        if dimensions == 2:  # 2D
-            offset *= np.sqrt(r)
-        elif dimensions == 1:  # 1D
-            offset *= r
+        # Take a random location in the 2D beampattern
+        offset *= np.sqrt(np.random.random(shape))
 
         # Allow for a perfect beam pattern in which all is detected
-        if self.gain_pattern == 'perfect':
+        if self.beam_pattern == 'perfect':
             int_pro = np.ones(shape)
             self.beam_size = self.beam_size_fwhm
             return int_pro, offset
@@ -344,33 +323,33 @@ class Survey:
         # George W. Swenson, JR. (Second edition), around p. 15
 
         max_offset = self.max_offset(self.n_sidelobes)
-        self.beam_size = math.pi*(self.fwhm/2*max_offset/60)**2  # [sq degrees]
+        self.beam_size = np.pi*(self.fwhm/2*max_offset)**2  # [sq degrees]
 
-        if self.gain_pattern == 'gaussian':
+        if self.beam_pattern == 'gaussian':
             # Set the maximum offset equal to the null after a sidelobe
             # I realise this pattern isn't an airy, but you have to cut
             # somewhere
             offset *= max_offset
-            alpha = 2*math.sqrt(math.log(2))
+            alpha = 2*np.sqrt(np.log(2))
             int_pro = np.exp(-(alpha*offset/self.fwhm)**2)
             return int_pro, offset
 
-        elif self.gain_pattern == 'airy':
+        elif self.beam_pattern == 'airy':
             # Set the maximum offset equal to the null after a sidelobe
             offset *= max_offset
             c = 299792458
-            conv = math.pi/(60*180)  # Conversion arcmins -> radians
+            conv = np.pi/180  # Conversion degrees -> radians
             eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
             a = eff_diam/2  # Effective radius of telescope
             lamda = c/(self.central_freq*1e6)
-            ka = (2*math.pi*a/lamda)
+            ka = (2*np.pi*a/lamda)
             kasin = ka*np.sin(offset*conv)
             int_pro = 4*(j1(kasin)/kasin)**2
             return int_pro, offset
 
-        elif self.gain_pattern in ['parkes', 'apertif', 'chime']:
+        elif self.beam_pattern in ['parkes', 'apertif', 'chime']:
 
-            place = paths.models() + f'/beams/{self.gain_pattern}.npy'
+            place = paths.models() + f'/beams/{self.beam_pattern}.npy'
             beam_array = np.load(place)
             b_shape = beam_array.shape
             ran_x = np.random.randint(0, b_shape[0], shape)
@@ -379,25 +358,26 @@ class Survey:
             offset = np.sqrt((ran_x-b_shape[0]/2)**2 + (ran_y-b_shape[1]/2)**2)
 
             # Scaling factors to correct for pixel scale
-            if self.gain_pattern == 'apertif':  # 1 pixel = 0.94'
-                offset *= 240/256  # [arcmin]
-                self.beam_size = 25.
-            if self.gain_pattern == 'parkes':  # 1 pixel = 54"
-                offset *= 0.9  # [arcmin]
-                self.beam_size = 9.
-            if self.gain_pattern == 'chime':  # 1 pixel = 0.08 deg
-                offset *= 0.08*60  # [arcmin]
-                self.beam_size = 80*80
+            if self.beam_pattern == 'apertif':  # 1 pixel = 0.94'
+                offset *= 0.94/60  # [degree]
+                self.beam_size = 25.  # [sq deg]
+            if self.beam_pattern == 'parkes':  # 1 pixel = 54"
+                offset *= 54/3600  # [degree]
+                self.beam_size = 9.  # [sq deg]
+            if self.beam_pattern == 'chime':  # 1 pixel = 0.08 deg
+                offset *= 0.08  # [degree]
+                self.beam_size = 80*80  # [sq deg]
 
             return int_pro, offset
 
         else:
-            pprint(f'Gain pattern "{self.gain_pattern}" not recognised')
+            pprint(f'Beam pattern "{self.beam_pattern}" not recognised')
 
     def calc_int_pro(self, frbs, *args, **kwags):
+        """TODO: Implement beam patterns."""
         return np.array([1])
 
-    def dm_smear(self, frbs):
+    def dm_smear(self, dm):
         """
         Calculate delay in pulse across a channel due to dm smearing.
 
@@ -406,13 +386,13 @@ class Survey:
         changed due to the central frequency being given in MHz.
 
         Args:
-            frbs (FRBs): FRB object with a dm attribute
+            dm (array): Dispersion measure [pc/cm^3]
 
         Returns:
             t_dm (array): Time of delay [ms] at central band frequency
 
         """
-        return 8.297616e6 * self.bw_chan * frbs.dm * (self.central_freq)**-3
+        return 8.297616e6 * self.bw_chan * dm * (self.central_freq)**-3
 
     def calc_scat(self, dm):
         """Calculate scattering timescale for FRBs.
@@ -429,19 +409,28 @@ class Survey:
         freq = self.central_freq
         return go.scatter_bhat(dm, scindex=-3.86, offset=-9.5, freq=freq)
 
-    def calc_Ts(self, frbs):
-        """Set temperatures for frbs."""
+    def calc_Ts(self, gl, gb):
+        """Set temperatures for frbs.
+
+        Args:
+            gl (array): Galactic longitude [deg]
+            gb (array): Galactic latitude [deg]
+
+        Returns:
+            T_sky, T_sys [K]
+
+        """
         # Special treatment for a perfect telescope
         if self.name.startswith('perfect'):
             T_sky = 0
             T_sys = self.T_rec
         else:
-            T_sky = self.calc_T_sky(frbs)
+            T_sky = self.calc_T_sky(gl, gb)
             T_sys = self.T_rec + T_sky
 
         return T_sky, T_sys
 
-    def calc_T_sky(self, frbs):
+    def calc_T_sky(self, gl, gb):
         """
         Calculate the sky temperature from the Haslam table.
 
@@ -453,15 +442,17 @@ class Survey:
         figure it out.
 
         Args:
-            frbs (FRBs): Needed for coordinates
+            gl (array): Galactic longitude [deg]
+            gb (array): Galactic latitude [deg]
         Returns:
             array: Sky temperature [K]
+
         """
         T_sky_list = go.load_T_sky()
 
         # ensure l is in range 0 -> 360
-        B = frbs.gb
-        L = np.copy(frbs.gl)
+        B = gb
+        L = np.copy(gl)
         L[L < 0.] += 360
 
         # convert from l and b to list indices
@@ -481,7 +472,8 @@ class Survey:
 
         return T_sky
 
-    def calc_s_peak(self, frbs, f_low=100e6, f_high=10e9):
+    def calc_s_peak(self, si, lum_bol, z, dist_co, w_arr, w_eff,
+                    f_low=100e6, f_high=10e9):
         """
         Calculate the mean spectral flux density.
 
@@ -489,7 +481,12 @@ class Survey:
         of the survey.
 
         Args:
-            frbs (FRBs): FRBs
+            si (array): Spectral index
+            lum_bol (array): Bolometric luminosity within emission band
+            z (array): Redshift
+            dist_co (array): Comoving distance [Gpc]
+            w_arr (array): Pulse width at Earth [ms]
+            w_eff (array): Pulse width at point of detection [ms]
             f_low (float): Source emission lower frequency limit [Hz].
             f_high (float): Source emission higher frequency limit [Hz].
 
@@ -504,8 +501,6 @@ class Survey:
         f_2 *= 1e6  # MHz -> Hz
 
         # Spectral index
-        si = frbs.si
-        lum_bol = frbs.lum_bol
         if lum_bol.ndim == si.ndim:
             pass
         elif lum_bol.ndim > si.ndim:
@@ -518,10 +513,8 @@ class Survey:
 
         freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
 
-        z = frbs.z
-
         # Convert distance in Gpc to 10^25 metres
-        dist = frbs.dist_co * 3.085678
+        dist = dist_co * 3.085678
         dist = dist.astype(np.float64)
 
         # Convert luminosity in 10^7 Watts such that s_peak will be in Janskys
@@ -543,7 +536,7 @@ class Survey:
         s_peak = nom/den
 
         # Add degradation factor due to pulse broadening (see Connor 2019)
-        w_frac = (frbs.w_arr / frbs.w_eff)
+        w_frac = (w_arr / w_eff)
 
         # Dimension conversions
         if w_frac.ndim == s_peak.ndim:
@@ -557,7 +550,7 @@ class Survey:
 
         return s_peak.astype(np.float32)
 
-    def calc_w_eff(self, frbs):
+    def calc_w_eff(self, w_arr, t_dm, t_scat):
         """Calculate effective pulse width [ms].
 
         From Narayan (1987, DOI: 10.1086/165442), and also Cordes & McLaughlin
@@ -565,19 +558,17 @@ class Survey:
         thesis (2016), found here: http://hdl.handle.net/1959.3/417307
 
         Args:
-            frbs (FRBs): FRBs for which to calculate effective pulse width.
+            w_arr (array): Pulse width [ms]
+            t_dm (array): Time delay due to dispersion [ms]
+            t_scat (array): Time delay due to scattering [ms]
 
         Returns:
             array: Effective pulse width [ms]
 
         """
-        w_arr = frbs.w_arr
-        t_dm = frbs.t_dm
-        t_scat = frbs.t_scat
-
-        if frbs.w_arr.ndim > 1:
+        if w_arr.ndim > 1:
             t_dm = t_dm[:, None]
-            if isinstance(frbs.t_scat, np.ndarray):
+            if isinstance(t_scat, np.ndarray):
                 t_scat = t_scat[:, None]
 
         return np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
@@ -591,7 +582,7 @@ class Survey:
         as a pulse is stretched
 
         Args:
-            s_peak (array): Peak flux
+            s_peak (array): Peak flux [Jy]
             w_arr (array): Pulse width at Earth [ms]
             T_sys (array): System temperature [K]
 

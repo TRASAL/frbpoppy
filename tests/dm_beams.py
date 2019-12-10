@@ -49,7 +49,7 @@ def get_data():
             n_s = int(n_s)
 
         survey = Survey(name='perfect-small')
-        survey.gain_pattern = bp
+        survey.beam_pattern = bp
         survey.n_sidelobes = n_s
         surv_pop = SurveyPopulation(pop, survey)
         pops[b] = surv_pop

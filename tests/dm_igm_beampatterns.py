@@ -37,7 +37,7 @@ survey = Survey('perfect-small', n_sidelobes=0)
 
 for pattern in BEAMPATTERNS:
 
-    survey.gain_pattern = pattern
+    survey.beam_pattern = pattern
 
     # Observe populations
     pop_obs[pattern] = SurveyPopulation(pop, survey)

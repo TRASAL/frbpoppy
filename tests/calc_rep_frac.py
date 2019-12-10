@@ -28,7 +28,7 @@ r.generate()
 
 survey = Survey('perfect-small', strategy='regular')
 survey.n_days = MAX_DAYS
-survey.gain_pattern = 'chime'
+survey.beam_pattern = 'chime'
 survey.snr_limit = 1e12
 
 surv_pop = SurveyPopulation(r, survey)

@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from frbpoppy.survey import Survey
 
+from convenience import plot_aa_style, rel_path
+
 PATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
 SURVEY = 'apertif'
 MIN_Y = 1e-6
@@ -21,7 +23,7 @@ for pattern in PATTERNS:
         if n_sidelobes == 0:
             z = 10
 
-    s = Survey(SURVEY, gain_pattern=p, n_sidelobes=n_sidelobes)
+    s = Survey(SURVEY, beam_pattern=p, n_sidelobes=n_sidelobes)
     int_pro, offset = s.intensity_profile(shape=n)
 
     # Sort the values
@@ -33,18 +35,15 @@ for pattern in PATTERNS:
     offset = offset[int_pro > MIN_Y]
     int_pro = int_pro[int_pro > MIN_Y]
 
-    # Offset in degrees
-    offset = offset/60.
-
     print(f'Beam size at FWHM: {s.beam_size_fwhm}')
     print(f'Beam size with sidelobes: {s.beam_size}')
 
     plt.plot(offset, int_pro, label=pattern, zorder=z)
 
 
-plt.xlabel(r'Offset ($$^{\circ}$$)')
+plt.xlabel(r'Offset ($^{\circ}$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
-plt.legend()
+plt.legend(loc='upper right')
 plt.tight_layout()
 plt.savefig(rel_path('plots/int_pro_theory.pdf'))

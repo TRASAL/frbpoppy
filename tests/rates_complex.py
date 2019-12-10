@@ -37,7 +37,7 @@ def complex_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
             # Set up surveys
             ss = []
             for s in surveys:
-                survey = Survey(name=s, gain_pattern='airy',
+                survey = Survey(name=s, beam_pattern='airy',
                                 n_sidelobes=1)
                 ss.append(survey)
 

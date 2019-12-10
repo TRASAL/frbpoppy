@@ -50,27 +50,32 @@ class SurveyPopulation(Population):
         frbs = self.frbs
 
         # Check whether source is in region
-        region_mask = survey.in_region(frbs)
+        region_mask = survey.in_region(frbs.ra, frbs.dec, frbs.gl, frbs.gb)
         frbs.apply(region_mask)
         self.rate.out = np.size(region_mask) - np.count_nonzero(region_mask)
 
         # Calculate dispersion measure across single channel
-        frbs.t_dm = survey.dm_smear(frbs)
+        frbs.t_dm = survey.dm_smear(frbs.dm)
 
         # Set scattering timescale
         if scat:
             frbs.t_scat = survey.calc_scat(frbs.dm)
 
         # Calculate total temperature
-        frbs.T_sky, frbs.T_sys = survey.calc_Ts(frbs)
+        frbs.T_sky, frbs.T_sys = survey.calc_Ts(frbs.gl, frbs.gb)
 
         # Calculate effective pulse width
-        frbs.w_eff = survey.calc_w_eff(frbs)
+        frbs.w_eff = survey.calc_w_eff(frbs.w_arr, frbs.t_dm, frbs.t_scat)
 
         # Calculate peak flux density
-        f_min = cosmic_pop.f_min
-        f_max = cosmic_pop.f_max
-        frbs.s_peak = survey.calc_s_peak(frbs, f_low=f_min, f_high=f_max)
+        frbs.s_peak = survey.calc_s_peak(frbs.si,
+                                         frbs.lum_bol,
+                                         frbs.z,
+                                         frbs.dist_co,
+                                         frbs.w_arr,
+                                         frbs.w_eff,
+                                         f_low=cosmic_pop.f_min,
+                                         f_high=cosmic_pop.f_max)
 
         # Calculations differ whether dealing with repeaters or not
         if self.repeaters:
@@ -89,7 +94,7 @@ class SurveyPopulation(Population):
         # Account for beam offset
         int_pro, offset = survey.intensity_profile(shape=frbs.s_peak.shape)
         frbs.s_peak *= int_pro
-        frbs.offset = offset / 60.  # In degrees
+        frbs.offset = offset  # [deg]
 
         # Calculate fluence [Jy*ms]
         frbs.fluence = survey.calc_fluence(frbs.s_peak, frbs.w_eff)

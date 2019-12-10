@@ -178,7 +178,7 @@ sources should emit the given bolometric luminosity.</li>
 <p>Class holding survey properties.</p>
 <dl class="class">
 <dt>
-<em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Survey</code><span class="sig-paren">(</span><em>name</em>, <em>gain_pattern='gaussian'</em>, <em>n_sidelobes=0.5</em>, <em>pointings=[]</em>, <em>max_time=1</em><span class="sig-paren">)</span></dt>
+<em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Survey</code><span class="sig-paren">(</span><em>name</em>, <em>beam_pattern='gaussian'</em>, <em>n_sidelobes=0.5</em>, <em>pointings=[]</em>, <em>max_time=1</em><span class="sig-paren">)</span></dt>
 <dd><p>Method containing survey parameters and functions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -188,7 +188,7 @@ sources should emit the given bolometric luminosity.</li>
 <li><strong>name</strong> (<em>str</em>) – Name of survey with which to observe population. Can
 either be a predefined survey present in frbpoppy or a path name to
 a new survey filename</li>
-<li><strong>gain_pattern</strong> (<em>str</em>) – Set gain pattern</li>
+<li><strong>beam_pattern</strong> (<em>str</em>) – Set gain pattern</li>
 <li><strong>n_sidelobes</strong> (<em>float</em>) – Number of sidelobes to include. Use 0.5 for
 cutting beam at FWHM</li>
 <li><strong>pointings</strong> (<em>list</em>) – List of (RA, Dec) coordinates</li>

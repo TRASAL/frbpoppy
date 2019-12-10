@@ -7,10 +7,10 @@ cosmic.lum_rep_model = 'independent'
 cosmic.generate()
 survey = Survey('perfect-small')
 survey.n_days = 2
-# survey.snr_limit = 5e9
+survey.snr_limit = 5e9
 survey.strategy = 'regular'
 surv_pop = SurveyPopulation(cosmic, survey)
 frbs = surv_pop.frbs
 pprint(f'# sources: {surv_pop.n_sources()}')
 pprint(f'# bursts: {surv_pop.n_bursts()}')
-# plot(surv_pop, mute=False)
+plot(surv_pop, mute=False)

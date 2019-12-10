@@ -31,7 +31,7 @@ r.dm_mw_model = 'zero'
 r.generate()
 
 survey = Survey('perfect', strategy='regular', n_days=DAYS)
-survey.gain_pattern = 'perfect'
+survey.beam_pattern = 'perfect'
 survey.snr_limit = 1e16
 
 surv_pop = SurveyPopulation(r, survey)

@@ -77,7 +77,7 @@ def get_frbpoppy_data():
                            generate=True)
 
     s = Survey('chime', strategy='follow-up', n_days=1)
-    s.gain_pattern = 'perfect'
+    s.beam_pattern = 'perfect'
     s.snr_limit = 1.
 
     surv_pop = SurveyPopulation(r, s)

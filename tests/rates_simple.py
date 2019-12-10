@@ -37,7 +37,7 @@ def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
             # Set up surveys
             ss = []
             for s in surveys:
-                survey = Survey(name=s, gain_pattern='perfect',
+                survey = Survey(name=s, beam_pattern='perfect',
                                 n_sidelobes=0.5)
                 ss.append(survey)
 

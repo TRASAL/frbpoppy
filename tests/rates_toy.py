@@ -31,8 +31,8 @@ def toy_rates(surveys=SURVEYS, alphas=ALPHAS):
     for surv in surveys:
 
         # Get survey parameters
-        surv1 = Survey(surv, gain_pattern='perfect', n_sidelobes=0.5)
-        surv2 = Survey('htru', gain_pattern='perfect', n_sidelobes=0.5)
+        surv1 = Survey(surv, beam_pattern='perfect', n_sidelobes=0.5)
+        surv2 = Survey('htru', beam_pattern='perfect', n_sidelobes=0.5)
 
         # Calculate rate per alpha
         rate = []

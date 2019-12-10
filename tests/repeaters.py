@@ -12,7 +12,7 @@ r.days = DAYS
 r.generate()
 
 survey = Survey('apertif', strategy='regular', n_days=DAYS)
-survey.gain_pattern = 'apertif'
+survey.beam_pattern = 'apertif'
 survey.snr_limit = 1e-5
 
 pops = []

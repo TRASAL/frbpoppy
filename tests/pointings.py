@@ -6,6 +6,7 @@ from frbpoppy import Survey
 
 N_POINTS = 10
 
+
 def plot_coordinates(ra, dec):
     """Plot coordinate in 3D plot."""
     dec = np.deg2rad(dec)
@@ -19,6 +20,9 @@ def plot_coordinates(ra, dec):
     ax = fig.add_subplot(111, projection='3d')
     p = ax.scatter(x, y, z, c=np.arange(0, x.size))
     plt.colorbar(p)
+    ax.axes.set_xlim3d(left=-1, right=1)
+    ax.axes.set_ylim3d(bottom=-1, top=1)
+    ax.axes.set_zlim3d(bottom=-1, top=1)
     plt.show()
 
 

@@ -33,7 +33,7 @@ pop = CosmicPopulation(5e5,
 
 pop_obs = {}
 
-survey = Survey('perfect-small', gain_pattern='airy')
+survey = Survey('perfect-small', beam_pattern='airy')
 
 for sidelobe in SIDELOBES:
 

@@ -103,7 +103,7 @@ def get_data():
         if telescope == 'askap':
             s = 'askap-fly'
 
-        surveys.append(Survey(s, gain_pattern=pattern, n_sidelobes=1))
+        surveys.append(Survey(s, beam_pattern=pattern, n_sidelobes=1))
 
     return LargePopulation(cosmic_pop, *surveys).pops
 

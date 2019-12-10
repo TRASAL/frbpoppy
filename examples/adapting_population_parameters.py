@@ -9,7 +9,7 @@ cosmic_pop.z_max = 2.5
 cosmic_pop.generate()
 
 # Setup a survey with arguments ...
-survey = Survey('apertif', gain_pattern='airy', n_sidelobes=2)
+survey = Survey('apertif', beam_pattern='airy', n_sidelobes=2)
 # ... or adapt the survey later with
 survey.snr_limit = 2
 

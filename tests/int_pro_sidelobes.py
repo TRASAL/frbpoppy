@@ -17,7 +17,7 @@ for sidelobe in reversed(SIDELOBES):
 
     args = {'sidelobes': sidelobe}
 
-    s = Survey(SURVEY, gain_pattern='airy', n_sidelobes=sidelobe)
+    s = Survey(SURVEY, beam_pattern='airy', n_sidelobes=sidelobe)
 
     int_pro, offset = s.intensity_profile(shape=n)
 
@@ -34,12 +34,9 @@ for sidelobe in reversed(SIDELOBES):
     if sidelobe == 1:
         label = label[:-1]
 
-    # Offset in degrees
-    offset = offset/60.
-
     plt.plot(offset, int_pro, label=label)
 
-plt.xlabel(r'Offset ($$^{\circ}$$)')
+plt.xlabel(r'Offset ($^{\circ}$)')
 plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()
