@@ -174,7 +174,7 @@ def radec_to_lb(ra, dec, frac=False):
 
 
 def separation(ra_1, dec_1, ra_2, dec_2):
-    """Separation between points on sky [degree].
+    """Separation between points on sky [degrees].
 
     Using a special case of the Vincenty formula for an ellipsoid with equal
     major and minor axes.
@@ -619,3 +619,86 @@ def random_date(start, end):
     int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
     random_second = random.randrange(int_delta)
     return start + timedelta(seconds=random_second)
+
+
+def coord_to_offset(xref, yref, x, y):
+    """
+    Convert point (x, y) to projected offset from reference (xref, yref).
+
+    Args:
+        xref (array): Reference RA or Az [rad]
+        yref (array): Reference Dec or Alt [rad]
+        x (array): Target RA or Az [rad]
+        y (array): Target Dec or Alt [rad]
+
+    Returns:
+        array, array: x and y offset [rad]
+
+    """
+    # Define convenience numbers
+    sinxref = np.sin(xref)
+    sinx = np.sin(x)
+    cosxref = np.cos(xref)
+    cosx = np.cos(x)
+
+    sinyref = np.sin(yref)
+    siny = np.sin(y)
+    cosyref = np.cos(yref)
+    cosy = np.cos(y)
+
+    # Sine and cosine of shift in x
+    cosdx = cosxref * cosx + sinxref * sinx
+    sindx = cosxref * sinx - sinxref * cosx
+
+    # Projection effect cosine
+    cosc = sinyref * siny + cosyref * cosy * cosdx
+    k = 1. / cosc
+
+    # Projected offsets
+    dx = k * cosy * sindx
+    dy = k * (cosyref * siny - sinyref * cosy * cosdx)
+
+    return dx, dy
+
+
+def hadec_to_azalt(ha, dec, lat):
+    """
+    Convert hour angle and declination to azimuth and altitude.
+
+    Args:
+        ha (array): Hour angle [rad]
+        dec (array): Declination [rad]
+        lat (float): Latitude [rad]
+
+    Returns:
+        array, array: az, alt [rad]
+
+    """
+    # Ha and dec should be same type
+    assert type(ha) == type(dec)
+
+    # Altitude
+    sinalt = np.sin(dec) * np.sin(lat) + np.cos(dec) * np.cos(lat) * np.cos(ha)
+    alt = np.arcsin(sinalt)
+
+    # azimuth (note this uses altitude)
+    cosaz = (np.sin(dec)-np.sin(alt)*np.sin(lat)) / (np.cos(alt)*np.cos(lat))
+
+    # Numerical instability can cause cosaz > 1
+    convert_to_float = False
+    if isinstance(cosaz, float):
+        cosaz = np.array([cosaz])
+        convert_to_float = True
+
+    cosaz[cosaz > 1] = 1
+    az = np.arccos(cosaz)
+
+    # Sign of azimuth is lost, but can be recovered using the input hour angle
+    mask = np.sin(ha) > 0
+    az[mask] = 2*np.pi - az[mask]
+
+    # Convert back to float if input was float
+    if convert_to_float:
+        az = float(az)
+
+    return az, alt

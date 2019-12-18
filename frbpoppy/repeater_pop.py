@@ -130,10 +130,13 @@ class RepeaterPopulation(CosmicPopulation):
 
     def gen_regular_times(self, n_per_day=1):
         """Generate a series of regular spaced times."""
-        u = np.random.uniform
-        dim = (self.n_gen, n_per_day*self.n_days)
-        time = u(0, self.n_days, dim).astype(np.float32)
-        time = np.sort(time)
+        time_range = np.arange(0, self.n_days)
+        # Single source burst times
+        time = np.repeat(time_range, (n_per_day)).astype(np.float32)
+        # Copy to multiple sources
+        time = np.tile(time, (self.n_gen, 1))
+        # Add random offsets
+        time += np.random.random(time.shape)
         time = time*(1+self.frbs.z)[:, np.newaxis]
         time[(time > self.n_days)] = np.nan
         self.frbs.time = time

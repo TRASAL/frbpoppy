@@ -20,12 +20,13 @@ class Survey:
         name (str): Name of survey with which to observe population. Can
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
-        beam_pattern (str): Set beam pattern ('gaussian', 'airy', 'perfect',
-            'parkes', 'apertif' or 'chime')
+        beam_pattern (str): Set beam pattern ('perfect', 'gaussian',
+            'airy', 'apertif', 'parkes', 'chime')
         n_sidelobes (float): Number of sidelobes to include. Use 0.5 to
             cut beam at FWHM
         n_days (float): Time spent surveying [days]
-        strategy (str): 'follow-up' or 'regular' (for RepeaterPopulation)
+        strategy (str): 'regular' (for RepeaterPopulation). 'follow-up' might
+            be implemented in the future.
 
     """
 
@@ -43,8 +44,8 @@ class Survey:
         self.n_days = n_days
         self.strategy = strategy
         self.beam_size = None
+        self.beam_array = None
         self.pointings = None
-        self.transit = False
 
         # Parse survey file
         self.read_survey_parameters()
@@ -53,7 +54,8 @@ class Survey:
         if self.name.startswith('perfect'):
             self.beam_pattern = 'perfect'
 
-        if self.transit is True:
+        # Transit telescopes can't follow-up
+        if self.mount_type is 'transit':
             self.strategy = 'regular'
 
     def __str__(self):
@@ -94,7 +96,7 @@ class Survey:
         self.max_w_eff = survey['maximum pulse width (ms)']
         self.latitude = survey['latitude (deg)']
         self.longitude = survey['longitude (deg)']
-        self.transit = bool(survey['transit telescope (bool)'])
+        self.mount_type = survey['mount type']
         self.ra_min = survey['minimum RA (deg)']
         self.ra_max = survey['maximum RA (deg)']
         self.dec_min = survey['minimum DEC (deg)']
@@ -108,13 +110,15 @@ class Survey:
         """Determine the radius of the beam pattern in degrees."""
         # Calculate size of detection region
         if self.beam_size is None:
-            self.beam_size = self.beam_size_fwhm
+            beam_size = self.beam_size_fwhm
+        else:
+            beam_size = self.beam_size
 
         # Check whether the full sky
-        if np.allclose(self.beam_size, 4*np.pi*(180/np.pi)**2):
+        if np.allclose(beam_size, 4*np.pi*(180/np.pi)**2):
             r = 180
         else:
-            cos_r = (1 - (self.beam_size*np.pi)/(2*180**2))
+            cos_r = (1 - (beam_size*np.pi)/(2*180**2))
             r = np.rad2deg(np.arccos(cos_r))
 
         return r
@@ -152,7 +156,7 @@ class Survey:
     def gen_pointings(self):
         """Generate pointings via wrapper."""
         n_p = int(self.n_days*24*60*60 / self.t_obs)  # Number of pointings
-        if self.transit:
+        if self.mount_type == 'transit':
             self.pointings = self.gen_transit_pointings(n_p,
                                                         self.latitude,
                                                         self.longitude,
@@ -295,14 +299,14 @@ class Survey:
 
         return 2/self.fwhm * 180/math.pi * arcsin
 
-    def intensity_profile(self, shape=1, dimensions=2):
-        """Calculate intensity profile.
+    def calc_random_int_pro(self, shape=1):
+        """Calculate the intensity profile in random spots of a beam.
 
         Args:
             shape (tuple): Usually the shape of frbs.s_peak
 
         Returns:
-            array, array: intensity profile, offset from beam [arcmin]
+            array, array: intensity profile, offset from beam [degree]
 
         """
         # Calculate Full Width Half Maximum from beamsize
@@ -315,7 +319,8 @@ class Survey:
         # Allow for a perfect beam pattern in which all is detected
         if self.beam_pattern == 'perfect':
             int_pro = np.ones(shape)
-            self.beam_size = self.beam_size_fwhm
+            if self.beam_size is None:
+                self.beam_size = self.beam_size_fwhm
             return int_pro, offset
 
         # Formula's based on 'Interferometry and Synthesis in Radio
@@ -323,7 +328,9 @@ class Survey:
         # George W. Swenson, JR. (Second edition), around p. 15
 
         max_offset = self.max_offset(self.n_sidelobes)
-        self.beam_size = np.pi*(self.fwhm/2*max_offset)**2  # [sq degrees]
+
+        if self.beam_size is None:
+            self.beam_size = np.pi*(self.fwhm/2*max_offset)**2  # [sq deg]
 
         if self.beam_pattern == 'gaussian':
             # Set the maximum offset equal to the null after a sidelobe
@@ -347,35 +354,135 @@ class Survey:
             int_pro = 4*(j1(kasin)/kasin)**2
             return int_pro, offset
 
-        elif self.beam_pattern in ['parkes', 'apertif', 'chime']:
-
-            place = paths.models() + f'/beams/{self.beam_pattern}.npy'
-            beam_array = np.load(place)
-            b_shape = beam_array.shape
+        elif self.beam_array is not None:
+            b_shape = self.beam_array.shape
             ran_x = np.random.randint(0, b_shape[0], shape)
             ran_y = np.random.randint(0, b_shape[1], shape)
-            int_pro = beam_array[ran_x, ran_y]
+            int_pro = self.beam_array[ran_x, ran_y]
             offset = np.sqrt((ran_x-b_shape[0]/2)**2 + (ran_y-b_shape[1]/2)**2)
-
-            # Scaling factors to correct for pixel scale
-            if self.beam_pattern == 'apertif':  # 1 pixel = 0.94'
-                offset *= 0.94/60  # [degree]
-                self.beam_size = 25.  # [sq deg]
-            if self.beam_pattern == 'parkes':  # 1 pixel = 54"
-                offset *= 54/3600  # [degree]
-                self.beam_size = 9.  # [sq deg]
-            if self.beam_pattern == 'chime':  # 1 pixel = 0.08 deg
-                offset *= 0.08  # [degree]
-                self.beam_size = 80*80  # [sq deg]
-
+            offset *= self.pixel_scale  # Correct for pixel scale
             return int_pro, offset
 
         else:
-            pprint(f'Beam pattern "{self.beam_pattern}" not recognised')
+            m = f'Beam pattern "{self.beam_pattern}" not recognised'
+            raise ValueError(m)
 
-    def calc_int_pro(self, frbs, *args, **kwags):
-        """TODO: Implement beam patterns."""
-        return np.array([1])
+    def calc_fixed_int_pro(self, ra, dec, ra_p, dec_p, lst, test=False):
+        """Calculate intensity profile for fixed location in beam.
+
+        Args:
+            ra (array): Right ascension of objects [deg]
+            dec (array): Declination of objects [deg]
+            ra_p (float): Right ascension of pointing [deg]
+            dec_p (float): Declination of pointing [deg]
+            lst (float): Local Sidereal Time [deg]
+            test (bool): For testing
+
+        Returns:
+            type: Description of returned object.
+
+        """
+        # Convert input decimal degrees to radians
+        ra = np.deg2rad(ra)
+        dec = np.deg2rad(dec)
+        args = [ra_p, dec_p, lst, self.latitude, self.pixel_scale]
+
+        for a in args:
+            if a is None:
+                raise ValueError('Missing required input')
+
+        ra_p, dec_p, lst, lat, pixel_scale = np.deg2rad(args)
+
+        if self.mount_type == 'equatorial':
+            # Convert input coordinates to offset in ra and dec
+            dx, dy = go.coord_to_offset(ra_p, dec_p, ra, dec)
+        elif self.mount_type in ('azimuthal', 'transit'):
+            # Convert input right ascension to hour angle
+            ha = lst - ra
+            ha_p = lst - ra_p
+            # Convert ha, dec to az, alt
+            az, alt = go.hadec_to_azalt(ha, dec, lat)
+            az_p, alt_p = go.hadec_to_azalt(ha_p, dec_p, lat)
+            # Convert to offset
+            dx, dy = go.coord_to_offset(az_p, alt_p, az, alt)
+        else:
+            raise ValueError(f'Invalid mount type: {self.mount_type}')
+
+        # Convert offsets dx, dy to pixel in beam pattern (round)
+        dx_px = (np.round(dx / pixel_scale)).astype(int)
+        dy_px = (np.round(dy / pixel_scale)).astype(int)
+        ny, nx = self.beam_array.shape
+        x = (nx/2 + dx_px).astype(int)
+        y = (ny/2 + dy_px).astype(int)
+
+        # Get the value at this pixel (zero if outside beam pattern)
+        m = self.beam_array.shape[0]
+        outside = ((x <= 0) | (x >= m) | (y <= 0) | (y >= m))
+        x[outside] = 0  # Nans don't work in int arrays
+        y[outside] = 0
+
+        intensity = self.beam_array[y, x]
+        intensity[(x == 0) & (y == 0)] = 0
+
+        return intensity
+
+    def calc_int_pro(self, shape=None, ra=None, dec=None, ra_p=None,
+                     dec_p=None, lst=None, random_loc=True):
+        """Calculate intensity profile.
+
+        Wrapper around calc_random_int_pro and calc_fixed_int_pro. Check these
+        functions to see which kwargs are needed.
+
+        Args:
+            shape (tuple): Shape of random locations in which to generate an
+                intensity (for random location)
+            ra (array): Right ascension of coordinates to calculate [deg] (for
+            fixed location)
+            dec (array): Declination of coordinates to calculate [deg] (for
+            fixed location).
+            ra_p (float): Right ascension of pointing [deg] (fixed_loc)
+            dec_p (float): Declination of pointing [deg] (fixed_loc)
+            lst (float): Local sidereal time [deg] (fixed_loc).
+            random_loc (bool): Whether to calculate the location of each burst
+                or place them randomly in the beam
+
+        Returns:
+            int_pro, offset: Intensity profile at locations and offset.
+
+        """
+        # Set up beam properties
+        models = ('apertif', 'parkes', 'chime', 'gaussian', 'airy')
+        if self.beam_pattern in models:
+            place = paths.models() + f'/beams/{self.beam_pattern}.npy'
+            self.beam_array = np.load(place)
+
+            if self.beam_pattern == 'apertif':
+                self.pixel_scale = 0.94/60  # Degrees per pixel [deg]
+                self.beam_size = 25.  # [sq deg]
+            elif self.beam_pattern == 'parkes':
+                self.pixel_scale = 54/3600  # Degrees per pixel [deg]
+                self.beam_size = 9.  # [sq deg]
+            elif self.beam_pattern == 'chime':
+                self.pixel_scale = 0.08  # Degrees per pixel [deg]
+                self.beam_size = 80*80  # [sq deg]
+            elif self.beam_pattern == 'gaussian':
+                r = self.calc_beam_radius()
+                self.pixel_scale = r / 95  # Degrees per pixel [deg]
+                self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
+            elif self.beam_pattern == 'airy':
+                r = self.calc_beam_radius()
+                self.pixel_scale = r / 31  # Degrees per pixel [deg]
+                self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
+
+        if random_loc or self.beam_pattern.startswith('perfect'):
+            if shape is None:
+                shape = len(ra)
+            int_pro, offset = self.calc_random_int_pro(shape)
+        else:
+            int_pro = self.calc_fixed_int_pro(ra, dec, ra_p, dec_p, lst)
+            offset = None  # TODO
+
+        return int_pro, offset
 
     def dm_smear(self, dm):
         """
@@ -626,7 +733,7 @@ class Survey:
         elif s_peak.ndim == 1:
             return s_peak[:, None] * w_eff
 
-    def calc_scint(self, frbs):
+    def calc_scint(self, t_scat, dist_co, gl, gb, snr):
         """
         Calculate scintillation effect on the signal to noise ratio.
 
@@ -636,21 +743,26 @@ class Survey:
         rigorous testing has been applied to this.
 
         Args:
-            frbs (FRBs): FRBs
+            t_scat (array): Scattering timescale for frbs [ms]
+                (can use self.calc_scat to calculate this)
+            dist_co (array): Comoving distance array [Gpc]
+            gl (array): Galactic longitude [deg]
+            gb (array): Galactic latitude [deg]
+            snr (array): Signal to Noise array to modify
 
         Returns:
             array: Signal to noise ratio modulation factors for scintillation
 
         """
-        # Calculate scattering
-        if type(frbs.t_scat) is not np.ndarray:
-            frbs.t_scat = self.calc_scat(frbs.dm)
+        if not isinstance(t_scat, np.ndarray):
+            m = 'Please ensure t_scat is calculated using self.calc_scat'
+            raise ValueError(m)
 
         # Convert to seconds
-        frbs.t_scat /= 1000.
+        t_scat /= 1000.
 
         # Decorrelation bandwidth (eq. 4.39)
-        decorr_bw = 1.16/(2*math.pi*frbs.t_scat)
+        decorr_bw = 1.16/(2*math.pi*t_scat)
         # Convert to MHz
         decorr_bw /= 1e6
 
@@ -671,9 +783,9 @@ class Survey:
         # Taking the average kappa value
         kappa = 0.15
 
-        t_diss, decorr_bw = go.ne2001_scint_time_bw(frbs.dist_co,
-                                                    frbs.gl,
-                                                    frbs.gb,
+        t_diss, decorr_bw = go.ne2001_scint_time_bw(dist_co,
+                                                    gl,
+                                                    gb,
                                                     self.central_freq)
 
         # Following Cordes and Lazio (1991) (eq. 4.43)
@@ -691,7 +803,7 @@ class Survey:
         m[weak] = np.sqrt(m_diss**2 + m_riss**2 + m_diss*m_riss)
 
         # Distribute the scintillation according to gaussian distribution
-        snr = np.random.normal(frbs.snr, m*frbs.snr)
+        snr = np.random.normal(snr, m*snr)
 
         return snr
 

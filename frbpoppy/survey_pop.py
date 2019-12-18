@@ -47,6 +47,11 @@ class SurveyPopulation(Population):
         if isinstance(cosmic_pop, RepeaterPopulation):
             self.repeaters = True
 
+            if scin is True:
+                m = 'Scintillation is currently not implemented for '
+                m += 'RepeaterPopulations'
+                raise ValueError(m)
+
         frbs = self.frbs
 
         # Check whether source is in region
@@ -92,7 +97,7 @@ class SurveyPopulation(Population):
         survey = self.survey
 
         # Account for beam offset
-        int_pro, offset = survey.intensity_profile(shape=frbs.s_peak.shape)
+        int_pro, offset = survey.calc_int_pro(shape=frbs.s_peak.shape)
         frbs.s_peak *= int_pro
         frbs.offset = offset  # [deg]
 
@@ -104,7 +109,14 @@ class SurveyPopulation(Population):
 
         # Add scintillation
         if self.scin:
-            frbs.snr = survey.calc_scint(frbs)
+
+            # Ensure scattering has been calculated
+            if not isinstance(frbs.t_scat, np.ndarray):
+                frbs.t_scat = survey.calc_scat(frbs.dm)
+
+            # Calculate signal to noise ratio after scattering
+            frbs.snr = survey.calc_scint(frbs.t_scat, frbs.dist_co, frbs.gl,
+                                         frbs.gb, frbs.snr)
 
         # Check whether frbs would be above detection threshold
         snr_mask = (frbs.snr >= survey.snr_limit)
@@ -136,7 +148,9 @@ class SurveyPopulation(Population):
 
         # Array with times of each pointing
         max_t = survey.n_days
-        times = np.linspace(0, max_t, max_t/t_obs + 1)
+        times = np.linspace(0, max_t, max_t/t_obs + 1)  # [days]
+        lsts = times*360*(24/23.9344696) % 360  # Local sidereal time [deg]
+        lsts += np.random.uniform(0, 360)  # Add random offset
 
         # Only keep bursts within survey time
         time_mask = (frbs.time <= times[-1])
@@ -158,8 +172,9 @@ class SurveyPopulation(Population):
 
         # Have to loop over the observing times
         for i, t_min in enumerate(times[:-1]):
-            ra = survey.pointings[0][p_i % max_n_pointings]  # Loops around
-            dec = survey.pointings[1][p_i % max_n_pointings]
+            ra_p = survey.pointings[0][p_i % max_n_pointings]  # Loops around
+            dec_p = survey.pointings[1][p_i % max_n_pointings]
+            lst = lsts[i]
             t_max = times[i+1]
 
             # Which frbs are within the pointing time?
@@ -167,7 +182,7 @@ class SurveyPopulation(Population):
             tm = np.any(time_mask, axis=1)  # Time mask (1D)
 
             # Of those, which are within the beam size?
-            offset = go.separation(frbs.ra[tm], frbs.dec[tm], ra, dec)
+            offset = go.separation(frbs.ra[tm], frbs.dec[tm], ra_p, dec_p)
             pm = (offset <= r)  # Position mask (1D)
 
             # Relevant FRBS
@@ -180,11 +195,12 @@ class SurveyPopulation(Population):
             n_bursts = np.count_nonzero(tpm_2d, axis=1)  # Number of bursts
 
             # What's the intensity of them in the beam?
-            int_pro = survey.calc_int_pro(frbs.ra[tpm_1d],
-                                          frbs.dec[tpm_1d],
-                                          ra,
-                                          dec,
-                                          offset=offset)
+            int_pro, _ = survey.calc_int_pro(ra=frbs.ra[tpm_1d],
+                                             dec=frbs.dec[tpm_1d],
+                                             ra_p=ra_p,
+                                             dec_p=dec_p,
+                                             lst=lst,
+                                             random_loc=False)
 
             # Ensure relevant masks
             mask = tpm_1d
@@ -198,7 +214,10 @@ class SurveyPopulation(Population):
                 w_eff_mask = tpm_2d
 
             # Apply intensities to those bursts' s_peak
-            frbs.s_peak[mask] *= int_pro
+            try:
+                frbs.s_peak[mask] *= np.repeat(int_pro, n_bursts[n_bursts > 0])
+            except ValueError:
+                import IPython; IPython.embed()
             frbs.s_peak[not_mask] = np.nan
 
             # Ensure dimensionality is correct
@@ -234,11 +253,17 @@ class SurveyPopulation(Population):
             # Caculate Signal to Noise Ratio
             frbs.snr[mask] = survey.calc_snr(s_peak, w_arr, T_sys)
 
-            # TODO: Adapt to work with masks
-            # # Add scintillation
-            # if self.scin:
-            #     # Not sure whether this can cope with 2D arrays
-            #     frbs.snr = survey.calc_scint(frbs)
+            # Add scintillation
+            if self.scin:
+                # Not been fully tested with repeaters
+                # Might break due to differing dimensionality of dist and snr
+                t_scat = frbs.t_scat[tpm_1d]
+                dist_co = frbs.dist_co[tpm_1d]
+                gl = frbs.gl[tpm_1d]
+                gb = frbs.gb[tpm_1d]
+                snr = frbs.snr[mask]
+                new_snr = survey.calc_scint(t_scat, dist_co, gl, gb, snr)
+                frbs.snr[mask] = np.repeat(new_snr, n_bursts[n_bursts > 0])
 
             # Keep all frbs
             snr_mask = np.ones_like(frbs.snr, dtype=bool)
@@ -253,25 +278,6 @@ class SurveyPopulation(Population):
             if survey.strategy == 'regular':
                 p_i += 1  # Head to next pointing
 
-            # self.rate.faint = np.size(snr_mask) - np.count_nonzero(snr_mask)
-
-            # If multiple bursts seen, stick to pointing
-            # If one, the point towards that burst
-            # If none, then continue to the next pointing
-
-            # for t in times:
-            #   if followup_time/t > followup_frac:
-            #     continue to next pointing
-            #   else:
-            #     if multiple frbs detected in pointing over all time:
-            #       stick to pointing coords
-            #       followup_time += delta_t
-            #     if only one in pointing over all time:
-            #       change pointing coords to coords of burst
-            #       followup_time += delta_t
-            #     else:
-
-            # Think about how a followup fraction could work
         # TODO: Check rates for sources vs bursts for repeater population
         frbs.clean_up()
 

@@ -7,6 +7,6 @@ cosmic_pop = CosmicPopulation(1e4, name='simple', n_days=0.23,
                              dm_mw_model='zero', dm_host_mu=0, dm_host_sigma=0,
                              dm_igm_sigma=None)
 survey = Survey('perfect')
-print(survey.gain_pattern)
+print(survey.beam_pattern)
 surv_pop = SurveyPopulation(cosmic_pop, survey)
 plot(surv_pop, frbcat=False)

@@ -61,7 +61,3 @@ if TEST_TRANSIT:
 def gen_times(n):
     """Generate n times (ms) for full day."""
     return np.array([0, 0.25, 0.75]).astype(np.float32)
-
-
-def fraction_visible():
-    return 0.5

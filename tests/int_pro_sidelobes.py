@@ -19,7 +19,7 @@ for sidelobe in reversed(SIDELOBES):
 
     s = Survey(SURVEY, beam_pattern='airy', n_sidelobes=sidelobe)
 
-    int_pro, offset = s.intensity_profile(shape=n)
+    int_pro, offset = s.calc_int_pro(shape=n)
 
     # Sort the values
     sorted_int = np.argsort(offset)

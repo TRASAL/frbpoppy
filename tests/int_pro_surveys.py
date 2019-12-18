@@ -8,7 +8,8 @@ from frbpoppy.survey import Survey
 from convenience import plot_aa_style, rel_path
 
 OBSERVATORIES = [('parkes', 'htru'),
-                 ('apertif', 'apertif')]
+                 ('apertif', 'apertif'),
+                 ('chime', 'chime')]
 
 n = int(1e6)
 
@@ -20,7 +21,7 @@ for obs in OBSERVATORIES:
     pattern = obs[0]
 
     s = Survey(survey, beam_pattern=pattern)
-    int_pro, offset = s.intensity_profile(shape=n)
+    int_pro, offset = s.calc_int_pro(shape=n)
 
     # Sort the values
     sorted_int = np.argsort(offset)
@@ -45,6 +46,7 @@ for obs in OBSERVATORIES:
 
 plt.xlabel(r'Offset ($^{\circ}$)')
 plt.ylabel('Intensity Profile')
+plt.xlim(0, 5)
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()

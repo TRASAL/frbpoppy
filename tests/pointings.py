@@ -1,10 +1,10 @@
-"""Test generating pointings."""
+"""Plot pointings to test pointing generation."""
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d
 import numpy as np
 from frbpoppy import Survey
 
-N_POINTS = 10
+N_POINTS = 100
 
 
 def plot_coordinates(ra, dec):

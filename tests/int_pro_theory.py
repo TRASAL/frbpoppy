@@ -24,7 +24,7 @@ for pattern in PATTERNS:
             z = 10
 
     s = Survey(SURVEY, beam_pattern=p, n_sidelobes=n_sidelobes)
-    int_pro, offset = s.intensity_profile(shape=n)
+    int_pro, offset = s.calc_int_pro(shape=n)
 
     # Sort the values
     sorted_int = np.argsort(offset)
