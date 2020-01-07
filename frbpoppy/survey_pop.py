@@ -2,6 +2,7 @@
 from copy import deepcopy
 import math
 import numpy as np
+from tqdm import tqdm
 
 import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
@@ -170,8 +171,12 @@ class SurveyPopulation(Population):
         frbs.fluence = np.full_like(sim_shape, np.nan)
         frbs.snr = np.full_like(sim_shape, np.nan)
 
+        # Keep all frbs
+        snr_mask = np.ones_like(frbs.snr, dtype=bool)
+
         # Have to loop over the observing times
-        for i, t_min in enumerate(times[:-1]):
+        pprint('Starting to iterate over pointings')
+        for i, t_min in tqdm(enumerate(times[:-1]), total=len(times)-1):
             ra_p = survey.pointings[0][p_i % max_n_pointings]  # Loops around
             dec_p = survey.pointings[1][p_i % max_n_pointings]
             lst = lsts[i]
@@ -214,10 +219,7 @@ class SurveyPopulation(Population):
                 w_eff_mask = tpm_2d
 
             # Apply intensities to those bursts' s_peak
-            try:
-                frbs.s_peak[mask] *= np.repeat(int_pro, n_bursts[n_bursts > 0])
-            except ValueError:
-                import IPython; IPython.embed()
+            frbs.s_peak[mask] *= np.repeat(int_pro, n_bursts[n_bursts > 0])
             frbs.s_peak[not_mask] = np.nan
 
             # Ensure dimensionality is correct
@@ -246,7 +248,7 @@ class SurveyPopulation(Population):
 
             # And system temperatures
             if frbs.T_sys.ndim == 1:
-                T_sys = frbs.T_sys[tpm_1d]
+                T_sys = np.repeat(frbs.T_sys[tpm_1d], n_bursts[n_bursts > 0])
             elif frbs.T_sys.ndim == 0:
                 T_sys = frbs.T_sys
 
@@ -265,20 +267,24 @@ class SurveyPopulation(Population):
                 new_snr = survey.calc_scint(t_scat, dist_co, gl, gb, snr)
                 frbs.snr[mask] = np.repeat(new_snr, n_bursts[n_bursts > 0])
 
-            # Keep all frbs
-            snr_mask = np.ones_like(frbs.snr, dtype=bool)
             # Don't keep those in time, but not in position
             snr_mask[not_mask] = False
             # Don't keep those in time, in position, but below S/N threshold
             snr_mask[mask] = (frbs.snr[mask] >= survey.snr_limit)
-            # You should now have all frbs outside time
-            # And frbs inside time, in position and above S/N
-            frbs.apply(snr_mask)
 
             if survey.strategy == 'regular':
                 p_i += 1  # Head to next pointing
 
-        # TODO: Check rates for sources vs bursts for repeater population
+            # TODO: A 'follow-up' strategy could be implemented here
+            # depending on the number of FRBs observed
+
+        # TODO: Implement rates for sources vs bursts for repeater population
+
+        # You should now have all frbs outside time
+        # And frbs inside time, in position and above S/N
+        pprint('Finished iterating over pointings')
+        frbs.apply(snr_mask)
+
         frbs.clean_up()
 
     def calc_rates(self, survey):

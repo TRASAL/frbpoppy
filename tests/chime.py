@@ -9,6 +9,8 @@ from frbpoppy import split_pop
 
 from convenience import hist, plot_aa_style, rel_path
 
+N_DAYS = 100
+
 
 def get_frbcat_data():
     """Get all chime data from frbcat.
@@ -48,7 +50,7 @@ def get_frbcat_data():
 def get_frbpoppy_data():
     """Get frbpoppy data."""
     r = RepeaterPopulation(1e5,
-                           n_days=1,
+                           n_days=N_DAYS,
                            dm_host_model='gaussian',
                            dm_host_mu=100,
                            dm_host_sigma=0,
@@ -76,9 +78,8 @@ def get_frbpoppy_data():
                            w_rep_sigma=0.05,
                            generate=True)
 
-    s = Survey('chime', strategy='follow-up', n_days=1)
-    s.beam_pattern = 'perfect'
-    s.snr_limit = 1.
+    s = Survey('chime', strategy='regular', n_days=N_DAYS)
+    s.beam_pattern = 'chime'
 
     surv_pop = SurveyPopulation(r, s)
 

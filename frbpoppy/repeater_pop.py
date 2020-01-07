@@ -141,11 +141,11 @@ class RepeaterPopulation(CosmicPopulation):
         time[(time > self.n_days)] = np.nan
         self.frbs.time = time
 
-    def gen_rep_times(self):
+    def gen_rep_times(self, r=5.7, k=0.34):
         """Generate repetition times."""
         if self.times_rep_model == 'clustered':
-            self.gen_clustered_times()
-        elif self.times_rep_model == 'poisson':
+            self.gen_clustered_times(r=r, k=k)
+        elif self.times_rep_model.startswith('poisson'):
             self.gen_poisson_times()
         else:
             self.gen_regular_times()
