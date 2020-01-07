@@ -8,9 +8,9 @@ from frbpoppy import RepeaterPopulation, Survey, SurveyPopulation, pprint
 
 from convenience import plot_aa_style, rel_path
 
-MAX_DAYS = 10
+MAX_DAYS = 365*2
 N_CHIME = {'rep': 10, 'one-offs': 200}
-SAVE = False
+SAVE = True
 USE_SAVE = False
 
 if USE_SAVE:
@@ -28,6 +28,7 @@ else:
     r.n_days = MAX_DAYS
 
     # Generate population
+    pprint('Generating population')
     r.gen_dist()
     r.gen_direction()
     r.gen_gal_coords()
@@ -36,6 +37,7 @@ else:
     r.gen_rep_lum()
     r.gen_rep_w()
     r.gen_rep_si()
+    pprint('Finished generating population')
 
     # Set DM distributions
     r.dm_host_model = 'gaussian'

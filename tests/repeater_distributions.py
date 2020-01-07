@@ -10,8 +10,9 @@ from convenience import hist, plot_aa_style, rel_path
 DAYS = 1
 INTERACTIVE_PLOT = False
 PLOTTING_LIMIT_N_FRBS = 0
+SNR = False
 
-r = RepeaterPopulation.simple(int(1e5))
+r = RepeaterPopulation.simple(int(1e7))
 r.lum_min = 1e40
 r.lum_max = 1e45
 r.lum_pow = 0
@@ -60,12 +61,16 @@ pop_one.name += ' (1 burst)'
 if INTERACTIVE_PLOT:
     plot(r, pop_rep, pop_one, frbcat=False)
 
-plot_aa_style(cols=2)
+# Plot dm distribution
+if SNR:
+    plot_aa_style(cols=2)
+    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+else:
+    plot_aa_style(cols=1)
+    f, ax1 = plt.subplots(1, 1)
+
 prop_cycle = plt.rcParams['axes.prop_cycle']
 colors = prop_cycle.by_key()['color']
-
-# Plot dm distribution
-f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 
 pops = (r, pop_rep, pop_one)
 
@@ -93,20 +98,25 @@ for i, pop in enumerate(pops):
     if snr is None:
         continue
 
+    if not SNR:
+        continue
+
     ax2.step(*hist(snr, bin_type='log'), where='mid', linestyle=linestyle,
              color=colors[i])
 
-ax1.set_xlabel(r'DM ($\textrm{pc}\ \textrm{cm}^{-3}$)')
+ax1.set_xlabel(r'Arb.~dist.~unit')
+# DM ($\textrm{pc}\ \textrm{cm}^{-3}$)
 ax1.set_ylabel('Fraction')
-# ax1.set_ylim([0, 1.1])
 ax1.set_xlim([0, 10])
 
-ax2.set_xlabel(r'SNR')
-plt.xscale('log')
-plt.yscale('log')
-
-plt.figlegend(loc='upper center', ncol=len(pops), framealpha=1)
+if SNR:
+    ax2.set_xlabel(r'SNR')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.figlegend(loc='upper center', ncol=len(pops), framealpha=1)
+else:
+    plt.legend()
 
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/dist_repeaters.pdf'))
+plt.savefig(rel_path(f'plots/rep_dist.pdf'))
 plt.clf()
