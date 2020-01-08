@@ -8,7 +8,7 @@ from frbpoppy import RepeaterPopulation, Survey, LargePopulation, pprint
 
 from convenience import plot_aa_style, rel_path
 
-MAX_DAYS = 2*365
+MAX_DAYS = 2#*365
 N_CHIME = {'rep': 10, 'one-offs': 200}
 SAVE = True
 USE_SAVE = False
@@ -18,7 +18,7 @@ if USE_SAVE:
     days = df.days.values
     fracs = df.fracs.values
 else:
-    r = RepeaterPopulation.simple(1e7)
+    r = RepeaterPopulation.simple(1e6)
     r.lum_min = 1e40
     r.lum_max = 1e45
     r.lum_pow = 0

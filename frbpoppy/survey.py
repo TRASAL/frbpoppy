@@ -185,7 +185,7 @@ class Survey:
         # Pointings are randomly placed between the year 2000 and 2100
         date_min = go.random_date(datetime(2000, 1, 1), datetime(2100, 1, 1))
         date_max = date_min + timedelta(seconds=int(t_obs*n_gen))
-        time_delta = np.timedelta64(t_obs, 's')
+        time_delta = np.timedelta64(int(t_obs), 's')
         times = np.arange(date_min, date_max, time_delta, dtype='datetime64')
 
         ra = go.datetime_to_gmst(times) + lon
