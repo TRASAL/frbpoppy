@@ -1,14 +1,14 @@
 """Class to generate a survey population of FRBs."""
 from copy import deepcopy
+from tqdm import tqdm
 import math
 import numpy as np
-from tqdm import tqdm
 
-import frbpoppy.galacticops as go
 from frbpoppy.log import pprint
 from frbpoppy.population import Population
-from frbpoppy.repeater_pop import RepeaterPopulation
 from frbpoppy.rates import Rates, scale
+from frbpoppy.repeater_pop import RepeaterPopulation
+import frbpoppy.galacticops as go
 
 
 class SurveyPopulation(Population):
@@ -281,7 +281,6 @@ class SurveyPopulation(Population):
 
         # You should now have all frbs outside time
         # And frbs inside time, in position and above S/N
-        pprint('Finished iterating over pointings')
         frbs.apply(snr_mask)
 
         frbs.clean_up()
