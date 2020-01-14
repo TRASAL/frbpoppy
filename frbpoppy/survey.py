@@ -58,6 +58,8 @@ class Survey:
         if self.mount_type is 'transit':
             self.strategy = 'regular'
 
+        self.set_int_pro_props()
+
     def __str__(self):
         """Define how to print a survey object to a console."""
         s = 'Survey properties:'
@@ -426,28 +428,14 @@ class Survey:
 
         return intensity
 
-    def calc_int_pro(self, shape=None, ra=None, dec=None, ra_p=None,
-                     dec_p=None, lst=None, random_loc=True):
-        """Calculate intensity profile.
+    def set_int_pro_props(self, random_loc=True):
+        """Set intensity profile.
 
-        Wrapper around calc_random_int_pro and calc_fixed_int_pro. Check these
-        functions to see which kwargs are needed.
+        Set properties for int pro
 
         Args:
-            shape (tuple): Shape of random locations in which to generate an
-                intensity (for random location)
-            ra (array): Right ascension of coordinates to calculate [deg] (for
-            fixed location)
-            dec (array): Declination of coordinates to calculate [deg] (for
-            fixed location).
-            ra_p (float): Right ascension of pointing [deg] (fixed_loc)
-            dec_p (float): Declination of pointing [deg] (fixed_loc)
-            lst (float): Local sidereal time [deg] (fixed_loc).
             random_loc (bool): Whether to calculate the location of each burst
                 or place them randomly in the beam
-
-        Returns:
-            int_pro, offset: Intensity profile at locations and offset.
 
         """
         # Set up beam properties
@@ -475,14 +463,9 @@ class Survey:
                 self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
 
         if random_loc or self.beam_pattern.startswith('perfect'):
-            if shape is None:
-                shape = len(ra)
-            int_pro, offset = self.calc_random_int_pro(shape)
+            self.int_pro_func = self.calc_random_int_pro
         else:
-            int_pro = self.calc_fixed_int_pro(ra, dec, ra_p, dec_p, lst)
-            offset = None  # TODO
-
-        return int_pro, offset
+            self.int_pro_func = self.calc_fixed_int_pro
 
     def dm_smear(self, dm):
         """

@@ -1,4 +1,5 @@
 """Class to generate a survey population of FRBs."""
+import bisect
 from copy import deepcopy
 from tqdm import tqdm
 import math
@@ -158,9 +159,8 @@ class SurveyPopulation(Population):
         frbs.apply(time_mask)
 
         # Prepare for iterating over time
-        p_i = 0  # Pointing index
-        r = survey.calc_beam_radius()  # Beam pattern radius
-        max_n_pointings = len(times[:-1])
+        self.r = survey.calc_beam_radius()  # Beam pattern radius
+        max_n_pointings = len(times) - 1
 
         # Initialize some necessary arrays
         if frbs.w_eff.ndim == 2 or frbs.lum_bol.ndim == 2:
@@ -172,118 +172,130 @@ class SurveyPopulation(Population):
         frbs.snr = np.full_like(sim_shape, np.nan)
 
         # Keep all frbs
-        snr_mask = np.ones_like(frbs.snr, dtype=bool)
+        self.snr_mask = np.ones_like(frbs.snr, dtype=bool)
 
         # Have to loop over the observing times
-        for i, t_min in enumerate(tqdm(times[:-1], desc='Pointings')):
-            ra_p = survey.pointings[0][p_i % max_n_pointings]  # Loops around
-            dec_p = survey.pointings[1][p_i % max_n_pointings]
-            lst = lsts[i]
-            t_max = times[i+1]
+        ra_p = survey.pointings[0]
+        dec_p = survey.pointings[1]
+        lst = lsts[:-1]
 
-            # Which frbs are within the pointing time?
-            time_mask = ((frbs.time >= t_min) & (frbs.time <= t_max))
-            tm = np.any(time_mask, axis=1)  # Time mask (1D)
-
-            # Of those, which are within the beam size?
-            offset = go.separation(frbs.ra[tm], frbs.dec[tm], ra_p, dec_p)
-            pm = (offset <= r)  # Position mask (1D)
-
-            # Relevant FRBS
-            tpm_1d = np.copy(tm)  # Time & position mask
-            tnpm_1d = np.copy(tpm_1d)  # Time & not position mask
-            tnpm_1d[tpm_1d] = ~pm
-            tpm_1d[tpm_1d] = pm  # 1D
-            tpm_2d = time_mask & tpm_1d[:, None]  # 2D
-            tnpm_2d = time_mask & tnpm_1d[:, None]
-            n_bursts = np.count_nonzero(tpm_2d, axis=1)  # Number of bursts
-
-            # What's the intensity of them in the beam?
-            int_pro, _ = survey.calc_int_pro(ra=frbs.ra[tpm_1d],
-                                             dec=frbs.dec[tpm_1d],
-                                             ra_p=ra_p,
-                                             dec_p=dec_p,
-                                             lst=lst,
-                                             random_loc=False)
-
-            # Ensure relevant masks
-            mask = tpm_1d
-            not_mask = tnpm_1d
-            if frbs.s_peak.ndim == 2:
-                mask = tpm_2d
-                not_mask = tnpm_2d
-
-            w_eff_mask = tpm_1d
-            if frbs.w_eff.ndim == 2:
-                w_eff_mask = tpm_2d
-
-            # Apply intensities to those bursts' s_peak
-            frbs.s_peak[mask] *= np.repeat(int_pro, n_bursts[n_bursts > 0])
-            frbs.s_peak[not_mask] = np.nan
-
-            # Ensure dimensionality is correct
-            s_peak = frbs.s_peak[mask]
-            w_eff = frbs.w_eff[w_eff_mask]
-            if frbs.w_eff.ndim < frbs.s_peak.ndim:
-                w_eff = np.repeat(frbs.w_eff, n_bursts)
-            elif frbs.w_eff.ndim > frbs.s_peak.ndim:
-                s_peak = np.repeat(frbs.s_peak, n_bursts)
-
-            # Calculate fluence [Jy*ms]
-            frbs.fluence[mask] = survey.calc_fluence(s_peak, w_eff)
-
-            # Construct masks with correct dimension
-            if frbs.w_arr.ndim == 2:
-                w_arr = frbs.w_arr[tpm_2d]
-            elif frbs.w_arr.ndim == 1:
-                w_arr = frbs.w_arr[tpm_1d]
-
-            # Ensure entries are repeated for the number of bursts
-            s_peak = frbs.s_peak[mask]
-            if frbs.w_arr.ndim < frbs.s_peak.ndim:
-                w_arr = np.repeat(frbs.w_arr, n_bursts)
-            elif frbs.w_arr.ndim > frbs.s_peak.ndim:
-                s_peak = np.repeat(frbs.s_peak, n_bursts)
-
-            # And system temperatures
-            if frbs.T_sys.ndim == 1:
-                T_sys = np.repeat(frbs.T_sys[tpm_1d], n_bursts[n_bursts > 0])
-            elif frbs.T_sys.ndim == 0:
-                T_sys = frbs.T_sys
-
-            # Caculate Signal to Noise Ratio
-            frbs.snr[mask] = survey.calc_snr(s_peak, w_arr, T_sys)
-
-            # Add scintillation
-            if self.scin:
-                # Not been fully tested with repeaters
-                # Might break due to differing dimensionality of dist and snr
-                t_scat = frbs.t_scat[tpm_1d]
-                dist_co = frbs.dist_co[tpm_1d]
-                gl = frbs.gl[tpm_1d]
-                gb = frbs.gb[tpm_1d]
-                snr = frbs.snr[mask]
-                new_snr = survey.calc_scint(t_scat, dist_co, gl, gb, snr)
-                frbs.snr[mask] = np.repeat(new_snr, n_bursts[n_bursts > 0])
-
-            # Don't keep those in time, but not in position
-            snr_mask[not_mask] = False
-            # Don't keep those in time, in position, but below S/N threshold
-            snr_mask[mask] = (frbs.snr[mask] >= survey.snr_limit)
-
-            if survey.strategy == 'regular':
-                p_i += 1  # Head to next pointing
-
-            # TODO: A 'follow-up' strategy could be implemented here
-            # depending on the number of FRBs observed
+        # Parameters needed for for-loop
+        keep = ([], [])
+        self.ravel_times = frbs.time.ravel()
+        for i in tqdm(np.arange(max_n_pointings), desc='Pointings'):
+            xy = self._iter_pointings(ra_p[i], dec_p[i], lst[i], times[i],
+                                      times[i+1])
+            keep[0].extend(xy[0])
+            keep[1].extend(xy[1])
 
         # TODO: Implement rates for sources vs bursts for repeater population
 
-        # You should now have all frbs outside time
-        # And frbs inside time, in position and above S/N
-        frbs.apply(snr_mask)
+        # Create SNR mask
+        snr_mask = np.zeros_like(frbs.snr, dtype=bool)
+        snr_mask[keep] = True
+        frbs.apply(self.snr_mask)
 
         frbs.clean_up()
+
+    def _iter_pointings(self, ra_p, dec_p, lst, t_min, t_max):
+        frbs = self.frbs
+        survey = self.survey
+        r = self.r
+
+        # Which frbs are within the pointing time?
+        i1 = np.searchsorted(self.ravel_times, t_min, 'left')
+        i2 = np.searchsorted(self.ravel_times, t_max, 'right')
+        t_inds = np.unravel_index(np.arange(i1, i2), frbs.time.shape)
+
+        # Of those, which are within the beam size?
+        offset = go.separation(frbs.ra[t_inds[0]], frbs.dec[t_inds[0]],
+                               ra_p, dec_p)
+        # Position indices (1D)
+        p_ind = np.where((offset <= r))
+
+        # Relevant FRBS
+        # Time & position
+        tp_m = np.isin(t_inds[0], p_ind)
+        tp_inds = (t_inds[0][tp_m], t_inds[1][tp_m])
+        # Time & not position
+        tnp_m = np.isin(t_inds[0], p_ind, invert=True)
+        tnp_inds = (t_inds[0][tnp_m], t_inds[1][tnp_m])
+
+        # Number of bursts
+        tp_unique, n_bursts = np.unique(tp_inds[0], return_counts=True)
+
+        # What's the intensity of them in the beam?
+        int_pro = survey.calc_fixed_int_pro(ra=frbs.ra[tp_unique],
+                                            dec=frbs.dec[tp_unique],
+                                            ra_p=ra_p,
+                                            dec_p=dec_p,
+                                            lst=lst)
+
+        # Ensure relevant masks
+        inds = tp_unique
+        not_inds = np.unique(tnp_inds[0])
+        if frbs.s_peak.ndim == 2:
+            inds = tp_inds
+            not_inds = tnp_inds
+
+        w_eff_inds = tp_unique
+        if frbs.w_eff.ndim == 2:
+            w_eff_inds = tp_inds
+
+        # Apply intensities to those bursts' s_peak
+        frbs.s_peak[inds] *= np.repeat(int_pro, n_bursts)
+        frbs.s_peak[not_inds] = np.nan
+
+        # Ensure dimensionality is correct
+        s_peak = frbs.s_peak[inds]
+        w_eff = frbs.w_eff[w_eff_inds]
+        if frbs.w_eff.ndim < frbs.s_peak.ndim:
+            w_eff = np.repeat(w_eff, n_bursts)
+        elif frbs.w_eff.ndim > frbs.s_peak.ndim:
+            s_peak = np.repeat(s_peak, n_bursts)
+
+        # Calculate fluence [Jy*ms]
+        frbs.fluence[inds] = survey.calc_fluence(s_peak, w_eff)
+
+        # Construct masks with correct dimension
+        if frbs.w_arr.ndim == 2:
+            w_arr = frbs.w_arr[tp_inds]
+        elif frbs.w_arr.ndim == 1:
+            w_arr = frbs.w_arr[tp_unique]
+
+        # Ensure entries are repeated for the number of bursts
+        s_peak = frbs.s_peak[inds]
+        if frbs.w_arr.ndim < frbs.s_peak.ndim:
+            w_arr = np.repeat(w_arr, n_bursts)
+        elif frbs.w_arr.ndim > frbs.s_peak.ndim:
+            s_peak = np.repeat(s_peak, n_bursts)
+
+        # And system temperatures
+        if frbs.T_sys.ndim == 1:
+            T_sys = np.repeat(frbs.T_sys[tp_unique], n_bursts)
+        elif frbs.T_sys.ndim == 0:
+            T_sys = frbs.T_sys
+
+        # Caculate Signal to Noise Ratio
+        frbs.snr[inds] = survey.calc_snr(s_peak, w_arr, T_sys)
+
+        # Add scintillation
+        if self.scin:
+            # Not been fully tested with repeaters
+            # Might break due to differing dimensionality of dist and snr
+            t_scat = frbs.t_scat[tp_unique]
+            dist_co = frbs.dist_co[tp_unique]
+            gl = frbs.gl[tp_unique]
+            gb = frbs.gb[tp_unique]
+            snr = frbs.snr[inds]
+            new_snr = survey.calc_scint(t_scat, dist_co, gl, gb, snr)
+            frbs.snr[inds] = np.repeat(new_snr, n_bursts)
+
+        # Only keep those in time, in position and above the snr limit
+        snr_m = (frbs.snr[inds] > survey.snr_limit)
+        snr_inds = (tp_inds[0][snr_m], tp_inds[1][snr_m])
+
+        return snr_inds[0], snr_inds[1]
 
     def calc_rates(self, survey):
         """Calculate the relative detection rates."""
