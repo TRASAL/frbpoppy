@@ -1,5 +1,4 @@
 """Class to generate a survey population of FRBs."""
-import bisect
 from copy import deepcopy
 from tqdm import tqdm
 import math
@@ -99,7 +98,7 @@ class SurveyPopulation(Population):
         survey = self.survey
 
         # Account for beam offset
-        int_pro, offset = survey.calc_int_pro(shape=frbs.s_peak.shape)
+        int_pro, offset = survey.calc_random_int_pro(shape=frbs.s_peak.shape)
         frbs.s_peak *= int_pro
         frbs.offset = offset  # [deg]
 
@@ -172,7 +171,7 @@ class SurveyPopulation(Population):
         frbs.snr = np.full_like(sim_shape, np.nan)
 
         # Keep all frbs
-        self.snr_mask = np.ones_like(frbs.snr, dtype=bool)
+        # self.snr_mask = np.ones_like(frbs.snr, dtype=bool)
 
         # Have to loop over the observing times
         ra_p = survey.pointings[0]
@@ -193,7 +192,7 @@ class SurveyPopulation(Population):
         # Create SNR mask
         snr_mask = np.zeros_like(frbs.snr, dtype=bool)
         snr_mask[keep] = True
-        frbs.apply(self.snr_mask)
+        frbs.apply(snr_mask)
 
         frbs.clean_up()
 

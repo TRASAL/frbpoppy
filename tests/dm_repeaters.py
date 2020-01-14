@@ -12,7 +12,7 @@ INTERACTIVE_PLOT = False
 PLOTTING_LIMIT_N_FRBS = 0
 SNR = False
 
-r = RepeaterPopulation.simple(int(1e7))
+r = RepeaterPopulation.simple(int(1e6))
 r.lum_min = 1e40
 r.lum_max = 1e45
 r.lum_pow = 0
@@ -89,7 +89,9 @@ for i, pop in enumerate(pops):
 
     dm = pop.frbs.dm
     pprint(f'Number of bursts in {label}: {n_bursts(pop)}')
-    ax1.step(*hist(dm), where='mid', linestyle=linestyle, label=label,
+    x, y = hist(dm)
+    # x *= 190
+    ax1.step(x, y, where='mid', linestyle=linestyle, label=label,
              color=colors[i])
 
     # Plot fluence distributions
@@ -104,10 +106,9 @@ for i, pop in enumerate(pops):
     ax2.step(*hist(snr, bin_type='log'), where='mid', linestyle=linestyle,
              color=colors[i])
 
-ax1.set_xlabel(r'Arb.~dist.~unit')
-# DM ($\textrm{pc}\ \textrm{cm}^{-3}$)
+ax1.set_xlabel(r'DM ($\textrm{pc}\ \textrm{cm}^{-3}$)')
 ax1.set_ylabel('Fraction')
-ax1.set_xlim([0, 10])
+# ax1.set_xlim([0, 10])
 
 if SNR:
     ax2.set_xlabel(r'SNR')

@@ -384,6 +384,10 @@ class Survey:
             type: Description of returned object.
 
         """
+        # Weed out perfect beam
+        if self.beam_pattern.startswith('perfect'):
+            return np.ones(len(ra))
+
         # Convert input decimal degrees to radians
         ra = np.deg2rad(ra)
         dec = np.deg2rad(dec)
