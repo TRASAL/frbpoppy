@@ -12,7 +12,7 @@ INTERACTIVE_PLOT = False
 PLOTTING_LIMIT_N_FRBS = 0
 SNR = False
 
-r = RepeaterPopulation.simple(int(1e6))
+r = RepeaterPopulation.simple(int(1e7))
 r.lum_min = 1e40
 r.lum_max = 1e45
 r.lum_pow = 0
@@ -87,10 +87,14 @@ for i, pop in enumerate(pops):
         label = 'cosmic'
         linestyle = 'dashdot'
 
-    dm = pop.frbs.dm
     pprint(f'Number of bursts in {label}: {n_bursts(pop)}')
+
+    # Do stuff with data
+    dm = pop.frbs.dm
     x, y = hist(dm)
-    # x *= 190
+    x *= 190  # Normalise x-axis
+
+    # Plot DM distributions
     ax1.step(x, y, where='mid', linestyle=linestyle, label=label,
              color=colors[i])
 
