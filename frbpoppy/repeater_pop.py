@@ -2,211 +2,186 @@
 import numpy as np
 from frbpoppy.cosmic_pop import CosmicPopulation
 from frbpoppy.log import pprint
-from scipy.special import gamma
+import frbpoppy.time_dists as td
+import frbpoppy.w_dists as wd
+import frbpoppy.si_dists as sid
+import frbpoppy.lum_dists as ld
 
 
 class RepeaterPopulation(CosmicPopulation):
     """Allow repeating FRBs to be modeled."""
 
     def __init__(self,
-                 n_gen=1,
+                 n_srcs=1,
                  n_days=1,
+                 repeaters=False,
                  generate=False,
-                 lum_rep_model='independent',
-                 lum_rep_sigma=1e3,
-                 si_rep_model='independent',
-                 si_rep_sigma=0.1,
-                 times_rep_model='even',
-                 w_rep_model='independent',
-                 w_rep_sigma=0.05,
                  **kw):
         """Allow repeating FRB sources to be modeled.
 
         Args:
-            lum_rep_model (str): Depenancy of bursts on prior bursts. Choice
-                of 'same', 'independent', 'gaussian' or 'lognormal'.
-            times_rep_model (str): 'even'-ly spaced intervals, or 'clustered'
             **kw (all): All of the arguments available to CosmicPopulation.
         """
         kw['generate'] = False
-        super(RepeaterPopulation, self).__init__(n_gen, **kw)
-        self.name = 'repeater'
+        super(RepeaterPopulation, self).__init__(n_srcs, **kw)
+        self.repeaters = repeaters
         self.n_days = n_days
-        self.n_gen = int(n_gen)
+        self.n_srcs = int(n_srcs)
+        self.shape = (self.n_srcs,)
 
-        # Time parameters
-        self.times_rep_model = times_rep_model
-        self.shape = n_gen
+        if self.repeaters:
+            self.name = 'repeater'
+            self.set_time()
 
-        # Luminosity parameters
-        self.lum_rep_model = lum_rep_model
-        self.lum_rep_sigma = lum_rep_sigma
-
-        # Pulse width parameters
-        self.w_rep_model = w_rep_model
-        self.w_rep_sigma = w_rep_sigma
-
-        # Spectral index parameters
-        self.si_rep_model = si_rep_model
-        self.si_rep_sigma = si_rep_sigma
+        self.set_lum()
+        self.set_si()
+        self.set_w()
 
         if generate:
             self.generate()
 
-    def gen_iterative_times(self, dist):
-        """Generate burst times in an iterative manner using a distribution."""
-        pprint('Adding burst times')
-        # Determine the maximum possible number of bursts per source to include
-        log_size = 1
-        m = int(10**log_size)
-        dims = (self.n_gen, m)
-        time = dist(dims)
-        time = np.cumsum(time, axis=1)  # This is in fraction of days
+    def set_time(self, f='regular', **kwargs):
+        """Set function from which to generate time stamps.
 
-        # The first burst time is actually the time since the previous one
-        # You want to be at in a random time in between those
-        time_offset = np.random.uniform(0, time[:, 0])
-        time -= time_offset[:, np.newaxis]
+        Usage is in the form of `pop.set_time('clustered', r=2, k=5)`, and then
+        then parameters can be generated using pop.gen_time()
 
-        if isinstance(self.frbs.z, np.ndarray):
-            time = time*(1+self.frbs.z)[:, np.newaxis]
-        else:
-            time = time*(1+self.frbs.z)
-
-        # Mask any frbs over the maximum time (Earth perspective)
-        time[(time > self.n_days)] = np.nan
-
-        # Iteratively add extra bursts until over limit
-        mask = ~np.isnan(time[:, -1])  # Where more bursts are needed
-        sum_mask = np.count_nonzero(mask)
-        while sum_mask != 0:  # Add additional columns
-            m = int(10**log_size)
-            ms = np.full((self.n_gen, m), np.nan)
-            new = dist((sum_mask, m))
-            new = np.cumsum(new, axis=1)
-
-            # Add redshift correction
-            z = self.frbs.z
-            if isinstance(self.frbs.z, np.ndarray):
-                z = self.frbs.z[mask][:, np.newaxis]
-            new *= (1+z)
-
-            new += time[:, -1][mask][:, np.newaxis]  # Ensure cumulative
-            new[(new > self.n_days)] = np.nan  # Apply filter
-            ms[mask] = new  # Set up additional columns
-            time = np.hstack((time, ms))  # Add to original array
-
-            # Set up for next loop
-            if sum_mask == self.n_gen:
-                log_size += 0.5
-            mask = ~np.isnan(time[:, -1])
-            sum_mask = np.count_nonzero(mask)
-
-        # Remove any columns filled with NaNs
-        time = time[:, ~np.all(np.isnan(time), axis=0)]
-
-        self.frbs.time = time
-
-    def gen_clustered_times(self, r=5.7, k=0.34):
-        """Generate burst times following Oppermann & Pen (2017)."""
-        # Set distribution from which to draw
-        def weibull(dims, r=r, k=k):
-            lam = 1/(r*gamma(1 + 1/k))
-            return lam*np.random.weibull(k, dims).astype(np.float32)
-
-        self.gen_iterative_times(weibull)
-
-    def gen_poisson_times(self, lam=1e-1):
-        """Generate a series of poisson times.
-
+        Options:
+            'regular'
+                Args:
+                    lam: Number of bursts per day
+            'poisson'
+                Args:
+                    lam: Expected number of bursts per day
+            'clustered'
+                Args:
+                    r: Rate parameter
+                    k: Shape parameter
         Args:
-            lam (float): Expected number of events per day.
+            f (str/function): Either string to link to function or function
+                itself to use for generating parameter.
+            **kwargs (dict): Keywords to pass on to corresponding function.
+
         """
-        # Set distribution from which to draw
-        def poisson(dims, lam=lam):
-            return np.random.exponential(1/lam, dims).astype(np.float32)
+        if not isinstance(f, str):
+            # These lambda functions look complex, but aren't.
+            # They merely stop the function from running immediately
+            self.time_func = lambda: f(**kwargs)
+            return
 
-        self.gen_iterative_times(poisson)
-
-    def gen_regular_times(self, n_per_day=1):
-        """Generate a series of regular spaced times."""
-        time_range = np.arange(0, self.n_days)
-        # Single source burst times
-        time = np.repeat(time_range, (n_per_day)).astype(np.float32)
-        # Copy to multiple sources
-        time = np.tile(time, (self.n_gen, 1))
-        # Add random offsets
-        time += np.random.random(time.shape)
-        time = time*(1+self.frbs.z)[:, np.newaxis]
-        time[(time > self.n_days)] = np.nan
-        self.frbs.time = time
-
-    def gen_rep_times(self, r=5.7, k=0.34):
-        """Generate repetition times."""
-        if self.times_rep_model == 'clustered':
-            self.gen_clustered_times(r=r, k=k)
-        elif self.times_rep_model.startswith('poisson'):
-            self.gen_poisson_times()
+        if f == 'regular':
+            self.time_func = lambda: td.regular(n_srcs=self.n_srcs,
+                                                n_days=self.n_days,
+                                                z=self.frbs.z,
+                                                **kwargs)
+        elif f.startswith('poisson'):
+            self.time_func = lambda: td.poisson(n_srcs=self.n_srcs,
+                                                n_days=self.n_days,
+                                                z=self.frbs.z,
+                                                **kwargs)
+        elif f == 'clustered':
+            self.time_func = lambda: td.clustered(n_srcs=self.n_srcs,
+                                                  n_days=self.n_days,
+                                                  z=self.frbs.z,
+                                                  **kwargs)
         else:
-            self.gen_regular_times()
+            raise IOError('set_time input not recognised')
 
+    def gen_time(self):
+        """Generate times."""
+        self.frbs.time = self.time_func()
         # Set size for all other parameters
         self.shape = self.frbs.time.shape
 
-    def gen_rep_w(self):
-        """Add extra pulse width values."""
-        if self.w_rep_model == 'same':
-            self.gen_w(self.n_gen)
+    def set_w(self, f='uniform', per_source='same', **kwargs):
+        """Set pulse widths functions [ms]."""
+        if not isinstance(f, str):
+            self.time_func = lambda: f(**kwargs)
+            return
 
-        elif self.w_rep_model == 'independent':
-            self.gen_w(self.shape)
+        # Each burst from the same source: same or different widths?
+        if per_source == 'same':
+            shape = self.n_srcs
+        elif per_source == 'different':
+            shape = self.shape
+        # Or use a gaussian per source.
+        elif per_source.startswith('gauss'):
+            self.w_func = lambda: wd.gauss_per_source(dist=getattr(wd, f),
+                                                      shape=self.shape,
+                                                      z=self.frbs.z,
+                                                      **kwargs)
+            return
 
-        elif self.w_rep_model == 'gaussian':
-            self.gen_w(self.n_gen)
-            mu = self.frbs.w_int
-            sigma = self.w_rep_sigma
-            shape = (self.shape[-1], self.shape[0])
-            self.frbs.w_int = np.random.normal(mu, sigma, shape).T
-            self.frbs.w_int.astype(np.float32)
-            # Recalculate the pulse width upon arrival to Earth
-            self.frbs.w_arr = self.frbs.w_int*(1+self.frbs.z[:, None])
+        # Distribution from which to draw pulse widths
+        if f == 'uniform':
+            self.w_func = lambda: wd.uniform(shape=shape, z=self.frbs.z,
+                                             **kwargs)
+        elif f == 'lognormal':
+            self.w_func = lambda: wd.lognormal(shape=shape, z=self.frbs.z,
+                                               **kwargs)
+        else:
+            raise IOError('set_w input not recognised')
 
-    def gen_rep_si(self):
-        """Generate spectral indices for repeat bursts."""
-        if self.si_rep_model == 'same':
-            self.gen_si(self.n_gen)
+    def gen_w(self):
+        """Generate pulse widths [ms]."""
+        self.frbs.w_int, self.frbs.w_arr = self.w_func()
 
-        elif self.si_rep_model == 'independent':
-            self.gen_si(self.shape)
+    def set_si(self, f='gauss', per_source='same', **kwargs):
+        """Set spectral index functions [ms]."""
+        if not isinstance(f, str):
+            self.time_func = lambda: f(**kwargs)
+            return
 
-        elif self.si_rep_model == 'gaussian':
-            self.gen_si(self.n_gen)
-            mu = self.frbs.si
-            sigma = self.si_rep_sigma
-            shape = (self.shape[-1], self.shape[0])
-            self.frbs.si = np.random.normal(mu, sigma, shape).T
-            self.frbs.si.astype(np.float64)
+        # Each burst from the same source: same or different siidths?
+        if per_source == 'same':
+            shape = self.n_srcs
+        elif per_source == 'different':
+            shape = self.shape
+        # Or use a gaussian per source
+        elif per_source.startswith('gauss'):
+            dist = getattr(sid, f)
+            self.si_func = lambda: sid.gauss_per_source(dist=dist,
+                                                        shape=self.shape,
+                                                        **kwargs)
+            return
 
-    def gen_rep_lum(self):
-        """Generate luminosities for repeat bursts."""
-        if self.lum_rep_model == 'same':
-            self.gen_lum(self.n_gen)
+        # Distribution from sihich to drasi pulse siidths
+        if f.startswith('gauss'):
+            self.si_func = lambda: sid.gauss(shape=shape, **kwargs)
+        else:
+            raise IOError('set_si input not recognised')
 
-        elif self.lum_rep_model == 'independent':
-            self.gen_lum(self.shape)
+    def gen_si(self):
+        """Generate spectral indices."""
+        self.frbs.si = self.si_func()
 
-        elif self.lum_rep_model in ('gaussian', 'lognormal'):
-            if self.lum_rep_model == 'gaussian':
-                r = np.random.normal
-            else:
-                r = np.random.lognormal
+    def set_lum(self, f='powerlaw', per_source='same', **kwargs):
+        """Set luminosity function [ergs/s]."""
+        if not isinstance(f, str):
+            self.time_func = lambda: f(**kwargs)
+            return
 
-            self.gen_lum(self.n_gen)
-            mu = self.frbs.lum_bol
-            sigma = self.lum_rep_sigma
-            shape = (self.shape[-1], self.shape[0])
-            self.frbs.lum_bol = r(mu, sigma, shape).T
-            self.frbs.lum_bol.astype(np.float64)
+        # Each burst from the same source: same or different luminosities?
+        if per_source == 'same':
+            shape = self.n_srcs
+        elif per_source == 'different':
+            shape = self.shape
+        # Or use a gaussian per source
+        elif per_source.startswith('gauss'):
+            dist = getattr(ld, f)
+            self.lum_func = lambda: ld.gauss_per_source(dist=dist,
+                                                        shape=self.shape,
+                                                        **kwargs)
+            return
+
+        if f == 'powerlaw':
+            self.lum_func = lambda: ld.powerlaw(shape=shape, **kwargs)
+        else:
+            raise IOError('set_lum input not recognised')
+
+    def gen_lum(self):
+        """Generate luminosities [ergs/s]."""
+        self.frbs.lum_bol = self.lum_func()
 
     def generate(self):
         """Generate a Repeater Population."""
@@ -215,15 +190,16 @@ class RepeaterPopulation(CosmicPopulation):
         self.gen_direction()
         self.gen_gal_coords()
         self.gen_dm()
-        self.gen_rep_times()
-        self.gen_rep_lum()
-        self.gen_rep_w()
-        self.gen_rep_si()
+        self.gen_time()
+        self.gen_lum()
+        self.gen_si()
+        self.gen_w()
         pprint(f'Finished generating {self.name} population')
 
     @classmethod
     def simple(cls, n, generate=False):
         """Set up a simple, local population."""
+        # # TODO: UPDATE!
         pop = cls(n,
                   n_days=1,
                   name='simple',
@@ -252,18 +228,20 @@ class RepeaterPopulation(CosmicPopulation):
                   lum_rep_sigma=1e3,
                   si_rep_model='same',
                   si_rep_sigma=0.1,
-                  times_rep_model='even',
                   w_rep_model='same',
                   generate=generate)
+        pop.set_time('regular')
         return pop
 
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    pop = RepeaterPopulation.simple(1e5)
-    pop.frbs.z = 0
-    pop.gen_poisson_times(lam=10)
-    n_bursts = (~np.isnan(pop.frbs.time)).sum(1)
-    plt.hist(n_bursts, bins=max(n_bursts))
-    plt.yscale('log')
-    plt.show()
+    pop = RepeaterPopulation.simple(1e4)
+    pop.generate()
+    import IPython; IPython.embed()
+    # plt.hist(pop.frbs.si)
+    # plt.show()
+    # n_bursts = (~np.isnan(pop.frbs.time)).sum(1)
+    # plt.hist(n_bursts, bins=max(n_bursts))
+    # plt.yscale('log')
+    # plt.show()

@@ -30,13 +30,18 @@ class SurveyPopulation(Population):
         # Stops RuntimeWarnings about nan values
         np.warnings.filterwarnings('ignore')
 
+        # Check whether CosmicPopulation has been generated
+        if cosmic_pop.frbs.ra is None:
+            m = 'You may have forgotten to generate your CosmicPopulation'
+            raise ValueError(m)
+
         # Set up population
         Population.__init__(self)
 
         # Set attributes
         self.name = survey.name
-        self.time = cosmic_pop.time
         self.vol_co_max = cosmic_pop.vol_co_max
+        self.n_days = cosmic_pop.n_days
         self.frbs = deepcopy(cosmic_pop.frbs)
         self.rate = Rates()
         self.scat = scat
@@ -303,13 +308,13 @@ class SurveyPopulation(Population):
         f_area = (survey.beam_size * self.rate.tot())
         inside = self.rate.det+self.rate.late+self.rate.faint
         f_area /= (inside*area_sky)
-        f_time = 86400 / self.time
+        f_time = 1 / self.n_days
 
         # Saving scaling factors
-        self.rate.days = self.time/86400  # seconds -> days
+        self.rate.days = self.n_days
         self.rate.name = self.name
         self.rate.vol = self.rate.tot()
-        self.rate.vol /= self.vol_co_max * (365.25*86400/self.time)
+        self.rate.vol /= self.vol_co_max * (365.25/self.n_days)
 
         # If oneoffs, you'll want to scale by the area and potentially time
         if not self.repeaters:

@@ -550,23 +550,6 @@ def dist_to_z(dist, H_0=67.74):
     return z
 
 
-def ioka_dm_igm(z, slope=1200, sigma=None):
-    """
-    Calculate the contribution of the igm to the dispersion measure.
-
-    Follows Ioka (2003) and Inoue (2004)
-
-    Args:
-        z (float): Redshift of source
-        slope (int, optional): Slope of relationship
-    Returns:
-        dm_igm (float): Dispersion measure of intergalactic medium [pc/cm^3]
-    """
-    if sigma is None:
-        sigma = 0.2*slope*z
-    return np.random.normal(slope*z, sigma).astype(np.float32)
-
-
 def datetime_to_julian(date):
     """Convert a datetime object into julian float.
 

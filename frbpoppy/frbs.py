@@ -17,13 +17,13 @@ class FRBs:
         self.gx = None
         self.gy = None
         self.gz = None
-        self.z = None
+        self.z = 0  # Redshift
 
         # Dispersion measure properties
-        self.dm = None
-        self.dm_host = None
-        self.dm_igm = None
-        self.dm_mw = None
+        self.dm_host = 0  # DM host galaxy [pc/cm^3]
+        self.dm_igm = 0  # DM intergalactic medium [pc/cm^3]
+        self.dm_mw = 0  # DM Milky Way [pc/cm^3]
+        self.dm = None  # Total DM [pc/cm^3]
 
         # Intrinsic properties
         self.lum_bol = None

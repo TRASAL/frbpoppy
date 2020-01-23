@@ -1,10 +1,9 @@
 """Define a class to hold a population of FRBs."""
-from io import StringIO
 import os
-import pickle
+import dill as pickle
 import numpy as np
-import pandas as pd
 from copy import deepcopy
+from types import LambdaType
 
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
@@ -22,39 +21,6 @@ class Population:
         # Frequency emission limits [MHz]
         self.f_max = None
         self.f_min = None
-
-        # Dispersion Measure [pc/cm^3]
-        self.dm_host_model = None
-        self.dm_host_mu = None
-        self.dm_host_sigma = None
-        self.dm_igm_index = None
-        self.dm_igm_sigma = None
-        self.dm_mw_model = None
-
-        # Luminosity
-        self.lum_max = None
-        self.lum_min = None
-        self.lum_pow = None
-
-        # Spectral index
-        self.si_mu = None
-        self.si_sigma = None
-
-        # Pulse width [ms]
-        self.w_model = None
-        self.w_mu = None
-        self.w_sigma = None
-        self.w_max = None
-        self.w_min = None
-
-        # Cosmology
-        self.dist_co_max = None
-        self.H_0 = None
-        self.n_model = None
-        self.vol_co_max = None
-        self.W_m = None
-        self.W_v = None
-        self.z_max = None
 
         # Store FRB sources
         self.frbs = FRBs()
@@ -111,6 +77,22 @@ class Population:
             path (str): Path to which to write
 
         """
+        # # Python doesn't support the pickling of lambda functions
+        # def islambda(obj):
+        #     """Check whether variable is lambda instance."""
+        #     obj_type = isinstance(obj, LambdaType)
+        #     return obj_type and obj.__name__ == '<lambda>'
+        #
+        # # Rename lambda functions
+        # for attr in self.__dict__.keys():
+        #     pprint(attr)
+        #     if attr.endswith('func'):
+        #         import IPython; IPython.embed()
+        #     parm = getattr(self, attr)
+        #     if islambda(parm):
+        #         parm.__name__ = attr
+        #         setattr(self, attr, parm)
+
         output = open(path, 'wb')
         pickle.dump(self, output, 2)
         output.close()

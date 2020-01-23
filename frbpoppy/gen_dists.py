@@ -1,8 +1,6 @@
-"""Define distributions from which to get random numbers."""
+"""Define general distributions from which to get random numbers."""
 import numpy as np
-import math
 from scipy.stats import truncnorm
-import frbpoppy.precalc as pc
 
 
 def powerlaw(low, high, power, shape=1):
@@ -85,28 +83,3 @@ def trunc_norm(mu, sigma, n_gen=1, lower=0, upper=np.inf):
     right = (upper-mu)/sigma
     d = truncnorm.rvs(left, right, loc=mu, scale=sigma, size=n_gen)
     return d
-
-
-def oppermann_pen():
-    """Following Oppermann & Pen (2017), simulate repeat times.
-    Returns:
-        ts (list): List of burst times
-    """
-    # TODO Numpy-ify
-    r = 5.7
-    k = 0.34
-
-    ts = []
-    t_tot = 0.5  # Assuming a maximum of 12 hours on one spot
-    t_sum = 0.0
-
-    # Get time of bursts
-    while t_sum < t_tot:
-        t = r*np.random.weibull(k)
-        t_sum += t
-        ts.append(t_sum)
-
-    # Convert to seconds
-    ts = [t*86400 for t in ts[:-1]]
-
-    return ts

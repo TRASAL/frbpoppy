@@ -105,6 +105,7 @@ setup(name='frbpoppy',
                         'SQLAlchemy >= 1.3.0',
                         'matplotlib >= 2.2.3,<3.1',
                         'requests >= 2.20.0.',
+                        'dill >= 0.3.1.1',
                         'tqdm',
                         'joblib'],
       cmdclass={'develop': PostDevelopCommand})
