@@ -135,7 +135,16 @@ class CosmicPopulation(Population):
         frbs.gx, frbs.gy, frbs.gz = go.lb_to_xyz(frbs.gl, frbs.gb, dist_pr)
 
     def set_direction(self, model='uniform', **kwargs):
-        """Set the model for generating the directions of the frb sources."""
+        """Set the model for generating the directions of the frb sources.
+
+        Args:
+            model (str): Choice from ('uniform').
+        if model == 'uniform':
+            min_ra (float): Minimum right ascenion [frac deg].
+            max_ra (float): Maximum right ascenion [frac deg].
+            min_dec (float): Minimum declination [frac deg].
+            max_dec (float): Maximum declination [frac deg].
+        """
         # Use your own function
         if not isinstance(model, str):
             self.direction_func = lambda: model(**kwargs)
@@ -160,7 +169,7 @@ class CosmicPopulation(Population):
         """Set the model for the Milky Way dispersion measure.
 
         Args:
-            model (str): Option of 'ne2001'
+            model (str): Option of 'ne2001'.
         """
         if not isinstance(model, str):
             self.dm_mw_func = lambda: model(**kwargs)
@@ -181,9 +190,11 @@ class CosmicPopulation(Population):
         """Set intergalactic dispersion measure model.
 
         Args:
-            model (str): Option of 'ioka'
-            slope (float): Slope of the DM-z relationship
-            sigma (float): Spread around the DM-z relationship
+            model (str): Option of 'ioka'.
+        if model == 'ioka':
+            slope (float): Slope of the DM-z relationship.
+            sigma (float): Spread around the DM-z relationship.
+            spread_func (func): np.random.normal or np.random.lognormal.
         """
         # Possibility to use your own function
         if not isinstance(model, str):

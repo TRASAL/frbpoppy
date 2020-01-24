@@ -2,6 +2,8 @@
 import numpy as np
 import pandas as pd
 
+# TODO: Finish describing parameters
+
 
 class FRBs:
     """Class containing FRB properties."""
@@ -9,14 +11,14 @@ class FRBs:
     def __init__(self):
         """Initializing."""
         # Location properties
-        self.ra = None
-        self.dec = None
+        self.ra = None  # Right ascension [frac degree]
+        self.dec = None  # Declination [frac degree]
         self.dist_co = None  # Comoving distance [Gpc]
-        self.gb = None
-        self.gl = None
-        self.gx = None
-        self.gy = None
-        self.gz = None
+        self.gb = None  # Galactic latitude [frac degree]
+        self.gl = None  # Galactic longitude [frac degree]
+        self.gx = None  # Galactic X coordinate [Gpc]
+        self.gy = None  # Galactic Y coordinate [Gpc]
+        self.gz = None  # Galactic Z coordinate [Gpc]
         self.z = 0  # Redshift
 
         # Dispersion measure properties
@@ -26,27 +28,27 @@ class FRBs:
         self.dm = None  # Total DM [pc/cm^3]
 
         # Intrinsic properties
-        self.lum_bol = None
-        self.si = None
-        self.w_arr = None
-        self.w_int = None
+        self.lum_bol = None  # Isotropic equivalent bolometric lum. [ergs/s]
+        self.si = None  # Spectral index
+        self.w_arr = None  # Pulse width at Earth [ms]
+        self.w_int = None  # Intrinsic pulse width [ms]
 
         # Repeat properties
-        self.time = None
+        self.time = None  # Burst time stamps [days]
 
         # Detection properties
-        self.fluence = None
-        self.offset = None
-        self.s_peak = None
-        self.snr = None
-        self.t_dm = 0
-        self.t_scat = 0
-        self.T_sky = 0
-        self.T_sys = 0
-        self.w_eff = None
+        self.fluence = None  # Fluence [Jy ms]
+        self.offset = None  # Offset from beam centre [frac deg]
+        self.s_peak = None  # Peak flux density [Jy]
+        self.snr = None  # Signal to Noise ratio
+        self.t_dm = 0  # Dispersion meausre smearing timescale [ms]
+        self.t_scat = 0  # Scattering timescale [ms]
+        self.T_sky = 0  # Sky temperature [K]
+        self.T_sys = 0  # Total system temperature [K]
+        self.w_eff = None  # Effective pulse width [ms]
 
         # Software properties
-        self.index = None
+        self.index = None  # Index to keep track of FRBs
 
     def __str__(self):
         """Define how to print an FRB object to a console."""

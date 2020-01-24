@@ -1,7 +1,6 @@
 """Bin up Pandas DataFrames into histograms ready for Bokeh plotting."""
 import numpy as np
 import pandas as pd
-from frbpoppy.log import pprint
 
 
 def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):

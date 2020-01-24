@@ -3,7 +3,6 @@ import os
 import dill as pickle
 import numpy as np
 from copy import deepcopy
-from types import LambdaType
 
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
@@ -77,22 +76,6 @@ class Population:
             path (str): Path to which to write
 
         """
-        # # Python doesn't support the pickling of lambda functions
-        # def islambda(obj):
-        #     """Check whether variable is lambda instance."""
-        #     obj_type = isinstance(obj, LambdaType)
-        #     return obj_type and obj.__name__ == '<lambda>'
-        #
-        # # Rename lambda functions
-        # for attr in self.__dict__.keys():
-        #     pprint(attr)
-        #     if attr.endswith('func'):
-        #         import IPython; IPython.embed()
-        #     parm = getattr(self, attr)
-        #     if islambda(parm):
-        #         parm.__name__ = attr
-        #         setattr(self, attr, parm)
-
         output = open(path, 'wb')
         pickle.dump(self, output, 2)
         output.close()

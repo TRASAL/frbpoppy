@@ -1,18 +1,20 @@
-"""Dispersion measure distributions."""
+"""Functions to generate Dispersion measure distributions."""
 import numpy as np
 import frbpoppy.gen_dists as gd
 
 
-def ioka(z=0, slope=950, sigma=None):
+def ioka(z=0, slope=950, sigma=None, spread_func=np.random.normal):
     """Calculate the contribution of the igm to the dispersion measure.
 
     Follows Ioka (2003) and Inoue (2004), with default slope value falling
     inbetween the Cordes and Petroff reviews
 
     Args:
-        z (array): Redshifts
-        slope (float): Slope of the DM-z relationship
-        sigma (float): Spread around the DM-z relationship
+        z (array): Redshifts.
+        slope (float): Slope of the DM-z relationship.
+        sigma (float): Spread around the DM-z relationship.
+        spread (function): Spread function option. Choice from
+            ('np.random.normal', 'np.random.lognormal')
 
     Returns:
         dm_igm (array): Dispersion measure of intergalactic medium [pc/cm^3]
@@ -20,7 +22,9 @@ def ioka(z=0, slope=950, sigma=None):
     """
     if sigma is None:
         sigma = 0.2*slope*z
-    return np.random.normal(slope*z, sigma).astype(np.float32)
+    if spread_func.__name__ not in ('normal', 'lognormal'):
+        raise ValueError('spread_func input not recognised')
+    return spread_func(slope*z, sigma).astype(np.float32)
 
 
 def gauss(mu=100, sigma=200, n_srcs=1, z=0):
@@ -29,7 +33,7 @@ def gauss(mu=100, sigma=200, n_srcs=1, z=0):
     Args:
         mu (float): Mean DM [pc/cm^3].
         sigma (float): Standard deviation DM [pc/cm^3].
-        n_srcs (int): Number of sources for which to generate values
+        n_srcs (int): Number of sources for which to generate values.
         z (int): Redshift of sources.
 
     Returns:
@@ -46,7 +50,7 @@ def lognormal(mu=100, sigma=200, n_srcs=1, z=0):
     Args:
         mu (float): Mean DM [pc/cm^3].
         sigma (float): Standard deviation DM [pc/cm^3].
-        n_srcs (int): Number of sources for which to generate values
+        n_srcs (int): Number of sources for which to generate values.
         z (int): Redshift of sources.
 
     Returns:

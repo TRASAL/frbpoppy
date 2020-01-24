@@ -8,7 +8,8 @@ def powerlaw(low=1e40, high=1e45, power=0, shape=1):
     return gd.powerlaw(low=low, high=high, power=power, shape=shape)
 
 
-def gauss_per_source(b_sigma=0.05, dist=powerlaw, shape=(1, 1), z=0, **kwargs):
+def gauss_per_source(src_sigma=0.05, dist=powerlaw, shape=(1, 1), z=0,
+                     **kwargs):
     """Distribute spectral indices per source using a Gaussian function.
 
     Generate bursts per source using a given distribution, then use those as
@@ -22,4 +23,4 @@ def gauss_per_source(b_sigma=0.05, dist=powerlaw, shape=(1, 1), z=0, **kwargs):
 
     shape = (shape[1], shape[0])
 
-    return np.random.normal(mu, b_sigma, shape).astype(np.float32).T
+    return np.random.normal(mu, src_sigma, shape).astype(np.float32).T
