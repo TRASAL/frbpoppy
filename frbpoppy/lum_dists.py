@@ -14,6 +14,12 @@ def gauss_per_source(src_sigma=0.05, dist=powerlaw, shape=(1, 1), z=0,
 
     Generate bursts per source using a given distribution, then use those as
     the mean for the distribution for more bursts from that source
+
+    Args:
+        src_sigma: Standard deviation over bursts.
+        dist: Distribution from which to draw source properties.
+        shape: Wanted shape of array of spectral indices.
+        z: Redshift.
     """
     mu = dist(shape=shape[0], **kwargs)
 

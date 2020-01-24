@@ -1,5 +1,6 @@
 """Classes to hold rate counters."""
 from copy import deepcopy
+import numpy as np
 from frbpoppy import pprint
 
 
@@ -57,7 +58,7 @@ class Rates:
             return float('NaN')
 
 
-def scale(rates, area=True, time=False):
+def scale(rates, area=True):
     """Scale rates."""
     rates = deepcopy(rates)
 
@@ -67,14 +68,6 @@ def scale(rates, area=True, time=False):
         rates.det *= rates.f_area
         rates.late *= rates.f_area
         rates.faint *= rates.f_area
-        rates.out = tot - rates.det - rates.faint - rates.late
-
-    if time:
-        rates.scaled_time = True
-        rates.det *= rates.f_time
-        rates.late *= rates.f_time
-        rates.faint *= rates.f_time
-        rates.out *= rates.f_time
-        rates.days = 1
+        rates.out = np.abs(tot - rates.det - rates.faint - rates.late)
 
     return rates

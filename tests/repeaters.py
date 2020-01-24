@@ -1,19 +1,17 @@
 """Test repeater population."""
 import numpy as np
 
-from frbpoppy import RepeaterPopulation, Survey, SurveyPopulation, plot
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 from frbpoppy import split_pop, pprint
 
 DAYS = 5
 
-r = RepeaterPopulation.simple(int(1e5))
-r.times_rep_model = 'poisson'
-r.days = DAYS
+r = CosmicPopulation.simple(int(1e5), n_days=DAYS, repeaters=True)
+# r.set_time('poisson')
 r.generate()
 
-survey = Survey('apertif', strategy='regular', n_days=DAYS)
-survey.beam_pattern = 'apertif'
-survey.snr_limit = 1e-5
+survey = Survey('perfect', strategy='regular', n_days=DAYS)
+survey.beam_pattern = 'perfect'
 
 pops = []
 surv_pop = SurveyPopulation(r, survey)
@@ -29,5 +27,5 @@ pops.append(pop_ngt1)
 
 pprint(f'{len(surv_pop.frbs.index)} FRBs detected')
 
-if len(surv_pop.frbs.index) > 100:
-    plot(*pops, frbcat=False, mute=False, show=True)
+# if len(surv_pop.frbs.index) > 100:
+#     plot(*pops, frbcat=False, mute=False, show=True)

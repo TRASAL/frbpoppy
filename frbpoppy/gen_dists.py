@@ -67,11 +67,11 @@ def trunc_norm(mu, sigma, n_gen=1, low=0, high=np.inf):
     """Draw from a truncated normal distribution.
 
     Args:
-        mu (number): Mu
-        sigma (number): Sigma
-        n_gen (number): Number to generate
-        low (number): low limit
-        high (number): high limit
+        mu (number): Mu.
+        sigma (number): Sigma.
+        n_gen (number): Number to generate.
+        low (number): low limit.
+        high (number): high limit.
 
     Returns:
         array: Numpy of required length

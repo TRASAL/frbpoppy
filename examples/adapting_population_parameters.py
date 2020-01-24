@@ -1,10 +1,12 @@
 """Example of changing parameters."""
 from frbpoppy import CosmicPopulation, Survey
 
-# Set up a population with arguments such as z_max ...
-cosmic_pop = CosmicPopulation(1e4, z_max=0.01, generate=False)
-# ... or adapt the population with e.g.
-cosmic_pop.z_max = 2.5
+# Set up a population
+cosmic_pop = CosmicPopulation(1e4, generate=False)
+# ... or adapt the population per parameter, e.g.
+cosmic_pop.set_dist(z_max=2.5)
+# Or to adapt the luminosity
+cosmic_pop.set_lum(model='powerlaw', low=1e44, high=1e45)
 # Generate the population
 cosmic_pop.generate()
 

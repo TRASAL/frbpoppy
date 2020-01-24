@@ -401,6 +401,11 @@ class CosmicPopulation(Population):
         """Generate luminosities [ergs/s]."""
         self.frbs.lum_bol = self.lum_func()
 
+        # You need multiple luminosities if repeaters
+        if self.repeaters and self.frbs.lum_bol.ndim == 1:
+            repeat_lums = [self.frbs.lum_bol[..., np.newaxis]]*self.shape[1]
+            self.frbs.lum_bol = np.concatenate(repeat_lums, axis=1)
+
     def set_time(self, model='regular', **kwargs):
         """Set model from which to generate time stamps.
 
@@ -452,8 +457,8 @@ class CosmicPopulation(Population):
         """Generate a full CosmicPopulation."""
         pprint(f'Generating {self.name} population')
         self.gen_index()
-        self.gen_time()
         self.gen_dist()
+        self.gen_time()
         self.gen_direction()
         self.gen_gal_coords()
         self.gen_dm()
@@ -463,10 +468,10 @@ class CosmicPopulation(Population):
         pprint(f'Finished generating {self.name} population')
 
     @classmethod
-    def simple(cls, n_srcs, generate=False):
+    def simple(cls, n_srcs, n_days=1, repeaters=False, generate=False):
         """Set up a simple, local population."""
-        pop = cls(n_srcs=n_srcs, n_days=1, name='simple', repeaters=False,
-                  generate=generate)
+        pop = cls(n_srcs=n_srcs, n_days=n_days, name='simple',
+                  repeaters=repeaters, generate=False)
         pop.set_dist(model='vol_co', z_max=0.01, alpha=-1.5,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
         pop.set_dm(mw=False, igm=False, host=False)
@@ -474,13 +479,19 @@ class CosmicPopulation(Population):
         pop.set_lum(model='powerlaw', low=1e38, high=1e38, power=0)
         pop.set_w(model='uniform', low=10, high=10)
         pop.set_si(model='gauss', mu=0, sigma=0)
+        if pop.repeaters:
+            pop.set_time(model='regular', lam=2)
+        if generate:
+            pop.generate()
         return pop
 
     @classmethod
     def complex(cls, n_srcs, generate=False):
-        """Set up a complex population."""
+        """Set up a complex population.
+        TODO: Update!
+        """
         pop = cls(n_srcs=n_srcs, n_days=1, name='complex', repeaters=False,
-                  generate=generate)
+                  generate=False)
         pop.set_dist(model='vol_co', z_max=2.5, alpha=-1.5,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
         pop.set_dm_host(model='gauss', mu=100, sigma=200)
@@ -490,6 +501,8 @@ class CosmicPopulation(Population):
         pop.set_lum(model='powerlaw', low=1e39, high=1e45, power=0)
         pop.set_w(model='lognormal', mu=0.1, sigma=0.7)
         pop.set_si(model='gauss', mu=-1.4, sigma=1)
+        if generate:
+            pop.generate()
         return pop
 
 

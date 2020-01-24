@@ -42,6 +42,7 @@ class SurveyPopulation(Population):
         self.name = survey.name
         self.vol_co_max = cosmic_pop.vol_co_max
         self.n_days = cosmic_pop.n_days
+        self.repeaters = cosmic_pop.repeaters
         self.frbs = deepcopy(cosmic_pop.frbs)
         self.rate = Rates()
         self.scat = scat
@@ -49,11 +50,7 @@ class SurveyPopulation(Population):
         self.survey = survey
 
         # Calculations differ for repeaters
-        self.repeaters = False
-        if isinstance(cosmic_pop, RepeaterPopulation):
-            self.repeaters = True
-
-            if scin is True:
+        if self.repeaters is True and scin is True:
                 m = 'Scintillation is currently not implemented for '
                 m += 'RepeaterPopulations'
                 raise ValueError(m)
@@ -175,9 +172,6 @@ class SurveyPopulation(Population):
         frbs.fluence = np.full_like(sim_shape, np.nan)
         frbs.snr = np.full_like(sim_shape, np.nan)
 
-        # Keep all frbs
-        # self.snr_mask = np.ones_like(frbs.snr, dtype=bool)
-
         # Have to loop over the observing times
         ra_p = survey.pointings[0]
         dec_p = survey.pointings[1]
@@ -236,22 +230,23 @@ class SurveyPopulation(Population):
                                             lst=lst)
 
         # Ensure relevant masks
-        inds = tp_unique
+        s_peak_inds = tp_unique
         not_inds = np.unique(tnp_inds[0])
         if frbs.s_peak.ndim == 2:
-            inds = tp_inds
+            s_peak_inds = tp_inds
             not_inds = tnp_inds
+            int_pro = np.repeat(int_pro, n_bursts)
+
+        # Apply intensities to those bursts' s_peak
+        frbs.s_peak[s_peak_inds] *= int_pro
+        frbs.s_peak[not_inds] = np.nan
 
         w_eff_inds = tp_unique
         if frbs.w_eff.ndim == 2:
             w_eff_inds = tp_inds
 
-        # Apply intensities to those bursts' s_peak
-        frbs.s_peak[inds] *= np.repeat(int_pro, n_bursts)
-        frbs.s_peak[not_inds] = np.nan
-
         # Ensure dimensionality is correct
-        s_peak = frbs.s_peak[inds]
+        s_peak = frbs.s_peak[s_peak_inds]
         w_eff = frbs.w_eff[w_eff_inds]
         if frbs.w_eff.ndim < frbs.s_peak.ndim:
             w_eff = np.repeat(w_eff, n_bursts)
@@ -259,7 +254,7 @@ class SurveyPopulation(Population):
             s_peak = np.repeat(s_peak, n_bursts)
 
         # Calculate fluence [Jy*ms]
-        frbs.fluence[inds] = survey.calc_fluence(s_peak, w_eff)
+        frbs.fluence[s_peak_inds] = survey.calc_fluence(s_peak, w_eff)
 
         # Construct masks with correct dimension
         if frbs.w_arr.ndim == 2:
@@ -268,7 +263,7 @@ class SurveyPopulation(Population):
             w_arr = frbs.w_arr[tp_unique]
 
         # Ensure entries are repeated for the number of bursts
-        s_peak = frbs.s_peak[inds]
+        s_peak = frbs.s_peak[s_peak_inds]
         if frbs.w_arr.ndim < frbs.s_peak.ndim:
             w_arr = np.repeat(w_arr, n_bursts)
         elif frbs.w_arr.ndim > frbs.s_peak.ndim:
@@ -276,12 +271,15 @@ class SurveyPopulation(Population):
 
         # And system temperatures
         if frbs.T_sys.ndim == 1:
-            T_sys = np.repeat(frbs.T_sys[tp_unique], n_bursts)
+            if frbs.s_peak.ndim == 2:
+                T_sys = np.repeat(frbs.T_sys[tp_unique], n_bursts)
+            elif frbs.s_peak.ndim == 1:
+                T_sys = frbs.T_sys[tp_unique]
         elif frbs.T_sys.ndim == 0:
             T_sys = frbs.T_sys
 
         # Caculate Signal to Noise Ratio
-        frbs.snr[inds] = survey.calc_snr(s_peak, w_arr, T_sys)
+        frbs.snr[s_peak_inds] = survey.calc_snr(s_peak, w_arr, T_sys)
 
         # Add scintillation
         if self.scin:
@@ -291,20 +289,19 @@ class SurveyPopulation(Population):
             dist_co = frbs.dist_co[tp_unique]
             gl = frbs.gl[tp_unique]
             gb = frbs.gb[tp_unique]
-            snr = frbs.snr[inds]
+            snr = frbs.snr[s_peak_inds]
             new_snr = survey.calc_scint(t_scat, dist_co, gl, gb, snr)
-            frbs.snr[inds] = np.repeat(new_snr, n_bursts)
+            frbs.snr[s_peak_inds] = np.repeat(new_snr, n_bursts)
 
         # Only keep those in time, in position and above the snr limit
-        snr_m = (frbs.snr[inds] > survey.snr_limit)
-        snr_inds = (tp_inds[0][snr_m], tp_inds[1][snr_m])
-
-        return snr_inds[0], snr_inds[1]
+        snr_m = (frbs.snr[s_peak_inds] > survey.snr_limit)
+        s_peak_inds = (tp_inds[0][snr_m], tp_inds[1][snr_m])
+        return s_peak_inds[0], s_peak_inds[1]
 
     def calc_rates(self, survey):
         """Calculate the relative detection rates."""
         # Calculate scaling factors for rates
-        area_sky = 4*math.pi*(180/math.pi)**2   # In sq. degrees
+        area_sky = 4*np.pi*(180/np.pi)**2   # In sq. degrees
         f_area = (survey.beam_size * self.rate.tot())
         inside = self.rate.det+self.rate.late+self.rate.faint
         f_area /= (inside*area_sky)
@@ -321,24 +318,16 @@ class SurveyPopulation(Population):
             self.rate.f_area = f_area
             self.rate.f_time = f_time
 
-    def rates(self, scale_area=None, scale_time=None):
-        """Scale the rates by the beam area and time."""
-        r = self.rate
-
-        if scale_area is None:
+    def rates(self, scale_area=True):
+        """Scale the rates by the beam area."""
+        # Don't scale for repeater population.
+        if self.repeaters:
             scale_area = False
-            if not self.repeaters:
-                scale_area = True
-
-        if scale_time is None:
-            scale_time = False
 
         if scale_area:
-            r = scale(self.rate, area=True)
-        if scale_time:
-            r = scale(self.rate, time=True)
-
-        return r
+            return scale(self.rate, area=True)
+        else:
+            return self.rate
 
     def calc_logn_logs(self, parameter='fluence', min_p=None, max_p=None):
         """TODO. Currently unfinished."""
