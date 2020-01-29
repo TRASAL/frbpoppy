@@ -3,6 +3,11 @@ import numpy as np
 import frbpoppy.gen_dists as gd
 
 
+def constant(value=100, n_srcs=1):
+    """Adopt a constant DM value similar to Thorton."""
+    return np.full(n_srcs, value).astype(np.float32)
+
+
 def ioka(z=0, slope=950, sigma=None, spread_func=np.random.normal):
     """Calculate the contribution of the igm to the dispersion measure.
 

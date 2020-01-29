@@ -2,8 +2,6 @@
 import numpy as np
 from scipy.special import gamma
 
-from frbpoppy.log import pprint
-
 
 def regular(lam=2, n_srcs=1, n_days=1, z=0):
     """Generate a series of regular spaced burst times.
@@ -14,16 +12,17 @@ def regular(lam=2, n_srcs=1, n_days=1, z=0):
         n_days (int): Number of days
         z (array): Redshift of sources
     """
-    time_range = np.arange(0, n_days)
-
-    # Single source burst times
-    time = np.repeat(time_range, (lam)).astype(np.float32)
+    time_range = np.linspace(0, n_days, n_days*lam, endpoint=False,
+                             dtype=np.float32)
 
     # Copy to multiple sources
-    time = np.tile(time, (n_srcs, 1))
+    time = np.tile(time_range, (n_srcs, 1))
 
     # Add random offsets
-    time += np.random.random(time.shape)
+    time_offset = np.random.uniform(0, time[:, 1])
+    time += time_offset[:, np.newaxis]
+
+    # Add redshift
     time = time*(1+z)[:, np.newaxis]
     time[(time > n_days)] = np.nan
 
@@ -69,7 +68,6 @@ def iteratively_gen_times(dist, n_srcs=1, n_days=1, z=0):
         n_days (int): Number of days
         z (array): Redshift of sources
     """
-    pprint('Adding burst times')
     # Determine the maximum possible number of bursts per source to include
     log_size = 1
     m = int(10**log_size)

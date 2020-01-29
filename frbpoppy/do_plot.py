@@ -32,6 +32,10 @@ def plot(*pops, files=[], frbcat=False, show=True,
             if type(pop) == str:
                 name = pop
             else:
+                # Check whether empty population
+                if pop.n_sources() < 1:
+                    pprint(f'Skipping {pop.name} population as no sources')
+                    continue
                 pop.name = pop.name.lower() + '_for_plotting'
                 name = pop.name
                 pop.save()
@@ -73,6 +77,11 @@ def plot(*pops, files=[], frbcat=False, show=True,
     # Add in populations
     for f in files:
         command.append(f'"{f}"')
+
+    # Check whether plotting is needed
+    if len(files) == 0 and frbcat is False:
+        pprint('No populations to plot')
+        return
 
     # Let people know what's happening
     pprint('Plotting populations')

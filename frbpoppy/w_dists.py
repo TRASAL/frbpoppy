@@ -19,6 +19,12 @@ def calc_w_arr(w_int, z=0):
         return w_int*(1+z[:, None])
 
 
+def constant(value=1., shape=1, z=0):
+    """Generate pulse widths at a constant value."""
+    w_int = np.full(shape, value).astype(np.float32)
+    return w_int, calc_w_arr(w_int, z=z)
+
+
 def uniform(low=0, high=10, shape=1, z=0):
     """Generate pulse widths from a uniform distribution.
 

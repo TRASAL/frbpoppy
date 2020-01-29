@@ -48,6 +48,7 @@ class CosmicPopulation(Population):
         self.n_srcs = int(n_srcs)
         self.n_days = n_days
         self.repeaters = repeaters
+        self.shape = (self.n_srcs,)
 
         # If wanting repeaters
         if self.repeaters:
@@ -216,8 +217,12 @@ class CosmicPopulation(Population):
 
         Args:
             model (str): Options from ('gauss', 'lognormal').
+
+        if model in ('gauss', 'lognormal'):
             mu (float): Mean DM [pc/cm^3].
             sigma (float): Standard deviation DM [pc/cm^3].
+        if model == 'constant':
+            value (float): Value to adopt [pc/cm^3].
         """
         if not isinstance(model, str):
             self.dm_host_func = lambda: model(**kwargs)
@@ -232,6 +237,9 @@ class CosmicPopulation(Population):
             self.dm_host_func = lambda: dmd.lognormal(z=self.frbs.z,
                                                       n_srcs=self.n_srcs,
                                                       **kwargs)
+        elif model == 'constant':
+            self.dm_host_func = lambda: dmd.constant(n_srcs=self.n_srcs,
+                                                     **kwargs)
         else:
             raise ValueError('set_dm_host input not recognised')
 
@@ -274,14 +282,16 @@ class CosmicPopulation(Population):
             model (str): Options from ('uniform', 'lognormal')
             per_source (str): Model for a single source burst distribution.
                 Options from ('same', 'different', 'gauss')
+        If model == 'constant':
+            value (float): Pulse width [ms].
         If model == 'uniform':
-            low (float): Minimum pulse width [ms]
-            high (float): Maximum pulse width [ms]
+            low (float): Minimum pulse width [ms].
+            high (float): Maximum pulse width [ms].
         If model == 'lognormal':
-            mu (float): Mean pulse width [ms]
-            sigma (float): Standard deviation pulse width [ms]
+            mu (float): Mean pulse width [ms].
+            sigma (float): Standard deviation pulse width [ms].
         If per_source == 'gauss':
-            src_sigma (float): Standard deviation per source [ms]
+            src_sigma (float): Standard deviation per source [ms].
 
         """
         # Use your own function if you want
@@ -291,9 +301,9 @@ class CosmicPopulation(Population):
 
         # Each burst from the same source: same or different widths?
         if per_source == 'same':
-            shape = self.n_srcs
+            self.w_shape = lambda: self.n_srcs
         elif per_source == 'different':
-            shape = self.shape
+            self.w_shape = lambda: self.shape
         # Or use a gaussian per source.
         elif per_source.startswith('gauss'):
             self.w_func = lambda: wd.gauss_per_source(dist=getattr(wd, model),
@@ -303,18 +313,22 @@ class CosmicPopulation(Population):
             return
 
         # Distribution from which to draw pulse widths
-        if model == 'uniform':
-            self.w_func = lambda: wd.uniform(shape=shape, z=self.frbs.z,
-                                             **kwargs)
-        elif model == 'lognormal':
-            self.w_func = lambda: wd.lognormal(shape=shape, z=self.frbs.z,
+        if model == 'constant':
+            self.w_func = lambda x: wd.constant(shape=x, z=self.frbs.z,
+                                                **kwargs)
+        elif model == 'uniform':
+            self.w_func = lambda x: wd.uniform(shape=x, z=self.frbs.z,
                                                **kwargs)
+        elif model == 'lognormal':
+            self.w_func = lambda x: wd.lognormal(shape=x, z=self.frbs.z,
+                                                 **kwargs)
         else:
             raise ValueError('set_w input not recognised')
 
     def gen_w(self):
         """Generate pulse widths [ms]."""
-        self.frbs.w_int, self.frbs.w_arr = self.w_func()
+        shape = self.w_shape()
+        self.frbs.w_int, self.frbs.w_arr = self.w_func(shape)
 
     def set_si(self, model='gauss', per_source='same', **kwargs):
         """Set spectral index model.
@@ -323,6 +337,8 @@ class CosmicPopulation(Population):
             model (str): Options from ('gauss')
             per_source (str): Model for a single source burst distribution.
                 Options from ('same', 'different', 'gauss')
+        If model == 'constant':
+            value (float): Default spectal index.
         If model == 'gauss':
             mu (float): Mean spectral index
             sigma (float): Standard deviation spectral index
@@ -336,9 +352,9 @@ class CosmicPopulation(Population):
 
         # Each burst from the same source: same or different si?
         if per_source == 'same':
-            shape = self.n_srcs
+            self.si_shape = lambda: self.n_srcs
         elif per_source == 'different':
-            shape = self.shape
+            self.si_shape = lambda: self.shape
         # Or use a gaussian per source
         elif per_source.startswith('gauss'):
             dist = getattr(sid, model)
@@ -348,14 +364,17 @@ class CosmicPopulation(Population):
             return
 
         # Distribution from which to draw spectral indices
-        if model.startswith('gauss'):
-            self.si_func = lambda: sid.gauss(shape=shape, **kwargs)
+        if model == 'constant':
+            self.si_func = lambda x: sid.constant(shape=x, **kwargs)
+        elif model.startswith('gauss'):
+            self.si_func = lambda x: sid.gauss(shape=x, **kwargs)
         else:
             raise ValueError('set_si input not recognised')
 
     def gen_si(self):
         """Generate spectral indices."""
-        self.frbs.si = self.si_func()
+        shape = self.si_shape()
+        self.frbs.si = self.si_func(shape)
 
     def set_lum(self, model='powerlaw', per_source='same', **kwargs):
         """Set luminosity function [ergs/s].
@@ -370,6 +389,9 @@ class CosmicPopulation(Population):
             high (float): Maximum bolometric luminosity [ergs/s]
             power (float): Power of luminosity function
 
+        If model == 'constant':
+            value (float): Value for standard candle [ergs/s]
+
         If per_source == 'gauss':
             src_sigma (float): Standard deviation per source
 
@@ -380,9 +402,9 @@ class CosmicPopulation(Population):
 
         # Each burst from the same source: same or different luminosities?
         if per_source == 'same':
-            shape = self.n_srcs
+            self.lum_shape = lambda: self.n_srcs
         elif per_source == 'different':
-            shape = self.shape
+            self.lum_shape = lambda: self.shape
         # Or use a gaussian per source
         elif per_source.startswith('gauss'):
             dist = getattr(ld, model)
@@ -393,13 +415,16 @@ class CosmicPopulation(Population):
 
         # Draw luminosities from a powerlaw
         if model == 'powerlaw':
-            self.lum_func = lambda: ld.powerlaw(shape=shape, **kwargs)
+            self.lum_func = lambda x: ld.powerlaw(shape=x, **kwargs)
+        elif model == 'constant':
+            self.lum_func = lambda x: ld.constant(shape=x, **kwargs)
         else:
             raise ValueError('set_lum input not recognised')
 
     def gen_lum(self):
         """Generate luminosities [ergs/s]."""
-        self.frbs.lum_bol = self.lum_func()
+        shape = self.lum_shape()
+        self.frbs.lum_bol = self.lum_func(shape)
 
         # You need multiple luminosities if repeaters
         if self.repeaters and self.frbs.lum_bol.ndim == 1:
@@ -448,10 +473,12 @@ class CosmicPopulation(Population):
         # Only relevant for repeaters
         if not self.repeaters:
             return
-        # Generate time stamps
+
+        pprint('Adding burst times')
         self.frbs.time = self.time_func()
         # Set size for all other parameters
         self.shape = self.frbs.time.shape
+        pprint('Finished adding burst times')
 
     def generate(self):
         """Generate a full CosmicPopulation."""
@@ -476,9 +503,9 @@ class CosmicPopulation(Population):
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
         pop.set_dm(mw=False, igm=False, host=False)
         pop.set_emission_range(low=100e6, high=10e9)
-        pop.set_lum(model='powerlaw', low=1e38, high=1e38, power=0)
-        pop.set_w(model='uniform', low=10, high=10)
-        pop.set_si(model='gauss', mu=0, sigma=0)
+        pop.set_lum(model='constant', value=1e38)
+        pop.set_w(model='constant', value=10)
+        pop.set_si(model='constant', value=0)
         if pop.repeaters:
             pop.set_time(model='regular', lam=2)
         if generate:
@@ -488,6 +515,7 @@ class CosmicPopulation(Population):
     @classmethod
     def complex(cls, n_srcs, generate=False):
         """Set up a complex population.
+
         TODO: Update!
         """
         pop = cls(n_srcs=n_srcs, n_days=1, name='complex', repeaters=False,

@@ -4,7 +4,7 @@ import mpl_toolkits.mplot3d
 import numpy as np
 from frbpoppy import Survey
 
-N_POINTS = 100
+N_POINTS = 1000
 
 
 def plot_coordinates(ra, dec):
@@ -27,8 +27,12 @@ def plot_coordinates(ra, dec):
 
 
 if __name__ == '__main__':
-    transit = Survey('chime').gen_transit_pointings(N_POINTS)
-    plot_coordinates(*transit)
+    transit = Survey('chime')
+    transit.set_pointings(mount_type='fixed', n_pointings=N_POINTS)
+    transit.gen_pointings()
+    plot_coordinates(*transit.pointings)
 
-    tracking = Survey('perfect-small').gen_tracking_pointings(N_POINTS)
-    plot_coordinates(*tracking)
+    tracking = Survey('perfect-small')
+    tracking.set_pointings(mount_type='tracking', n_pointings=N_POINTS)
+    tracking.gen_pointings()
+    plot_coordinates(*tracking.pointings)

@@ -3,6 +3,11 @@ import numpy as np
 import frbpoppy.gen_dists as gd
 
 
+def constant(value=1e40, shape=1):
+    """Good for standard candles."""
+    return np.full(shape, value).astype(np.float32)
+
+
 def powerlaw(low=1e40, high=1e45, power=0, shape=1):
     """Draw luminosities from powerlaw distribution."""
     return gd.powerlaw(low=low, high=high, power=power, shape=shape)

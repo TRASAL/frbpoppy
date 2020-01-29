@@ -4,11 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from frbpoppy import CosmicPopulation, Survey, LargePopulation, pprint
+from frbpoppy import CosmicPopulation, Survey, LargePopulation, pprint, plot
 
 from convenience import plot_aa_style, rel_path
 
-MAX_DAYS = 10
+MAX_DAYS = 2
 N_CHIME = {'rep': 10, 'one-offs': 200}
 SAVE = True
 USE_SAVE = False
@@ -18,27 +18,20 @@ if USE_SAVE:
     days = df.days.values
     fracs = df.fracs.values
 else:
-    r = CosmicPopulation.simple(1e6, repeaters=True)
-    r.lum_min = 1e40
-    r.lum_max = 1e45
-    r.lum_pow = 0
-    r.lum_rep_model = 'independent'
-    r.z_max = 2
-    r.times_rep_model = 'clustered'
-    r.n_days = MAX_DAYS
-
-    # Set DM distributions
-    r.dm_host_model = 'gaussian'
-    r.dm_host_mu = 100
-    r.dm_host_sigma = 100
-    r.dm_igm_index = 950  # In between Cordes review & Petroff review
-    r.dm_igm_sigma = 0
-    r.dm_mw_model = 'ne2001'
+    r = CosmicPopulation.simple(1e5, n_days=MAX_DAYS, repeaters=True)
+    r.set_dist(z_max=2.)
+    r.set_time(model='regular')
+    r.set_lum(model='powerlaw', low=1e40, high=1e45, power=0,
+              per_source='different')
+    r.set_dm_host(model='gauss', mu=100, sigma=100)
+    # In between Cordes review & Petroff review
+    r.set_dm_igm(model='ioka', slope=950, sigma=0)
+    r.set_dm_mw(model='ne2001')
+    r.set_dm(mw=True, igm=True, host=True)
 
     # Set up survey
-    survey = Survey('perfect', strategy='regular')
-    survey.n_days = MAX_DAYS
-    survey.beam_pattern = 'perfect'
+    survey = Survey('chime', n_days=MAX_DAYS)
+    survey.set_beam(model='chime')
 
     surv_pop = LargePopulation(r, survey, max_size=1e4).pops[0]
 

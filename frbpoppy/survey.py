@@ -1,14 +1,12 @@
 """Class holding survey properties."""
 
-from datetime import datetime, timedelta
 from scipy.special import j1
-import math
 import numpy as np
 import os
 import pandas as pd
 
 import frbpoppy.galacticops as go
-from frbpoppy.log import pprint
+import frbpoppy.pointings as pointings
 from frbpoppy.paths import paths
 
 
@@ -20,32 +18,23 @@ class Survey:
         name (str): Name of survey with which to observe population. Can
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
-        beam_pattern (str): Set beam pattern ('perfect', 'gaussian',
-            'airy', 'apertif', 'parkes', 'chime')
-        n_sidelobes (float): Number of sidelobes to include. Use 0.5 to
-            cut beam at FWHM
         n_days (float): Time spent surveying [days]
-        strategy (str): 'regular' (for RepeaterPopulation). 'follow-up' might
-            be implemented in the future.
 
     """
 
     def __init__(self,
                  name,
-                 beam_pattern='gaussian',
-                 n_sidelobes=0.5,
                  n_days=1,
                  strategy='regular'):
         """Initializing."""
         # Set up parameters
         self.name = name
-        self.beam_pattern = beam_pattern
-        self.n_sidelobes = n_sidelobes
         self.n_days = n_days
         self.strategy = strategy
         self.beam_size = None
         self.beam_array = None
         self.pointings = None
+        self.strategy = 'regular'
 
         # Parse survey file
         self.read_survey_parameters()
@@ -58,7 +47,8 @@ class Survey:
         if self.mount_type is 'transit':
             self.strategy = 'regular'
 
-        self.set_int_pro_props()
+        self.set_beam()
+        self.set_pointings(mount_type=self.mount_type)
 
     def __str__(self):
         """Define how to print a survey object to a console."""
@@ -108,13 +98,11 @@ class Survey:
         self.gb_min = survey['minimum Galactic latitude (deg)']
         self.gb_max = survey['maximum Galactic latitude (deg)']
 
-    def calc_beam_radius(self):
+    def calc_beam_radius(self, beam_size=None):
         """Determine the radius of the beam pattern in degrees."""
         # Calculate size of detection region
-        if self.beam_size is None:
+        if beam_size is None:
             beam_size = self.beam_size_fwhm
-        else:
-            beam_size = self.beam_size
 
         # Check whether the full sky
         if np.allclose(beam_size, 4*np.pi*(180/np.pi)**2):
@@ -136,144 +124,52 @@ class Survey:
             array: Boolean mask denoting whether frbs are within survey region
 
         """
-        # Create mask with False
-        mask = np.ones_like(ra, dtype=bool)
-
-        # Ensure in correct format
-        gl[gl > 180.] -= 360.
-
-        # Create region masks
-        gl_limits = (gl > self.gl_max) | (gl < self.gl_min)
-        gb_limits = (gb > self.gb_max) | (gb < self.gb_min)
-        ra_limits = (ra > self.ra_max) | (ra < self.ra_min)
-        dec_limits = (dec > self.dec_max) | (dec < self.dec_min)
-
-        mask[gl_limits] = False
-        mask[gb_limits] = False
-        mask[ra_limits] = False
-        mask[dec_limits] = False
+        # Create mask with False if not in region
+        mask = go.in_region(ra, dec, gl, gb,
+                            ra_min=self.ra_min,
+                            ra_max=self.ra_max,
+                            dec_min=self.dec_min,
+                            dec_max=self.dec_max,
+                            gl_min=self.gl_min,
+                            gl_max=self.gl_max,
+                            gb_min=self.gb_min,
+                            gb_max=self.gb_max)
 
         return mask
 
-    def gen_pointings(self):
-        """Generate pointings via wrapper."""
-        n_p = int(self.n_days*24*60*60 / self.t_obs)  # Number of pointings
-        if self.mount_type == 'transit':
-            self.pointings = self.gen_transit_pointings(n_p,
+    def set_pointings(self, mount_type='tracking', n_pointings=None, ra=None,
+                      dec=None):
+        """Set pointing properties."""
+        # If you want to use your own pointings
+        if ra and dec:
+            self.n_pointings = len(ra)
+            self.point_func = lambda: (ra, dec)
+            return
+
+        # Calculate the number of pointings needed
+        self.n_pointings = n_pointings
+        if n_pointings is None:
+            self.n_pointings = int(self.n_days*24*60*60 / self.t_obs)
+
+        if mount_type == 'transit':
+            self.point_func = lambda: pointings.transit(self.n_pointings,
                                                         self.latitude,
                                                         self.longitude,
                                                         self.t_obs)
         else:
-            self.pointings = self.gen_tracking_pointings(n_p)
+            self.point_func = lambda: pointings.tracking(self.n_pointings,
+                                                         ra_min=self.ra_min,
+                                                         ra_max=self.ra_max,
+                                                         dec_min=self.dec_min,
+                                                         dec_max=self.dec_max,
+                                                         gl_min=self.gl_min,
+                                                         gl_max=self.gl_max,
+                                                         gb_min=self.gb_min,
+                                                         gb_max=self.gb_max)
 
-    def gen_transit_pointings(self, n_gen, lat=None, lon=None, t_obs=None):
-        """Generate RA and Dec pointing coordinates for a transit telescope.
-
-        Args:
-            n_gen (int): Number of pointings wanted.
-            lat (float): Latitude of telescope.
-            lon (float): Longitude of telescope (minus for west).
-            t_obs (type): Time for each pointing.
-
-        Returns:
-            ra, dec: Numpy arrays with coordinates of pointings
-
-        """
-        if lat is None:
-            lat = self.latitude
-            lon = self.longitude
-            t_obs = self.t_obs
-
-        # Pointings are randomly placed between the year 2000 and 2100
-        date_min = go.random_date(datetime(2000, 1, 1), datetime(2100, 1, 1))
-        date_max = date_min + timedelta(seconds=int(t_obs*n_gen))
-        time_delta = np.timedelta64(int(t_obs), 's')
-        times = np.arange(date_min, date_max, time_delta, dtype='datetime64')
-
-        ra = go.datetime_to_gmst(times) + lon
-        dec = np.ones(n_gen)*lat
-
-        return ra, dec
-
-    def gen_tracking_pointings(self, n_gen):
-        """Generate RA, Dec pointing coordinates for a tracking telescope.
-
-        Uses a try-accept algorithm to generate pointings with a survey. For
-        details on the sunflower algoritm used to distribute pointings see
-        See https://stackoverflow.com/a/44164075/11922471. Pointings are not
-        always optimumly placed in the limit of small numbers. Takes no account
-        of source surveying time, merely creates a grid on the sky, and follows
-        that grid.
-
-        Args:
-            n_gen (int): Number of pointings.
-
-        Returns:
-            ra, dec: Numpy arrays with coordinates of pointings
-
-        """
-        def sample(n=1000, random=True):
-            """Length of sunflower-like chain to sample."""
-            indices = np.arange(0, n, dtype=float) + 0.5
-
-            # Generate coordinates using golden ratio
-            ra = (np.pi * (1 + 5**0.5) * indices) % (2*np.pi)
-            dec = np.arccos(1 - 2*indices/n) - 0.5*np.pi
-
-            if random:
-                # Start from a random point rather than the south pole
-                phi = np.random.uniform(-np.pi, np.pi, 1)  # Random ra
-                theta = np.random.uniform(-np.pi/2, np.pi/2, 1)  # Random dec
-
-                # Shift ra from -180 to 180
-                ra[ra > np.pi] -= 2*np.pi
-
-                # Save on line length
-                sin = np.sin
-                cos = np.cos
-                arcsin = np.arcsin
-
-                y = sin(ra)
-                x = np.tan(dec)*sin(theta) + cos(ra)*cos(theta)
-                lon = np.arctan2(y, x) - phi
-                lat = arcsin(cos(theta)*sin(dec)-cos(ra)*sin(theta)*cos(dec))
-
-                # Shift ra back to 0-360
-                ra[ra < 0] += 2*np.pi
-                ra = lon % (2*np.pi)
-                dec = lat
-
-            # To degrees
-            ra = np.rad2deg(ra)
-            dec = np.rad2deg(dec)
-
-            return ra, dec
-
-        def accept(ra, dec):
-            gl, gb = go.radec_to_lb(ra, dec, frac=True)
-            return self.in_region(ra=ra, dec=dec, gl=gl, gb=gb)
-
-        # Accept-Reject
-        n = n_gen
-        ra, dec = sample(n)
-        mask = accept(ra, dec)
-
-        # While there are not enough valid points, keep generating
-        while sum(mask) < n_gen:
-            n += (n_gen - sum(mask))
-            ra, dec = sample(n)
-            mask = accept(ra, dec)
-
-        # Only select valid points
-        ra = ra[mask]
-        dec = dec[mask]
-
-        # Evenly sample arrays
-        idx = np.round(np.linspace(0, len(ra) - 1, n_gen)).astype(int)
-        ra = ra[idx]
-        dec = dec[idx]
-
-        return ra, dec
+    def gen_pointings(self):
+        """Generate pointings."""
+        self.pointings = self.point_func()
 
     def max_offset(self, n):
         """Calculate the maximum offset of an FRB in an Airy disk.
@@ -291,15 +187,14 @@ class Survey:
         if n == 0.5:
             return 1
 
-        try:
-            arcsin = math.asin(self.fwhm*kasin_nulls[n]/180)
-        except ValueError:
+        arcsin = np.arcsin(self.fwhm*kasin_nulls[n]/180)
+        if np.isnan(arcsin):
             m = f'Beamsize including sidelobes would be larger than sky \n'
-            A = (90/kasin_nulls[n])**2*math.pi
+            A = (90/kasin_nulls[n])**2*np.pi
             m += f'Ensure beamsize is smaller than {A}'
             raise ValueError(m)
 
-        return 2/self.fwhm * 180/math.pi * arcsin
+        return 2/self.fwhm * 180/np.pi * arcsin
 
     def calc_random_int_pro(self, shape=1):
         """Calculate the intensity profile in random spots of a beam.
@@ -319,7 +214,7 @@ class Survey:
         offset *= np.sqrt(np.random.random(shape))
 
         # Allow for a perfect beam pattern in which all is detected
-        if self.beam_pattern == 'perfect':
+        if self.beam_pattern.startswith('perfect'):
             int_pro = np.ones(shape)
             if self.beam_size is None:
                 self.beam_size = self.beam_size_fwhm
@@ -386,6 +281,8 @@ class Survey:
         """
         # Weed out perfect beam
         if self.beam_pattern.startswith('perfect'):
+            if self.beam_size is None:
+                self.beam_size = self.beam_size_fwhm
             return np.ones(len(ra))
 
         # Convert input decimal degrees to radians
@@ -432,44 +329,53 @@ class Survey:
 
         return intensity
 
-    def set_int_pro_props(self, random_loc=True):
+    def set_beam(self, model='perfect', random_loc=True, n_sidelobes=0.5):
         """Set intensity profile.
 
         Set properties for int pro
 
         Args:
+            model (str): Beam pattern. Choice from 'apertif', 'parkes',
+                'chime', 'gaussian', 'airy'.
             random_loc (bool): Whether to calculate the location of each burst
-                or place them randomly in the beam
+                or place them randomly in the beam.
+        if model in ('gaussian', 'airy'):
+            n_sidelobes (int): Number of sidelobes to include.
 
         """
         # Set up beam properties
-        models = ('apertif', 'parkes', 'chime', 'gaussian', 'airy')
-        if self.beam_pattern in models:
+        self.beam_pattern = model
+        self.n_sidelobes = n_sidelobes
+
+        # Set up predicted beam models
+        if model in ('apertif', 'parkes', 'chime', 'gaussian', 'airy'):
             place = paths.models() + f'/beams/{self.beam_pattern}.npy'
             self.beam_array = np.load(place)
 
-            if self.beam_pattern == 'apertif':
+            if model == 'apertif':
                 self.pixel_scale = 0.94/60  # Degrees per pixel [deg]
                 self.beam_size = 25.  # [sq deg]
-            elif self.beam_pattern == 'parkes':
+            elif model == 'parkes':
                 self.pixel_scale = 54/3600  # Degrees per pixel [deg]
                 self.beam_size = 9.  # [sq deg]
-            elif self.beam_pattern == 'chime':
+            elif model == 'chime':
                 self.pixel_scale = 0.08  # Degrees per pixel [deg]
                 self.beam_size = 80*80  # [sq deg]
-            elif self.beam_pattern == 'gaussian':
+            elif model == 'gaussian':
                 r = self.calc_beam_radius()
                 self.pixel_scale = r / 95  # Degrees per pixel [deg]
                 self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
-            elif self.beam_pattern == 'airy':
+            elif model == 'airy':
                 r = self.calc_beam_radius()
                 self.pixel_scale = r / 31  # Degrees per pixel [deg]
                 self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
+        elif not model.startswith('perfect'):
+            raise ValueError('Beam model input not recognised.')
 
-        if random_loc or self.beam_pattern.startswith('perfect'):
-            self.int_pro_func = self.calc_random_int_pro
+        if random_loc or model.startswith('perfect'):
+            self.beam_func = self.calc_random_int_pro
         else:
-            self.int_pro_func = self.calc_fixed_int_pro
+            self.beam_func = self.calc_fixed_int_pro
 
     def dm_smear(self, dm):
         """
@@ -749,7 +655,7 @@ class Survey:
         t_scat /= 1000.
 
         # Decorrelation bandwidth (eq. 4.39)
-        decorr_bw = 1.16/(2*math.pi*t_scat)
+        decorr_bw = 1.16/(2*np.pi*t_scat)
         # Convert to MHz
         decorr_bw /= 1e6
 
@@ -812,10 +718,10 @@ class Survey:
 
         # Line of constant S/N
         self.s_peak_limit = self.snr_limit*self.T_rec*self.beta
-        self.s_peak_limit /= self.gain*math.sqrt(self.n_pol*self.bw*1e3)
+        self.s_peak_limit /= self.gain*np.sqrt(self.n_pol*self.bw*1e3)
 
         # Line of constant fluence
-        self.fluence_limit = self.s_peak_limit / math.sqrt(w_eff)
+        self.fluence_limit = self.s_peak_limit / np.sqrt(w_eff)
         self.fluence_limit *= w_eff
 
         return self.fluence_limit

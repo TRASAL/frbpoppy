@@ -13,30 +13,16 @@ SIZE = 1e6
 def get_data():
     """Get the population data."""
     # Construct population
-    pop = CosmicPopulation(SIZE,
-                           n_days=1,
-                           name='standard_candle',
-                           H_0=67.74,
-                           W_m=0.3089,
-                           W_v=0.6911,
-                           dm_host_model='gaussian',
-                           dm_host_mu=100,
-                           dm_host_sigma=0,
-                           dm_igm_index=1000,
-                           dm_igm_sigma=None,
-                           dm_mw_model='ne2001',
-                           emission_range=[10e6, 10e9],
-                           lum_range=[1e36, 1e36],
-                           lum_index=0.,
-                           n_model='sfr',
-                           alpha=-1.5,
-                           w_model='uniform',
-                           w_range=[1., 1.],
-                           w_mu=0.1,
-                           w_sigma=0.,
-                           si_mu=0.,
-                           si_sigma=0.,
-                           z_max=2.5)
+    pop = CosmicPopulation(n_srcs=SIZE, n_days=1, name='standard_candle')
+    pop.set_dist(model='sfr', z_max=2.5, H_0=67.74, W_m=0.3089, W_v=0.6911)
+    pop.set_dm_host(model='constant', value=100)
+    pop.set_dm_igm(model='ioka', slope=1000, sigma=None)
+    pop.set_dm_mw(model='ne2001')
+    pop.set_emission_range(low=10e6, high=10e9)
+    pop.set_lum(model='constant', value=1e36)
+    pop.set_w(model='constant', value=1.)
+    pop.set_si(model='constant', value=0)
+    pop.generate()
 
     # Survey population
     pops = {}
@@ -49,9 +35,11 @@ def get_data():
             n_s = int(n_s)
 
         survey = Survey(name='perfect-small')
-        survey.beam_pattern = bp
-        survey.n_sidelobes = n_s
+        # Prevent beam from getting larger than the sky
+        survey.beam_size_fwhm = 10.
+        survey.set_beam(model=bp, n_sidelobes=n_s)
         surv_pop = SurveyPopulation(pop, survey)
+        print(surv_pop.rates())
         pops[b] = surv_pop
 
     return pops
@@ -59,7 +47,6 @@ def get_data():
 
 def plot_dm(pops):
     """Plot resulting dispersion measure."""
-
     plot_aa_style()
     f, (ax1) = plt.subplots(1, 1)
 
@@ -97,6 +84,7 @@ def plot_dm(pops):
 
 
 def main():
+    """Run scripts."""
     pops = get_data()
     plot_dm(pops)
 

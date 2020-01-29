@@ -4,7 +4,7 @@ from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 import numpy as np
 
-from frbpoppy import Frbcat, RepeaterPopulation, Survey, SurveyPopulation
+from frbpoppy import Frbcat, CosmicPopulation, Survey, SurveyPopulation
 from frbpoppy import split_pop
 
 from convenience import hist, plot_aa_style, rel_path
@@ -49,37 +49,21 @@ def get_frbcat_data():
 
 def get_frbpoppy_data():
     """Get frbpoppy data."""
-    r = RepeaterPopulation(1e5,
-                           n_days=N_DAYS,
-                           dm_host_model='gaussian',
-                           dm_host_mu=100,
-                           dm_host_sigma=0,
-                           dm_igm_index=1000,
-                           dm_igm_sigma=0,
-                           dm_mw_model='zero',
-                           emission_range=[10e6, 10e9],
-                           lum_range=[1e42, 1e45],
-                           lum_index=0,
-                           n_model='vol_co',
-                           alpha=-1.5,
-                           w_model='lognormal',
-                           w_range=[1., 1.],
-                           w_mu=0.1,
-                           w_sigma=0.5,
-                           si_mu=-1.4,
-                           si_sigma=0.,
-                           z_max=2.5,
-                           lum_rep_model='independent',
-                           lum_rep_sigma=1e3,
-                           si_rep_model='same',
-                           si_rep_sigma=0.1,
-                           times_rep_model='even',
-                           w_rep_model='independent',
-                           w_rep_sigma=0.05,
-                           generate=True)
+    r = CosmicPopulation(1e5, n_days=N_DAYS, repeaters=True)
+    r.set_dist(model='vol_co', z_max=2.5)
+    r.set_dm_host(model='gauss', mu=100, sigma=0)
+    r.set_dm_igm(model='ioka', slope=1000, sigma=0)
+    r.set_dm(mw=False, igm=True, host=True)
+    r.set_emission_range(low=100e6, high=10e9)
+    r.set_lum(model='powerlaw', per_source='different',
+              low=1e42, high=1e45, power=0)
+    r.set_si(model='gauss', mu=-1.4, sigma=0)
+    r.set_w(model='lognormal', per_source='different', mu=0.1, sigma=0.5)
+    r.set_time(model='regular', lam=2)
+    r.generate()
 
-    s = Survey('chime', strategy='regular', n_days=N_DAYS)
-    s.beam_pattern = 'chime'
+    s = Survey('chime', n_days=N_DAYS)
+    s.set_beam(model='chime')
 
     surv_pop = SurveyPopulation(r, s)
 

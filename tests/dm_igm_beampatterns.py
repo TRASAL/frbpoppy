@@ -10,39 +10,30 @@ from convenience import plot_aa_style, rel_path
 BEAMPATTERNS = ['perfect', 'airy', 'gaussian']
 
 # Generate population with standard candles
-pop = CosmicPopulation(5e5,
-                       n_days=1,
-                       name='standard',
-                       dm_host_model='gaussian',
-                       dm_host_mu=0,
-                       dm_host_sigma=0,
-                       dm_igm_index=1200,
-                       dm_igm_sigma=0,
-                       dm_mw_model='zero',
-                       emission_range=[10e6, 10e9],
-                       lum_range=[1e36, 1e36],
-                       lum_index=0,
-                       n_model='sfr',
-                       w_model='uniform',
-                       w_range=[1., 1.],
-                       w_mu=1.,
-                       w_sigma=0.,
-                       si_mu=0.,
-                       si_sigma=0.,
-                       z_max=2.5)
+pop = CosmicPopulation(n_srcs=5e5, n_days=1, name='standard')
+pop.set_dist(model='sfr', z_max=2.5, H_0=67.74, W_m=0.3089, W_v=0.6911)
+pop.set_dm_igm(model='ioka', slope=1200, sigma=0)
+pop.set_dm(mw=False, host=False, igm=True)
+pop.set_emission_range(low=10e6, high=10e9)
+pop.set_lum(model='constant', value=1e36)
+pop.set_w(model='constant', value=1)
+pop.set_si(model='constant', value=0)
+pop.generate()
 
 pop_obs = {}
 
-survey = Survey('perfect-small', n_sidelobes=0)
+survey = Survey('perfect-small')
+survey.beam_size_fwhm = 90.
 
 for pattern in BEAMPATTERNS:
 
-    survey.beam_pattern = pattern
+    survey.set_beam(model=pattern, n_sidelobes=0)
 
     # Observe populations
     pop_obs[pattern] = SurveyPopulation(pop, survey)
     pop_obs[pattern].name = f'obs-{pattern}'
     pop_obs[pattern].rates()
+    print(pop_obs[pattern].rates())
     pop_obs[pattern].save()
 
 plot_aa_style()

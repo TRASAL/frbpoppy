@@ -120,11 +120,12 @@ class FRBs:
             # 2D arrays to 1D
             if parm.ndim > 1:
                 if parm.size > 0:
-                    df[attr] = parm[~np.isnan(self.time)]
+                        df[attr] = parm[~np.isnan(self.time)]
             # 1D array to match length 2D->1D arrays
             elif type(self.time) is np.ndarray:
                 concate = np.array([parm, ]*self.time.shape[1]).transpose()
-                df[attr] = concate[~np.isnan(self.time)]
+                if concate.size > 0:
+                    df[attr] = concate[~np.isnan(self.time)]
             else:
                 df[attr] = parm
 

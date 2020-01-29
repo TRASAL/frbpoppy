@@ -369,7 +369,9 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
 
 def load_T_sky():
     """
-    Read the Haslam sky temperature map into a list from which temperatures can
+    Read the Haslam sky temperature map into a list.
+
+    ... from which temperatures can
     be retrieved. The temperature sky map is given in the weird units of
     HealPix, and despite looking up info on this coordinate system, I don't
     have the foggiest idea of how to transform these to galactic coordinates. I
@@ -378,8 +380,8 @@ def load_T_sky():
 
     Returns:
         t_sky_list (list): List of sky temperatures in HealPix? coordinates?
-    """
 
+    """
     model = os.path.join(os.path.dirname(__file__), '../data/models/tsky/')
     path = os.path.join(model, 'haslam_2014.dat')
 
@@ -685,3 +687,38 @@ def hadec_to_azalt(ha, dec, lat):
         az = float(az)
 
     return az, alt
+
+
+def in_region(ra, dec, gl, gb,
+              ra_min=0, ra_max=360,
+              dec_min=-90, dec_max=90,
+              gl_min=-180, gl_max=180,
+              gb_min=-90, gb_max=90):
+    """
+    Check if the given frbs are within the survey region.
+
+    Args:
+        ra, dec, gl, gb (float): Coordinates to check whether in region
+
+    Returns:
+        array: Boolean mask denoting whether frbs are within survey region
+
+    """
+    # Create mask with False
+    mask = np.ones_like(ra, dtype=bool)
+
+    # Ensure in correct format
+    gl[gl > 180.] -= 360.
+
+    # Create region masks
+    gl_limits = (gl > gl_max) | (gl < gl_min)
+    gb_limits = (gb > gb_max) | (gb < gb_min)
+    ra_limits = (ra > ra_max) | (ra < ra_min)
+    dec_limits = (dec > dec_max) | (dec < dec_min)
+
+    mask[gl_limits] = False
+    mask[gb_limits] = False
+    mask[ra_limits] = False
+    mask[dec_limits] = False
+
+    return mask

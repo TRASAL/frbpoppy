@@ -12,8 +12,5 @@ from .paths import paths
 from .population import Population, unpickle, split_pop
 from .precalc import *
 from .rates import *
-from .repeater_pop import RepeaterPopulation
 from .survey import Survey
 from .survey_pop import SurveyPopulation
-from .time_dists import *
-from .w_dists import *

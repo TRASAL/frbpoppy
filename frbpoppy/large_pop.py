@@ -31,7 +31,7 @@ class LargePopulation:
     def run(self):
         """Run the generating and surveying of a large population."""
         pprint(f'Running a large {self.base_name} population')
-        d = divmod(self.pop.n_gen, self.max_size)
+        d = divmod(self.pop.n_srcs, self.max_size)
         sizes = [self.max_size for i in range(d[0])]
         if d[1] != 0:
             sizes.append(d[1])
@@ -39,7 +39,7 @@ class LargePopulation:
 
         for i, n in enumerate(tqdm(sizes, desc='Subpopulations')):
             pop = self.pop
-            pop.n_gen = n
+            pop.n_srcs = n
             pop.uid = self.uids[i]
             pop.generate()
 
@@ -122,8 +122,7 @@ def main():
     from frbpoppy.survey_pop import SurveyPopulation
     from frbpoppy.do_plot import plot
 
-    pop = CosmicPopulation(int(5e5), generate=False)
-    pop.name = 'test'
+    pop = CosmicPopulation(int(5e5), name='test', generate=False)
 
     surveys = []
     for s in ['apertif']:

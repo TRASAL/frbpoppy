@@ -18,5 +18,17 @@ def uniform(min_ra=0, max_ra=360, min_dec=-90, max_dec=90, n_srcs=1):
     """
     u = np.random.uniform
     ra = u(min_ra, max_ra, n_srcs)
-    dec = np.rad2deg(np.arccos(u(min_dec/90, max_dec/90, n_srcs))) - 90
+    min_dec_x = np.cos(np.deg2rad(min_dec + 90))
+    max_dec_x = np.cos(np.deg2rad(max_dec + 90))
+    dec = np.rad2deg(np.arccos(u(max_dec_x, min_dec_x, n_srcs))) - 90
     return ra, dec
+
+
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    ra, dec = uniform(min_ra=0, max_ra=360, min_dec=45, max_dec=90,
+                      n_srcs=int(1e4))
+    plt.scatter(ra, dec)
+    plt.xlim(0, 360)
+    plt.ylim(-90, 90)
+    plt.show()

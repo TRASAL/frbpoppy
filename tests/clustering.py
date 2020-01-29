@@ -3,18 +3,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-from frbpoppy import RepeaterPopulation, pprint
+import frbpoppy.time_dists as td
+from frbpoppy import pprint
 
 from convenience import plot_aa_style, rel_path
 
 M_BURSTS = 1100
-DAYS = 50
-N_FRBS = int(1e5)
+N_DAYS = 50
+N_SRCS = int(1e5)
 R = 5.7
 K = 0.34
 
 
-def get_probabilities(normalise=False, r=5.7, k=0.34):
+def get_probabilities(normalise=False):
     """Get the number of bursts per maximum time.
 
     Args:
@@ -26,18 +27,13 @@ def get_probabilities(normalise=False, r=5.7, k=0.34):
         array: Number of bursts per maximum time.
 
     """
-    n_frbs = N_FRBS
-    days = np.arange(1, DAYS, 1)
+    days = np.arange(1, N_DAYS, 1)
     m_bursts = np.arange(0, M_BURSTS, 1)
     xx, yy = np.meshgrid(m_bursts, days)
     prob = np.full((len(days), len(m_bursts)), np.nan)
 
     # Mask any frbs over the maximum time
-    pop = RepeaterPopulation.simple(n_frbs)
-    pop.n_days = DAYS
-    pop.frbs.z = 0
-    pop.gen_clustered_times(r=10, k=0.3)
-    time = pop.frbs.time
+    time = td.clustered(r=R, k=K, n_srcs=N_SRCS, n_days=N_DAYS, z=0)
 
     pprint('Masking days')
     for i, day in reversed(list(enumerate(days))):
@@ -51,7 +47,7 @@ def get_probabilities(normalise=False, r=5.7, k=0.34):
             pprint('Please ensure M is large enough.')
             exit()
 
-    prob = prob.T/n_frbs
+    prob = prob.T/N_SRCS
 
     if normalise:
         # Normalise at each maximum time (highest chance becomes one)
@@ -64,7 +60,7 @@ def plot(prob, show=False):
     """Plot the number of bursts seen over a maximum time."""
     plot_aa_style(cols=2)
 
-    days = np.arange(1, DAYS, 1)
+    days = np.arange(1, N_DAYS, 1)
     m_bursts = np.arange(0, M_BURSTS, 1)
 
     prob[np.isnan(prob)] = 0
@@ -88,5 +84,5 @@ def plot(prob, show=False):
 if __name__ == '__main__':
     # Stops RuntimeWarnings about nan values
     np.warnings.filterwarnings('ignore')
-    prob = get_probabilities(normalise=False, r=R, k=K)
+    prob = get_probabilities(normalise=False)
     plot(prob)
