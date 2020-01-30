@@ -722,3 +722,18 @@ def in_region(ra, dec, gl, gb,
     mask[dec_limits] = False
 
     return mask
+
+
+def calc_sky_radius(area):
+    """Determine the radius along the sky of an area in sq. degrees."""
+    # Check whether the full sky
+    if np.allclose(area, 4*np.pi*(180/np.pi)**2):
+        return 180
+    else:
+        cos_r = (1 - (area*np.pi)/(2*180**2))
+        return np.rad2deg(np.arccos(cos_r))
+
+
+def calc_sky_area(radius):
+    """Determine the area in sq. degree of a radius along the sky."""
+    return (1 - np.cos(np.deg2rad(radius)))*(2*180**2)/np.pi

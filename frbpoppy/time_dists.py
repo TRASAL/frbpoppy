@@ -19,7 +19,10 @@ def regular(lam=2, n_srcs=1, n_days=1, z=0):
     time = np.tile(time_range, (n_srcs, 1))
 
     # Add random offsets
-    time_offset = np.random.uniform(0, time[:, 1])
+    if time.shape[1] > 1:
+        time_offset = np.random.uniform(0, time[:, 1])
+    else:
+        time_offset = np.random.uniform(0, time[:, 0])
     time += time_offset[:, np.newaxis]
 
     # Add redshift

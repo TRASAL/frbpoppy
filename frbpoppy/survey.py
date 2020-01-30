@@ -1,6 +1,5 @@
 """Class holding survey properties."""
 
-from scipy.special import j1
 import numpy as np
 import os
 import pandas as pd
@@ -8,6 +7,7 @@ import pandas as pd
 import frbpoppy.galacticops as go
 import frbpoppy.pointings as pointings
 from frbpoppy.paths import paths
+import frbpoppy.beam_dists as bd
 
 
 class Survey:
@@ -87,7 +87,7 @@ class Survey:
         self.bw = survey['bandwidth (MHz)']
         self.bw_chan = survey['channel bandwidth (MHz)']
         self.n_pol = survey['number of polarizations']
-        self.beam_size_fwhm = survey['beam size (deg^2)']
+        self.beam_size_at_fwhm = survey['beam size (deg^2)']
         self.snr_limit = survey['signal-to-noise ratio [0-1]']
         self.max_w_eff = survey['maximum pulse width (ms)']
         self.latitude = survey['latitude (deg)']
@@ -101,21 +101,6 @@ class Survey:
         self.gl_max = survey['maximum Galactic longitude (deg)']
         self.gb_min = survey['minimum Galactic latitude (deg)']
         self.gb_max = survey['maximum Galactic latitude (deg)']
-
-    def calc_sky_radius(self, area=None):
-        """Determine the radius along the sky of an area in sq. degrees."""
-        # Calculate size of detection region
-        if area is None:
-            area = self.beam_size_fwhm
-
-        # Check whether the full sky
-        if np.allclose(area, 4*np.pi*(180/np.pi)**2):
-            r = 180
-        else:
-            cos_r = (1 - (area*np.pi)/(2*180**2))
-            r = np.rad2deg(np.arccos(cos_r))
-
-        return r
 
     def in_region(self, ra, dec, gl, gb):
         """
@@ -171,165 +156,8 @@ class Survey:
         """Generate pointings."""
         self.pointings = self.point_func()
 
-    def max_offset(self, n):
-        """Calculate the maximum offset of an FRB in an Airy disk.
-
-        Args:
-            n (int): Maximum number of wanted sidelobes
-
-        """
-        # Null points of kasin for allow a number of sidelobes
-        kasin_nulls = [3.831706, 7.015587, 10.173468, 13.323692, 16.47063,
-                       19.615859, 22.760084, 25.903672, 29.046829, 32.18968,
-                       35.332308, 38.474766]
-
-        # Allow for cut at FWHM
-        if n == 0.5:
-            return 1
-
-        arcsin = np.arcsin(self.fwhm*kasin_nulls[n]/180)
-        if np.isnan(arcsin):
-            m = f'Beamsize including sidelobes would be larger than sky \n'
-            A = (90/kasin_nulls[n])**2*np.pi
-            m += f'Ensure beamsize is smaller than {A}'
-            raise ValueError(m)
-
-        return 2/self.fwhm * 180/np.pi * arcsin
-
-    def calc_random_int_pro(self, shape=1):
-        """Calculate the intensity profile in random spots of a beam.
-
-        Args:
-            shape (tuple): Usually the shape of frbs.s_peak
-
-        Returns:
-            array, array: intensity profile, offset from beam [degree]
-
-        """
-        # Calculate Full Width Half Maximum from beamsize
-        offset = self.calc_sky_radius()
-        self.fwhm = 2*offset  # The diameter [deg]
-
-        # Take a random location in the 2D beampattern
-        offset *= np.sqrt(np.random.random(shape))
-
-        # Allow for a perfect beam pattern in which all is detected
-        if self.beam_pattern.startswith('perfect'):
-            int_pro = np.ones(shape)
-            if self.beam_size is None:
-                self.beam_size = self.beam_size_fwhm
-            return int_pro, offset
-
-        # Formula's based on 'Interferometry and Synthesis in Radio
-        # Astronomy' by A. Richard Thompson, James. M. Moran and
-        # George W. Swenson, JR. (Second edition), around p. 15
-
-        max_offset = self.max_offset(self.n_sidelobes)
-
-        if self.beam_size is None:
-            self.beam_size = np.pi*(self.fwhm/2*max_offset)**2  # [sq deg]
-
-        if self.beam_pattern == 'gaussian':
-            # Set the maximum offset equal to the null after a sidelobe
-            # I realise this pattern isn't an airy, but you have to cut
-            # somewhere
-            offset *= max_offset
-            alpha = 2*np.sqrt(np.log(2))
-            int_pro = np.exp(-(alpha*offset/self.fwhm)**2)
-            return int_pro, offset
-
-        elif self.beam_pattern == 'airy':
-            # Set the maximum offset equal to the null after a sidelobe
-            offset *= max_offset
-            c = 299792458
-            conv = np.pi/180  # Conversion degrees -> radians
-            eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
-            a = eff_diam/2  # Effective radius of telescope
-            lamda = c/(self.central_freq*1e6)
-            ka = (2*np.pi*a/lamda)
-            kasin = ka*np.sin(offset*conv)
-            int_pro = 4*(j1(kasin)/kasin)**2
-            return int_pro, offset
-
-        elif self.beam_array is not None:
-            b_shape = self.beam_array.shape
-            ran_x = np.random.randint(0, b_shape[0], shape)
-            ran_y = np.random.randint(0, b_shape[1], shape)
-            int_pro = self.beam_array[ran_x, ran_y]
-            offset = np.sqrt((ran_x-b_shape[0]/2)**2 + (ran_y-b_shape[1]/2)**2)
-            offset *= self.pixel_scale  # Correct for pixel scale
-            return int_pro, offset
-
-        else:
-            m = f'Beam pattern "{self.beam_pattern}" not recognised'
-            raise ValueError(m)
-
-    def calc_fixed_int_pro(self, ra, dec, ra_p, dec_p, lst, test=False):
-        """Calculate intensity profile for fixed location in beam.
-
-        Args:
-            ra (array): Right ascension of objects [deg]
-            dec (array): Declination of objects [deg]
-            ra_p (float): Right ascension of pointing [deg]
-            dec_p (float): Declination of pointing [deg]
-            lst (float): Local Sidereal Time [deg]
-            test (bool): For testing
-
-        Returns:
-            type: Description of returned object.
-
-        """
-        # Weed out perfect beam
-        if self.beam_pattern.startswith('perfect'):
-            if self.beam_size is None:
-                self.beam_size = self.beam_size_fwhm
-            return np.ones(len(ra))
-
-        # Convert input decimal degrees to radians
-        ra = np.deg2rad(ra)
-        dec = np.deg2rad(dec)
-        args = [ra_p, dec_p, lst, self.latitude, self.pixel_scale]
-
-        for a in args:
-            if a is None:
-                raise ValueError('Missing required input')
-
-        ra_p, dec_p, lst, lat, pixel_scale = np.deg2rad(args)
-
-        if self.mount_type == 'equatorial':
-            # Convert input coordinates to offset in ra and dec
-            dx, dy = go.coord_to_offset(ra_p, dec_p, ra, dec)
-        elif self.mount_type in ('azimuthal', 'transit'):
-            # Convert input right ascension to hour angle
-            ha = lst - ra
-            ha_p = lst - ra_p
-            # Convert ha, dec to az, alt
-            az, alt = go.hadec_to_azalt(ha, dec, lat)
-            az_p, alt_p = go.hadec_to_azalt(ha_p, dec_p, lat)
-            # Convert to offset
-            dx, dy = go.coord_to_offset(az_p, alt_p, az, alt)
-        else:
-            raise ValueError(f'Invalid mount type: {self.mount_type}')
-
-        # Convert offsets dx, dy to pixel in beam pattern (round)
-        dx_px = (np.round(dx / pixel_scale)).astype(int)
-        dy_px = (np.round(dy / pixel_scale)).astype(int)
-        ny, nx = self.beam_array.shape
-        x = (nx/2 + dx_px).astype(int)
-        y = (ny/2 + dy_px).astype(int)
-
-        # Get the value at this pixel (zero if outside beam pattern)
-        m = self.beam_array.shape[0]
-        outside = ((x <= 0) | (x >= m) | (y <= 0) | (y >= m))
-        x[outside] = 0  # Nans don't work in int arrays
-        y[outside] = 0
-
-        intensity = self.beam_array[y, x]
-        intensity[(x == 0) & (y == 0)] = 0
-
-        return intensity
-
-    def set_beam(self, model='perfect', random_loc=True, n_sidelobes=0.5):
+    def set_beam(self, model='perfect', size=None, random_loc=True,
+                 n_sidelobes=0.5):
         """Set intensity profile.
 
         Set properties for int pro
@@ -337,45 +165,88 @@ class Survey:
         Args:
             model (str): Beam pattern. Choice from 'apertif', 'parkes',
                 'chime', 'gaussian', 'airy'.
-            random_loc (bool): Whether to calculate the location of each burst
-                or place them randomly in the beam.
+            size (float): Beam size at FWHM [sq. deg].
+                Defaults to that of the survey file
+            random_loc (bool): Whether to calculate the precise or random
+                location of each burst in the beam.
         if model in ('gaussian', 'airy'):
-            n_sidelobes (int): Number of sidelobes to include.
+            n_sidelobes (int): Number of sidelobes to include. Defaults to
+                cutting at the FWHM when set to 0.5.
 
         """
         # Set up beam properties
         self.beam_pattern = model
         self.n_sidelobes = n_sidelobes
+        self.beam_array = None
+        self.pixel_scale = None
 
-        # Set up predicted beam models
-        if model in ('apertif', 'parkes', 'chime', 'gaussian', 'airy'):
+        # Calculate beam properties
+        if size is not None:
+            self.beam_size_at_fwhm = size
+        self.fwhm = 2*go.calc_sky_radius(self.beam_size_at_fwhm)
+
+        # What should the maximum radius of the beam be?
+        self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
+        self.beam_size = go.calc_sky_area(self.max_offset)
+
+        # Set up beam arrays
+        models = ('apertif', 'parkes', 'chime', 'gaussian', 'airy')
+        if model in models:
             place = paths.models() + f'/beams/{self.beam_pattern}.npy'
             self.beam_array = np.load(place)
 
-            if model == 'apertif':
-                self.pixel_scale = 0.94/60  # Degrees per pixel [deg]
-                self.beam_size = 25.  # [sq deg]
-            elif model == 'parkes':
-                self.pixel_scale = 54/3600  # Degrees per pixel [deg]
-                self.beam_size = 9.  # [sq deg]
-            elif model == 'chime':
-                self.pixel_scale = 0.08  # Degrees per pixel [deg]
-                self.beam_size = 80*80  # [sq deg]
-            elif model == 'gaussian':
-                r = self.calc_sky_radius()
-                self.pixel_scale = r / 95  # Degrees per pixel [deg]
-                self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
-            elif model == 'airy':
-                r = self.calc_sky_radius()
-                self.pixel_scale = r / 31  # Degrees per pixel [deg]
-                self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
-        elif not model.startswith('perfect'):
+        # Set up details if using beam arrays
+        if model == 'apertif':
+            self.pixel_scale = 0.94/60  # Degrees per pixel [deg]
+            self.beam_size = 25.  # [sq deg]
+        elif model == 'parkes':
+            self.pixel_scale = 54/3600  # Degrees per pixel [deg]
+            self.beam_size = 9.  # [sq deg]
+        elif model == 'chime':
+            self.pixel_scale = 0.08  # Degrees per pixel [deg]
+            self.beam_size = 80*80  # [sq deg]
+        elif model == 'gaussian':
+            self.pixel_scale = self.fwhm / 95  # Degrees per pixel [deg]
+            self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
+        elif model == 'airy':
+            self.pixel_scale = self.fwhm / 31  # Degrees per pixel [deg]
+            self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
+        elif not model.startswith('perfect') and model not in models:
             raise ValueError('Beam model input not recognised.')
 
-        if random_loc or model.startswith('perfect'):
-            self.beam_func = self.calc_random_int_pro
+        self.beam_func_oneoffs = lambda x: bd.int_pro_random(
+                                 shape=x,
+                                 fwhm=self.fwhm,
+                                 pattern=self.beam_pattern,
+                                 max_offset=self.max_offset,
+                                 central_freq=self.central_freq,
+                                 beam_array=self.beam_array,
+                                 pixel_scale=self.pixel_scale)
+
+        def int_pro(ra, dec, ra_p, dec_p, lst):
+            return bd.int_pro_fixed(ra, dec, ra_p, dec_p, lst,
+                                    pattern='perfect',
+                                    latitude=self.latitude,
+                                    beam_array=self.beam_array,
+                                    pixel_scale=self.pixel_scale,
+                                    mount_type=self.mount_type)
+
+        self.beam_func_rep = int_pro
+
+    def calc_int_pro(self, repeaters=False,
+                     shape=None, ra=None, dec=None, ra_p=None,
+                     dec_p=None, lst=None):
+        """Calculate intensity profile."""
+        if not repeaters:
+            # Ugly I know, but for one offs you want to be able to cut
+            # the beam at different points
+            if self.beam_pattern in ('airy', 'gaussian'):
+                self.max_offset = bd.calc_max_offset(self.n_sidelobes,
+                                                     self.fwhm)
+                self.beam_size = go.calc_sky_area(self.max_offset)
+            return self.beam_func_oneoffs(shape)
         else:
-            self.beam_func = self.calc_fixed_int_pro
+            return self.beam_func_rep(ra, dec, ra_p, dec_p, lst)
 
     def calc_dm_smear(self, dm):
         """

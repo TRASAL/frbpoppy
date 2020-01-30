@@ -20,7 +20,8 @@ for obs in OBSERVATORIES:
     survey = obs[1]
     pattern = obs[0]
 
-    s = Survey(survey, beam_pattern=pattern)
+    s = Survey(survey)
+    s.set_beam(model=pattern)
     int_pro, offset = s.calc_int_pro(shape=n)
 
     # Sort the values

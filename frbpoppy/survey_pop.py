@@ -104,7 +104,7 @@ class SurveyPopulation(Population):
         survey = self.survey
 
         # Account for beam offset
-        int_pro, offset = survey.calc_random_int_pro(shape=frbs.s_peak.shape)
+        int_pro, offset = survey.calc_int_pro(shape=frbs.s_peak.shape)
         frbs.s_peak *= int_pro
         frbs.offset = offset  # [deg]
 
@@ -163,7 +163,7 @@ class SurveyPopulation(Population):
         frbs.apply(time_mask)
 
         # Prepare for iterating over time
-        self.r = survey.calc_sky_radius()  # Beam pattern radius
+        self.r = survey.beam_size / 2  # Beam pattern radius
         max_n_pointings = len(times) - 1
 
         # Initialize some necessary arrays
@@ -228,11 +228,12 @@ class SurveyPopulation(Population):
         tp_unique, n_bursts = np.unique(tp_ix[0], return_counts=True)
 
         # What's the intensity of them in the beam?
-        int_pro = survey.calc_fixed_int_pro(ra=frbs.ra[tp_unique],
-                                            dec=frbs.dec[tp_unique],
-                                            ra_p=ra_pt,
-                                            dec_p=dec_pt,
-                                            lst=lst)
+        int_pro = survey.calc_int_pro(repeaters=True,
+                                      ra=frbs.ra[tp_unique],
+                                      dec=frbs.dec[tp_unique],
+                                      ra_p=ra_pt,
+                                      dec_p=dec_pt,
+                                      lst=lst)
 
         # Ensure relevant masks
         s_peak_ix = tp_unique

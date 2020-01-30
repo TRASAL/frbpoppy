@@ -17,13 +17,16 @@ for pattern in PATTERNS:
     n_sidelobes = 1
     p = pattern
     z = 0
+    if pattern.startswith('perfect'):
+        n_sidelobes = 0.5
     if pattern.startswith('airy'):
         n_sidelobes = int(pattern[-1])
         p = 'airy'
         if n_sidelobes == 0:
             z = 10
 
-    s = Survey(SURVEY, beam_pattern=p, n_sidelobes=n_sidelobes)
+    s = Survey(SURVEY)
+    s.set_beam(model=p, n_sidelobes=n_sidelobes)
     int_pro, offset = s.calc_int_pro(shape=n)
 
     # Sort the values
@@ -35,8 +38,8 @@ for pattern in PATTERNS:
     offset = offset[int_pro > MIN_Y]
     int_pro = int_pro[int_pro > MIN_Y]
 
-    print(f'Beam size at FWHM: {s.beam_size_fwhm}')
-    print(f'Beam size with sidelobes: {s.beam_size}')
+    print(f'Beam size at FWHM: {s.beam_size_at_fwhm}')
+    print(f'Beam size with {n_sidelobes} sidelobes: {s.beam_size}')
 
     plt.plot(offset, int_pro, label=pattern, zorder=z)
 

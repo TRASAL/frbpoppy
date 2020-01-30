@@ -1,7 +1,7 @@
 """Play around with a simple repeater population."""
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot, pprint
 
-MAX_DAYS = 10
+MAX_DAYS = 1
 PLOT = False
 
 # Set up a fairly simple repeater population

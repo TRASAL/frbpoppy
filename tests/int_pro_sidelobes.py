@@ -17,8 +17,8 @@ for sidelobe in reversed(SIDELOBES):
 
     args = {'sidelobes': sidelobe}
 
-    s = Survey(SURVEY, beam_pattern='airy', n_sidelobes=sidelobe)
-
+    s = Survey(SURVEY)
+    s.set_beam(model='airy', n_sidelobes=sidelobe)
     int_pro, offset = s.calc_int_pro(shape=n)
 
     # Sort the values
