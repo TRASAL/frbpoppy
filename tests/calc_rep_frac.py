@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from frbpoppy import CosmicPopulation, Survey, LargePopulation, pprint, plot
+from frbpoppy import CosmicPopulation, Survey, LargePopulation, pprint
 
 from convenience import plot_aa_style, rel_path
 

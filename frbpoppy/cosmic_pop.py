@@ -195,7 +195,7 @@ class CosmicPopulation(Population):
         if model == 'ioka':
             slope (float): Slope of the DM-z relationship.
             sigma (float): Spread around the DM-z relationship.
-            spread_func (func): np.random.normal or np.random.lognormal.
+            spread_dist (str): 'normal' or 'lognormal'.
         """
         # Possibility to use your own function
         if not isinstance(model, str):

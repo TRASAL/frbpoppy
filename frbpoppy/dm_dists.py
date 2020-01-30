@@ -8,18 +8,18 @@ def constant(value=100, n_srcs=1):
     return np.full(n_srcs, value).astype(np.float32)
 
 
-def ioka(z=0, slope=950, sigma=None, spread_func=np.random.normal):
+def ioka(z=0, slope=950, sigma=None, spread_dist='normal'):
     """Calculate the contribution of the igm to the dispersion measure.
 
     Follows Ioka (2003) and Inoue (2004), with default slope value falling
-    inbetween the Cordes and Petroff reviews
+    in between the Cordes and Petroff reviews.
 
     Args:
         z (array): Redshifts.
         slope (float): Slope of the DM-z relationship.
         sigma (float): Spread around the DM-z relationship.
-        spread (function): Spread function option. Choice from
-            ('np.random.normal', 'np.random.lognormal')
+        spread_dist (str): Spread function option. Choice from
+            ('normal', 'lognormal')
 
     Returns:
         dm_igm (array): Dispersion measure of intergalactic medium [pc/cm^3]
@@ -27,9 +27,15 @@ def ioka(z=0, slope=950, sigma=None, spread_func=np.random.normal):
     """
     if sigma is None:
         sigma = 0.2*slope*z
-    if spread_func.__name__ not in ('normal', 'lognormal'):
-        raise ValueError('spread_func input not recognised')
-    return spread_func(slope*z, sigma).astype(np.float32)
+
+    # Set up spread distribution
+    if spread_dist == 'normal':
+        f = np.random.normal
+    elif spread_dist == 'lognormal':
+        f = np.random.lognormal
+    else:
+        raise ValueError('spread_dist input not recognised')
+    return f(slope*z, sigma).astype(np.float32)
 
 
 def gauss(mu=100, sigma=200, n_srcs=1, z=0):

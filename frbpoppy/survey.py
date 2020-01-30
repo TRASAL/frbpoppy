@@ -23,18 +23,17 @@ class Survey:
     """
 
     def __init__(self,
-                 name,
-                 n_days=1,
-                 strategy='regular'):
+                 name='perfect',
+                 n_days=1):
         """Initializing."""
         # Set up parameters
         self.name = name
         self.n_days = n_days
-        self.strategy = strategy
+
+        # Calculate some at a later stage
         self.beam_size = None
         self.beam_array = None
         self.pointings = None
-        self.strategy = 'regular'
 
         # Parse survey file
         self.read_survey_parameters()
@@ -43,11 +42,16 @@ class Survey:
         if self.name.startswith('perfect'):
             self.beam_pattern = 'perfect'
 
-        # Transit telescopes can't follow-up
+        # Un-used
+        self.strategy = 'regular'  # 'follow-up' not implemented
         if self.mount_type is 'transit':
+            # Transit telescopes can't follow-up
             self.strategy = 'regular'
 
+        # Set beam properties
         self.set_beam()
+
+        # Set pointing properties
         self.set_pointings(mount_type=self.mount_type)
 
     def __str__(self):
@@ -98,17 +102,17 @@ class Survey:
         self.gb_min = survey['minimum Galactic latitude (deg)']
         self.gb_max = survey['maximum Galactic latitude (deg)']
 
-    def calc_beam_radius(self, beam_size=None):
-        """Determine the radius of the beam pattern in degrees."""
+    def calc_sky_radius(self, area=None):
+        """Determine the radius along the sky of an area in sq. degrees."""
         # Calculate size of detection region
-        if beam_size is None:
-            beam_size = self.beam_size_fwhm
+        if area is None:
+            area = self.beam_size_fwhm
 
         # Check whether the full sky
-        if np.allclose(beam_size, 4*np.pi*(180/np.pi)**2):
+        if np.allclose(area, 4*np.pi*(180/np.pi)**2):
             r = 180
         else:
-            cos_r = (1 - (beam_size*np.pi)/(2*180**2))
+            cos_r = (1 - (area*np.pi)/(2*180**2))
             r = np.rad2deg(np.arccos(cos_r))
 
         return r
@@ -126,14 +130,10 @@ class Survey:
         """
         # Create mask with False if not in region
         mask = go.in_region(ra, dec, gl, gb,
-                            ra_min=self.ra_min,
-                            ra_max=self.ra_max,
-                            dec_min=self.dec_min,
-                            dec_max=self.dec_max,
-                            gl_min=self.gl_min,
-                            gl_max=self.gl_max,
-                            gb_min=self.gb_min,
-                            gb_max=self.gb_max)
+                            ra_min=self.ra_min, ra_max=self.ra_max,
+                            dec_min=self.dec_min, dec_max=self.dec_max,
+                            gl_min=self.gl_min, gl_max=self.gl_max,
+                            gb_min=self.gb_min, gb_max=self.gb_max)
 
         return mask
 
@@ -207,7 +207,7 @@ class Survey:
 
         """
         # Calculate Full Width Half Maximum from beamsize
-        offset = self.calc_beam_radius()
+        offset = self.calc_sky_radius()
         self.fwhm = 2*offset  # The diameter [deg]
 
         # Take a random location in the 2D beampattern
@@ -362,11 +362,11 @@ class Survey:
                 self.pixel_scale = 0.08  # Degrees per pixel [deg]
                 self.beam_size = 80*80  # [sq deg]
             elif model == 'gaussian':
-                r = self.calc_beam_radius()
+                r = self.calc_sky_radius()
                 self.pixel_scale = r / 95  # Degrees per pixel [deg]
                 self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
             elif model == 'airy':
-                r = self.calc_beam_radius()
+                r = self.calc_sky_radius()
                 self.pixel_scale = r / 31  # Degrees per pixel [deg]
                 self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
         elif not model.startswith('perfect'):
@@ -377,7 +377,7 @@ class Survey:
         else:
             self.beam_func = self.calc_fixed_int_pro
 
-    def dm_smear(self, dm):
+    def calc_dm_smear(self, dm):
         """
         Calculate delay in pulse across a channel due to dm smearing.
 

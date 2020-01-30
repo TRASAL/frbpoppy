@@ -49,6 +49,10 @@ class SurveyPopulation(Population):
         self.scin = scin
         self.survey = survey
 
+        # Set survey attributes if not available
+        if survey.n_days is None:
+            survey.n_days = self.n_days
+
         # Calculations differ for repeaters
         if self.repeaters is True and scin is True:
                 m = 'Scintillation is currently not implemented for '
@@ -63,7 +67,7 @@ class SurveyPopulation(Population):
         self.rate.out = np.size(region_mask) - np.count_nonzero(region_mask)
 
         # Calculate dispersion measure across single channel
-        frbs.t_dm = survey.dm_smear(frbs.dm)
+        frbs.t_dm = survey.calc_dm_smear(frbs.dm)
 
         # Set scattering timescale
         if scat:
@@ -159,7 +163,7 @@ class SurveyPopulation(Population):
         frbs.apply(time_mask)
 
         # Prepare for iterating over time
-        self.r = survey.calc_beam_radius()  # Beam pattern radius
+        self.r = survey.calc_sky_radius()  # Beam pattern radius
         max_n_pointings = len(times) - 1
 
         # Initialize some necessary arrays
@@ -354,8 +358,8 @@ class SurveyPopulation(Population):
 
 def fast_where(a, min_v, max_v):
     """Faster implementation of np.where(((a >= min_v) & (a <= max_v)))."""
-    left = np.apply_along_axis(bisect.bisect_left, 1, a, min_v)
-    right = np.apply_along_axis(bisect.bisect_right, 1, a, max_v)
+    left = np.apply_along_axis(np.searchsorted, 1, a, min_v)
+    right = np.apply_along_axis(np.searchsorted, 1, a, max_v)
     unique_rows = np.where(left <= right)[0]
     bursts_per_row = right[unique_rows] - left[unique_rows]
     rows = np.repeat(unique_rows, bursts_per_row)
@@ -363,6 +367,6 @@ def fast_where(a, min_v, max_v):
     cum_bursts = np.cumsum(bursts_per_row)
     cum_bursts = np.insert(cum_bursts, 0, 0)
     for i, e in enumerate(cum_bursts[1:]):
-        ii = unique_rows[i]
-        cols[cum_bursts[i]:e] = np.arange(left[ii], right[ii])
+        cols[cum_bursts[i]:e] = np.arange(left[unique_rows[i]],
+                                          right[unique_rows[i]])
     return rows, cols
