@@ -156,7 +156,7 @@ class Survey:
         """Generate pointings."""
         self.pointings = self.point_func()
 
-    def set_beam(self, model='perfect', size=None, random_loc=True,
+    def set_beam(self, model='gaussian', size=None, random_loc=True,
                  n_sidelobes=0.5):
         """Set intensity profile.
 
@@ -189,30 +189,8 @@ class Survey:
         self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
         self.beam_size = go.calc_sky_area(self.max_offset)
 
-        # Set up beam arrays
-        models = ('apertif', 'parkes', 'chime', 'gaussian', 'airy')
-        if model in models:
-            place = paths.models() + f'/beams/{self.beam_pattern}.npy'
-            self.beam_array = np.load(place)
-
-        # Set up details if using beam arrays
-        if model == 'apertif':
-            self.pixel_scale = 0.94/60  # Degrees per pixel [deg]
-            self.beam_size = 25.  # [sq deg]
-        elif model == 'parkes':
-            self.pixel_scale = 54/3600  # Degrees per pixel [deg]
-            self.beam_size = 9.  # [sq deg]
-        elif model == 'chime':
-            self.pixel_scale = 0.08  # Degrees per pixel [deg]
-            self.beam_size = 80*80  # [sq deg]
-        elif model == 'gaussian':
-            self.pixel_scale = self.fwhm / 95  # Degrees per pixel [deg]
-            self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
-        elif model == 'airy':
-            self.pixel_scale = self.fwhm / 31  # Degrees per pixel [deg]
-            self.beam_size = (self.pixel_scale*self.beam_array.shape[0])**2
-        elif not model.startswith('perfect') and model not in models:
-            raise ValueError('Beam model input not recognised.')
+        beam_props = bd.get_beam_props(self.beam_pattern, self.fwhm)
+        self.beam_size_array, self.pixel_scale, self.beam_array = beam_props
 
         self.beam_func_oneoffs = lambda x: bd.int_pro_random(
                                  shape=x,
@@ -233,17 +211,17 @@ class Survey:
 
         self.beam_func_rep = int_pro
 
-    def calc_int_pro(self, repeaters=False,
-                     shape=None, ra=None, dec=None, ra_p=None,
-                     dec_p=None, lst=None):
+    def calc_beam(self, repeaters=False, shape=None, ra=None, dec=None,
+                  ra_p=None, dec_p=None, lst=None):
         """Calculate intensity profile."""
+        if not repeaters and self.beam_pattern in ('airy', 'gaussian'):
+            pass
+        elif self.beam_pattern.startswith('perfect'):
+            pass
+        else:
+            self.beam_size = self.beam_size_array
+
         if not repeaters:
-            # Ugly I know, but for one offs you want to be able to cut
-            # the beam at different points
-            if self.beam_pattern in ('airy', 'gaussian'):
-                self.max_offset = bd.calc_max_offset(self.n_sidelobes,
-                                                     self.fwhm)
-                self.beam_size = go.calc_sky_area(self.max_offset)
             return self.beam_func_oneoffs(shape)
         else:
             return self.beam_func_rep(ra, dec, ra_p, dec_p, lst)

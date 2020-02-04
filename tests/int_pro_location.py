@@ -18,7 +18,7 @@ dec_pointing = 89
 lst = 90.
 
 # Set up beam properties
-_, _ = survey.calc_int_pro(shape=0)
+_, _ = survey.calc_beam(shape=0)
 
 # Calculate position in beam
 int, x, y = survey.calc_fixed_int_pro(ra=ra,

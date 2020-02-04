@@ -104,7 +104,7 @@ class SurveyPopulation(Population):
         survey = self.survey
 
         # Account for beam offset
-        int_pro, offset = survey.calc_int_pro(shape=frbs.s_peak.shape)
+        int_pro, offset = survey.calc_beam(shape=frbs.s_peak.shape)
         frbs.s_peak *= int_pro
         frbs.offset = offset  # [deg]
 
@@ -228,7 +228,7 @@ class SurveyPopulation(Population):
         tp_unique, n_bursts = np.unique(tp_ix[0], return_counts=True)
 
         # What's the intensity of them in the beam?
-        int_pro = survey.calc_int_pro(repeaters=True,
+        int_pro = survey.calc_beam(repeaters=True,
                                       ra=frbs.ra[tp_unique],
                                       dec=frbs.dec[tp_unique],
                                       ra_p=ra_pt,

@@ -7,7 +7,7 @@ machine. Subsequent runs will take mere seconds.
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 
 # Set up an FRB population
-cosmic_pop = CosmicPopulation(1e5, name='example', n_days=0.23)
+cosmic_pop = CosmicPopulation.default(1e5, n_days=0.23)
 
 # Generate your FRB population
 cosmic_pop.generate()

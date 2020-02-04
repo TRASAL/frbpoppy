@@ -18,7 +18,7 @@ r.set_dm(mw=True, igm=True, host=True)
 r.generate()
 
 # Set up survey
-survey = Survey('apertif', n_days=MAX_DAYS)
+survey = Survey('perfect', n_days=MAX_DAYS)
 survey.set_beam(model='perfect')
 
 # Construct SurveyPopulation

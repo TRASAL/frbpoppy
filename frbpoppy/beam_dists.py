@@ -3,6 +3,50 @@ import numpy as np
 from scipy.special import j1
 
 import frbpoppy.galacticops as go
+from frbpoppy.paths import paths
+
+
+def get_beam_props(model, fwhm):
+    """Get beam properties.
+
+    Args:
+        model (str): Which model to use.
+        fwhm (float): FWHM [frac. deg].
+
+    Returns:
+        beam_size, pixel_scale, beam_array
+
+    """
+    # Set up beam arrays
+    models = ('apertif', 'parkes', 'chime', 'gaussian', 'airy')
+    if model in models:
+        place = paths.models() + f'/beams/{model}.npy'
+        beam_array = np.load(place)
+
+    # Set up details if using beam arrays
+    if model == 'apertif':
+        pixel_scale = 0.94/60  # Degrees per pixel [deg]
+        beam_size = 25.  # [sq deg]
+    elif model == 'parkes':
+        pixel_scale = 54/3600  # Degrees per pixel [deg]
+        beam_size = 9.  # [sq deg]
+    elif model == 'chime':
+        pixel_scale = 0.08  # Degrees per pixel [deg]
+        beam_size = 80*80  # [sq deg]
+    elif model == 'gaussian':
+        pixel_scale = fwhm / 95  # Degrees per pixel [deg]
+        beam_size = (pixel_scale*beam_array.shape[0])**2
+    elif model == 'airy':
+        pixel_scale = fwhm / 31  # Degrees per pixel [deg]
+        beam_size = (pixel_scale*beam_array.shape[0])**2
+    elif model.startswith('perfect'):
+        pixel_scale = None
+        beam_size = None
+        beam_array = None
+    else:
+        raise ValueError('Beam model input not recognised.')
+
+    return beam_size, pixel_scale, beam_array
 
 
 def calc_max_offset(n, fwhm):
