@@ -8,8 +8,10 @@ from frbpoppy import CosmicPopulation, Survey, LargePopulation, pprint
 
 from convenience import plot_aa_style, rel_path
 
-MAX_DAYS = 2
-N_CHIME = {'rep': 10, 'one-offs': 200}
+MAX_DAYS = 4
+# Chime started in Aug 2018. Assuming 2/day for one-offs.
+# Total of 9 repeaters published on 9 Aug 2019. = ~year
+N_CHIME = {'rep': 9, 'one-offs': 365*2, 'time': 3}
 SAVE = True
 USE_SAVE = False
 
@@ -20,7 +22,7 @@ if USE_SAVE:
 else:
     r = CosmicPopulation.simple(1e5, n_days=MAX_DAYS, repeaters=True)
     r.set_dist(z_max=2.)
-    r.set_time(model='regular')
+    r.set_time(model='clustered', r=5.7, k=0.34)
     r.set_lum(model='powerlaw', low=1e40, high=1e45, power=0,
               per_source='different')
     r.set_dm_host(model='gauss', mu=100, sigma=100)
@@ -58,22 +60,21 @@ plt.plot(days, fracs)
 
 # Plot CHIME detection line
 chime_frac = N_CHIME['rep'] / (N_CHIME['rep'] + N_CHIME['one-offs'])
-line = 'horizontal'
 
 # Add CHIME detection line
 try:
-    if line == 'horizontal':
-        plt.axhline(y=chime_frac, color='r', linestyle='--')
-    else:
-        chime_time = days[bisect(fracs, chime_frac)]
-        plt.axvline(x=chime_time, color='r', linestyle='--')
+    plt.plot([N_CHIME['time'], N_CHIME['time'], 0],
+             [0, chime_frac, chime_frac],
+             color='r', linestyle='--', label='chime')
 except IndexError:
     pprint(f'CHIME fraction of {chime_frac:.1} not in plotting area')
 
 # Further plot details
 plt.xlabel(r'Time (days)')
 plt.ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
-plt.ylim(0, 1)
+plt.xlim(0, max(days))
+plt.legend()
+plt.yscale('log')
 plt.tight_layout()
 plt.savefig(rel_path(f'plots/rep_frac.pdf'))
 plt.clf()

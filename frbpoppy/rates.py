@@ -34,7 +34,7 @@ class Rates:
 
         # Format rates
         rdays = round(self.days, 3)
-        t += r.format('In population', rdays, round(self.tot()))
+        t += r.format('Cosmic Population', rdays, round(self.tot()))
         t += r.format('Detected', rdays, round(self.det, 3))
         t += r.format('Too late', rdays, round(self.late, 3))
         t += r.format('Too faint', rdays, round(self.faint, 3))

@@ -2,54 +2,37 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from frbpoppy import RepeaterPopulation, Survey, SurveyPopulation, plot
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 from frbpoppy import split_pop, pprint
 
 from convenience import hist, plot_aa_style, rel_path
 
 DAYS = 1
 INTERACTIVE_PLOT = False
-PLOTTING_LIMIT_N_FRBS = 0
+PLOTTING_LIMIT_N_SRCS = 0
 SNR = False
 
-r = RepeaterPopulation.simple(int(1e7))
-r.lum_min = 1e40
-r.lum_max = 1e45
-r.lum_pow = 0
-r.lum_rep_model = 'independent'
-r.z_max = 0.01
-r.times_rep_model = 'poisson'
-r.n_days = DAYS
-
-# Set DM distributions
-r.dm_host_model = 'gaussian'
-r.dm_host_mu = 0
-r.dm_host_sigma = 0
-r.dm_igm_index = 1000
-r.dm_igm_sigma = 0
-r.dm_mw_model = 'zero'
-
+r = CosmicPopulation.simple(n_srcs=int(1e5), n_days=DAYS, repeaters=True)
+r.set_dist(z_max=0.01)
+r.set_lum(model='powerlaw', low=1e43, high=1e45, power=0,
+          per_source='different')
+r.set_time(model='poisson', lam=3)
+r.set_dm_igm(model='ioka', slope=1000, sigma=0)
+r.set_dm(mw=False, igm=True, host=False)
 r.generate()
 
-survey = Survey('perfect', strategy='regular', n_days=DAYS)
-survey.beam_pattern = 'perfect'
-survey.snr_limit = 1e16
+# Set up survey
+survey = Survey('perfect', n_days=DAYS)
+survey.set_beam(model='perfect')
+survey.snr_limit = 1e15
 
 surv_pop = SurveyPopulation(r, survey)
 
-# Check whether sufficient frbs
-n_frbs = len(surv_pop.frbs.index)
+pprint(f'{r.n_bursts()}:{surv_pop.n_bursts()}')
+pprint(f'{surv_pop.n_sources()} sources detected')
 
-
-def n_bursts(pop):
-    """Count the number of bursts."""
-    return np.count_nonzero(~np.isnan(pop.frbs.time))
-
-
-pprint(f'{n_bursts(r)}:{n_bursts(surv_pop)}')
-pprint(f'{n_frbs} sources detected')
-if n_frbs < PLOTTING_LIMIT_N_FRBS:
-    pprint(f'Not sufficient FRBs for plotting')
+if r.n_bursts() < PLOTTING_LIMIT_N_SRCS:
+    pprint(f'Not sufficient FRB sources for plotting')
     exit()
 
 # Split population into seamingly one-off and repeater populations
@@ -87,12 +70,12 @@ for i, pop in enumerate(pops):
         label = 'cosmic'
         linestyle = 'dashdot'
 
-    pprint(f'Number of bursts in {label}: {n_bursts(pop)}')
+    pprint(f'Number of bursts in {label}: {pop.n_bursts()}')
 
     # Do stuff with data
     dm = pop.frbs.dm
     x, y = hist(dm)
-    x *= 190  # Normalise x-axis
+    x *= 200  # Normalise x-axis z=0.01, z=2
 
     # Plot DM distributions
     ax1.step(x, y, where='mid', linestyle=linestyle, label=label,
@@ -123,5 +106,5 @@ else:
     plt.legend()
 
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/rep_dist.pdf'))
+plt.savefig(rel_path(f'plots/rep_dm_dist.pdf'))
 plt.clf()

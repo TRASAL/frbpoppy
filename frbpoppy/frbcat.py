@@ -5,6 +5,7 @@ import io
 import os
 import pandas as pd
 import requests
+import numpy as np
 
 from frbpoppy.log import pprint
 from frbpoppy.paths import paths
@@ -21,7 +22,7 @@ class Frbcat():
     """
 
     def __init__(self,
-                 frbpoppy=True,
+                 frbpoppy=False,
                  one_per_frb=True,
                  repeat_bursts=True,
                  repeaters=True,
@@ -282,20 +283,26 @@ class Frbcat():
                repeat_bursts=False,
                repeaters=True):
         """Filter frbcat in various ways."""
-        if one_per_frb:
+        if one_per_frb is True:
             # Only keep rows with the largest number of parameters
             # so that only one row per detected FRB remains
             self.df['count'] = self.df.count(axis=1)
             self.df = self.df.sort_values('count', ascending=False)
             self.df = self.df.drop_duplicates(subset=['utc'])
 
-        if not repeaters:
+        # Split population into repeaters etc
+        pd.options.mode.chained_assignment = None
+        self.df['obj'] = np.where(self.df.duplicated('frb_name'),
+                                  'repeater', 'one-off')
+
+        if repeaters is False:
             # Drops any repeater sources
             self.df = self.df.drop_duplicates(subset=['frb_name'], keep=False)
 
-        if not repeat_bursts:
+        if repeat_bursts is False:
             # Only keeps one detection of repeaters
-            self.df = self.df.drop_duplicates(subset=['frb_name'])
+            self.df.sort_index(inplace=True)
+            self.df = self.df.drop_duplicates(subset=['frb_name'], keep='first')
 
         self.df = self.df.sort_index()
 
@@ -326,7 +333,7 @@ class Frbcat():
         self._surveys = pd.read_csv(surf)
         cols = ['frb_name', 'pub_description']
 
-        self.df = pd.merge(self.df, self._surveys, on=cols, how='outer')
+        self.df = pd.merge(self.df, self._surveys, on=cols, how='left')
         # Clean up possible unnamed columns
         self.df = self.df.loc[:, ~self.df.columns.str.contains('unnamed')]
 

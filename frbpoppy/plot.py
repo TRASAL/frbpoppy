@@ -145,7 +145,7 @@ class Plot():
 
         # Add on frbcat
         if self.frbcat:
-            df = Frbcat().df
+            df = Frbcat(frbpoppy=True).df
             # Filter by survey if wished
             if isinstance(self.frbcat, str):
                 if df['survey'].str.match(self.frbcat).any():
