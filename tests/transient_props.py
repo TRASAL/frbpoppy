@@ -13,8 +13,12 @@ from convenience import plot_aa_style, rel_path
 
 def import_frbcat():
     cat = Frbcat()
-    cat.filter(one_per_frb=True, repeat_bursts=False, repeaters=True)
+    cat.filter(one_per_frb=True, repeat_bursts=True, repeaters=True)
     df = cat.df
+
+    # Remove Pushichino events
+    df = df[~df.telescope.str.startswith('pushchino')]
+
     db = pd.DataFrame()
 
     dm_igm = df['dm'] - df['dm_mw']

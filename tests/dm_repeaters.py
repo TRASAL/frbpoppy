@@ -8,23 +8,27 @@ from frbpoppy import split_pop, pprint
 from convenience import hist, plot_aa_style, rel_path
 
 DAYS = 1
-INTERACTIVE_PLOT = False
+INTERACTIVE_PLOT = True
 PLOTTING_LIMIT_N_SRCS = 0
-SNR = False
+SNR = True
 
 r = CosmicPopulation.simple(n_srcs=int(1e5), n_days=DAYS, repeaters=True)
 r.set_dist(z_max=0.01)
-r.set_lum(model='powerlaw', low=1e43, high=1e45, power=0,
+r.set_lum(model='powerlaw', low=1e35, high=1e45, power=2,
           per_source='different')
 r.set_time(model='poisson', lam=3)
 r.set_dm_igm(model='ioka', slope=1000, sigma=0)
 r.set_dm(mw=False, igm=True, host=False)
+r.set_w('constant', value=1)
+# r.set_w(model='lognormal', mu=np.log(1), sigma=np.log(2))
+
 r.generate()
 
 # Set up survey
 survey = Survey('perfect', n_days=DAYS)
 survey.set_beam(model='perfect')
-survey.snr_limit = 1e15
+# survey.t_samp = 1
+survey.snr_limit = 1e5
 
 surv_pop = SurveyPopulation(r, survey)
 

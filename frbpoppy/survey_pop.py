@@ -310,7 +310,10 @@ class SurveyPopulation(Population):
         area_sky = 4*np.pi*(180/np.pi)**2   # In sq. degrees
         f_area = (survey.beam_size * self.rate.tot())
         inside = self.rate.det+self.rate.late+self.rate.faint
-        f_area /= (inside*area_sky)
+        if inside > 0:
+            f_area /= (inside*area_sky)
+        else:
+            f_area = 0
         f_time = 1 / self.n_days
 
         # Saving scaling factors

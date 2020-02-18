@@ -25,6 +25,7 @@ class Frbcat():
                  frbpoppy=False,
                  one_per_frb=True,
                  repeat_bursts=True,
+                 one_offs=True,
                  repeaters=True,
                  update=True):
         """Initializing."""
@@ -46,7 +47,8 @@ class Frbcat():
         else:
             self.filter(one_per_frb=one_per_frb,
                         repeat_bursts=repeat_bursts,
-                        repeaters=repeaters)
+                        repeaters=repeaters,
+                        one_offs=one_offs)
 
         # Just for neating up
         self.df = self.df.sort_values('utc', ascending=False)
@@ -281,8 +283,10 @@ class Frbcat():
     def filter(self,
                one_per_frb=True,
                repeat_bursts=False,
-               repeaters=True):
+               repeaters=True,
+               one_offs=True):
         """Filter frbcat in various ways."""
+
         if one_per_frb is True:
             # Only keep rows with the largest number of parameters
             # so that only one row per detected FRB remains
@@ -295,13 +299,17 @@ class Frbcat():
         self.df['obj'] = np.where(self.df.duplicated('frb_name'),
                                   'repeater', 'one-off')
 
+        if one_offs is False:
+            # Only keep repeaters
+            self.df = self.df[self.df.duplicated(['frb_name'])]
+
         if repeaters is False:
             # Drops any repeater sources
             self.df = self.df.drop_duplicates(subset=['frb_name'], keep=False)
 
         if repeat_bursts is False:
             # Only keeps one detection of repeaters
-            self.df.sort_index(inplace=True)
+            self.df = self.df.sort_values('utc')
             self.df = self.df.drop_duplicates(subset=['frb_name'], keep='first')
 
         self.df = self.df.sort_index()
