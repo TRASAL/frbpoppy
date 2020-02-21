@@ -21,7 +21,7 @@ from bokeh.models.widgets import Select
 from bokeh.palettes import Category10, viridis
 from bokeh.plotting import figure
 
-from frbpoppy.frbcat import Frbcat
+from frbpoppy.frbcatpoppy import Frbcat
 from frbpoppy.do_hist import histogram
 from frbpoppy.log import pprint
 from frbpoppy import unpickle

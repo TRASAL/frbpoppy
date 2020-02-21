@@ -102,6 +102,7 @@ setup(name='frbpoppy',
                         'numpy',
                         'pandas >= 0.23.4',
                         'scipy >= 1.1.0',
+                        'frbcat'
                         'SQLAlchemy >= 1.3.0',
                         'matplotlib >= 2.2.3,<3.1',
                         'requests >= 2.20.0.',

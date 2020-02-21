@@ -1,9 +1,6 @@
 """Calculate fraction of repeaters in detected frbs."""
-from bisect import bisect
-from scipy.stats import lognorm
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, merge_pop
 from frbpoppy import pprint
@@ -15,14 +12,17 @@ N_SRCS = 1e4
 LAM = 0.4  # per day
 PLOT_SNR = False
 
+
 # Define standard setup
 def set_up_pop(n_srcs):
+    """Set up a standard population."""
     r = CosmicPopulation.simple(n_srcs, n_days=MAX_DAYS, repeaters=True)
     r.set_dist(z_max=0.01)
-    r.set_lum(model='powerlaw', low=1e30, high=1e40, power=0)
+    r.set_lum(model='powerlaw', low=1e30, high=1e40, power=-1)
     r.set_w(model='constant', value=1)
     r.set_dm(mw=False, igm=True, host=False)
     return r
+
 
 r = set_up_pop(N_SRCS)
 
@@ -31,14 +31,13 @@ survey = Survey('perfect', n_days=MAX_DAYS)
 survey.mount_type = 'transit'
 survey.t_obs = 60*60*24
 survey.set_beam(model='chime')
-survey.snr_limit = 1e-5
-# import IPython; IPython.embed()
+survey.snr_limit = 1e-4
 
 # Set up plot style
 plot_aa_style(cols=2)
 f, (ax1, ax2) = plt.subplots(1, 2)
 
-for s in ['rep', 'dist', 'mix']:  #, 'mix', 'dist'):
+for s in ['rep', 'dist', 'mix']:
 
     if s == 'rep':
         r.set_time(model='regular', lam=LAM)

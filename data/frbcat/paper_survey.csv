@@ -134,3 +134,12 @@
 "FRB191107 found at UTMOST","FRB191107","utmost"
 "FRB191223 found by UTMOST","FRB191223","utmost"
 "AKSAP detection of FRB 191228","FRB191228","askap-incoh"
+"A second source of repeating fast radio bursts","FRB180814.J0422+73","chime"
+"First detection of fast radio bursts between 400 and 800 MHz by CHIME/FRB","FRB180725.J0613+67","chime"
+"Highest-frequency detection of FRB 121102 at 4-8 GHz using the Breakthrough Listen Digital Backend at the Green Bank Telescope","FRB121102","gbt"
+"nan","FRB121102","chime"
+"The SUrvey for Pulsars and Extragalactic Radio Bursts II: New FRB discoveries and their follow-up","FRB160102","superb"
+"The Repeating Fast Radio Burst FRB 121102: Multi-wavelength Observations and Additional Bursts","FRB121102","gbt"
+"Detection of Fast Radio Bursts on the Large Scanning Antenna of the Lebedev Physical Institute","FRB151018","lebedev"
+"A repeating fast radio burst","FRB121102","arecibo"
+

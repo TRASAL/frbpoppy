@@ -25,8 +25,7 @@ def regular(lam=2, n_srcs=1, n_days=1, z=0):
         n_days (int): Number of days
         z (array): Redshift of sources
     """
-    time_range = np.linspace(0, n_days, n_days*lam, endpoint=False,
-                             dtype=np.float32)
+    time_range = np.arange(0, n_days, step=1/lam, dtype=np.float32)
 
     # Copy to multiple sources
     time = np.tile(time_range, (n_srcs, 1))

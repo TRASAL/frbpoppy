@@ -3,7 +3,6 @@ from copy import deepcopy
 from tqdm import tqdm
 import math
 import numpy as np
-import bisect
 
 from frbpoppy.log import pprint
 from frbpoppy.population import Population
@@ -59,9 +58,9 @@ class SurveyPopulation(Population):
 
         # Calculations differ for repeaters
         if self.repeaters is True and scin is True:
-                m = 'Scintillation is currently not implemented for '
-                m += 'RepeaterPopulations'
-                raise ValueError(m)
+            m = 'Scintillation is currently not implemented for '
+            m += 'RepeaterPopulations'
+            raise ValueError(m)
 
         frbs = self.frbs
 
@@ -158,7 +157,7 @@ class SurveyPopulation(Population):
 
         # Array with times of each pointing
         max_t = survey.n_days
-        times = np.linspace(0, max_t, max_t/t_obs + 1)  # [days]
+        times = np.arange(0, max_t+t_obs, t_obs)  # [days]
         lsts = times*360*(24/23.9344696) % 360  # Local sidereal time [deg]
         lsts += np.random.uniform(0, 360)  # Add random offset
 
