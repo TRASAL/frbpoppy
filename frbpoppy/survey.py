@@ -203,7 +203,7 @@ class Survey:
 
         def int_pro(ra, dec, ra_p, dec_p, lst):
             return bd.int_pro_fixed(ra, dec, ra_p, dec_p, lst,
-                                    pattern='perfect',
+                                    pattern=self.beam_pattern,
                                     latitude=self.latitude,
                                     beam_array=self.beam_array,
                                     pixel_scale=self.pixel_scale,

@@ -1,40 +1,79 @@
 """Calculate fraction of repeaters in detected frbs."""
 from bisect import bisect
-import numpy as np
+from scipy.stats import lognorm
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
-from frbpoppy import CosmicPopulation, Survey, LargePopulation, pprint
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, merge_pop
+from frbpoppy import pprint
 
-from convenience import plot_aa_style, rel_path
+from convenience import plot_aa_style, rel_path, hist
 
-MAX_DAYS = 10
-# Chime started in Aug 2018. Assuming 2/day for one-offs.
-# Total of 9 repeaters published on 9 Aug 2019. = ~year
-N_CHIME = {'rep': 9, 'one-offs': 365*2, 'time': 3}
-SAVE = True
-USE_SAVE = False
+MAX_DAYS = 100
+N_SRCS = 1e4
+LAM = 0.4  # per day
+PLOT_SNR = False
 
-if USE_SAVE:
-    df = pd.read_csv(rel_path(f'plots/rep_frac.csv'))
-    days = df.days.values
-    fracs = df.fracs.values
-else:
-    r = CosmicPopulation.simple(1e5, n_days=MAX_DAYS, repeaters=True)
+# Define standard setup
+def set_up_pop(n_srcs):
+    r = CosmicPopulation.simple(n_srcs, n_days=MAX_DAYS, repeaters=True)
     r.set_dist(z_max=0.01)
-    r.set_time(model='poisson', lam=1/7)
-    r.set_lum(model='constant', value=1e4)
+    r.set_lum(model='powerlaw', low=1e30, high=1e40, power=0)
     r.set_w(model='constant', value=1)
     r.set_dm(mw=False, igm=True, host=False)
+    return r
 
-    # Set up survey
-    survey = Survey('chime', n_days=MAX_DAYS)
-    survey.set_beam(model='chime')
+r = set_up_pop(N_SRCS)
 
-    surv_pop = LargePopulation(r, survey, max_size=1e5).pops[0]
+# Set up survey
+survey = Survey('perfect', n_days=MAX_DAYS)
+survey.mount_type = 'transit'
+survey.t_obs = 60*60*24
+survey.set_beam(model='chime')
+survey.snr_limit = 1e-5
+# import IPython; IPython.embed()
+
+# Set up plot style
+plot_aa_style(cols=2)
+f, (ax1, ax2) = plt.subplots(1, 2)
+
+for s in ['rep', 'dist', 'mix']:  #, 'mix', 'dist'):
+
+    if s == 'rep':
+        r.set_time(model='regular', lam=LAM)
+        r.generate()
+    elif s == 'dist':
+        r.set_time(model='poisson', lam=LAM)
+        r.generate()
+    elif s == 'mix':
+        # 50% one offs, 50% repeaters
+        repeaters = set_up_pop(N_SRCS/2)
+        repeaters.set_time(model='regular', lam=LAM)
+        repeaters.name = 'repeaters'
+        repeaters.generate()
+        one_offs = set_up_pop(N_SRCS/2)
+        one_offs.set_time(model='single')
+        one_offs.name = 'one-offs'
+        one_offs.generate()
+        r = merge_pop(repeaters, one_offs, random=True)
+        del one_offs
+        del repeaters
+
+    surv_pop = SurveyPopulation(r, survey)
+
+    if PLOT_SNR:
+        plt.clf()
+        snr = surv_pop.frbs.snr
+        plt.step(*hist(snr, bin_type='log', norm='prob'), where='mid')
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.show()
+        exit()
 
     # See how fraction changes over time
-    days = np.linspace(0, MAX_DAYS, MAX_DAYS+1)
+    n_pointings = survey.n_pointings
+    days = np.linspace(0, MAX_DAYS, (MAX_DAYS*n_pointings)+1)
     fracs = []
     for day in days:
         t = surv_pop.frbs.time.copy()
@@ -44,33 +83,37 @@ else:
         frac = n_rep / (n_rep + n_one_offs)
         fracs.append(frac)
 
-    if SAVE:
-        # Save data for later plotting if necessary
-        df = pd.DataFrame({'days': days, 'fracs': fracs})
-        df.to_csv(rel_path(f'plots/rep_frac_chime.csv'))
-        surv_pop.save()
+    pprint(f'{s} has:')
+    pprint(f' - n_bursts: {surv_pop.n_bursts()}')
+    pprint(f' - n_rep: {n_rep}')
+    pprint(f' - n_one_offs: {n_one_offs}')
 
-# Set up plot style
-plot_aa_style(cols=2)
-plt.plot(days, fracs)
+    ax1.plot(days, fracs)
 
-# Plot CHIME detection line
-chime_frac = N_CHIME['rep'] / (N_CHIME['rep'] + N_CHIME['one-offs'])
-
-# Add CHIME detection line
-try:
-    plt.plot([N_CHIME['time'], N_CHIME['time'], 0],
-             [0, chime_frac, chime_frac],
-             color='r', linestyle='--', label='chime')
-except IndexError:
-    pprint(f'CHIME fraction of {chime_frac:.1} not in plotting area')
+    # Plot rates
+    dt = 1/np.diff(r.frbs.time/(1+r.frbs.z)[:, np.newaxis]).flatten()
+    bins = np.logspace(np.log10(LAM)-1, np.log10(LAM)+2, 20)
+    bins, values = hist(dt, bins=bins, norm='prob')
+    if s == 'mix':   # One-offs have no time difference
+        values /= 2
+    ax2.step(bins, values, where='mid', label=s)
 
 # Further plot details
-plt.xlabel(r'Time (days)')
-plt.ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
-plt.xlim(0, max(days))
-plt.legend()
-plt.yscale('log')
+ax1.set_xlabel(r'Time (days)')
+ax1.set_ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
+ax1.set_xlim(0, max(days))
+ax1.set_ylim(0, 1.1)
+
+ax2.set_xlabel(r'Rate (/day)')
+ax2.set_ylabel(r'Fraction')
+ax2.set_xscale('log')
+ax2.yaxis.set_label_position('right')
+ax2.yaxis.tick_right()
+ax2.set_ylim(0, 1.1)
+
+# Legend details
+plt.figlegend(loc='upper center', ncol=3, framealpha=1)
+
 plt.tight_layout()
 plt.savefig(rel_path(f'plots/rep_frac.pdf'))
 plt.clf()

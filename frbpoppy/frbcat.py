@@ -296,7 +296,7 @@ class Frbcat():
 
         # Split population into repeaters etc
         pd.options.mode.chained_assignment = None
-        self.df['obj'] = np.where(self.df.duplicated('frb_name'),
+        self.df['type'] = np.where(self.df.duplicated('frb_name'),
                                   'repeater', 'one-off')
 
         if one_offs is False:

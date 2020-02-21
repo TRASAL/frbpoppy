@@ -131,7 +131,7 @@ def split_pop(pop, mask):
 
     Args:
         pop (Population): Population to be split
-        mask (Numpy): Numpy boolean mask
+        mask (array): Numpy boolean mask
 
     Returns:
         tuple: Tuple of population classes
@@ -142,3 +142,56 @@ def split_pop(pop, mask):
     pop_true.frbs.apply(mask)
     pop_false.frbs.apply(~mask)
     return pop_true, pop_false
+
+
+
+def merge_pop(*args, random=False):
+    """Merge populations.
+
+    Args:
+        Populations to merge
+
+    Returns:
+        Population
+
+    """
+    mp = args[0]  # Main population
+
+    for pop in args:
+        # Merge each parameter
+        for attr in mp.frbs.__dict__.keys():
+            parm = getattr(mp.frbs, attr)
+            if type(parm) is np.ndarray:
+                parms = []
+                for pop in args:
+                    parms.append(getattr(pop.frbs, attr))
+
+                try:
+                    merged_parm = np.concatenate(parms, axis=0)
+                except ValueError as e:
+                    # Check maximum size values should be padded to
+                    max_size = max([p.shape[1] for p in parms])
+                    new_parms = []
+
+                    # Ensure matrices are the same shapes by padding them
+                    for p in parms:
+                        if p.shape[1] != max_size:
+                            padded_p = np.zeros((p.shape[0], max_size))
+                            padded_p[:] = np.nan
+                            padded_p[:, :p.shape[1]] = p
+                            new_parms.append(padded_p)
+                        else:
+                            new_parms.append(p)
+
+                    merged_parm = np.concatenate(new_parms, axis=0)
+
+                setattr(mp.frbs, attr, merged_parm)
+
+    if random:
+        shuffle = np.random.permutation(mp.frbs.z.shape[0])
+        for attr in mp.frbs.__dict__.keys():
+            parm = getattr(mp.frbs, attr)
+            if type(parm) is np.ndarray:
+                setattr(mp.frbs, attr, parm[shuffle])
+
+    return mp

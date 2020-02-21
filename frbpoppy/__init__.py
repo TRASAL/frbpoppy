@@ -9,7 +9,7 @@ from .large_pop import LargePopulation
 from .log import pprint
 from .number_density import NumberDensity
 from .paths import paths
-from .population import Population, unpickle, split_pop
+from .population import Population, unpickle, split_pop, merge_pop
 from .precalc import *
 from .rates import *
 from .survey import Survey

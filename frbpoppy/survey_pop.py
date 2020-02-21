@@ -31,10 +31,14 @@ class SurveyPopulation(Population):
         np.warnings.filterwarnings('ignore')
 
         # Check whether CosmicPopulation has been generated
-        if cosmic_pop.frbs.ra is None:
-            m = 'You may have forgotten to generate your CosmicPopulation'
+        try:
+            if cosmic_pop.frbs.ra is None:
+                m = 'You may have forgotten to generate your CosmicPopulation'
+                raise ValueError(m)
+        except AttributeError:
+            m = 'You probably switched the population and survey in the'
+            m += 'input of SurveyPopulation'
             raise ValueError(m)
-
         # Set up population
         Population.__init__(self)
 
@@ -229,11 +233,11 @@ class SurveyPopulation(Population):
 
         # What's the intensity of them in the beam?
         int_pro = survey.calc_beam(repeaters=True,
-                                      ra=frbs.ra[tp_unique],
-                                      dec=frbs.dec[tp_unique],
-                                      ra_p=ra_pt,
-                                      dec_p=dec_pt,
-                                      lst=lst)
+                                   ra=frbs.ra[tp_unique],
+                                   dec=frbs.dec[tp_unique],
+                                   ra_p=ra_pt,
+                                   dec_p=dec_pt,
+                                   lst=lst)[0]
 
         # Ensure relevant masks
         s_peak_ix = tp_unique

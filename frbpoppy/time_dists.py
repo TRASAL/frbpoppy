@@ -3,6 +3,19 @@ import numpy as np
 from scipy.special import gamma
 
 
+def single(n_srcs=1, n_days=1, z=0):
+    """Generate a series of one-off burst times.
+
+    Args:
+        n_srcs (int): Number of sources
+        n_days (int): Number of days
+        z (array): Redshift of sources
+    """
+    time = np.random.uniform(0, n_days, n_srcs).astype(np.float32)
+    time *= (1+z)
+    return time[:, np.newaxis]
+
+
 def regular(lam=2, n_srcs=1, n_days=1, z=0):
     """Generate a series of regular spaced burst times.
 

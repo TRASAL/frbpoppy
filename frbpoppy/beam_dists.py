@@ -164,7 +164,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
     if pattern.startswith('perfect'):
         # if self.beam_size is None:
         #     self.beam_size = self.beam_size_fwhm
-        return np.ones(len(ra))
+        return np.ones(len(ra)), None
 
     # Convert input decimal degrees to radians
     ra = np.deg2rad(ra)

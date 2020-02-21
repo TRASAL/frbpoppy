@@ -435,7 +435,8 @@ class CosmicPopulation(Population):
         """Set model from which to generate time stamps.
 
         Args:
-            model (str): Options from ('regular', 'clustered', 'poisson')
+            model (str): Options from ('single', 'regular', 'clustered',
+                'poisson')
         If model == 'regular':
             lam (float): Number of bursts per day
         If model == 'poisson':
@@ -450,7 +451,11 @@ class CosmicPopulation(Population):
             self.time_func = lambda: model(**kwargs)
             return
 
-        if model == 'regular':
+        if model == 'single':
+            self.time_func = lambda: td.single(n_srcs=self.n_srcs,
+                                               n_days=self.n_days,
+                                               z=self.frbs.z)
+        elif model == 'regular':
             self.time_func = lambda: td.regular(n_srcs=self.n_srcs,
                                                 n_days=self.n_days,
                                                 z=self.frbs.z,
