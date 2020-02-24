@@ -1,7 +1,7 @@
 """Class to generate a cosmic population of FRBs."""
 import numpy as np
 
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy.number_density import NumberDensity
 from frbpoppy.population import Population
 import frbpoppy.direction_dists as did
@@ -194,7 +194,7 @@ class CosmicPopulation(Population):
             model (str): Option of 'ioka'.
         if model == 'ioka':
             slope (float): Slope of the DM-z relationship.
-            sigma (float): Spread around the DM-z relationship.
+            std (float): Spread around the DM-z relationship.
             spread_dist (str): 'normal' or 'lognormal'.
         """
         # Possibility to use your own function
@@ -219,8 +219,8 @@ class CosmicPopulation(Population):
             model (str): Options from ('gauss', 'lognormal').
 
         if model in ('gauss', 'lognormal'):
-            mu (float): Mean DM [pc/cm^3].
-            sigma (float): Standard deviation DM [pc/cm^3].
+            mean (float): Mean DM [pc/cm^3].
+            std (float): Standard deviation DM [pc/cm^3].
         if model == 'constant':
             value (float): Value to adopt [pc/cm^3].
         """
@@ -288,10 +288,10 @@ class CosmicPopulation(Population):
             low (float): Minimum pulse width [ms].
             high (float): Maximum pulse width [ms].
         If model == 'lognormal':
-            mu (float): Mean pulse width [ms].
-            sigma (float): Standard deviation pulse width [ms].
+            mean (float): Mean pulse width [ms].
+            std (float): Standard deviation pulse width [ms].
         If per_source == 'gauss':
-            src_sigma (float): Standard deviation per source [ms].
+            src_std (float): Standard deviation per source [ms].
 
         """
         # Use your own function if you want
@@ -340,10 +340,10 @@ class CosmicPopulation(Population):
         If model == 'constant':
             value (float): Default spectal index.
         If model == 'gauss':
-            mu (float): Mean spectral index
-            sigma (float): Standard deviation spectral index
+            mean (float): Mean spectral index
+            std (float): Standard deviation spectral index
         If per_source == 'gauss':
-            src_sigma (float): Standard deviation per source
+            src_std (float): Standard deviation per source
 
         """
         if not isinstance(model, str):
@@ -393,7 +393,7 @@ class CosmicPopulation(Population):
             value (float): Value for standard candle [ergs/s]
 
         If per_source == 'gauss':
-            src_sigma (float): Standard deviation per source
+            src_std (float): Standard deviation per source
 
         """
         if not isinstance(model, str):
@@ -528,14 +528,14 @@ class CosmicPopulation(Population):
                       repeaters=False, generate=False)
             pop.set_dist(model='sfr', z_max=2.5, alpha=-1.5,
                          H_0=67.74, W_m=0.3089, W_v=0.6911)
-            pop.set_dm_host(model='gauss', mu=100, sigma=200)
-            pop.set_dm_igm(model='ioka', slope=1000, sigma=None)
+            pop.set_dm_host(model='gauss', mean=100, std=200)
+            pop.set_dm_igm(model='ioka', slope=1000, std=None)
             pop.set_dm_mw(model='ne2001')
             pop.set_dm(mw=True, igm=True, host=True)
             pop.set_emission_range(low=10e6, high=10e9)
             pop.set_lum(model='powerlaw', low=1e40, high=1e45, power=0)
-            pop.set_w(model='lognormal', mu=0.1, sigma=0.5)
-            pop.set_si(model='gauss', mu=-1.4, sigma=1)
+            pop.set_w(model='lognormal', mean=0.1, std=0.5)
+            pop.set_si(model='gauss', mean=-1.4, std=1)
             if generate:
                 pop.generate()
             return pop
@@ -550,13 +550,13 @@ class CosmicPopulation(Population):
                   repeaters=False, generate=False)
         pop.set_dist(model='vol_co', z_max=2.5, alpha=-1.5,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
-        pop.set_dm_host(model='gauss', mu=100, sigma=200)
-        pop.set_dm_igm(model='ioka', slope=1000, sigma=None)
+        pop.set_dm_host(model='gauss', mean=100, std=200)
+        pop.set_dm_igm(model='ioka', slope=1000, std=None)
         pop.set_dm_mw(model='ne2001')
         pop.set_emission_range(low=10e6, high=10e9)
         pop.set_lum(model='powerlaw', low=1e39, high=1e45, power=0)
-        pop.set_w(model='lognormal', mu=0.1, sigma=0.7)
-        pop.set_si(model='gauss', mu=-1.4, sigma=1)
+        pop.set_w(model='lognormal', mean=0.1, std=0.7)
+        pop.set_si(model='gauss', mean=-1.4, std=1)
         if generate:
             pop.generate()
         return pop

@@ -1,5 +1,6 @@
 """Pulse width distributions."""
 import numpy as np
+from frbpoppy.misc import lognormal_to_normal
 
 
 def calc_w_arr(w_int, z=0):
@@ -43,8 +44,8 @@ def uniform(low=0, high=10, shape=1, z=0):
     return w_int, w_arr
 
 
-def lognormal(mu=0.1, sigma=0.5, shape=1, z=0):
-    """Short summary.
+def lognormal(mean=0.1, std=0.5, shape=1, z=0):
+    """Draw burst from lognormal distribution.
 
     Args:
         shape (tuple): Required array shape
@@ -54,25 +55,26 @@ def lognormal(mu=0.1, sigma=0.5, shape=1, z=0):
         type: Description of returned object.
 
     """
-    w_int = np.random.lognormal(mu, sigma, shape).astype(np.float32)
+    mean, std = lognormal_to_normal(mean, std)
+    w_int = np.random.lognormal(mean, std, shape).astype(np.float32)
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr
 
 
-def gauss_per_source(src_sigma=0.05, dist=uniform, shape=(1, 1), z=0,
+def gauss_per_source(src_std=0.05, dist=uniform, shape=(1, 1), z=0,
                      **kwargs):
     """Distribute pulse widths per source using a Gaussian function.
 
     Generate bursts per source using a given distribution, then use those as
     the mean for the distribution for more bursts from that source
     """
-    mu, s = dist(shape=shape[0], z=z, **kwargs)
+    mean, s = dist(shape=shape[0], z=z, **kwargs)
 
-    # Check whether multiple bursts per source needed
+    # Check whether meanltiple bursts per source needed
     if len(shape) < 2:
-        return mu, s
+        return mean, s
 
     shape = (shape[1], shape[0])
-    w_int = np.random.normal(mu, src_sigma, shape).astype(np.float32).T
+    w_int = np.random.normal(mean, src_std, shape).astype(np.float32).T
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr

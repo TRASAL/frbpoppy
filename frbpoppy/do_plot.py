@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy.paths import paths
 
 

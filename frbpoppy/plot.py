@@ -23,7 +23,7 @@ from bokeh.plotting import figure
 
 from frbpoppy.frbcatpoppy import Frbcat
 from frbpoppy.do_hist import histogram
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy import unpickle
 
 

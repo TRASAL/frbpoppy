@@ -63,12 +63,12 @@ def powerlaw(low, high, power, shape=1):
     return pl
 
 
-def trunc_norm(mu, sigma, n_gen=1, low=0, high=np.inf):
+def trunc_norm(mean, std, n_gen=1, low=0, high=np.inf):
     """Draw from a truncated normal distribution.
 
     Args:
-        mu (number): Mu.
-        sigma (number): Sigma.
+        mean (number): Mu.
+        std (number): Sigma.
         n_gen (number): Number to generate.
         low (number): low limit.
         high (number): high limit.
@@ -77,9 +77,9 @@ def trunc_norm(mu, sigma, n_gen=1, low=0, high=np.inf):
         array: Numpy of required length
 
     """
-    if sigma == 0:
-        return np.full(n_gen, mu)
-    left = (low-mu)/sigma
-    right = (high-mu)/sigma
-    d = truncnorm.rvs(left, right, loc=mu, scale=sigma, size=n_gen)
+    if std == 0:
+        return np.full(n_gen, mean)
+    left = (low-mean)/std
+    right = (high-mean)/std
+    d = truncnorm.rvs(left, right, loc=mean, scale=std, size=n_gen)
     return d

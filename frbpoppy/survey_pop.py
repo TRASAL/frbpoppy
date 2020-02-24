@@ -4,7 +4,7 @@ from tqdm import tqdm
 import math
 import numpy as np
 
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy.population import Population
 from frbpoppy.rates import Rates, scale
 import frbpoppy.galacticops as go

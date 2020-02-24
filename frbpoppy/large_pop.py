@@ -4,7 +4,7 @@ import os
 import uuid
 from tqdm import tqdm
 
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy.survey_pop import SurveyPopulation
 from frbpoppy.population import unpickle
 from frbpoppy.paths import paths

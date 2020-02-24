@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 import frbpoppy.galacticops as go
 
 
@@ -15,7 +15,7 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
 
     Args:
         parameter (array): To be binned
-        bin_type (str): Either 'lin' or 'log'
+        bin_type (str): Either 'lin' or 'log' or 'ln'
         n_bins (int): Number of bins. Can be overriden internally
         norm (bool): Whether to normalise to 'max' or 'prob' or none
 
@@ -41,6 +41,10 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
         min_f = np.log10(np.min(parameter[parameter != 0]))
         max_f = np.log10(max(parameter))
         _bins = np.logspace(min_f, max_f, n_bins)
+    elif bin_type == 'ln':
+        min_f = np.log(np.min(parameter[parameter != 0]))
+        max_f = np.log(max(parameter))
+        _bins = np.logspace(min_f, max_f, n_bins, base=np.e)
 
     # Allow for custom bins
     if bins is not None:

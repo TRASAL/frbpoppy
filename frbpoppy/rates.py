@@ -1,7 +1,7 @@
 """Classes to hold rate counters."""
 from copy import deepcopy
 import numpy as np
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 
 
 class Rates:

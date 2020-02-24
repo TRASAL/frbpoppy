@@ -4,7 +4,7 @@ import dill as pickle
 import numpy as np
 from copy import deepcopy
 
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy.paths import paths
 from frbpoppy.frbs import FRBs
 

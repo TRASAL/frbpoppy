@@ -9,7 +9,7 @@ from tqdm import tqdm
 from joblib import Parallel, delayed
 
 import frbpoppy.galacticops as go
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy.paths import paths
 
 
