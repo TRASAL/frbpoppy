@@ -1,7 +1,6 @@
 """Functions to generate Dispersion measure distributions."""
 import numpy as np
 import frbpoppy.gen_dists as gd
-from frbpoppy.misc import lognormal_to_normal
 
 
 def constant(value=100, n_srcs=1):
@@ -20,7 +19,7 @@ def ioka(z=0, slope=950, std=None, spread_dist='normal'):
         slope (float): Slope of the DM-z relationship.
         std (float): Spread around the DM-z relationship.
         spread_dist (str): Spread function option. Choice from
-            ('normal', 'lognormal')
+            ('normal', 'log10normal')
 
     Returns:
         dm_igm (array): Dispersion measure of intergalactic medium [pc/cm^3]
@@ -33,9 +32,10 @@ def ioka(z=0, slope=950, std=None, spread_dist='normal'):
     mean = slope*z
     if spread_dist == 'normal':
         f = np.random.normal
-    elif spread_dist == 'lognormal':
-        f = np.random.lognormal
-        mean, std = lognormal_to_normal(mean, std)
+    elif spread_dist == 'log10normal':
+        def f(mean, std):
+            ln = np.random.lognormal
+            return 10**ln(np.log10(mean), np.log10(std)).astype(np.float32)
     else:
         raise ValueError('spread_dist input not recognised')
     return f(mean, std).astype(np.float32)
@@ -58,8 +58,8 @@ def gauss(mean=100, std=200, n_srcs=1, z=0):
     return dm_host / (1 + z)
 
 
-def lognormal(mean=100, std=200, n_srcs=1, z=0):
-    """Generate a log normal dm host distribution.
+def log10normal(mean=100, std=200, n_srcs=1, z=0):
+    """Generate a log10 normal dm host distribution.
 
     Args:
         mean (float): Mean DM [pc/cm^3].
@@ -71,6 +71,5 @@ def lognormal(mean=100, std=200, n_srcs=1, z=0):
         array: DM host [pc/cm^3]
 
     """
-    mean, std = lognormal_to_normal(mean, std)
-    dm_host = np.random.lognormal(mean, std, n_srcs).astype(np.float32)
+    dm_host = gd.log10normal(mean, std, n_srcs).astype(np.float32)
     return dm_host / (1 + z)

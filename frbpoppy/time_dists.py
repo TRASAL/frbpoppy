@@ -1,5 +1,6 @@
 """Distributions with which burst times can be generated."""
 import numpy as np
+from tqdm import tqdm
 from scipy.special import gamma
 
 
@@ -16,16 +17,16 @@ def single(n_srcs=1, n_days=1, z=0):
     return time[:, np.newaxis]
 
 
-def regular(lam=2, n_srcs=1, n_days=1, z=0):
+def regular(rate=2, n_srcs=1, n_days=1, z=0):
     """Generate a series of regular spaced burst times.
 
     Args:
-        lam (float): Number of events per day
+        rate (float): Number of events per day
         n_srcs (int): Number of sources
         n_days (int): Number of days
         z (array): Redshift of sources
     """
-    time_range = np.arange(0, n_days, step=1/lam, dtype=np.float32)
+    time_range = np.arange(0, n_days, step=1/rate, dtype=np.float32)
 
     # Copy to multiple sources
     time = np.tile(time_range, (n_srcs, 1))
@@ -44,37 +45,58 @@ def regular(lam=2, n_srcs=1, n_days=1, z=0):
     return time
 
 
-def poisson(lam=0.1, **kwargs):
+def poisson(**kwargs):
     """Generate a series of poisson times.
 
+    Wrapper to iteratively generate from _poisson_dist
+
     Args:
-        lam (float): Expected number of events per day.
         Kwargs from iteratively_gen_times
     """
     # Set distribution from which to draw
-    def poisson(dims, lam=lam):
-        return np.random.exponential(1/lam, dims).astype(np.float32)
-
-    return iteratively_gen_times(poisson, **kwargs)
+    return iteratively_gen_times(_poisson_dist, **kwargs)
 
 
-def clustered(r=5.7, k=0.34, **kwargs):
+def _poisson_dist(dims, rate=0.1):
+    """Draw values from a poissonian distribution.
+
+    Args:
+        rate (float): Expected number of events per day.
+    """
+    if not isinstance(rate, np.ndarray):
+        return np.random.exponential(1/rate, dims).astype(np.float32)
+    else:  # Allow for an array of lambdas
+        dims = dims[::-1]
+        return np.random.exponential(1/rate, dims).astype(np.float32).T
+
+
+def clustered(**kwargs):
+    """Generate burst times following a Weibull distribution.
+
+    Wrapper to iteratively generate from _weibull_dist
+
+    Args:
+        Kwargs from iteratively_gen_times
+    """
+    return iteratively_gen_times(_weibull_dist, **kwargs)
+
+
+def _weibull_dist(dims, r=5.7, k=0.34):
     """Generate burst times following a Weibull distribution.
 
     Args:
         r (float): Rate parameter
         k (float): Shape parameter
-        Kwargs from iteratively_gen_times
     """
-    # Set distribution from which to draw
-    def weibull(dims, r=r, k=k):
-        lam = 1/(r*gamma(1 + 1/k))
+    lam = 1/(r*gamma(1 + 1/k))
+    if not any([isinstance(p, np.ndarray) for p in (r, k)]):
         return lam*np.random.weibull(k, dims).astype(np.float32)
+    else:  # Allow for an array for r's
+        dims = dims[::-1]
+        return (lam*np.random.weibull(k, dims).astype(np.float32)).T
 
-    return iteratively_gen_times(weibull, **kwargs)
 
-
-def iteratively_gen_times(dist, n_srcs=1, n_days=1, z=0):
+def iteratively_gen_times(dist, n_srcs=1, n_days=1, z=0, **kwargs):
     """Generate burst times in an iterative manner using a distribution.
 
     Args:
@@ -87,9 +109,9 @@ def iteratively_gen_times(dist, n_srcs=1, n_days=1, z=0):
     log_size = 1
     m = int(10**log_size)
     dims = (n_srcs, m)
-    time = dist(dims)
-    time = np.cumsum(time, axis=1)  # This is in fraction of days
+    time = dist(dims, **kwargs)
 
+    time = np.cumsum(time, axis=1)  # This is in fraction of days
     # The first burst time is actually the time since the previous one
     # You want to be at in a random time in between those
     time_offset = np.random.uniform(0, time[:, 0])
@@ -106,10 +128,18 @@ def iteratively_gen_times(dist, n_srcs=1, n_days=1, z=0):
     # Iteratively add extra bursts until over limit
     mask = ~np.isnan(time[:, -1])  # Where more bursts are needed
     sum_mask = np.count_nonzero(mask)
+
     while sum_mask != 0:  # Add additional columns
         m = int(10**log_size)
         ms = np.full((n_srcs, m), np.nan)
-        new = dist((sum_mask, m))
+
+        # Ensure the size of the keyword values for dist are correct
+        new_kwargs = kwargs.copy()
+        for kw, value in kwargs.items():
+            if isinstance(value, np.ndarray) and sum_mask != dims[0]:
+                new_kwargs[kw] = kwargs[kw][mask]
+
+        new = dist((sum_mask, m), **new_kwargs)
         new = np.cumsum(new, axis=1)
 
         # Add redshift correction

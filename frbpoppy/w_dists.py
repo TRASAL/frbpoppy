@@ -1,6 +1,7 @@
 """Pulse width distributions."""
 import numpy as np
-from frbpoppy.misc import lognormal_to_normal
+
+import frbpoppy.gen_dists as gd
 
 
 def calc_w_arr(w_int, z=0):
@@ -16,6 +17,9 @@ def calc_w_arr(w_int, z=0):
     """
     if w_int.ndim == 1 or isinstance(z, int) or isinstance(z, float):
         return w_int*(1+z)
+    # These are methods to deal with numpy dimensionality aspects
+    elif np.argmax(w_int.shape) != np.argmax(z.shape):
+        return w_int*(1+z[:, None]).T
     else:
         return w_int*(1+z[:, None])
 
@@ -44,8 +48,26 @@ def uniform(low=0, high=10, shape=1, z=0):
     return w_int, w_arr
 
 
-def lognormal(mean=0.1, std=0.5, shape=1, z=0):
-    """Draw burst from lognormal distribution.
+def gauss(mean=1, std=2, shape=1, z=0):
+    """Generate pulse widths from a Gaussian/Normal distribution.
+
+    Args:
+        mean (float): Mean pulse width [ms]
+        std (float): Standard deviation of the pulse widths [ms]
+        shape (tuple): Required array shape
+        z (array): Redshift of pulses
+
+    Returns:
+        tuple: intrinsic pulse widths, pulse widths at Earth
+
+    """
+    w_int = gd.trunc_norm(mean, std, shape).astype(np.float32)
+    w_arr = calc_w_arr(w_int, z=z)
+    return w_int, w_arr
+
+
+def log10normal(mean=0.1, std=0.5, shape=1, z=0):
+    """Draw burst from log10normal distribution.
 
     Args:
         shape (tuple): Required array shape
@@ -55,26 +77,6 @@ def lognormal(mean=0.1, std=0.5, shape=1, z=0):
         type: Description of returned object.
 
     """
-    mean, std = lognormal_to_normal(mean, std)
-    w_int = np.random.lognormal(mean, std, shape).astype(np.float32)
-    w_arr = calc_w_arr(w_int, z=z)
-    return w_int, w_arr
-
-
-def gauss_per_source(src_std=0.05, dist=uniform, shape=(1, 1), z=0,
-                     **kwargs):
-    """Distribute pulse widths per source using a Gaussian function.
-
-    Generate bursts per source using a given distribution, then use those as
-    the mean for the distribution for more bursts from that source
-    """
-    mean, s = dist(shape=shape[0], z=z, **kwargs)
-
-    # Check whether meanltiple bursts per source needed
-    if len(shape) < 2:
-        return mean, s
-
-    shape = (shape[1], shape[0])
-    w_int = np.random.normal(mean, src_std, shape).astype(np.float32).T
+    w_int = gd.log10normal(mean, std, shape).astype(np.float32)
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr

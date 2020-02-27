@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, merge_pop
-from frbpoppy import pprint
+from frbpoppy import pprint, log10normal, hist
 
-from convenience import plot_aa_style, rel_path, hist
+from convenience import plot_aa_style, rel_path
 
 MAX_DAYS = 100
-N_SRCS = 1e4
-LAM = 0.4  # per day
+N_SRCS = int(1e4)
+RATE = 0.4  # per day
 PLOT_SNR = False
 
 
@@ -40,15 +40,17 @@ f, (ax1, ax2) = plt.subplots(1, 2)
 for s in ['rep', 'dist', 'mix']:
 
     if s == 'rep':
-        r.set_time(model='regular', lam=LAM)
+        rate = RATE
+        r.set_time(model='poisson', rate=RATE)
         r.generate()
     elif s == 'dist':
-        r.set_time(model='poisson', lam=LAM)
+        rate_dist = log10normal(RATE, 1, N_SRCS)
+        r.set_time(model='poisson', rate=rate_dist)
         r.generate()
     elif s == 'mix':
         # 50% one offs, 50% repeaters
         repeaters = set_up_pop(N_SRCS/2)
-        repeaters.set_time(model='regular', lam=LAM)
+        repeaters.set_time(model='poisson', rate=RATE)
         repeaters.name = 'repeaters'
         repeaters.generate()
         one_offs = set_up_pop(N_SRCS/2)
@@ -90,12 +92,12 @@ for s in ['rep', 'dist', 'mix']:
     ax1.plot(days, fracs)
 
     # Plot rates
-    dt = 1/np.diff(r.frbs.time/(1+r.frbs.z)[:, np.newaxis]).flatten()
-    bins = np.logspace(np.log10(LAM)-1, np.log10(LAM)+2, 20)
-    bins, values = hist(dt, bins=bins, norm='prob')
+    rates, values = hist(np.array([RATE]), bin_type='log', norm='prob')
     if s == 'mix':   # One-offs have no time difference
         values /= 2
-    ax2.step(bins, values, where='mid', label=s)
+    elif s == 'dist':
+        rates, values = hist(rate_dist, bin_type='log', norm='prob')
+    ax2.step(rates, values, where='mid', label=s)
 
 # Further plot details
 ax1.set_xlabel(r'Time (days)')

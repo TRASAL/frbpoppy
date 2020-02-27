@@ -62,6 +62,9 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
         tuple: bin centers, values per bin
 
     """
+    if isinstance(parameter, list):
+        parameter = np.array(parameter)
+
     # Drop NaN-values
     parameter = parameter[~np.isnan(parameter)]
 
@@ -121,7 +124,7 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
     return bins, n
 
 
-def lognormal_to_normal(lognormal_mean, lognormal_std):
+def calc_lognormal_input(lognormal_mean, lognormal_std):
     """Calculate the mean and std of a lognormal distribution.
 
     See

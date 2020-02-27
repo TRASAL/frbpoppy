@@ -280,8 +280,8 @@ class CosmicPopulation(Population):
 
         Args:
             model (str): Options from ('uniform', 'lognormal')
-            per_source (str): Model for a single source burst distribution.
-                Options from ('same', 'different', 'gauss')
+            per_source (str): Model for a single source burst
+                distribution. Options from 'same' or 'different'
         If model == 'constant':
             value (float): Pulse width [ms].
         If model == 'uniform':
@@ -290,84 +290,82 @@ class CosmicPopulation(Population):
         If model == 'lognormal':
             mean (float): Mean pulse width [ms].
             std (float): Standard deviation pulse width [ms].
-        If per_source == 'gauss':
-            src_std (float): Standard deviation per source [ms].
 
         """
-        # Use your own function if you want
-        if not isinstance(model, str):
-            self.w_func = lambda: model(**kwargs)
-            return
-
         # Each burst from the same source: same or different widths?
         if per_source == 'same':
             self.w_shape = lambda: self.n_srcs
         elif per_source == 'different':
             self.w_shape = lambda: self.shape
-        # Or use a gaussian per source.
-        elif per_source.startswith('gauss'):
-            self.w_func = lambda: wd.gauss_per_source(dist=getattr(wd, model),
-                                                      shape=self.shape,
-                                                      z=self.frbs.z,
-                                                      **kwargs)
-            return
 
         # Distribution from which to draw pulse widths
-        if model == 'constant':
-            self.w_func = lambda x: wd.constant(shape=x, z=self.frbs.z,
-                                                **kwargs)
-        elif model == 'uniform':
-            self.w_func = lambda x: wd.uniform(shape=x, z=self.frbs.z,
-                                               **kwargs)
-        elif model == 'lognormal':
-            self.w_func = lambda x: wd.lognormal(shape=x, z=self.frbs.z,
-                                                 **kwargs)
+
+        # Find available distributions to draw from
+        funcs = [d for d in dir(wd) if hasattr(getattr(wd, d), '__call__')]
+        funcs.remove('calc_w_arr')
+
+        # Set function
+        if model in funcs:
+            func = getattr(wd, model)
+
+            # If you're getting fancy with combined distributions
+            # See examples/adapting_population_parameters.py
+            self._transpose_w = False
+            for kw_value in kwargs.values():
+                if isinstance(kw_value, (list, np.ndarray)):
+                    self.w_shape = lambda: self.shape[::-1]
+                    self._transpose_w = True
+
+            self.w_func = lambda x: func(shape=x, z=self.frbs.z, **kwargs)
         else:
-            raise ValueError('set_w input not recognised')
+            raise ValueError('set_w input model not recognised')
 
     def gen_w(self):
         """Generate pulse widths [ms]."""
         shape = self.w_shape()
         self.frbs.w_int, self.frbs.w_arr = self.w_func(shape)
 
+        # From combined distribution inputs
+        if self._transpose_w:
+            self.frbs.w_int = self.frbs.w_int.T
+            self.frbs.w_arr = self.frbs.w_arr.T
+
     def set_si(self, model='gauss', per_source='same', **kwargs):
         """Set spectral index model.
 
         Args:
             model (str): Options from ('gauss')
-            per_source (str): Model for a single source burst distribution.
-                Options from ('same', 'different', 'gauss')
+            per_source (str): Model for a single source burst
+                distribution. Options from ('same', 'different')
         If model == 'constant':
             value (float): Default spectal index.
         If model == 'gauss':
             mean (float): Mean spectral index
             std (float): Standard deviation spectral index
-        If per_source == 'gauss':
-            src_std (float): Standard deviation per source
 
         """
-        if not isinstance(model, str):
-            self.si_func = lambda: model(**kwargs)
-            return
-
         # Each burst from the same source: same or different si?
         if per_source == 'same':
             self.si_shape = lambda: self.n_srcs
         elif per_source == 'different':
             self.si_shape = lambda: self.shape
-        # Or use a gaussian per source
-        elif per_source.startswith('gauss'):
-            dist = getattr(sid, model)
-            self.si_func = lambda: sid.gauss_per_source(dist=dist,
-                                                        shape=self.shape,
-                                                        **kwargs)
-            return
 
-        # Distribution from which to draw spectral indices
-        if model == 'constant':
-            self.si_func = lambda x: sid.constant(shape=x, **kwargs)
-        elif model.startswith('gauss'):
-            self.si_func = lambda x: sid.gauss(shape=x, **kwargs)
+        # Find available distributions to draw from
+        funcs = [d for d in dir(sid) if hasattr(getattr(sid, d), '__call__')]
+
+        # Set function
+        if model in funcs:
+            func = getattr(sid, model)
+
+            # If you're getting fancy with combined distributions
+            self._transpose_si = False
+            for kw_value in kwargs.values():
+                if isinstance(kw_value, (list, np.ndarray)):
+                    self.si_shape = lambda: self.shape[::-1]
+                    self._transpose_si = True
+
+            # Distribution from which to draw spectral indices
+            self.si_func = lambda x: func(shape=x, **kwargs)
         else:
             raise ValueError('set_si input not recognised')
 
@@ -376,13 +374,16 @@ class CosmicPopulation(Population):
         shape = self.si_shape()
         self.frbs.si = self.si_func(shape)
 
+        if self._transpose_si:
+            self.frbs.si = self.frbs.si.T
+
     def set_lum(self, model='powerlaw', per_source='same', **kwargs):
         """Set luminosity function [ergs/s].
 
         Args:
             model (str): Options from ('powerlaw')
-            per_source (str): Model for a single source burst distribution.
-                Options from ('same', 'different', 'gauss')
+            per_source (str): Model for a single source burst
+                distribution. Options from ('same', 'different')
 
         If model == 'powerlaw':
             low (float): Minimum bolometric luminosity [ergs/s]
@@ -392,32 +393,29 @@ class CosmicPopulation(Population):
         If model == 'constant':
             value (float): Value for standard candle [ergs/s]
 
-        If per_source == 'gauss':
-            src_std (float): Standard deviation per source
-
         """
-        if not isinstance(model, str):
-            self.lum_func = lambda: model(**kwargs)
-            return
-
         # Each burst from the same source: same or different luminosities?
         if per_source == 'same':
             self.lum_shape = lambda: self.n_srcs
         elif per_source == 'different':
             self.lum_shape = lambda: self.shape
-        # Or use a gaussian per source
-        elif per_source.startswith('gauss'):
-            dist = getattr(ld, model)
-            self.lum_func = lambda: ld.gauss_per_source(dist=dist,
-                                                        shape=self.shape,
-                                                        **kwargs)
-            return
 
-        # Draw luminosities from a powerlaw
-        if model == 'powerlaw':
-            self.lum_func = lambda x: ld.powerlaw(shape=x, **kwargs)
-        elif model == 'constant':
-            self.lum_func = lambda x: ld.constant(shape=x, **kwargs)
+        # Find available distributions to draw from
+        funcs = [d for d in dir(ld) if hasattr(getattr(ld, d), '__call__')]
+
+        # Set function
+        if model in funcs:
+            func = getattr(ld, model)
+
+            # If you're getting fancy with combined distributions
+            self._transpose_lum = False
+            for kw_value in kwargs.values():
+                if isinstance(kw_value, (list, np.ndarray)):
+                    self.lum_shape = lambda: self.shape[::-1]
+                    self._transpose_lum = True
+
+            # Distribution from which to draw luminosities
+            self.lum_func = lambda x: func(shape=x, **kwargs)
         else:
             raise ValueError('set_lum input not recognised')
 
@@ -430,6 +428,9 @@ class CosmicPopulation(Population):
         if self.repeaters and self.frbs.lum_bol.ndim == 1:
             repeat_lums = [self.frbs.lum_bol[..., np.newaxis]]*self.shape[1]
             self.frbs.lum_bol = np.concatenate(repeat_lums, axis=1)
+
+        if self._transpose_lum:
+            self.frbs.lum_bol = self.frbs.lum_bol.T
 
     def set_time(self, model='regular', **kwargs):
         """Set model from which to generate time stamps.
@@ -451,25 +452,22 @@ class CosmicPopulation(Population):
             self.time_func = lambda: model(**kwargs)
             return
 
-        if model == 'single':
-            self.time_func = lambda: td.single(n_srcs=self.n_srcs,
-                                               n_days=self.n_days,
-                                               z=self.frbs.z)
-        elif model == 'regular':
-            self.time_func = lambda: td.regular(n_srcs=self.n_srcs,
-                                                n_days=self.n_days,
-                                                z=self.frbs.z,
-                                                **kwargs)
-        elif model.startswith('poisson'):
-            self.time_func = lambda: td.poisson(n_srcs=self.n_srcs,
-                                                n_days=self.n_days,
-                                                z=self.frbs.z,
-                                                **kwargs)
-        elif model == 'clustered':
-            self.time_func = lambda: td.clustered(n_srcs=self.n_srcs,
-                                                  n_days=self.n_days,
-                                                  z=self.frbs.z,
-                                                  **kwargs)
+        # Find available distributions
+        funcs = [d for d in dir(td) if hasattr(getattr(td, d), '__call__')]
+        internal = ['gamma', 'iteratively_gen_times', '_weibull_dist',
+                    '_poisson_dist']
+        for f in internal:
+            funcs.remove(f)
+
+        # Set function
+        if model in funcs:
+            func = getattr(td, model)
+
+            # Distribution from which to draw time stamps
+            self.time_func = lambda: func(n_srcs=self.n_srcs,
+                                          n_days=self.n_days,
+                                          z=self.frbs.z,
+                                          **kwargs)
         else:
             raise ValueError('set_time input not recognised')
 

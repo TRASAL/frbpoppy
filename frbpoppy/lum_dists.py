@@ -5,7 +5,7 @@ import frbpoppy.gen_dists as gd
 
 def constant(value=1e40, shape=1):
     """Good for standard candles."""
-    return np.full(shape, value).astype(np.float32)
+    return np.full(shape, value)
 
 
 def powerlaw(low=1e40, high=1e45, power=0, shape=1):
@@ -13,25 +13,21 @@ def powerlaw(low=1e40, high=1e45, power=0, shape=1):
     return gd.powerlaw(low=low, high=high, power=power, shape=shape)
 
 
-def gauss_per_source(src_sigma=0.05, dist=powerlaw, shape=(1, 1), z=0,
-                     **kwargs):
-    """Distribute spectral indices per source using a Gaussian function.
-
-    Generate bursts per source using a given distribution, then use those as
-    the mean for the distribution for more bursts from that source
+def gauss(mean=1e35, std=1e2, shape=1):
+    """Generate luminosties from a Gaussian/Normal distribution.
 
     Args:
-        src_sigma: Standard deviation over bursts.
-        dist: Distribution from which to draw source properties.
-        shape: Wanted shape of array of spectral indices.
-        z: Redshift.
+        mean (float): Mean luminosity [ergs/s]
+        std (float): Standard deviation [ergs/s]
+        shape (tuple): Required array shape
+
+    Returns:
+        array: Luminosties
+
     """
-    mu = dist(shape=shape[0], **kwargs)
+    return gd.trunc_norm(mean, std, shape)
 
-    # Check whether multiple bursts per source necessary
-    if len(shape) < 2:
-        return mu
 
-    shape = (shape[1], shape[0])
-
-    return np.random.normal(mu, src_sigma, shape).astype(np.float32).T
+def log10normal(mean=1e40, std=1e2, shape=1):
+    """Draw luminosity from a log10normal distribution."""
+    return gd.log10normal(np.log10(mean), np.log10(std), shape)

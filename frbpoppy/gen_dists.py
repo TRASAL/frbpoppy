@@ -63,23 +63,33 @@ def powerlaw(low, high, power, shape=1):
     return pl
 
 
-def trunc_norm(mean, std, n_gen=1, low=0, high=np.inf):
+def trunc_norm(mean, std, shape=1, low=0, high=np.inf):
     """Draw from a truncated normal distribution.
 
     Args:
-        mean (number): Mu.
-        std (number): Sigma.
-        n_gen (number): Number to generate.
-        low (number): low limit.
-        high (number): high limit.
+        mean (number): Mean of the normal distribution.
+        std (number): Standard deviation of the distribution.
+        shape (number): Number to generate.
+        low (number): Lower limit.
+        high (number): Higher limit.
 
     Returns:
         array: Numpy of required length
 
     """
-    if std == 0:
-        return np.full(n_gen, mean)
+    if not isinstance(std, np.ndarray) and std == 0:
+        return np.full(shape, mean)
     left = (low-mean)/std
     right = (high-mean)/std
-    d = truncnorm.rvs(left, right, loc=mean, scale=std, size=n_gen)
-    return d
+    return truncnorm.rvs(left, right, loc=mean, scale=std, size=shape)
+
+
+def log10normal(mean, std, shape):
+    """Random values from a normal distribution in the log space.
+
+    I could never quite figure out what to expect of a lognormal distribution,
+    so I implemented a log10normal distribution which looks like a normal
+    distribution when binned in the log10 space.
+    """
+    mean, std = np.log10(mean), np.log10(std)
+    return 10**np.random.normal(mean, std, shape)
