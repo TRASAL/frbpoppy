@@ -1,4 +1,5 @@
 from .cosmic_pop import CosmicPopulation
+from .beam_dists import *
 from .gen_dists import *
 from .do_hist import histogram
 from .do_plot import plot

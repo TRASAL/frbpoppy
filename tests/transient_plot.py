@@ -5,6 +5,7 @@ import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
 import urllib.request
+from matplotlib.markers import MarkerStyle
 
 from frbpoppy import Frbcat, pprint
 import frbpoppy.galacticops as go
@@ -14,8 +15,9 @@ from convenience import plot_aa_style, rel_path, set_axes_equal
 
 def import_frbcat():
     """Import frbcat."""
-    cat = Frbcat()
-    cat.filter(one_offs=True, repeaters=True, repeat_bursts=True)
+    cat = Frbcat(frbpoppy=False)
+    cat.frbpoppify()
+    cat.filter(one_offs=True, repeaters=True, repeat_bursts=False)
     df = cat.df
 
     # Remove Pushichino events
@@ -28,7 +30,7 @@ def import_frbcat():
     db['dist_co'] = go.Redshift(db['z']).dist_co() * 1e3  # Gpc -> kpc
     db['pseudo_lum'] = (df.fluence / df.w_eff) * db.dist_co**2
     # Observing bandwidth
-    db['bw'] = df['bandwidth']*1e-3  # MHz - > GHz
+    db['bw'] = df['bandwidth']  # MHz
     # Pulse width
     db['w_eff'] = df['w_eff'] * 1e-3  # ms -> s
     # Object type
@@ -52,7 +54,7 @@ def bw_from_epn():
             if line.startswith('<li>'):
                 name = line.split()[0].split('>')[-1]
                 freqs = [clean(l) for l in line.split('<a ')[1:]]
-                bw = (max(freqs) - min(freqs)) / 1e3
+                bw = (max(freqs) - min(freqs))
                 bw_db['name'].append(name)
                 bw_db['bw'].append(bw)
 
@@ -89,7 +91,7 @@ def import_pulsars(use_epn=True):
         return bw
 
     # Observing bandwidth
-    db['bw'] = df.apply(calc_bandwidth, axis=1)*1e-3  # MHz - > GHz
+    db['bw'] = df.apply(calc_bandwidth, axis=1)  # MHz
 
     def calc_flux(row):
         return max([row.S400, row.S1400, row.S2000])
@@ -105,7 +107,7 @@ def import_pulsars(use_epn=True):
     if use_epn:
         db['name'] = df.NAME
         epn_db = bw_from_epn()
-        epn_db['bw'] += 0.5  # Set a default of 500 MHz
+        epn_db['bw'] += 500  # Set a default of 500 MHz
         merged_db = pd.merge(db, epn_db, on='name')
         merged_db['bw'] = merged_db[['bw_x', 'bw_y']].apply(np.max, axis=1)
         merged_db.drop(['bw_x', 'bw_y'], inplace=True, axis=1)
@@ -116,7 +118,7 @@ def import_pulsars(use_epn=True):
 
 def import_magnetars():
     """Import magnetar info."""
-    m_db = {'bw': [41, 290],
+    m_db = {'bw': [41*1e3, 290*1e3],
             'pseudo_lum': [1.1*3.3**2, 0.6*8.3**2],
             'w_eff': [0.6, 1.8]}
     m_db['type'] = ['magnetar' for i in range(len(m_db['bw']))]
@@ -125,7 +127,7 @@ def import_magnetars():
 
 def import_crab_giants():
     """Import crab giant pulse info."""
-    crab_db = {'bw': [8.1],
+    crab_db = {'bw': [8.1*1e3],
                'pseudo_lum': [4e6*2**2],
                'w_eff': [2e-3]}
     crab_db['type'] = ['giant pulse' for i in range(len(crab_db['bw']))]
@@ -135,16 +137,52 @@ def import_crab_giants():
 def plot_data(df):
     """Plot transient properities in a DataFrame."""
     plot_aa_style(cols=2)
-    plt.rcParams["figure.figsize"] = (5.75373, 5.75373)
+    plt.rcParams["figure.figsize"] = (5.75373, 5.75373*3)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
+    # Clean data
+    df = df[df.bw < 1e10]
+
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    markers = list(MarkerStyle.markers.keys())
+    markers = ['*', '^', 's', '.', 's']
+
+    c = 0
     for obj, mdf in df.groupby(['type']):
+        print(f'Plotting {obj}s')
+        color = colors[c]
+        marker = markers[c]
+
+        c += 1
+        alpha = 1
+        linewidth = 1
+        markersize = 30
+        if len(mdf.w_eff) > 5:
+            alpha = 0.3
+            linewidth = 0.7
+            markersize = 10
+        if len(mdf.w_eff) > 100:
+            alpha = 0.1
+            linewidth = 0.2
+            markersize = 5
+
         ax.scatter(np.log10(mdf.w_eff),
                    np.log10(mdf.bw),
                    np.log10(mdf.pseudo_lum),
-                   label=obj)
+                   label=obj,
+                   color=color,
+                   s=markersize,
+                   marker=marker)
+
+        for i in range(len(mdf)):
+            ax.plot([np.log10(mdf.w_eff.iloc[i]) for n in range(2)],
+                    [np.log10(mdf.bw.iloc[i]) for n in range(2)],
+                    [np.log10(mdf.pseudo_lum.iloc[i]), -6],
+                    color=color,
+                    alpha=alpha,
+                    linewidth=linewidth)
 
     def power_of_10(n):
         c = 10 ** round(np.log10(n))
@@ -165,24 +203,39 @@ def plot_data(df):
 
     # Set labels
     ax.set_xlabel(r'Pulse Width (s)')
-    ax.set_ylabel(r'Bandwidth (GHz)')
+    ax.set_ylabel(r'Bandwidth (MHz)')
     ax.set_zlabel(r'S$_{\text{peak}}$D$^2$ (Jy kpc$^2$)')
     plt.legend()
 
     # Equal figure proportions
-    # set_axes_equal(ax)
+    ax.set_xlim(-4, 1)
+    ax.set_ylim(1, 6)
+    ax.set_zlim(-6, 10)
+
+    # Get rid of colored axes planes
+    # First remove fill
+    ax.xaxis.pane.fill = False
+    ax.yaxis.pane.fill = False
+    ax.zaxis.pane.fill = False
+
+    # Now set color to white (or whatever is "invisible")
+    ax.xaxis.pane.set_edgecolor('w')
+    ax.yaxis.pane.set_edgecolor('w')
+    ax.zaxis.pane.set_edgecolor('w')
 
     # Save figure
+    ax.view_init(azim=-52, elev=10)
     plt.tight_layout()
+
     plt.savefig(rel_path('./plots/transients.pdf'))
-    plt.show()
+    # plt.show()
 
 
 if __name__ == '__main__':
     test = pd.DataFrame({'obj': ['a', 'a', 'b'],
                          'pseudo_lum': [1e40, 1e41, 1e40],
                          'w_eff': [1, 100, 0.1],
-                         'bw': [100, 1, 100]})
+                         'bw': [800, 1400, 1000]})
 
     pulsars = import_pulsars(use_epn=True)
     frbs = import_frbcat()

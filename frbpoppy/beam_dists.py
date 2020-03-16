@@ -18,13 +18,13 @@ def get_beam_props(model, fwhm):
 
     """
     # Set up beam arrays
-    models = ('apertif', 'parkes', 'chime', 'gaussian', 'airy')
+    models = ('apertif', 'parkes', 'chime', 'gaussian', 'airy', 'apertif_real')
     if model in models:
         place = paths.models() + f'/beams/{model}.npy'
         beam_array = np.load(place)
 
     # Set up details if using beam arrays
-    if model == 'apertif':
+    if model.startswith('apertif'):
         pixel_scale = 0.94/60  # Degrees per pixel [deg]
         beam_size = 25.  # [sq deg]
     elif model == 'parkes':
@@ -180,24 +180,58 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
     if mount_type == 'equatorial':
         # Convert input coordinates to offset in ra and dec
         dx, dy = go.coord_to_offset(ra_p, dec_p, ra, dec)
-    elif mount_type in ('azimuthal', 'transit'):
+    elif mount_type == 'azimuthal':
         # Convert input right ascension to hour angle
         ha = lst - ra
         ha_p = lst - ra_p
+        if ha > np.pi:
+            ha -= 2*np.pi
+        if ha < -np.pi:
+            ha += 2*np.pi
+        if ha_p > np.pi:
+            ha_p -= 2*np.pi
+        if ha_p < -np.pi:
+            ha_p += 2*np.pi
         # Convert ha, dec to az, alt
         az, alt = go.hadec_to_azalt(ha, dec, lat)
         az_p, alt_p = go.hadec_to_azalt(ha_p, dec_p, lat)
         # Convert to offset
+        # Only valid for +/-30 from the centre
         dx, dy = go.coord_to_offset(az_p, alt_p, az, alt)
+    elif mount_type == 'transit':
+        az_p = np.deg2rad(180)
+        alt_p = np.deg2rad(90)
+        # Convert input right ascension to hour angle
+        ha = lst - ra
+        if ha > np.pi:
+            ha -= 2*np.pi
+        if ha < -np.pi:
+            ha += 2*np.pi
+        # Convert ha, dec to az, alt
+        az, alt = go.hadec_to_azalt(ha, dec, lat)
+        # Convert to offset
+        # dx = az - az_p
+        # dy = alt - alt_p
+
+        def pol2cart(rho, phi):
+            x = rho * np.cos(phi)
+            y = rho * np.sin(phi)
+            return x, y
+
+        dx, dy = pol2cart(np.pi/2-alt, az+np.pi/2)
     else:
         raise ValueError(f'Invalid mount type: {mount_type}')
 
     # Convert offsets dx, dy to pixel in beam pattern (round)
-    dx_px = (np.round(dx / pixel_scale)).astype(int)
-    dy_px = (np.round(dy / pixel_scale)).astype(int)
+    dx_px = (np.round(np.rad2deg(dx) / pixel_scale)).astype(int)
+    dy_px = (np.round(np.rad2deg(dy) / pixel_scale)).astype(int)
     ny, nx = beam_array.shape
     x = (nx/2 + dx_px).astype(int)
     y = (ny/2 + dy_px).astype(int)
+
+    # Return the position in the beam
+    if test:
+        return np.rad2deg(dx), np.rad2deg(dy)
 
     # Get the value at this pixel (zero if outside beam pattern)
     m = beam_array.shape[0]

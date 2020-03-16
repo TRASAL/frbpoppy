@@ -610,6 +610,10 @@ def coord_to_offset(xref, yref, x, y):
     """
     Convert point (x, y) to projected offset from reference (xref, yref).
 
+    Makes use of a gnomonic projection: see both
+        https://github.com/LSSTDESC/Coord/blob/master/coord/celestial.py
+        http://mathworld.wolfram.com/GnomonicProjection.html
+
     Args:
         xref (array): Reference RA or Az [rad]
         yref (array): Reference Dec or Alt [rad]
@@ -632,16 +636,18 @@ def coord_to_offset(xref, yref, x, y):
     cosy = np.cos(y)
 
     # Sine and cosine of shift in x
-    cosdx = cosxref * cosx + sinxref * sinx
-    sindx = cosxref * sinx - sinxref * cosx
+    cosdx = (cosxref * cosx) + (sinxref * sinx)
+    sindx = (cosxref * sinx) - (sinxref * cosx)
 
     # Projection effect cosine
     cosc = sinyref * siny + cosyref * cosy * cosdx
-    k = 1. / cosc
 
     # Projected offsets
-    dx = k * cosy * sindx
-    dy = k * (cosyref * siny - sinyref * cosy * cosdx)
+    dx = (cosy * sindx) / cosc
+    dy = (cosyref * siny - sinyref * cosy * cosdx) / cosc
+
+    if cosc < 0:
+        dx, dy = np.nan, np.nan
 
     return dx, dy
 
@@ -669,13 +675,14 @@ def hadec_to_azalt(ha, dec, lat):
     # azimuth (note this uses altitude)
     cosaz = (np.sin(dec)-np.sin(alt)*np.sin(lat)) / (np.cos(alt)*np.cos(lat))
 
-    # Numerical instability can cause cosaz > 1
     convert_to_float = False
     if isinstance(cosaz, float):
         cosaz = np.array([cosaz])
         convert_to_float = True
 
+    # Numerical instability can cause cosaz > 1
     cosaz[cosaz > 1] = 1
+    cosaz[cosaz < -1] = -1
     az = np.arccos(cosaz)
 
     # Sign of azimuth is lost, but can be recovered using the input hour angle

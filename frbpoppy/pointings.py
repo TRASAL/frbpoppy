@@ -23,7 +23,7 @@ def transit(n_gen, lat=None, lon=None, t_obs=None):
     date_max = date_min + timedelta(seconds=int(t_obs*n_gen))
     time_delta = np.timedelta64(int(t_obs), 's')
     times = np.arange(date_min, date_max, time_delta, dtype='datetime64')
-    ra = go.datetime_to_gmst(times) + lon
+    ra = (go.datetime_to_gmst(times) + lon) % 360
     dec = np.ones(n_gen)*lat
 
     return ra, dec
