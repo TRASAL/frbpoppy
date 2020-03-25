@@ -7,12 +7,12 @@ from frbpoppy import split_pop, pprint
 
 from convenience import hist, plot_aa_style, rel_path
 
-DAYS = 1
+DAYS = 4
 INTERACTIVE_PLOT = False
 PLOTTING_LIMIT_N_SRCS = 0
-SNR = False
+SNR = True
 
-r = CosmicPopulation.simple(n_srcs=int(1e5), n_days=DAYS, repeaters=True)
+r = CosmicPopulation.simple(n_srcs=int(1e4), n_days=DAYS, repeaters=True)
 r.set_dist(z_max=0.01)
 r.set_lum(model='powerlaw', low=1e35, high=1e45, power=-1,
           per_source='different')
@@ -51,7 +51,7 @@ if INTERACTIVE_PLOT:
 # Plot dm distribution
 if SNR:
     plot_aa_style(cols=2)
-    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    f, (ax1, ax2) = plt.subplots(1, 2)
 else:
     plot_aa_style(cols=1)
     f, ax1 = plt.subplots(1, 1)
@@ -103,8 +103,9 @@ ax1.set_ylabel('Fraction')
 
 if SNR:
     ax2.set_xlabel(r'SNR')
-    plt.xscale('log')
-    plt.yscale('log')
+    ax2.set_xscale('log')
+    ax2.set_yscale('log')
+    ax2.yaxis.tick_right()
     plt.figlegend(loc='upper center', ncol=len(pops), framealpha=1)
 else:
     plt.figlegend(loc='upper center', ncol=3, framealpha=1, prop={'size': 8},

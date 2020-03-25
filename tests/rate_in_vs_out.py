@@ -8,8 +8,9 @@ from frbpoppy import hist
 from convenience import plot_aa_style, rel_path
 
 N_DAYS = 50
-N_SRCS = int(1e3)
+N_SRCS = int(1e4)
 RATE = 0.1  # per day
+SINGLE_INPUT_RATE = False
 init_surv_time_frac = 0.1
 
 # Set up a population
@@ -20,8 +21,10 @@ pop.set_w(model='constant', value=1)
 pop.set_dm(mw=False, igm=True, host=False)
 
 # Add a distribution of Poisson burst rates
-rate_dist = log10normal(RATE, 2, N_SRCS)
-# rate_dist = RATE
+if SINGLE_INPUT_RATE:
+    rate_dist = RATE
+else:
+    rate_dist = log10normal(RATE, 2, N_SRCS)
 pop.set_time(model='poisson', rate=rate_dist)
 pop.generate()
 
@@ -29,7 +32,7 @@ pop.generate()
 survey = Survey('perfect', n_days=N_DAYS)
 survey.mount_type = 'transit'
 survey.set_beam(model='perfect')
-survey.snr_limit = 1e-4
+survey.snr_limit = 1e0
 survey.t_obs = 60*60  # seconds
 
 # Check the burst rate
@@ -55,7 +58,7 @@ plt.step(rates, values, where='mid', label='original')
 # Plot the first frac of time
 mask = (time < init_surv_time_frac*N_DAYS) & ~np.isnan(time)
 half_n_bursts = np.count_nonzero(mask, axis=1)
-half_rate = half_n_bursts / (N_DAYS/2)
+half_rate = half_n_bursts / (init_surv_time_frac*N_DAYS)
 rates, values = hist(half_rate, bins=bins, norm='max')
 plt.step(rates, values, where='mid', zorder=2,
          label=fr'{int(init_surv_time_frac*100)}\% of survey time')
@@ -76,4 +79,8 @@ plt.legend()
 
 # Save plot
 plt.tight_layout()
-plt.savefig(rel_path('./plots/rate_in_vs_out.pdf'))
+if SINGLE_INPUT_RATE:
+    path = './plots/rate_in_vs_out_single_input.pdf'
+else:
+    path = './plots/rate_in_vs_out.pdf'
+plt.savefig(rel_path(path))

@@ -33,7 +33,7 @@ pointings = survey.pointings
 
 # Targets
 ra = 0
-decs = [-80, -40, 0, 40, 70]
+decs = [-25, 25, 75]
 
 # Set up beam pattern array to plot
 ny, nx = beam_array.shape
@@ -81,14 +81,15 @@ for i, dec in enumerate(decs):
                                mount_type=mount_type,
                                test=True)
 
-        # outside = ((dx <= extent[0]) | (dx >= extent[1]) | (dy <= extent[2]) |
-        #            (dy >= extent[3]))
-        # if not outside:
-        ax.scatter(dx, dy, color=colors[i%9], marker='x', s=20)
+        ax.scatter(dx, dy, color=colors[i % 9], marker='x', s=20)
 
 # Set axis labels
 ax.set_xlabel(r'X Offset ($^{\circ}$)')
 ax.set_ylabel(r'Y Offset ($^{\circ}$)')
+
+# Set axis limits
+ax.set_xlim(extent[0], extent[1])
+ax.set_ylim(extent[2], extent[3])
 
 # Add colour bar
 cb = plt.colorbar(img)
@@ -98,7 +99,7 @@ cb.set_label('Intensity')
 # Add line styles
 elements = []
 for i, dec in enumerate(decs):
-    color = colors[i%9]
+    color = colors[i % 9]
     label = str(int(dec)) + r' $^{\circ}$'
     elements.append((Line2D([0], [0], marker='x', color=color,
                      linestyle='None'), label))

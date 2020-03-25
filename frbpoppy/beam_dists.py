@@ -162,8 +162,6 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
     """
     # Weed out perfect beam
     if pattern.startswith('perfect'):
-        # if self.beam_size is None:
-        #     self.beam_size = self.beam_size_fwhm
         return np.ones(len(ra)), None
 
     # Convert input decimal degrees to radians
@@ -199,6 +197,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         # Only valid for +/-30 from the centre
         dx, dy = go.coord_to_offset(az_p, alt_p, az, alt)
     elif mount_type == 'transit':
+        # A transit telescope always looks straight up
         az_p = np.deg2rad(180)
         alt_p = np.deg2rad(90)
         # Convert input right ascension to hour angle
@@ -209,15 +208,13 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
             ha += 2*np.pi
         # Convert ha, dec to az, alt
         az, alt = go.hadec_to_azalt(ha, dec, lat)
-        # Convert to offset
-        # dx = az - az_p
-        # dy = alt - alt_p
 
         def pol2cart(rho, phi):
             x = rho * np.cos(phi)
             y = rho * np.sin(phi)
             return x, y
 
+        # Convert to offset
         dx, dy = pol2cart(np.pi/2-alt, az+np.pi/2)
     else:
         raise ValueError(f'Invalid mount type: {mount_type}')
@@ -242,7 +239,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
     intensity = beam_array[y, x]
     intensity[(x == 0) & (y == 0)] = 0
 
-    # TODO: Calculate offset on sky
+    # TODO: Calculate radial offset on sky
     offset = None
 
     return intensity, offset
