@@ -39,12 +39,12 @@ class Survey:
         self.read_survey_parameters()
 
         # Special treatment for perfect survey
-        if self.name.startswith('perfect'):
+        if self.name == 'perfect':
             self.beam_pattern = 'perfect'
 
         # Un-used
         self.strategy = 'regular'  # 'follow-up' not implemented
-        if self.mount_type is 'transit':
+        if self.mount_type == 'transit':
             # Transit telescopes can't follow-up
             self.strategy = 'regular'
 
@@ -191,6 +191,14 @@ class Survey:
 
         beam_props = bd.get_beam_props(self.beam_pattern, self.fwhm)
         self.beam_size_array, self.pixel_scale, self.beam_array = beam_props
+
+        if self.beam_size_array is not None:
+            self.beam_size = self.beam_size_array
+            # Not completely kosher -> a circle is not the same as a square,
+            # but this is the smallest radius in which the full beam pattern
+            # fits. The area of the circle extending beyond the beam pattern
+            # will have an intensity of zero.
+            self.max_offset = np.sqrt(0.5*self.beam_size)
 
         self.beam_func_oneoffs = lambda x: bd.int_pro_random(
                                  shape=x,

@@ -33,6 +33,8 @@ def get_beam_props(model, fwhm):
     elif model == 'chime':
         pixel_scale = 0.08  # Degrees per pixel [deg]
         beam_size = 80*80  # [sq deg]
+        # If integrating over 80*80 degrees
+        beam_size = 1399  # [sq deg]
     elif model == 'gaussian':
         pixel_scale = fwhm / 95  # Degrees per pixel [deg]
         beam_size = (pixel_scale*beam_array.shape[0])**2
@@ -182,14 +184,22 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         # Convert input right ascension to hour angle
         ha = lst - ra
         ha_p = lst - ra_p
-        if ha > np.pi:
-            ha -= 2*np.pi
-        if ha < -np.pi:
-            ha += 2*np.pi
-        if ha_p > np.pi:
-            ha_p -= 2*np.pi
-        if ha_p < -np.pi:
-            ha_p += 2*np.pi
+        if isinstance(ha, np.ndarray):
+            ha[ha > np.pi] -= 2*np.pi
+            ha[ha < -np.pi] += 2*np.pi
+        else:
+            if ha > np.pi:
+                ha -= 2*np.pi
+            if ha < -np.pi:
+                ha += 2*np.pi
+        if isinstance(ha_p, np.ndarray):
+            ha_p[ha_p > np.pi] -= 2*np.pi
+            ha_p[ha_p < -np.pi] += 2*np.pi
+        else:
+            if ha_p > np.pi:
+                ha_p -= 2*np.pi
+            if ha_p < -np.pi:
+                ha_p += 2*np.pi
         # Convert ha, dec to az, alt
         az, alt = go.hadec_to_azalt(ha, dec, lat)
         az_p, alt_p = go.hadec_to_azalt(ha_p, dec_p, lat)
@@ -202,10 +212,14 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         alt_p = np.deg2rad(90)
         # Convert input right ascension to hour angle
         ha = lst - ra
-        if ha > np.pi:
-            ha -= 2*np.pi
-        if ha < -np.pi:
-            ha += 2*np.pi
+        if isinstance(ha, np.ndarray):
+            ha[ha > np.pi] -= 2*np.pi
+            ha[ha < -np.pi] += 2*np.pi
+        else:
+            if ha > np.pi:
+                ha -= 2*np.pi
+            if ha < -np.pi:
+                ha += 2*np.pi
         # Convert ha, dec to az, alt
         az, alt = go.hadec_to_azalt(ha, dec, lat)
 
@@ -231,14 +245,13 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         return np.rad2deg(dx), np.rad2deg(dy)
 
     # Get the value at this pixel (zero if outside beam pattern)
-    m = beam_array.shape[0]
-    outside = ((x <= 0) | (x >= m) | (y <= 0) | (y >= m))
+    i, j = beam_array.shape
+    outside = ((x <= 0) | (x >= j-1) | (y <= 0) | (y >= i-1))
     x[outside] = 0  # Nans don't work in int arrays
     y[outside] = 0
 
     intensity = beam_array[y, x]
     intensity[(x == 0) & (y == 0)] = 0
-
     # TODO: Calculate radial offset on sky
     offset = None
 

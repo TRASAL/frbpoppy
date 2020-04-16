@@ -94,11 +94,19 @@ class LargePopulation:
                     setattr(mp.frbs, attr, merged_parm)
 
             # Add up detections
-            mp.rate.det = len(mp.frbs.snr)
             for pop in pops[1:]:
-                mp.rate.faint += pop.rate.faint
-                mp.rate.late += pop.rate.late
-                mp.rate.out += pop.rate.out
+                mp.source_rate.faint += pop.source_rate.faint
+                mp.source_rate.late += pop.source_rate.late
+                mp.source_rate.out += pop.source_rate.out
+                mp.source_rate.det += pop.source_rate.det
+
+                if mp.repeaters:
+                    mp.burst_rate.faint += pop.burst_rate.faint
+                    mp.burst_rate.late += pop.burst_rate.late
+                    mp.burst_rate.out += pop.burst_rate.out
+                    mp.burst_rate.det += pop.burst_rate.det
+                    mp.burst_rate.pointing += pop.burst_rate.pointing
+
 
             # Recalculate detection rates
             mp.calc_rates(s)

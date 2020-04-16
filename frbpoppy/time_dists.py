@@ -39,7 +39,7 @@ def regular(rate=2, n_srcs=1, n_days=1, z=0):
     time += time_offset[:, np.newaxis]
 
     # Add redshift
-    time = time*(1+z)[:, np.newaxis]
+    time *= (1+z)[:, np.newaxis]
     time[(time > n_days)] = np.nan
 
     return time

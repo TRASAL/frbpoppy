@@ -47,7 +47,9 @@ class SurveyPopulation(Population):
         self.n_days = cosmic_pop.n_days
         self.repeaters = cosmic_pop.repeaters
         self.frbs = deepcopy(cosmic_pop.frbs)
-        self.rate = Rates()
+        self.source_rate = Rates('source')
+        if self.repeaters:
+            self.burst_rate = Rates('burst')
         self.scat = scat
         self.scin = scin
         self.survey = survey
@@ -62,12 +64,28 @@ class SurveyPopulation(Population):
             m += 'RepeaterPopulations'
             raise ValueError(m)
 
+        # For convenience
         frbs = self.frbs
+        sr = self.source_rate
+        sr.tot = cosmic_pop.n_srcs
+        if self.repeaters:
+            br = self.burst_rate
+            br.tot = self.frbs.time.size
+
+            # Bursts which are too late have already been removed
+            self.n_brst_pr_src = np.count_nonzero(~np.isnan(self.frbs.time), 1)
+            br.late += br.tot - np.sum(self.n_brst_pr_src)
+            sr.late += sr.tot - len(self.n_brst_pr_src)
 
         # Check whether source is in region
         region_mask = survey.in_region(frbs.ra, frbs.dec, frbs.gl, frbs.gb)
         frbs.apply(region_mask)
-        self.rate.out = np.size(region_mask) - np.count_nonzero(region_mask)
+
+        # Keep track of detection numbers
+        sr.out = np.sum(~region_mask)
+        if self.repeaters:
+            br.out = np.sum(self.n_brst_pr_src[~region_mask])
+            self.n_brst_pr_src = self.n_brst_pr_src[region_mask]
 
         # Calculate dispersion measure across single channel
         frbs.t_dm = survey.calc_dm_smear(frbs.dm)
@@ -131,15 +149,16 @@ class SurveyPopulation(Population):
         # Check whether frbs would be above detection threshold
         snr_mask = (frbs.snr >= survey.snr_limit)
         frbs.apply(snr_mask)
-        self.rate.faint = np.size(snr_mask) - np.count_nonzero(snr_mask)
+        self.source_rate.faint = np.size(snr_mask) - np.count_nonzero(snr_mask)
 
         # Distant frbs are redshifted out of your observing time
         limit = 1/(1+frbs.z)
         rate_mask = np.random.random(len(frbs.z)) <= limit
         frbs.apply(rate_mask)
-        self.rate.late = np.size(rate_mask) - np.count_nonzero(rate_mask)
+        self.source_rate.late = np.size(rate_mask)
+        self.source_rate.late -= np.count_nonzero(rate_mask)
 
-        self.rate.det = len(frbs.snr)
+        self.source_rate.det = len(frbs.snr)
 
         # Calculate detection rates
         self.calc_rates(survey)
@@ -148,6 +167,8 @@ class SurveyPopulation(Population):
         """Detect repeating frbs."""
         frbs = self.frbs
         survey = self.survey
+        br = self.burst_rate
+        sr = self.source_rate
 
         # Set up a tuple of pointings if not given
         survey.gen_pointings()
@@ -163,10 +184,15 @@ class SurveyPopulation(Population):
 
         # Only keep bursts within survey time
         time_mask = (frbs.time <= times[-1])
+        # n_brst_pr_src = np.count_nonzero(~np.isnan(self.frbs.time), 1)
         frbs.apply(time_mask)
 
+        # Keep track of losses
+        br.late += np.sum(self.n_brst_pr_src - np.count_nonzero(time_mask, 1))
+        sr.late += len(time_mask) - len(self.frbs.time)
+
         # Prepare for iterating over time
-        self.r = survey.beam_size / 2  # Beam pattern radius
+        self.r = survey.max_offset  # Beam pattern radius
         max_n_pointings = len(times) - 1
 
         # Initialize some necessary arrays
@@ -182,6 +208,8 @@ class SurveyPopulation(Population):
         ra_p = survey.pointings[0]
         dec_p = survey.pointings[1]
         lst = lsts[:-1]
+        self.srcs_not_in_pointing = np.ones_like(frbs.index, dtype=bool)
+        self.srcs_not_bright = np.ones_like(frbs.index, dtype=bool)
 
         # Parameters needed for for-loop
         keep = ([], [])
@@ -194,12 +222,20 @@ class SurveyPopulation(Population):
             keep[0].extend(xy[0])
             keep[1].extend(xy[1])
 
-        # TODO: Implement rates for sources vs bursts for repeater population
+        sr.pointing = np.sum(self.srcs_not_in_pointing)
+        # Already outside of pointing, so unknown whether too faint
+        self.srcs_not_bright[self.srcs_not_in_pointing] = False
+
+        sr.faint = np.sum(self.srcs_not_bright)
 
         # Create SNR mask
         snr_mask = np.zeros_like(frbs.snr, dtype=bool)
         snr_mask[keep] = True
         frbs.apply(snr_mask)
+
+        # Keep track of detections
+        self.burst_rate.det = np.count_nonzero(snr_mask)
+        self.source_rate.det = len(np.unique(keep[0]))
 
         # Reduce matrices' size
         frbs.clean_up()
@@ -218,17 +254,20 @@ class SurveyPopulation(Population):
                                frbs.dec[t_ix[0]],
                                ra_pt, dec_pt)
         # Position indices (1D)
-        p_ix = np.where((offset <= r))
+        p_ix = (offset <= r)
 
         # Relevant FRBS
         # Time & position
         tp_ix = (t_ix[0][p_ix], t_ix[1][p_ix])
         # Time & not position
-        # Doesn't actually delete: returns new array
-        tnp_ix = (np.delete(t_ix[0], p_ix), np.delete(t_ix[1], p_ix))
+        tnp_ix = (t_ix[0][~p_ix], t_ix[1][~p_ix])
 
         # Number of bursts
         tp_unique, n_bursts = np.unique(tp_ix[0], return_counts=True)
+
+        # Add to outside of pointing count
+        self.burst_rate.pointing += len(tnp_ix[0])
+        self.srcs_not_in_pointing[tp_unique] = False
 
         # What's the intensity of them in the beam?
         int_pro = survey.calc_beam(repeaters=True,
@@ -241,6 +280,7 @@ class SurveyPopulation(Population):
         # Ensure relevant masks
         s_peak_ix = tp_unique
         not_ix = np.unique(tnp_ix[0])
+
         if frbs.s_peak.ndim == 2:
             s_peak_ix = tp_ix
             not_ix = tnp_ix
@@ -305,41 +345,39 @@ class SurveyPopulation(Population):
         # Only keep those in time, in position and above the snr limit
         snr_m = (frbs.snr[s_peak_ix] > survey.snr_limit)
         s_peak_ix = (tp_ix[0][snr_m], tp_ix[1][snr_m])
+
+        self.burst_rate.faint += len(tp_ix[0]) - len(s_peak_ix[0])
+        self.srcs_not_bright[np.unique(s_peak_ix[0])] = False
+
         return s_peak_ix[0], s_peak_ix[1]
 
     def calc_rates(self, survey):
         """Calculate the relative detection rates."""
         # Calculate scaling factors for rates
         area_sky = 4*np.pi*(180/np.pi)**2   # In sq. degrees
-        f_area = (survey.beam_size * self.rate.tot())
-        inside = self.rate.det+self.rate.late+self.rate.faint
+        f_area = survey.beam_size * self.source_rate.tot
+        inside = self.source_rate.det + self.source_rate.late
+        inside += self.source_rate.faint
         if inside > 0:
             f_area /= (inside*area_sky)
         else:
             f_area = 0
-        f_time = 1 / self.n_days
 
         # Saving scaling factors
-        self.rate.days = self.n_days
-        self.rate.name = self.name
-        self.rate.vol = self.rate.tot()
-        self.rate.vol /= self.vol_co_max * (365.25/self.n_days)
+        self.source_rate.days = self.n_days
+        self.source_rate.name = self.name
+        self.source_rate.vol = self.source_rate.tot
+        self.source_rate.vol /= self.vol_co_max * (365.25/self.n_days)
 
-        # If oneoffs, you'll want to scale by the area and potentially time
+        self.burst_rate.days = self.n_days
+        self.burst_rate.name = self.name
+        self.burst_rate.vol = self.burst_rate.tot
+        self.burst_rate.vol /= self.vol_co_max * (365.25/self.n_days)
+
+        # If oneoffs, you'll want to scale by the area
         if not self.repeaters:
-            self.rate.f_area = f_area
-            self.rate.f_time = f_time
-
-    def rates(self, scale_area=True):
-        """Scale the rates by the beam area."""
-        # Don't scale for repeater population.
-        if self.repeaters:
-            scale_area = False
-
-        if scale_area:
-            return scale(self.rate, area=True)
-        else:
-            return self.rate
+            self.source_rate.f_area = f_area
+            scale(self.source_rate, area=True)
 
     def calc_logn_logs(self, parameter='fluence', min_p=None, max_p=None):
         """TODO. Currently unfinished."""

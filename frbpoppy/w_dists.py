@@ -19,7 +19,7 @@ def calc_w_arr(w_int, z=0):
         return w_int*(1+z)
     # These are methods to deal with numpy dimensionality aspects
     elif np.argmax(w_int.shape) != np.argmax(z.shape):
-        return w_int*(1+z[:, None]).T
+        return w_int*(1+z[:, np.newaxis])
     else:
         return w_int*(1+z[:, None])
 
