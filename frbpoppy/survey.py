@@ -198,7 +198,7 @@ class Survey:
             # but this is the smallest radius in which the full beam pattern
             # fits. The area of the circle extending beyond the beam pattern
             # will have an intensity of zero.
-            self.max_offset = np.sqrt(0.5*self.beam_size)
+            self.max_offset = go.calc_sky_radius(self.beam_size)
 
         self.beam_func_oneoffs = lambda x: bd.int_pro_random(
                                  shape=x,

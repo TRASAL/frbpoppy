@@ -71,15 +71,14 @@ for i, dec in enumerate(decs):
         ra_p = pointings[0][ii]
         dec_p = pointings[1][ii]
 
-        dx, dy = int_pro_fixed(ra, dec,
-                               ra_p, dec_p,
-                               lst,
-                               pattern=pattern,
-                               latitude=latitude,
-                               beam_array=beam_array,
-                               pixel_scale=pixel_scale,
-                               mount_type=mount_type,
-                               test=True)
+        int_pro, dx, dy = int_pro_fixed(ra, dec,
+                                        ra_p, dec_p,
+                                        lst,
+                                        pattern=pattern,
+                                        latitude=latitude,
+                                        beam_array=beam_array,
+                                        pixel_scale=pixel_scale,
+                                        mount_type=mount_type)
 
         ax.scatter(dx, dy, color=colors[i % 9], marker='x', s=20)
 

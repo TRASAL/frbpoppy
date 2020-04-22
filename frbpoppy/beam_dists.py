@@ -32,9 +32,11 @@ def get_beam_props(model, fwhm):
         beam_size = 9.  # [sq deg]
     elif model == 'chime':
         pixel_scale = 0.08  # Degrees per pixel [deg]
-        beam_size = 80*80  # [sq deg]
-        # If integrating over 80*80 degrees
-        beam_size = 1399  # [sq deg]
+        beam_size = 180*80  # [sq deg]
+        # If integrating over 180*80 degrees
+        # Wolfram Alpha input:
+        # integral_0^pi integral_0^(4*pi/9) sin(theta) d theta d phi square radians to square degrees
+        beam_size = 8522  # [sq deg]
     elif model == 'gaussian':
         pixel_scale = fwhm / 95  # Degrees per pixel [deg]
         beam_size = (pixel_scale*beam_array.shape[0])**2
@@ -147,7 +149,7 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
 
 def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
                   latitude=0, beam_array=None, pixel_scale=1,
-                  test=False, mount_type='equatorial'):
+                  mount_type='equatorial'):
     """Calculate intensity profile for fixed location in beam.
 
     Args:
@@ -156,7 +158,6 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         ra_p (float): Right ascension of pointing [deg]
         dec_p (float): Declination of pointing [deg]
         lst (float): Local Sidereal Time [deg]
-        test (bool): For testing
 
     Returns:
         type: Description of returned object.
@@ -164,18 +165,19 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
     """
     # Weed out perfect beam
     if pattern.startswith('perfect'):
-        return np.ones(len(ra)), None
+        return np.ones_like(ra), None, None
 
-    # Convert input decimal degrees to radians
-    ra = np.deg2rad(ra)
-    dec = np.deg2rad(dec)
-    args = [ra_p, dec_p, lst, latitude, pixel_scale]
-
+    # Check input
+    args = [ra_p, dec_p, lst, latitude]
     for a in args:
         if a is None:
             raise ValueError('Missing required input')
 
-    ra_p, dec_p, lst, lat, pixel_scale = np.deg2rad(args)
+    # Convert input decimal degrees to radians
+    ra = np.deg2rad(ra)
+    dec = np.deg2rad(dec)
+    ra_p, dec_p, lst, lat = np.deg2rad(args)
+    # import IPython; IPython.embed()
 
     if mount_type == 'equatorial':
         # Convert input coordinates to offset in ra and dec
@@ -210,6 +212,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         # A transit telescope always looks straight up
         az_p = np.deg2rad(180)
         alt_p = np.deg2rad(90)
+
         # Convert input right ascension to hour angle
         ha = lst - ra
         if isinstance(ha, np.ndarray):
@@ -220,6 +223,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
                 ha -= 2*np.pi
             if ha < -np.pi:
                 ha += 2*np.pi
+
         # Convert ha, dec to az, alt
         az, alt = go.hadec_to_azalt(ha, dec, lat)
 
@@ -237,22 +241,22 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
     dx_px = (np.round(np.rad2deg(dx) / pixel_scale)).astype(int)
     dy_px = (np.round(np.rad2deg(dy) / pixel_scale)).astype(int)
     ny, nx = beam_array.shape
-    x = (nx/2 + dx_px).astype(int)
-    y = (ny/2 + dy_px).astype(int)
-
-    # Return the position in the beam
-    if test:
-        return np.rad2deg(dx), np.rad2deg(dy)
+    x = (nx/2 + dx_px).astype(np.int32)
+    y = (ny/2 + dy_px).astype(np.int32)
 
     # Get the value at this pixel (zero if outside beam pattern)
+    if not isinstance(x, np.ndarray):
+        x = np.array(x, dtype=np.int32)
+        y = np.array(y, dtype=np.int32)
+
     i, j = beam_array.shape
-    outside = ((x <= 0) | (x >= j-1) | (y <= 0) | (y >= i-1))
+    outside = ((x < 0) | (x > j-1) | (y < 0) | (y > i-1))
+
     x[outside] = 0  # Nans don't work in int arrays
     y[outside] = 0
 
-    intensity = beam_array[y, x]
-    intensity[(x == 0) & (y == 0)] = 0
-    # TODO: Calculate radial offset on sky
-    offset = None
+    intensity = np.asarray(beam_array[y, x])
+    intensity[((x == 0) & (y == 0))] = np.nan
 
-    return intensity, offset
+
+    return intensity, np.rad2deg(dx), np.rad2deg(dy)

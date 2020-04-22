@@ -27,7 +27,7 @@ def import_frbcat():
 
     dm_igm = df['dm'] - df['dm_mw']
     db['z'] = dm_igm / 950
-    db['dist_co'] = go.Redshift(db['z']).dist_co() * 1e3  # Gpc -> kpc
+    db['dist_co'] = go.Redshift(db['z']).dist_co() * 1e6  # Gpc -> kpc
     db['pseudo_lum'] = (df.fluence / df.w_eff) * db.dist_co**2
     # Observing bandwidth
     db['bw'] = df['bandwidth']  # MHz
@@ -136,8 +136,9 @@ def import_crab_giants():
 
 def plot_data(df):
     """Plot transient properities in a DataFrame."""
-    plot_aa_style(cols=2)
+    # plot_aa_style(cols=2)
     plt.rcParams["figure.figsize"] = (5.75373, 5.75373*3)
+    plt.rcParams["font.family"] = "Times"
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -168,7 +169,7 @@ def plot_data(df):
             linewidth = 0.2
             markersize = 5
 
-        ax.scatter(np.log10(mdf.w_eff),
+        ax.scatter(np.log10(mdf.w_eff*1e3),
                    np.log10(mdf.bw),
                    np.log10(mdf.pseudo_lum),
                    label=obj,
@@ -177,9 +178,9 @@ def plot_data(df):
                    marker=marker)
 
         for i in range(len(mdf)):
-            ax.plot([np.log10(mdf.w_eff.iloc[i]) for n in range(2)],
+            ax.plot([np.log10(mdf.w_eff.iloc[i]*1e3) for n in range(2)],
                     [np.log10(mdf.bw.iloc[i]) for n in range(2)],
-                    [np.log10(mdf.pseudo_lum.iloc[i]), -6],
+                    [np.log10(mdf.pseudo_lum.iloc[i]), -4],
                     color=color,
                     alpha=alpha,
                     linewidth=linewidth)
@@ -193,6 +194,7 @@ def plot_data(df):
     # Set axis properties
     def log_tick_formatter(val, pos=None):
         new_val = 10**val
+        return r"$10^{%02d}$" % (val)
         if power_of_10(new_val):
             return "{:.3g}".format(new_val)
         else:
@@ -202,15 +204,15 @@ def plot_data(df):
         axis.set_major_formatter(mticker.FuncFormatter(log_tick_formatter))
 
     # Set labels
-    ax.set_xlabel(r'Pulse Width (s)')
+    ax.set_xlabel(r'Pulse Width (ms)')
     ax.set_ylabel(r'Bandwidth (MHz)')
-    ax.set_zlabel(r'S$_{\text{peak}}$D$^2$ (Jy kpc$^2$)')
+    ax.set_zlabel(r'S$_{peak}$D$^2$ (Jy kpc$^2$)')
     plt.legend()
 
     # Equal figure proportions
-    ax.set_xlim(-4, 1)
+    ax.set_xlim(-1, 4)
     ax.set_ylim(1, 6)
-    ax.set_zlim(-6, 10)
+    ax.set_zlim(-4, 14)
 
     # Get rid of colored axes planes
     # First remove fill
@@ -232,16 +234,25 @@ def plot_data(df):
 
 
 if __name__ == '__main__':
-    test = pd.DataFrame({'obj': ['a', 'a', 'b'],
-                         'pseudo_lum': [1e40, 1e41, 1e40],
-                         'w_eff': [1, 100, 0.1],
-                         'bw': [800, 1400, 1000]})
 
-    pulsars = import_pulsars(use_epn=True)
-    frbs = import_frbcat()
-    magnetars = import_magnetars()
-    giants = import_crab_giants()
+    RELOAD = False
+    csv_path = './tests/plots/transients.csv'
 
-    tot_df = pd.concat([frbs, pulsars, magnetars, giants], sort=False)
+    if RELOAD:
+        test = pd.DataFrame({'obj': ['a', 'a', 'b'],
+                             'pseudo_lum': [1e40, 1e41, 1e40],
+                             'w_eff': [1, 100, 0.1],
+                             'bw': [800, 1400, 1000]})
+
+        pulsars = import_pulsars(use_epn=True)
+        frbs = import_frbcat()
+        magnetars = import_magnetars()
+        giants = import_crab_giants()
+
+        tot_df = pd.concat([frbs, pulsars, magnetars, giants], sort=False)
+
+        tot_df.to_csv(csv_path)
+    else:
+        tot_df = pd.read_csv(csv_path)
 
     plot_data(tot_df)

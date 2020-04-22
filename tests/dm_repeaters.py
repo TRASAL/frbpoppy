@@ -14,7 +14,7 @@ SNR = True
 
 r = CosmicPopulation.simple(n_srcs=int(1e4), n_days=DAYS, repeaters=True)
 r.set_dist(z_max=0.01)
-r.set_lum(model='powerlaw', low=1e35, high=1e45, power=-1,
+r.set_lum(model='powerlaw', low=1e35, high=1e45, power=2.5,
           per_source='different')
 r.set_time(model='poisson', rate=3)
 r.set_dm_igm(model='ioka', slope=1000, std=0)
@@ -28,7 +28,7 @@ r.generate()
 survey = Survey('perfect', n_days=DAYS)
 survey.set_beam(model='perfect')
 # survey.t_samp = 1
-survey.snr_limit = 1e6
+survey.snr_limit = 1e16
 
 surv_pop = SurveyPopulation(r, survey)
 
@@ -94,8 +94,12 @@ for i, pop in enumerate(pops):
     if not SNR:
         continue
 
-    ax2.step(*hist(snr, bin_type='log'), where='mid', linestyle=linestyle,
-             color=colors[i])
+    try:
+        ax2.step(*hist(snr, bin_type='log'), where='mid', linestyle=linestyle,
+                 color=colors[i])
+    except ValueError:
+        pprint('Zero sources available to plot')
+        continue
 
 ax1.set_xlabel(r'DM ($\textrm{pc}\ \textrm{cm}^{-3}$)')
 ax1.set_ylabel('Fraction')

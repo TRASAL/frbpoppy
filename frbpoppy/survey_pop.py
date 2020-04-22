@@ -13,7 +13,8 @@ import frbpoppy.galacticops as go
 class SurveyPopulation(Population):
     """Class to create a survey population of FRBs."""
 
-    def __init__(self, cosmic_pop, survey, scat=False, scin=False):
+    def __init__(self, cosmic_pop, survey, scat=False, scin=False,
+                 test_beam_placement=False):
         """
         Run a survey to detect FRB sources.
 
@@ -53,6 +54,7 @@ class SurveyPopulation(Population):
         self.scat = scat
         self.scin = scin
         self.survey = survey
+        self.test_beam_placement = test_beam_placement
 
         # Set survey attributes if not available
         if survey.n_days is None:
@@ -112,6 +114,9 @@ class SurveyPopulation(Population):
 
         # Calculations differ whether dealing with repeaters or not
         if self.repeaters:
+            if self.test_beam_placement:
+                # dx, dy
+                self.dxys = ([], [])
             self.det_repeaters()
         else:
             self.det_oneoffs()
@@ -192,7 +197,6 @@ class SurveyPopulation(Population):
         sr.late += len(time_mask) - len(self.frbs.time)
 
         # Prepare for iterating over time
-        self.r = survey.max_offset  # Beam pattern radius
         max_n_pointings = len(times) - 1
 
         # Initialize some necessary arrays
@@ -243,48 +247,57 @@ class SurveyPopulation(Population):
     def _iter_pointings(self, ra_pt, dec_pt, lst, t_min, t_max):
         frbs = self.frbs
         survey = self.survey
-        r = self.r
 
         # Which frbs are within the pointing time?
         # Essential that each row is sorted from low to high!
         # Returns col, row index arrays
         t_ix = fast_where(frbs.time, t_min, t_max)
-        # Of those, which are within the beam size?
-        offset = go.separation(frbs.ra[t_ix[0]],
-                               frbs.dec[t_ix[0]],
-                               ra_pt, dec_pt)
-        # Position indices (1D)
-        p_ix = (offset <= r)
+        # # Of those, which are within the beam size?
+        # offset = go.separation(frbs.ra[t_ix[0]],
+        #                        frbs.dec[t_ix[0]],
+        #                        ra_pt, dec_pt)
+        # # Position indices (1D)
+        # p_ix = (offset <= r)
 
-        # Relevant FRBS
+        # What's the intensity of them in the beam?
+        int_pro, dx, dy = survey.calc_beam(repeaters=True,
+                                           ra=frbs.ra[t_ix[0]],
+                                           dec=frbs.dec[t_ix[0]],
+                                           ra_p=ra_pt,
+                                           dec_p=dec_pt,
+                                           lst=lst)
+
+        # If not an intensity of zero, they were inside the beam pattern
+        p_ix = ~np.isnan(int_pro)
+
+        # Save the offset for later use
+        if self.test_beam_placement:
+            self.dxys[0].extend(dx[p_ix])
+            self.dxys[1].extend(dy[p_ix])
+
         # Time & position
         tp_ix = (t_ix[0][p_ix], t_ix[1][p_ix])
+
         # Time & not position
         tnp_ix = (t_ix[0][~p_ix], t_ix[1][~p_ix])
 
-        # Number of bursts
+        # Number of bursts per source
         tp_unique, n_bursts = np.unique(tp_ix[0], return_counts=True)
 
         # Add to outside of pointing count
         self.burst_rate.pointing += len(tnp_ix[0])
         self.srcs_not_in_pointing[tp_unique] = False
 
-        # What's the intensity of them in the beam?
-        int_pro = survey.calc_beam(repeaters=True,
-                                   ra=frbs.ra[tp_unique],
-                                   dec=frbs.dec[tp_unique],
-                                   ra_p=ra_pt,
-                                   dec_p=dec_pt,
-                                   lst=lst)[0]
-
         # Ensure relevant masks
         s_peak_ix = tp_unique
         not_ix = np.unique(tnp_ix[0])
+        int_pro = int_pro[p_ix]
 
         if frbs.s_peak.ndim == 2:
             s_peak_ix = tp_ix
             not_ix = tnp_ix
-            int_pro = np.repeat(int_pro, n_bursts)
+        if frbs.s_peak.ndim == 1:
+            int_pro = int_pro[tp_unique]
 
         # Apply intensities to those bursts' s_peak
         frbs.s_peak[s_peak_ix] *= int_pro
