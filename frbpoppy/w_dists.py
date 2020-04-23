@@ -19,7 +19,10 @@ def calc_w_arr(w_int, z=0):
         return w_int*(1+z)
     # These are methods to deal with numpy dimensionality aspects
     elif np.argmax(w_int.shape) != np.argmax(z.shape):
-        return w_int*(1+z[:, np.newaxis])
+        if w_int.shape[1] <= w_int.shape[0]:
+            return w_int*(1+z[:, np.newaxis])
+        else:
+            return w_int.T*(1+z[:, np.newaxis])
     else:
         return w_int*(1+z[:, None])
 
@@ -78,5 +81,21 @@ def log10normal(mean=0.1, std=0.5, shape=1, z=0):
 
     """
     w_int = gd.log10normal(mean, std, shape).astype(np.float32)
+    w_arr = calc_w_arr(w_int, z=z)
+    return w_int, w_arr
+
+
+def lognormal(mean=0.1, std=0.5, shape=1, z=0):
+    """Draw burst from lognormal distribution.
+
+    Args:
+        shape (tuple): Required array shape
+        z (array): Redshift of pulses
+
+    Returns:
+        type: Description of returned object.
+
+    """
+    w_int = np.random.lognormal(mean, std, shape).astype(np.float32)
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr

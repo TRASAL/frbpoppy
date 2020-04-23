@@ -12,7 +12,7 @@ from convenience import plot_aa_style, rel_path
 
 N_SRCS = 1000
 N_DAYS = 1
-RATE = 100  # per day
+RATE = 1000  # per day
 
 r = CosmicPopulation(N_SRCS, n_days=N_DAYS, repeaters=True)
 r.set_dist(model='vol_co', z_max=2.5)
@@ -21,7 +21,7 @@ r.set_dm_igm(model='ioka', slope=1000, std=0)
 r.set_dm(mw=False, igm=True, host=True)
 r.set_emission_range(low=100e6, high=10e9)
 r.set_lum(model='powerlaw', per_source='different', low=1e40, high=1e45,
-          power=-1)
+          power=0)
 r.set_si(model='gauss', mean=0, std=0)
 r.set_w(model='log10normal', per_source='different', mean=0.1, std=1)
 # rate = log10normal(RATE, 1, int(N_SRCS))

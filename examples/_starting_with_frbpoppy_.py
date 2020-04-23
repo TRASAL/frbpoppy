@@ -14,12 +14,13 @@ cosmic_pop.generate()
 
 # Setup a survey
 survey = Survey('htru')
+survey.set_beam(model='gaussian', n_sidelobes=0.5)
 
 # Observe the FRB population
 survey_pop = SurveyPopulation(cosmic_pop, survey)
 
 # Check the detection rates
-print(survey_pop.rates())
+print(survey_pop.source_rate)
 
 # Plot populations in a browser
 plot(cosmic_pop, survey_pop, frbcat='parkes')

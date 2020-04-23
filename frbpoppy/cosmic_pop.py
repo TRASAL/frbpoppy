@@ -439,9 +439,9 @@ class CosmicPopulation(Population):
             model (str): Options from ('single', 'regular', 'clustered',
                 'poisson')
         If model == 'regular':
-            lam (float): Number of bursts per day
+            rate (float): Number of bursts per day
         If model == 'poisson':
-            lam (float): Expected number of bursts per day
+            rate (float): Expected number of bursts per day
         If model == 'clustered':
             r (float): Rate parameter
             k (float): Shape parameter
@@ -510,7 +510,7 @@ class CosmicPopulation(Population):
         pop.set_w(model='constant', value=10)
         pop.set_si(model='constant', value=0)
         if pop.repeaters:
-            pop.set_time(model='regular', lam=2)
+            pop.set_time(model='regular', rate=2)
         if generate:
             pop.generate()
         return pop

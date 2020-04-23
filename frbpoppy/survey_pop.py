@@ -6,8 +6,7 @@ import numpy as np
 
 from frbpoppy.misc import pprint
 from frbpoppy.population import Population
-from frbpoppy.rates import Rates, scale
-import frbpoppy.galacticops as go
+from frbpoppy.rates import Rates
 
 
 class SurveyPopulation(Population):
@@ -244,6 +243,9 @@ class SurveyPopulation(Population):
         # Reduce matrices' size
         frbs.clean_up()
 
+        # Calculate detection rates
+        self.calc_rates(survey)
+
     def _iter_pointings(self, ra_pt, dec_pt, lst, t_min, t_max):
         frbs = self.frbs
         survey = self.survey
@@ -252,12 +254,6 @@ class SurveyPopulation(Population):
         # Essential that each row is sorted from low to high!
         # Returns col, row index arrays
         t_ix = fast_where(frbs.time, t_min, t_max)
-        # # Of those, which are within the beam size?
-        # offset = go.separation(frbs.ra[t_ix[0]],
-        #                        frbs.dec[t_ix[0]],
-        #                        ra_pt, dec_pt)
-        # # Position indices (1D)
-        # p_ix = (offset <= r)
 
         # What's the intensity of them in the beam?
         int_pro, dx, dy = survey.calc_beam(repeaters=True,
@@ -374,7 +370,7 @@ class SurveyPopulation(Population):
         if inside > 0:
             f_area /= (inside*area_sky)
         else:
-            f_area = 0
+            f_area = 1
 
         # Saving scaling factors
         self.source_rate.days = self.n_days
@@ -382,15 +378,16 @@ class SurveyPopulation(Population):
         self.source_rate.vol = self.source_rate.tot
         self.source_rate.vol /= self.vol_co_max * (365.25/self.n_days)
 
-        self.burst_rate.days = self.n_days
-        self.burst_rate.name = self.name
-        self.burst_rate.vol = self.burst_rate.tot
-        self.burst_rate.vol /= self.vol_co_max * (365.25/self.n_days)
+        if self.repeaters:
+            self.burst_rate.days = self.n_days
+            self.burst_rate.name = self.name
+            self.burst_rate.vol = self.burst_rate.tot
+            self.burst_rate.vol /= self.vol_co_max * (365.25/self.n_days)
 
         # If oneoffs, you'll want to scale by the area
         if not self.repeaters:
             self.source_rate.f_area = f_area
-            scale(self.source_rate, area=True)
+            self.source_rate.scale_by_area()
 
     def calc_logn_logs(self, parameter='fluence', min_p=None, max_p=None):
         """TODO. Currently unfinished."""

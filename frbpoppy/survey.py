@@ -223,9 +223,13 @@ class Survey:
                   ra_p=None, dec_p=None, lst=None):
         """Calculate intensity profile."""
         if not repeaters and self.beam_pattern in ('airy', 'gaussian'):
-            pass
+            # What should the maximum radius of the beam be?
+            self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
+            self.beam_size = go.calc_sky_area(self.max_offset)
         elif self.beam_pattern.startswith('perfect'):
-            pass
+            # What should the maximum radius of the beam be?
+            self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
+            self.beam_size = go.calc_sky_area(self.max_offset)
         else:
             self.beam_size = self.beam_size_array
 

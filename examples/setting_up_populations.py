@@ -14,8 +14,8 @@ pop.set_dist(model='vol_co', z_max=0.01, alpha=-1.5,
 pop.set_dm(mw=True, igm=True, host=True)
 
 # Dispersion measure properties
-pop.set_dm_host(model='gauss', mu=100, sigma=200)
-pop.set_dm_igm(model='ioka', slope=1000, sigma=None)
+pop.set_dm_host(model='gauss', mean=100, std=200)
+pop.set_dm_igm(model='ioka', slope=1000, std=None)
 pop.set_dm_mw(model='ne2001')
 
 # Emission range of FRB sources
@@ -32,10 +32,10 @@ pop.set_lum(model='powerlaw', low=1e38, high=1e38, power=0,
 pop.set_w(model='uniform', low=10, high=10)
 
 # Spectral index
-pop.set_si(model='gauss', mu=0, sigma=0)
+pop.set_si(model='gauss', mean=0, std=0)
 
 # If repeaters, how they repeat
-pop.set_time(model='regular', lam=2)
+pop.set_time(model='regular', rate=2)
 
 # And then generate the population!
 pop.generate()

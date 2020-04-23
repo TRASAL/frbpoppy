@@ -63,17 +63,11 @@ class Rates:
         except ZeroDivisionError:
             return float('NaN')
 
-
-def scale(rates, area=True):
-    """Scale rates."""
-    rates = deepcopy(rates)
-
-    if area:
-        rates.scaled_area = True
-        tot = rates.tot
-        rates.det *= rates.f_area
-        rates.late *= rates.f_area
-        rates.faint *= rates.f_area
-        rates.out = np.abs(tot - rates.det - rates.faint - rates.late)
-
-    return rates
+    def scale_by_area(self):
+        """Scale rates."""
+        self.scaled_area = True
+        tot = self.tot
+        self.det *= self.f_area
+        self.late *= self.f_area
+        self.faint *= self.f_area
+        self.out = np.abs(tot - self.det - self.faint - self.late)
