@@ -29,8 +29,6 @@ axes[0].set_title('SNR')
 fluence, bins = hist(s.fluence, bin_type='log')
 axes[1].step(np.cumsum(fluence), bins, where='mid')
 axes[1].set_title(r'Fluence')
-# axes[1].set_xlim(1e-3, 1)
-# axes[1].set_ylim(1e-3, 1)
 
 # Set axis
 axes[0].set_xscale('log')

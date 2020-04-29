@@ -13,7 +13,7 @@ class SurveyPopulation(Population):
     """Class to create a survey population of FRBs."""
 
     def __init__(self, cosmic_pop, survey, scat=False, scin=False,
-                 test_beam_placement=False):
+                 test_beam_placement=False, mute=False):
         """
         Run a survey to detect FRB sources.
 
@@ -25,7 +25,8 @@ class SurveyPopulation(Population):
             scin (bool, optional): Whether to apply scintillation to
                 observations.
         """
-        pprint(f'Surveying {cosmic_pop.name} with {survey.name}')
+        if not mute:
+            pprint(f'Surveying {cosmic_pop.name} with {survey.name}')
         # Stops RuntimeWarnings about nan values
         np.warnings.filterwarnings('ignore')
 

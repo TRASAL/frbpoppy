@@ -1,0 +1,56 @@
+"""Calculate the expected detection rates for apertif."""
+import numpy as np
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, hist, plot
+
+from rates_real import EXPECTED
+
+N_DAYS = 0.23  # Not used in eventual result
+SCALE_TO = 'htru'
+
+pop = CosmicPopulation.complex(n_srcs=1e5, n_days=N_DAYS)
+pop.generate()
+
+apertif = Survey('apertif', n_days=N_DAYS)
+apertif.set_beam(model='apertif_real')
+
+if SCALE_TO == 'htru':
+    htru = Survey('htru', n_days=N_DAYS)
+    htru.set_beam(model='parkes')
+if SCALE_TO == 'askap':
+    askap = Survey('askap-fly', n_days=N_DAYS)
+    askap.set_beam(model='gaussian', n_sidelobes=0.5)
+
+days_per_frbs = []
+for i in tqdm(range(1000)):
+
+    apertif_pop = SurveyPopulation(pop, apertif, mute=True)
+
+    if SCALE_TO == 'htru':
+        htru_pop = SurveyPopulation(pop, htru, mute=True)
+        n_frbs_htru = EXPECTED['htru'][0]
+        n_days_htru = 1 / EXPECTED['htru'][1]
+        scaled_n_days = n_days_htru*(htru_pop.source_rate.det / n_frbs_htru)
+
+    if SCALE_TO == 'askap':
+        askap_pop = SurveyPopulation(pop, askap, mute=True)
+        n_frbs_askap = EXPECTED['askap-fly'][0]
+        n_days_askap = 1 / EXPECTED['askap-fly'][1]
+        scaled_n_days = n_days_askap*(askap_pop.source_rate.det / n_frbs_askap)
+
+    days_per_frb = scaled_n_days / apertif_pop.source_rate.det
+    # print(f'{days_per_frb} days per frb')
+    days_per_frbs.append(days_per_frb)
+
+
+days_per_frbs = np.array(days_per_frbs)
+print(f'Mean rate is {np.mean(days_per_frbs)}')
+
+# Plot
+rates, values = hist(days_per_frbs, bin_type='lin')
+plt.step(rates, values, where='mid')
+plt.xlabel(f'Apertif days per burst scaled to {SCALE_TO}')
+plt.show()
+
+# plot(pop, apertif_pop, htru_pop, frbcat=False, mute=False)

@@ -4,7 +4,7 @@ from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 import numpy as np
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 from rates_complex import complex_rates
 from rates_real import real_rates
 from rates_simple import simple_rates

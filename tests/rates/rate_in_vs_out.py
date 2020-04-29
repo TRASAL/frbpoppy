@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from frbpoppy import CosmicPopulation, log10normal, Survey, SurveyPopulation
 from frbpoppy import hist
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 N_DAYS = 50
 N_SRCS = int(1e4)

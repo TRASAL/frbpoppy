@@ -91,8 +91,6 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
             hist[f'{c}'] = pd.Series(h)
             hist[f'{c}_x'] = pd.Series(bins[:-1])
 
-        hist['population'] = df['population'].iloc[0]
-
         hists.append(hist)
 
     # Ugly, but will have to do

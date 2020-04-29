@@ -6,7 +6,7 @@ import numpy as np
 from frbpoppy import (CosmicPopulation, Survey, LargePopulation, pprint,
                       unpickle)
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 REMAKE = False
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)

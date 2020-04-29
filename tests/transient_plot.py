@@ -139,6 +139,7 @@ def plot_data(df):
     # plot_aa_style(cols=2)
     plt.rcParams["figure.figsize"] = (5.75373, 5.75373*3)
     plt.rcParams["font.family"] = "Times"
+    plt.rcParams['pdf.fonttype'] = 42
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -229,7 +230,7 @@ def plot_data(df):
     ax.view_init(azim=-52, elev=10)
     plt.tight_layout()
 
-    plt.savefig(rel_path('./plots/transients.pdf'))
+    plt.savefig(rel_path('./plots/transients.pdf'), transparent=True)
     # plt.show()
 
 

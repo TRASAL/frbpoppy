@@ -4,7 +4,7 @@ from scipy.integrate import quad
 import matplotlib.pyplot as plt
 import numpy as np
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 EXPECTED = {'htru': [9, 24 * 0.551 / 1549],  # N_frbs, scaling to get frbs/day
             'apertif': [1, 1 / 7],

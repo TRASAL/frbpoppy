@@ -6,7 +6,7 @@ from matplotlib.colors import LogNorm
 import frbpoppy.time_dists as td
 from frbpoppy import pprint
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 M_BURSTS = 1100
 N_DAYS = 50

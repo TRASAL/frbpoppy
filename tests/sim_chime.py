@@ -10,7 +10,7 @@ from frbpoppy import plot, int_pro_fixed, SurveyPopulation
 from convenience import plot_aa_style, rel_path
 
 
-N_SRCS = 1000
+N_SRCS = 10000
 N_DAYS = 1
 RATE = 1000  # per day
 
