@@ -11,8 +11,8 @@ from convenience import plot_aa_style, rel_path
 
 
 N_SRCS = 10000
-N_DAYS = 1
-RATE = 1000  # per day
+N_DAYS = 4
+RATE = 1  # per day
 
 r = CosmicPopulation(N_SRCS, n_days=N_DAYS, repeaters=True)
 r.set_dist(model='vol_co', z_max=2.5)

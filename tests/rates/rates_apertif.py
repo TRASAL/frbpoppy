@@ -2,14 +2,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, hist, plot
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, hist
 
-from rates_real import EXPECTED
+from rates_real import EXPECTED, poisson_interval
 
 N_DAYS = 0.23  # Not used in eventual result
 SCALE_TO = 'htru'
 
-pop = CosmicPopulation.complex(n_srcs=1e5, n_days=N_DAYS)
+pop = CosmicPopulation.complex(n_srcs=1e4, n_days=N_DAYS)
 pop.generate()
 
 apertif = Survey('apertif', n_days=N_DAYS)
@@ -23,7 +23,7 @@ if SCALE_TO == 'askap':
     askap.set_beam(model='gaussian', n_sidelobes=0.5)
 
 days_per_frbs = []
-for i in tqdm(range(1000)):
+for i in tqdm(range(2000)):
 
     apertif_pop = SurveyPopulation(pop, apertif, mute=True)
 
@@ -45,12 +45,15 @@ for i in tqdm(range(1000)):
 
 
 days_per_frbs = np.array(days_per_frbs)
-print(f'Mean rate is {np.mean(days_per_frbs)}')
+mean = np.mean(days_per_frbs)
+std = np.std(days_per_frbs)
+poisson_std = poisson_interval(mean)
+print(f'Mean rate is {mean}')
+print(f'Standard deviation of {std}')
+import IPython; IPython.embed()
 
 # Plot
 rates, values = hist(days_per_frbs, bin_type='lin')
 plt.step(rates, values, where='mid')
 plt.xlabel(f'Apertif days per burst scaled to {SCALE_TO}')
 plt.show()
-
-# plot(pop, apertif_pop, htru_pop, frbcat=False, mute=False)
