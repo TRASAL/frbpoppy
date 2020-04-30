@@ -32,21 +32,28 @@ class Rates:
     def __str__(self):
         """How to print the class."""
         # Set up title
-        r = '{:20.19} {:>10} {:>10}\n'
-        t = r.format(self.name, 'Days', f'{self.object_type.title()}s')
+        f = '{:20.19} {:>10} {:>10} {:>10}\n'
+        t = f.format(self.name, 'Days', f'{self.object_type.title()}s', '%')
         line = '-'*len(t.split('\n')[-2].strip()) + '\n'
         t += line
 
+        def r(value, d=2):
+            return round(value, d)
+
+        def per(value):
+            return r(value/self.tot * 100)
+
         # Format rates
-        rdays = round(self.days, 3)
-        t += r.format('Cosmic Population', rdays, round(self.tot))
-        t += r.format('Too late', rdays, round(self.late, 3))
-        t += r.format('Outside survey', rdays, round(self.out, 3))
-        t += r.format('Outside pointings', rdays, round(self.pointing, 3))
-        t += r.format('Too faint', rdays, round(self.faint, 3))
-        t += r.format('Detected', rdays, round(self.det, 3))
-        t += r.format('/Gpc^3', 365.25, round(self.vol, 2))
-        t += r.format('Expected', round(self.exp, 4), 1)
+        days = r(self.days)
+        t += f.format('Cosmic Population', days, r(self.tot), 100)
+        t += f.format('Too late', days, r(self.late), per(self.late))
+        t += f.format('Outside survey', days, r(self.out), per(self.out))
+        t += f.format('Outside pointings', days, r(self.pointing),
+                      per(self.pointing))
+        t += f.format('Too faint', days, r(self.faint), per(self.faint))
+        t += f.format('Detected', days, r(self.det), per(self.det))
+        t += f.format('/Gpc^3', 365.25, r(self.vol, 2), '-')
+        t += f.format('Expected', r(self.exp, 4), 1, '-')
         t += line
 
         return pprint(t, output=False)
