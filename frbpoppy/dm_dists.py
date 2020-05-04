@@ -19,7 +19,7 @@ def ioka(z=0, slope=950, std=None, spread_dist='normal'):
         slope (float): Slope of the DM-z relationship.
         std (float): Spread around the DM-z relationship.
         spread_dist (str): Spread function option. Choice from
-            ('normal', 'log10normal')
+            ('normal', 'lognormal', 'log10normal')
 
     Returns:
         dm_igm (array): Dispersion measure of intergalactic medium [pc/cm^3]
@@ -32,10 +32,12 @@ def ioka(z=0, slope=950, std=None, spread_dist='normal'):
     mean = slope*z
     if spread_dist == 'normal':
         f = np.random.normal
+    elif spread_dist == 'lognormal':
+        def f(mean, std):
+            return gd.lognormal(mean, std)
     elif spread_dist == 'log10normal':
         def f(mean, std):
-            ln = np.random.lognormal
-            return 10**ln(np.log10(mean), np.log10(std)).astype(np.float32)
+            return gd.log10normal(mean, std)
     else:
         raise ValueError('spread_dist input not recognised')
     return f(mean, std).astype(np.float32)
@@ -72,4 +74,21 @@ def log10normal(mean=100, std=200, n_srcs=1, z=0):
 
     """
     dm_host = gd.log10normal(mean, std, n_srcs).astype(np.float32)
+    return dm_host / (1 + z)
+
+
+def lognormal(mean=100, std=200, n_srcs=1, z=0):
+    """Generate a lognormal dm host distribution.
+
+    Args:
+        mean (float): Mean DM [pc/cm^3].
+        std (float): Standard deviation DM [pc/cm^3].
+        n_srcs (int): Number of sources for which to generate values.
+        z (int): Redshift of sources.
+
+    Returns:
+        array: DM host [pc/cm^3]
+
+    """
+    dm_host = gd.lognormal(mean, std, n_srcs).astype(np.float32)
     return dm_host / (1 + z)

@@ -31,13 +31,6 @@ def regular(rate=2, n_srcs=1, n_days=1, z=0):
     # Copy to multiple sources
     time = np.tile(time_range, (n_srcs, 1))
 
-    # Add random offsets
-    if time.shape[1] > 1:
-        time_offset = np.random.uniform(0, time[:, 1])
-    else:
-        time_offset = np.random.uniform(0, time[:, 0])
-    time += time_offset[:, np.newaxis]
-
     # Add redshift
     time *= (1+z)[:, np.newaxis]
     time[(time > n_days)] = np.nan
@@ -111,11 +104,8 @@ def iteratively_gen_times(dist, n_srcs=1, n_days=1, z=0, **kwargs):
     dims = (n_srcs, m)
     time = dist(dims, **kwargs)
 
+    # Converting intervals to time stamps
     time = np.cumsum(time, axis=1)  # This is in fraction of days
-    # The first burst time is actually the time since the previous one
-    # You want to be at in a random time in between those
-    time_offset = np.random.uniform(0, time[:, 0])
-    time -= time_offset[:, np.newaxis]
 
     if isinstance(z, np.ndarray):
         time = time*(1+z)[:, np.newaxis]

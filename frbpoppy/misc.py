@@ -122,16 +122,3 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
             n = np.insert(n, len(n), 0)
 
     return bins, n
-
-
-def calc_lognormal_input(lognormal_mean, lognormal_std):
-    """Calculate the mean and std of a lognormal distribution.
-
-    See
-    https://stackoverflow.com/questions/48014712/get-lognormal-random-number
-    -given-log10-mean-and-log10-standard-deviation/48016650#48016650
-    for more info
-    """
-    normal_std = np.sqrt(np.log(1 + (lognormal_std/lognormal_mean)**2))
-    normal_mean = np.log(lognormal_mean) - normal_std**2 / 2
-    return normal_mean, normal_std

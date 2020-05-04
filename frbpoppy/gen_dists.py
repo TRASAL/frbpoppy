@@ -93,3 +93,24 @@ def log10normal(mean, std, shape):
     """
     mean, std = np.log10(mean), np.log10(std)
     return 10**np.random.normal(mean, std, shape)
+
+
+def calc_lognormal_input(mean_x, std_x):
+    """Calculate the mean and std of a lognormal distribution.
+
+    See
+    https://en.wikipedia.org/wiki/Log-normal_distribution
+    """
+    normal_std = np.sqrt(np.log(1 + (std_x**2/mean_x)**2))
+    normal_mean = np.log(mean_x**2 / np.sqrt(mean_x**2 + std_x**2))
+    return normal_mean, normal_std
+
+
+def lognormal(mean, std, shape):
+    """Calculate the mean and std from the underlying distribution.
+
+    See
+    https://en.wikipedia.org/wiki/Log-normal_distribution
+    """
+    mean, std = calc_lognormal_input(mean, std)
+    return np.random.lognormal(mean, std, shape)

@@ -96,6 +96,6 @@ def lognormal(mean=0.1, std=0.5, shape=1, z=0):
         type: Description of returned object.
 
     """
-    w_int = np.random.lognormal(mean, std, shape).astype(np.float32)
+    w_int = gd.lognormal(mean, std, shape).astype(np.float32)
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr
