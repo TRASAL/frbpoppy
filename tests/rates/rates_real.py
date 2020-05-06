@@ -10,11 +10,12 @@ EXPECTED = {'htru': [9, 24 * 0.551 / 1549],  # N_frbs, scaling to get frbs/day
             'apertif': [1, 1 / 7],
             'askap-fly': [20, 24 / 32840 * 8],
             'palfa': [1, 1 / 24.1],
-            'guppi': [0.4, 1 / 81]  # 0.4 is my own assumption
+            'guppi': [0.4, 1 / 81],  # 0.4 is my own assumption
+            'fast': [1, 1/(1500/24)]
             }
 
-SURVEYS = ('palfa', 'htru', 'askap-fly')
-ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
+SURVEYS = ('askap-fly', 'fast')
+ALPHAS = np.around(np.linspace(-0.5, -2.0, 7), decimals=2)
 
 
 def poisson_interval(k, sigma=1):
@@ -37,8 +38,9 @@ def poisson_interval(k, sigma=1):
 
 
 def real_rates(surveys=SURVEYS):
-    """Calculate the EXPECTED rates (all scaled by HTRU)."""
+    """Calculate the EXPECTED rates (all scaled to a survey)."""
     rates = {}
+    scale_to = surveys[0]
 
     for surv in surveys:
 
@@ -49,7 +51,7 @@ def real_rates(surveys=SURVEYS):
         exp_n = EXPECTED[surv][0]
         exp_scaling = EXPECTED[surv][1]
 
-        norm = 1 / (EXPECTED['htru'][0] * EXPECTED['htru'][1])
+        norm = 1 / (EXPECTED[scale_to][0] * EXPECTED[scale_to][1])
 
         exp_min, exp_max = poisson_interval(exp_n, sigma=2)
 
@@ -78,7 +80,7 @@ def main():
         plt.plot([left, right], [middle]*2, label=surv, linestyle='dashed')
 
     plt.xlabel(r'$\alpha_{\text{in}}$')
-    plt.ylabel(r'Events / htru')
+    plt.ylabel(rf'Events / {SURVEYS[0]}')
     plt.yscale('log')
     plt.legend()
     plt.gca().invert_xaxis()

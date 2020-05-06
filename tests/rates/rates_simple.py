@@ -30,7 +30,7 @@ def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
         pops = []
         for alpha in alphas:
             pop = CosmicPopulation.simple(size)
-            pop.alpha = alpha
+            pop.set_dist(alpha=alpha)
             pop.name = f'simple_alpha_{alpha}'
             pops.append(pop)
 

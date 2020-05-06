@@ -8,12 +8,12 @@ from frbpoppy import Survey
 from tests.convenience import plot_aa_style, rel_path
 
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
-SURVEYS = ('palfa', 'htru', 'askap-fly')
+SURVEYS = ('askap-fly', 'fast')
 
 
 def compare_surveys(surv1, surv2, alpha):
     """Event rate surv1 / Event rate surv2 for an alpha."""
-    omega = surv1.beam_size_fwhm/surv2.beam_size_fwhm
+    omega = surv1.beam_size_at_fwhm/surv2.beam_size_at_fwhm
     T_rec = surv1.T_rec/surv2.T_rec
     gain = surv1.gain/surv2.gain
     beta = surv1.beta/surv2.beta
@@ -31,8 +31,10 @@ def toy_rates(surveys=SURVEYS, alphas=ALPHAS):
     for surv in surveys:
 
         # Get survey parameters
-        surv1 = Survey(surv, beam_pattern='perfect', n_sidelobes=0.5)
-        surv2 = Survey('htru', beam_pattern='perfect', n_sidelobes=0.5)
+        surv1 = Survey(surv)
+        surv1.set_beam('perfect', n_sidelobes=0.5)
+        surv2 = Survey(surveys[0])
+        surv2.set_beam('perfect', n_sidelobes=0.5)
 
         # Calculate rate per alpha
         rate = []
@@ -55,7 +57,7 @@ def main():
         plt.plot(ALPHAS, rate, label=surv)
 
         plt.xlabel(r'$\alpha_{\text{in}}$')
-        plt.ylabel(r'Events / htru')
+        plt.ylabel(rf'Events / {SURVEYS[0]}')
         plt.xlim((min(ALPHAS), max(ALPHAS)))
         plt.yscale('log')
         plt.legend()

@@ -1,6 +1,5 @@
 """Distributions with which burst times can be generated."""
 import numpy as np
-from tqdm import tqdm
 from scipy.special import gamma
 
 

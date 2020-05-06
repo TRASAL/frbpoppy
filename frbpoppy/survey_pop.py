@@ -13,7 +13,7 @@ class SurveyPopulation(Population):
     """Class to create a survey population of FRBs."""
 
     def __init__(self, cosmic_pop, survey, scat=False, scin=False,
-                 test_beam_placement=False, mute=False):
+                 test_beam_placement=False, mute=False, scale_by_area=True):
         """
         Run a survey to detect FRB sources.
 
@@ -55,6 +55,7 @@ class SurveyPopulation(Population):
         self.scin = scin
         self.survey = survey
         self.test_beam_placement = test_beam_placement
+        self.scale_by_area = scale_by_area
 
         # Set survey attributes if not available
         if survey.n_days is None:
@@ -115,8 +116,7 @@ class SurveyPopulation(Population):
         # Calculations differ whether dealing with repeaters or not
         if self.repeaters:
             if self.test_beam_placement:
-                # dx, dy
-                self.dxys = ([], [])
+                self.dxys = ([], [])  # dx, dy
             self.det_repeaters()
         else:
             self.det_oneoffs()
@@ -154,7 +154,7 @@ class SurveyPopulation(Population):
         # Check whether frbs would be above detection threshold
         snr_mask = (frbs.snr >= survey.snr_limit)
         frbs.apply(snr_mask)
-        self.source_rate.faint = np.size(snr_mask) - np.count_nonzero(snr_mask)
+        self.source_rate.faint = len(snr_mask) - np.count_nonzero(snr_mask)
 
         # Distant frbs are redshifted out of your observing time
         limit = 1/(1+frbs.z)
@@ -166,7 +166,8 @@ class SurveyPopulation(Population):
         self.source_rate.det = len(frbs.snr)
 
         # Calculate detection rates
-        self.calc_rates(survey)
+        if self.scale_by_area:
+            self.calc_rates(survey)
 
     def det_repeaters(self):
         """Detect repeating frbs."""

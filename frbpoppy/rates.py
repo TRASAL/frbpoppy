@@ -37,7 +37,7 @@ class Rates:
         line = '-'*len(t.split('\n')[-2].strip()) + '\n'
         t += line
 
-        def r(value, d=2):
+        def r(value, d=4):
             return round(value, d)
 
         def per(value):

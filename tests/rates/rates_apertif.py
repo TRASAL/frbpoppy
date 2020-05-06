@@ -50,7 +50,6 @@ std = np.std(days_per_frbs)
 poisson_std = poisson_interval(mean)
 print(f'Mean rate is {mean}')
 print(f'Standard deviation of {std}')
-import IPython; IPython.embed()
 
 # Plot
 rates, values = hist(days_per_frbs, bin_type='lin')

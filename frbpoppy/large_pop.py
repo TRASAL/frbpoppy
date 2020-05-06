@@ -44,7 +44,7 @@ class LargePopulation:
             pop.generate()
 
             for surv in self.surveys:
-                surv_pop = SurveyPopulation(pop, surv)
+                surv_pop = SurveyPopulation(pop, surv, scale_by_area=False)
                 surv_pop.name = f'{self.base_name}_{surv_pop.name}'
                 surv_pop.uid = pop.uid
                 surv_pop.save()
@@ -106,7 +106,6 @@ class LargePopulation:
                     mp.burst_rate.out += pop.burst_rate.out
                     mp.burst_rate.det += pop.burst_rate.det
                     mp.burst_rate.pointing += pop.burst_rate.pointing
-
 
             # Recalculate detection rates
             mp.calc_rates(s)

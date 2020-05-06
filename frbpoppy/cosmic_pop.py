@@ -542,7 +542,7 @@ class CosmicPopulation(Population):
     def complex(cls, n_srcs, n_days=1, generate=False):
         """Set up a complex population.
 
-        TODO: Update!
+        TODO: Update for repeaters.
         """
         pop = cls(n_srcs=n_srcs, n_days=n_days, name='complex',
                   repeaters=False, generate=False)
@@ -551,6 +551,7 @@ class CosmicPopulation(Population):
         pop.set_dm_host(model='gauss', mean=100, std=200)
         pop.set_dm_igm(model='ioka', slope=1000, std=None)
         pop.set_dm_mw(model='ne2001')
+        pop.set_dm(mw=True, igm=True, host=True)
         pop.set_emission_range(low=10e6, high=10e9)
         pop.set_lum(model='powerlaw', low=1e39, high=1e45, power=0)
         pop.set_w(model='lognormal', mean=0.1, std=0.7)
