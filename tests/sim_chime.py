@@ -2,23 +2,24 @@
 from frbpoppy import CosmicPopulation, lognormal, Survey
 from frbpoppy import SurveyPopulation
 
-N_SRCS = 10000
+N_SRCS = 4e4
 N_DAYS = 1
-RATE = 1  # per day
+RATE = 10  # per day
+# Chime started in Aug 2018. Assuming 2/day for one-offs.
+# Total of 9 repeaters published on 9 Aug 2019. = ~year
+N_CHIME = {'rep': 9, 'one-offs': 365*2, 'time': 365}
 
 r = CosmicPopulation(N_SRCS, n_days=N_DAYS, repeaters=True)
-r.set_dist(model='vol_co', z_max=2.5)
-r.set_dm_host(model='gauss', mean=100, std=0)
-r.set_dm_igm(model='ioka', slope=1000, std=0)
-r.set_dm(mw=False, igm=True, host=True)
+r.set_dist(model='vol_co', z_max=1.0)
+r.set_dm_host(model='gauss', mean=100, std=200)
+r.set_dm_igm(model='ioka', slope=1000, std=None)
+r.set_dm(mw=True, igm=True, host=True)
 r.set_emission_range(low=100e6, high=10e9)
 r.set_lum(model='powerlaw', per_source='different', low=1e40, high=1e45,
           power=0)
-r.set_lum(model='constant', value=1e40)
-r.set_si(model='gauss', mean=0, std=0)
-r.set_w(model='log10normal', per_source='different', mean=0.1, std=1)
+r.set_si(model='gauss', mean=-1.4, std=1)
+r.set_w(model='lognormal', per_source='different', mean=0.1, std=1)
 rate = lognormal(RATE, 1, int(N_SRCS))
-# rate = RATE
 r.set_time(model='poisson', rate=rate)
 
 # Set up survey
@@ -35,7 +36,7 @@ r.set_direction(model='uniform',
 
 r.generate()
 
-surv_pop = SurveyPopulation(r, s, test_beam_placement=True)
+surv_pop = SurveyPopulation(r, s)
 
 
 #
@@ -46,6 +47,8 @@ surv_pop = SurveyPopulation(r, s, test_beam_placement=True)
 # # import IPython; IPython.embed()
 print(surv_pop.source_rate)
 print(surv_pop.burst_rate)
+print(f'# one-offs: {surv_pop.n_one_offs()}')
+print(f'# repeaters: {surv_pop.n_repeaters()}')
 
 # # Set up image properties
 # plot_aa_style()

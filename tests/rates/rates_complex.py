@@ -33,8 +33,6 @@ def complex_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
                 size = 1e7
             if alpha <= -1.5:
                 size = 1e8
-            if alpha <= -1.75:
-                size = 1e9
             pop = CosmicPopulation.complex(size)
             pop.set_dist(model='vol_co', z_max=2.5, alpha=alpha,
                          H_0=67.74, W_m=0.3089, W_v=0.6911)
