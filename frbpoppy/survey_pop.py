@@ -43,7 +43,7 @@ class SurveyPopulation(Population):
         Population.__init__(self)
 
         # Set attributes
-        self.name = survey.name
+        self.name = f'{cosmic_pop.name}_{survey.name}'
         self.vol_co_max = cosmic_pop.vol_co_max
         self.n_days = cosmic_pop.n_days
         self.repeaters = cosmic_pop.repeaters

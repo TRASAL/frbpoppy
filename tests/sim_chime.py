@@ -3,7 +3,7 @@ from frbpoppy import CosmicPopulation, lognormal, Survey
 from frbpoppy import SurveyPopulation
 
 N_SRCS = 4e4
-N_DAYS = 1
+N_DAYS = 100
 RATE = 10  # per day
 # Chime started in Aug 2018. Assuming 2/day for one-offs.
 # Total of 9 repeaters published on 9 Aug 2019. = ~year
@@ -37,7 +37,8 @@ r.set_direction(model='uniform',
 r.generate()
 
 surv_pop = SurveyPopulation(r, s)
-
+surv_pop.name = 'complex_chime'
+surv_pop.save()
 
 #
 # surv_pop = LargePopulation(r, s, run=True).pops[0]

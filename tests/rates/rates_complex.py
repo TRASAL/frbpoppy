@@ -36,6 +36,7 @@ def complex_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
             pop = CosmicPopulation.complex(size)
             pop.set_dist(model='vol_co', z_max=2.5, alpha=alpha,
                          H_0=67.74, W_m=0.3089, W_v=0.6911)
+            pop.set_lum(model='powerlaw', low=1e40, high=1e45, power=-1)
             pop.name = f'complex_alpha_{alpha}'
             pops.append(pop)
 

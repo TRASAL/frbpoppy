@@ -6,12 +6,12 @@ import numpy as np
 
 from tests.convenience import plot_aa_style, rel_path
 
-EXPECTED = {'htru': [9, 24 * 0.551 / 1549],  # N_frbs, scaling to get frbs/day
-            'apertif': [1, 1 / 7],
-            'askap-fly': [20, 24 / 32840 * 8],
-            'palfa': [1, 1 / 24.1],
-            'guppi': [0.4, 1 / 81],  # 0.4 is my own assumption
-            'fast': [1, 1/(1500/24)]
+EXPECTED = {'htru': [9, 0.551 / 1549 / 24],  # N_frbs, N_days
+            'apertif': [9, 1100/24],  # 1100 hours
+            'askap-fly': [20, 32840 * 8 / 24],
+            'palfa': [1, 24.1],
+            'guppi': [0.4, 81],  # 0.4 is my own assumption
+            'fast': [1, 1500/24]
             }
 
 SURVEYS = ('askap-fly', 'fast')
@@ -49,15 +49,15 @@ def real_rates(surveys=SURVEYS):
 
         # Plot EXPECTED rate
         exp_n = EXPECTED[surv][0]
-        exp_scaling = EXPECTED[surv][1]
-
-        norm = 1 / (EXPECTED[scale_to][0] * EXPECTED[scale_to][1])
+        exp_days = EXPECTED[surv][1]
+        scale_n = EXPECTED[scale_to][0]
+        scale_days = EXPECTED[scale_to][1]
 
         exp_min, exp_max = poisson_interval(exp_n, sigma=2)
 
-        exp = exp_n * exp_scaling * norm
-        exp_min *= exp_scaling * norm
-        exp_max *= exp_scaling * norm
+        exp = (exp_n/exp_days) / (scale_n/scale_days)
+        exp_min *= (1/exp_days) / (scale_n/scale_days)
+        exp_max *= (1/exp_days) / (scale_n/scale_days)
 
         rates[surv] = (exp, exp_min, exp_max)
 
