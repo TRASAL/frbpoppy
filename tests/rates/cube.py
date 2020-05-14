@@ -1,27 +1,36 @@
 """Calculate rate cube over alpha, spectral & luminosity index."""
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button, RadioButtons, CheckButtons
+from matplotlib.widgets import Slider, RadioButtons, CheckButtons
 import numpy as np
 import os
-from tqdm import tqdm
+from scipy.stats import chi2, norm
+from scipy.integrate import quad
 
 from tests.convenience import rel_path
-from rates_real import EXPECTED, poisson_interval
 
 GENERATE = False
+SIZE = 1e8
 ALPHAS = np.array([-1, -1.5, -2])
-LIS = np.array([-2, -1, 0])
-SIS = np.array([-4, 0, 4])
+LIS = np.array([-2, -1, 0])  # Luminosity function index
+SIS = np.array([-4, 0, 4])  # Spectral index
 
-SIZE = 1e4
 SURVEY_NAMES = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
+
+EXPECTED = {'htru': [9, 0.551 / 1549 / 24],  # N_frbs, N_days
+            'apertif': [9, 1100/24],  # 1100 hours
+            'askap-fly': [20, 32840 * 8 / 24],
+            'palfa': [1, 24.1],
+            'guppi': [0.4, 81],  # 0.4 is my own assumption
+            'fast': [1, 1500/24]
+            }
 
 
 def generate(parallel=False):
     from joblib import Parallel, delayed
     from frbpoppy import CosmicPopulation, Survey, pprint
     from frbpoppy import SurveyPopulation
+    from tqdm import tqdm
 
     # Set up rate dataframe
     paras = [ALPHAS, LIS, SIS]
@@ -70,7 +79,7 @@ def generate(parallel=False):
                         df.loc[mask, survey.name] = rate
 
     if parallel:
-        n_cpu = min([4, os.cpu_count() - 1])
+        n_cpu = min([3, os.cpu_count() - 1])
         pprint(f'{os.cpu_count()} CPUs available')
         r = range(len(ALPHAS))
 
@@ -93,10 +102,28 @@ def generate(parallel=False):
     df.to_csv(rel_path('plots/cube_rates.csv'))
 
 
+def poisson_interval(k, sigma=1):
+    """
+    Use chi-squared info to get the poisson interval.
+
+    Give a number of observed events, which range of observed events would have
+    been just as likely given a particular interval?
+
+    Based off https://stackoverflow.com/questions/14813530/
+    poisson-confidence-interval-with-numpy
+    """
+    gauss = norm(0, 1).pdf
+    a = 1 - quad(gauss, -sigma, sigma, limit=1000)[0]
+    low, high = (chi2.ppf(a/2, 2*k) / 2, chi2.ppf(1-a/2, 2*k + 2) / 2)
+    if k == 0:
+        low = 0.0
+
+    return low, high
+
+
 def plot():
     # Unpack rates
     df = pd.read_csv(rel_path('plots/cube_rates.csv'), index_col=0)
-    # df = df.replace(0, np.nan)
     parameters = ('alpha', 'li', 'si')
     surveys = [c for c in list(df.columns.values) if c not in parameters]
     n_frbs = {k: EXPECTED[k][0] for k in EXPECTED}
@@ -111,7 +138,7 @@ def plot():
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
     # Set up initial plot lines
-    # -----------------------
+    # -------------------------
     lines = []
     expects = []
     intervals = []
@@ -200,7 +227,7 @@ def plot():
     scaling = RadioButtons(scaling_pos, surveys, active=len(surveys)-1)
     scaling.on_clicked(update)
 
-    # Make checkbuttons with all plotted lines with correct visibility
+    # Adapt visibility of lines
     # ----------------------------------------------------------------
     surv_vis_pos = plt.axes([9/15+0.03, 1-0.25*2, 0.15, 0.15])
     visibility = [line.get_visible() for line in lines]
@@ -213,7 +240,7 @@ def plot():
 
     surv_viz.on_clicked(set_vis)
 
-    # Make checkbuttons with all plotted lines with correct visibility
+    # Adapt visibility of plotted intervals
     # ----------------------------------------------------------------
     interval_vis_pos = plt.axes([9/15+0.03+0.15, 1-0.25*2, 0.15, 0.15])
     visibility = [interval.get_visible() for interval in intervals]

@@ -30,13 +30,13 @@ for i in tqdm(range(2000)):
     if SCALE_TO == 'htru':
         htru_pop = SurveyPopulation(pop, htru, mute=True)
         n_frbs_htru = EXPECTED['htru'][0]
-        n_days_htru = 1 / EXPECTED['htru'][1]
+        n_days_htru = EXPECTED['htru'][1]
         scaled_n_days = n_days_htru*(htru_pop.source_rate.det / n_frbs_htru)
 
     if SCALE_TO == 'askap':
         askap_pop = SurveyPopulation(pop, askap, mute=True)
         n_frbs_askap = EXPECTED['askap-fly'][0]
-        n_days_askap = 1 / EXPECTED['askap-fly'][1]
+        n_days_askap = EXPECTED['askap-fly'][1]
         scaled_n_days = n_days_askap*(askap_pop.source_rate.det / n_frbs_askap)
 
     days_per_frb = scaled_n_days / apertif_pop.source_rate.det
