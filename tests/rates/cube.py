@@ -1,25 +1,26 @@
 """Calculate rate cube over alpha, spectral & luminosity index."""
-import pandas as pd
-import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons, CheckButtons
+from scipy.integrate import quad
+from scipy.stats import chi2, norm
+import matplotlib.pyplot as plt
 import numpy as np
 import os
-from scipy.stats import chi2, norm
-from scipy.integrate import quad
+import pandas as pd
 
-from tests.convenience import rel_path
+CSV_PATH = './tests/plots/cube_rates.csv'
 
+# Set parameters needed for generating a rate cube
 GENERATE = False
 SIZE = 1e8
 ALPHAS = np.array([-1, -1.5, -2])
 LIS = np.array([-2, -1, 0])  # Luminosity function index
-SIS = np.array([-4, 0, 4])  # Spectral index
-
+SIS = np.array([-2, 0, 2])  # Spectral index
 SURVEY_NAMES = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
 
-EXPECTED = {'htru': [9, 0.551 / 1549 / 24],  # N_frbs, N_days
+# Current detection rates
+EXPECTED = {'htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
             'apertif': [9, 1100/24],  # 1100 hours
-            'askap-fly': [20, 32840 * 8 / 24],
+            'askap-fly': [20, 32840 / 8 / 24],
             'palfa': [1, 24.1],
             'guppi': [0.4, 81],  # 0.4 is my own assumption
             'fast': [1, 1500/24]
@@ -83,7 +84,7 @@ def generate(parallel=False):
         pprint(f'{os.cpu_count()} CPUs available')
         r = range(len(ALPHAS))
 
-        temp_path = rel_path('./plots/temp.mmap')
+        temp_path = ('./temp.mmap')
 
         # Make a temp memmap to have a sharedable memory object
         temp = np.memmap(temp_path, dtype=np.float64,
@@ -99,7 +100,7 @@ def generate(parallel=False):
         for i in tqdm(range(len(ALPHAS)), desc='Alphas'):
             iter_alpha(i)
 
-    df.to_csv(rel_path('plots/cube_rates.csv'))
+    df.to_csv(CSV_PATH)
 
 
 def poisson_interval(k, sigma=1):
@@ -123,7 +124,7 @@ def poisson_interval(k, sigma=1):
 
 def plot():
     # Unpack rates
-    df = pd.read_csv(rel_path('plots/cube_rates.csv'), index_col=0)
+    df = pd.read_csv(CSV_PATH, index_col=0)
     parameters = ('alpha', 'li', 'si')
     surveys = [c for c in list(df.columns.values) if c not in parameters]
     n_frbs = {k: EXPECTED[k][0] for k in EXPECTED}
@@ -183,7 +184,7 @@ def plot():
 
             # Set up expectation intervals
             middle = rates[survey] / real_scaling
-            top, bot = poisson_interval(n_frbs[survey])
+            top, bot = poisson_interval(n_frbs[survey], sigma=2)
             top = (top / n_days[survey]) / real_scaling
             bot = (bot / n_days[survey]) / real_scaling
             left = min(x)
