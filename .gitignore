@@ -103,3 +103,4 @@ misc/
 tests/plots/*
 tests/temp*.py
 data/populations/*
+*.mmap

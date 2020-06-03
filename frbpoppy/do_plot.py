@@ -36,7 +36,9 @@ def plot(*pops, files=[], frbcat=False, show=True,
                 if pop.n_sources() < 1:
                     pprint(f'Skipping {pop.name} population as no sources')
                     continue
-                pop.name = pop.name.lower() + '_for_plotting'
+                pop.name = pop.name.lower()
+                if '_for_plotting' not in pop.name:
+                    pop.name += '_for_plotting'
                 name = pop.name
                 pop.save()
 

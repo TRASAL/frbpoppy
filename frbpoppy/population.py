@@ -176,7 +176,7 @@ def merge_pop(*args, random=False):
 
                 try:
                     merged_parm = np.concatenate(parms, axis=0)
-                except ValueError as e:
+                except ValueError:
                     # Check maximum size values should be padded to
                     max_size = max([p.shape[1] for p in parms])
                     new_parms = []

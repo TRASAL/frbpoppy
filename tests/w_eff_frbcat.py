@@ -90,28 +90,31 @@ def plot_w_eff_rate(df):
     df = df.sort_values('utc')
 
     # Groupby repeater
-    db = df.groupby(['frb_name']).mean()
+    db = df
+    # db = df.groupby(['frb_name']).mean()
     width = db.width
+    width_err = (db.width_error_lower, db.width_error_upper)
     n_bursts = db.n_bursts
     rate = db.rate
     exposure = db.exposure.to_numpy()
 
     # Calculate error bars
     low, high = poisson_interval(n_bursts.to_numpy(), sigma=1)
-    errors = (low/exposure, high/exposure)
+    rate_err = (low/exposure, high/exposure)
 
     # Plot values
-    plt.errorbar(width, rate, yerr=errors, marker='x', fmt='o')
+    plt.errorbar(width, rate, xerr=width_err, yerr=rate_err,
+                 marker='x', fmt='o')
 
     # Print correlation
-    width = width[~np.isnan(rate)]
-    rate = rate[~np.isnan(rate)]
-    r = np.corrcoef(width, rate)[0, 1]
+    _width = width[~np.isnan(rate)]
+    _rate = rate[~np.isnan(rate)]
+    r = np.corrcoef(_width, _rate)[0, 1]
     print('Pearson correlation coefficient: ', r)
-    r = np.corrcoef(np.log10(width), np.log10(rate))[0, 1]
+    r = np.corrcoef(np.log10(_width), np.log10(_rate))[0, 1]
     print('Pearson correlation coefficient in log10 space: ', r)
 
-    plt.xlabel(r'Mean Pulse Width (ms)')
+    plt.xlabel(r'Pulse Width (ms)')
     plt.ylabel(r'Rate (/hour)')
 
     if SCALE == 'log':
@@ -120,6 +123,13 @@ def plot_w_eff_rate(df):
 
     plt.tight_layout()
     plt.savefig(rel_path('./plots/w_eff_rate_frbcat.pdf'))
+
+    # Save data
+    a = np.asarray([width, width_err[0], width_err[1],
+                    rate, rate_err[0], rate_err[1]]).T
+    np.savetxt(rel_path('./plots/chime_rep_width.csv'), a, delimiter=",",
+               header=','.join(['w_eff', 'w_eff_lower_err', 'w_eff_upper_err',
+                                'rate', 'rate_lower_err', 'rate_upper_err']))
 
 
 if __name__ == '__main__':

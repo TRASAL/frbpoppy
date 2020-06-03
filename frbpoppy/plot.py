@@ -115,9 +115,11 @@ class Plot():
                     pprint(f'Unpacking {f} seemed to have failed.')
                     continue
                 if '.' in f:
-                    name = f.split('/')[-1].split('.')[0]
+                    name = '.'.join(f.split('/')[-1].split('.')[:-1])
                     if '_for_plotting' in name:
                         name = name.split('_for_plotting')[0]
+                    if len(name) > 15:
+                        name = name.split('_')[-1]
                 else:
                     name = f
 

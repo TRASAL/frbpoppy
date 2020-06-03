@@ -1,4 +1,5 @@
 """Calculate rate cube over alpha, spectral & luminosity index."""
+from glob import glob
 from matplotlib.widgets import Slider, RadioButtons, CheckButtons
 from scipy.integrate import quad
 from scipy.stats import chi2, norm
@@ -7,14 +8,17 @@ import numpy as np
 import os
 import pandas as pd
 
-CSV_PATH = './tests/plots/cube_rates.csv'
+from frbpoppy import paths, unpickle, hist
+
+CSV_PATH = os.path.join(paths.populations(), 'cube_rates.csv')
 
 # Set parameters needed for generating a rate cube
 GENERATE = False
-SIZE = 1e8
-ALPHAS = np.array([-1, -1.5, -2])
-LIS = np.array([-2, -1, 0])  # Luminosity function index
-SIS = np.array([-2, 0, 2])  # Spectral index
+PLOT = True
+SIZE = 1e3
+ALPHAS = np.linspace(-1, -2, 5)[1:4]
+LIS = np.linspace(-2, 0, 5)  # Luminosity function index
+SIS = np.linspace(-2, 2, 5)  # Spectral index
 SURVEY_NAMES = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
 
 # Current detection rates
@@ -67,6 +71,7 @@ def generate(parallel=False):
                 for survey in surveys:
                     surv_pop = SurveyPopulation(pop, survey)
                     print(surv_pop.name)
+                    surv_pop.save()
 
                     sr = surv_pop.source_rate
                     rate = sr.det / sr.days
@@ -122,6 +127,18 @@ def poisson_interval(k, sigma=1):
     return low, high
 
 
+def get_pops(alpha='*', li='*', si='*', survey='*', get_range=False):
+    filename = f'complex_alpha_{alpha}_lum_{li}_si_{si}_{survey}.p'
+    filter = os.path.join(paths.populations(), filename)
+    pop_paths = glob(filter)
+
+    pops = []
+    for path in pop_paths:
+        if '_for_plotting' not in path:
+            pops.append(unpickle(path))
+    return pops
+
+
 def plot():
     # Unpack rates
     df = pd.read_csv(CSV_PATH, index_col=0)
@@ -132,35 +149,69 @@ def plot():
     rates = {k: EXPECTED[k][0]/EXPECTED[k][1] for k in EXPECTED}
 
     # Start plot
-    fig, ax = plt.subplots(figsize=(15, 9))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15*1.5, 9))
     plt.subplots_adjust(right=9/15)
-    ax.margins(x=0)
-    ax.set_yscale('log')
+
+    # Fluence plot
+    ax1.set_xlabel('SNR')
+    ax1.set_xscale('log')
+    ax1.set_ylabel('N > SNR')
+    ax1.set_yscale('log')
+    ax1.set_xlim(1e0, 1e5)
+    ax1.set_ylim(1e-5, 1e3)
+
+    # Rate plot
+    ax2.margins(x=0)
+    ax2.set_yscale('log')
+
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
     # Set up initial plot lines
     # -------------------------
-    lines = []
+    flnc_lines = []
+    rate_lines = []
     expects = []
     intervals = []
     for i, survey in enumerate(surveys):
-        line, = plt.plot([0], [0], label=survey, color=colors[i], marker='x')
-        lines.append(line)
+        # Fluences
+        f_line, = ax1.step([0], [0], label=survey, color=colors[i], where='mid')
+        flnc_lines.append(f_line)
+
+        # Rates
+        r_line, = ax2.plot([0], [0], label=survey, color=colors[i], marker='x')
+        rate_lines.append(r_line)
 
         # # Set up expectation intervals
-        interval, = plt.fill([0, 0, 0, 0], [0, 0, 0, 0], alpha=0.25)
+        interval, = ax2.fill([0, 0, 0, 0], [0, 0, 0, 0], alpha=0.25)
         intervals.append(interval)
-        expect, = plt.plot([0, 0], [0, 0], color=colors[i], linestyle='dashed')
+        expect, = ax2.plot([0, 0], [0, 0], color=colors[i], linestyle='dashed')
         expects.append(expect)
 
     def update(*args):
         """Update plot if widgets change."""
-        # Which parameter is on the x axis?
+        # Which parameter is on the x axis of the rate plot?
         x_axis = x_para.value_selected
-        ax.set_xlabel(x_axis)
+        ax2.set_xlabel(x_axis)
 
         # What values do the parameters have?
         vars = {s.label.get_text(): s.val for s in sliders}
+
+        # Update fluence plot
+        for i, line in enumerate(flnc_lines):
+            survey = line.get_label()
+            pop = get_pops(**vars, survey=survey)[0]
+
+            snr = pop.frbs.snr
+            try:
+                bins, values = hist(snr, bin_type='log', norm=None)
+            except ValueError:
+                bins, values = np.array([np.nan]), np.array([np.nan])
+            # Cumulative sum
+            values = np.cumsum(values[::-1])[::-1]
+            # Normalise to area on sky
+            values = values * pop.source_rate.f_area
+            line.set_xdata(bins)
+            line.set_ydata(values)
 
         # Figure out new condition
         masks = []
@@ -174,7 +225,8 @@ def plot():
         y_scaling = df[mask][scale_survey].values
         real_scaling = rates[scale_survey]
 
-        for i, line in enumerate(lines):
+        # Update rate values
+        for i, line in enumerate(rate_lines):
             survey = line.get_label()
             x = df[x_axis].unique()
             y = df[mask][survey] / y_scaling
@@ -194,17 +246,19 @@ def plot():
             expects[i].set_xdata([left, right])
             expects[i].set_ydata([middle]*2)
 
-        # ax.relim()
-        ax.set_xlim(min(x), max(x))
-        ax.set_ylim(1e-2, 1e2)
-        ax.autoscale_view()
+        # Fluence plot        ax1.autoscale_view()
+
+        # Rates plot
+        ax2.set_xlim(min(x), max(x))
+        ax2.set_ylim(1e-2, 1e2)
+        ax2.autoscale_view()
         fig.canvas.draw_idle()
 
     # Ability to select the x-axis
     # ----------------------------
     x_para_pos = plt.axes([9/15+0.03, 1-0.25, 0.15, 0.15])
     x_para = RadioButtons(x_para_pos, parameters, active=0)
-    ax.set_xlabel(parameters[0])
+    ax2.set_xlabel(parameters[0])
     x_para.on_clicked(update)
 
     # Make sliders to select values
@@ -214,8 +268,9 @@ def plot():
     for par in parameters:
         pos = plt.axes([9/15+0.04, offset, 0.15, 0.05])
         step = np.diff(df[par].unique())[0]
+        valinit = np.take(df[par], df[par].size//2)
         slider = Slider(pos, par, min(df[par]), max(df[par]),
-                        valinit=df[par].unique()[1], valstep=step)
+                        valinit=valinit, valstep=step)
         sliders.append(slider)
         offset -= 0.1
 
@@ -225,18 +280,19 @@ def plot():
     # Choose which survey to scale
     # ----------------------------
     scaling_pos = plt.axes([9/15+0.03+0.15, 1-0.25, 0.15, 0.15])
-    scaling = RadioButtons(scaling_pos, surveys, active=len(surveys)-1)
+    scaling = RadioButtons(scaling_pos, surveys, active=len(surveys)//2)
     scaling.on_clicked(update)
 
     # Adapt visibility of lines
     # ----------------------------------------------------------------
     surv_vis_pos = plt.axes([9/15+0.03, 1-0.25*2, 0.15, 0.15])
-    visibility = [line.get_visible() for line in lines]
+    visibility = [line.get_visible() for line in rate_lines]
     surv_viz = CheckButtons(surv_vis_pos, surveys, visibility)
 
     def set_vis(survey):
         index = surveys.index(survey)
-        lines[index].set_visible(not lines[index].get_visible())
+        rate_lines[index].set_visible(not rate_lines[index].get_visible())
+        flnc_lines[index].set_visible(not flnc_lines[index].get_visible())
         plt.draw()
 
     surv_viz.on_clicked(set_vis)
@@ -256,12 +312,12 @@ def plot():
     interval_viz.on_clicked(set_interval)
 
     update()
-    ax.legend(loc='lower right')
+    ax2.legend(loc='lower right')
     plt.show()
 
 
 if __name__ == '__main__':
     if GENERATE:
         generate(parallel=True)
-
-    plot()
+    if PLOT:
+        plot()
