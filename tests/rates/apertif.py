@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, hist
 
-from rates_real import EXPECTED, poisson_interval
+from real import EXPECTED, poisson_interval
 
 N_DAYS = 0.23  # Not used in eventual result
 SCALE_TO = 'htru'

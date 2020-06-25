@@ -4,10 +4,9 @@ from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 import numpy as np
 
-from frbpoppy import Frbcat, CosmicPopulation, Survey, SurveyPopulation
-from frbpoppy import split_pop
+from frbpoppy import Frbcat, split_pop, unpickle
 
-from convenience import hist, plot_aa_style, rel_path
+from tests.convenience import hist, plot_aa_style, rel_path
 
 N_DAYS = 100
 
@@ -49,23 +48,7 @@ def get_frbcat_data():
 
 def get_frbpoppy_data():
     """Get frbpoppy data."""
-    r = CosmicPopulation(1e5, n_days=N_DAYS, repeaters=True)
-    r.set_dist(model='vol_co', z_max=2.5)
-    r.set_dm_host(model='gauss', mu=100, sigma=0)
-    r.set_dm_igm(model='ioka', slope=1000, sigma=0)
-    r.set_dm(mw=False, igm=True, host=True)
-    r.set_emission_range(low=100e6, high=10e9)
-    r.set_lum(model='powerlaw', per_source='different',
-              low=1e42, high=1e45, power=0)
-    r.set_si(model='gauss', mu=-1.4, sigma=0)
-    r.set_w(model='lognormal', per_source='different', mu=0.1, sigma=0.5)
-    r.set_time(model='regular', lam=2)
-    r.generate()
-
-    s = Survey('chime', n_days=N_DAYS)
-    s.set_beam(model='chime')
-
-    surv_pop = SurveyPopulation(r, s)
+    surv_pop = unpickle('cosmic_chime')
 
     # Split population into seamingly one-off and repeater populations
     mask = ((~np.isnan(surv_pop.frbs.time)).sum(1) > 1)
@@ -94,7 +77,8 @@ def plot(frbcat, frbpop):
     ax1.set_xlabel(r'DM ($\textrm{pc}\ \textrm{cm}^{-3}$)')
     ax1.set_ylabel('Fraction')
     ax2.set_xlabel(r'S/N')
-    plt.xscale('log')
+    ax2.set_xscale('log')
+    ax1.set_yscale('log')
 
     # Set colours
     cmap = plt.get_cmap('tab10')([0, 1])
@@ -106,20 +90,26 @@ def plot(frbcat, frbpop):
             # Line style
             linestyle = 'solid'
             label = 'one-offs'
+            alpha = 0.5
             if t == 'r':
                 linestyle = 'dashed'
+                alpha = 0.8
                 label = 'repeaters'
 
-            bins = np.linspace(0, 3000, 10)
+            n_bins = 40
+            if len(p[t]['dm']) < 20:
+                n_bins = 10
+
+            bins = np.linspace(0, 2000, n_bins)
             ax1.step(*hist(p[t]['dm'], norm='max', bins=bins),
                      where='mid', linestyle=linestyle, label=label,
-                     color=cmap[i])
+                     color=cmap[i], alpha=alpha)
 
             # Plot SNR distribution
-            bins = np.logspace(-1, 6, 10)
+            bins = np.logspace(0.5, 3.5, n_bins)
             ax2.step(*hist(p[t]['snr'], norm='max', bins=bins),
                      where='mid', linestyle=linestyle, label=label,
-                     color=cmap[i])
+                     color=cmap[i], alpha=alpha)
 
     # Set up layout options
     f.subplots_adjust(hspace=0)

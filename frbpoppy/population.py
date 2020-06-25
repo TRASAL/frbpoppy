@@ -98,8 +98,10 @@ class Population:
 
     def n_one_offs(self):
         """Return the numer of one-offs in a population."""
-        return np.sum((~np.isnan(self.frbs.time)).sum(1) <= 1)
-
+        try:
+            return np.sum((~np.isnan(self.frbs.time)).sum(1) <= 1)
+        except TypeError:
+            return self.n_sources()
 
 def unpickle(filename=None, uid=None):
     """Quick function to unpickle a population.

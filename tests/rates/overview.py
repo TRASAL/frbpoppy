@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from tests.convenience import plot_aa_style, rel_path
-from rates_complex import complex_rates
-from rates_real import real_rates
-from rates_simple import simple_rates
-from rates_toy import toy_rates
+from complex import complex_rates
+from real import real_rates
+from simple import simple_rates
+from toy import toy_rates
 
 REMAKE = True
 SIZE = 1e6

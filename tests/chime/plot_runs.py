@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from tests.convenience import rel_path
 
-df = pd.read_csv(rel_path('chime_runs.csv'), index_col=0)
+df = pd.read_csv(rel_path('chime/runs.csv'), index_col=0)
 
 exp_one = 200
 exp_rep = 2.5
@@ -70,7 +70,7 @@ exp_rep = 2.5
 # ax1.legend()
 # plt.show()
 
-fig, axes = plt.subplots(1, 2, sharey=True)
+fig, axes = plt.subplots(1, 2, sharex=True, sharey=True)
 ax1, ax2 = axes
 
 max_clb = 200

@@ -2,9 +2,9 @@
 from frbpoppy import CosmicPopulation, lognormal, Survey
 from frbpoppy import SurveyPopulation, pprint
 
-N_SRCS = 9e3
+N_SRCS = 3.4e4
 N_DAYS = 100
-RATE = 9.5  # per day
+RATE = 9  # per day
 # Chime started in Aug 2018. Assuming 2/day for one-offs.
 # Total of 9 repeaters published on 9 Aug 2019. = ~year
 N_CHIME = {'rep': 9, 'one-offs': 365*2, 'time': 365}

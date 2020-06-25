@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from convenience import plot_aa_style, rel_path
-from rates_complex import complex_rates
+from complex import complex_rates
 
 REMAKE = False
 SIZE = 1e8

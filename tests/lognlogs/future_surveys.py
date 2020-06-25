@@ -8,12 +8,12 @@ from frbpoppy import unpickle
 from tests.convenience import plot_aa_style, rel_path
 
 MAKE = True
-SURVEYS = ('htru', 'fast', 'puma', 'chord')
+SURVEYS = ('htru', 'fast', 'puma-full', 'chord', 'ska1-low', 'ska1-mid')
 
 
 if MAKE:
     surv_pops = []
-    pop = CosmicPopulation.complex(1e8, generate=True)
+    pop = CosmicPopulation.complex(1e7, generate=False)
     pop.generate()
 
     for name in SURVEYS:
@@ -42,10 +42,8 @@ ax1.set_yscale('log')
 for i, surv_pop in enumerate(surv_pops):
     name = surv_pop.name.split('_')[-1]
     snr = surv_pop.frbs.snr
-    try:
-        bins, values = hist(snr, bin_type='log', norm=None)
-    except ValueError:
-        bins, values = np.array([np.nan]), np.array([np.nan])
+
+    bins, values = hist(snr, bin_type='log', norm=None)
 
     # Cumulative sum
     values = np.cumsum(values[::-1])[::-1]

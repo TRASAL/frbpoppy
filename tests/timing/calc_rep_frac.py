@@ -7,7 +7,7 @@ import numpy as np
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, merge_pop
 from frbpoppy import pprint, log10normal, hist
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 MAX_DAYS = 50
 N_SRCS = int(1e5)
@@ -83,13 +83,17 @@ for i, dist_type in enumerate(dist_types):
     color = colors[i]
 
     # Plot rates
-    rates, values = hist(np.array([RATE]), bin_type='log', norm='prob')
+    rate = np.array([RATE])
 
-    if dist_type == 'mix':   # One-offs have no time difference
-        values /= 2
-    elif dist_type == 'dist':
+    if dist_type == 'mix':
+        rate = np.array([RATE, 0])
+
+    bins = np.linspace(0, 0.5, 20)
+    rates, values = hist(rate, bins=bins, norm='prob')
+
+    if dist_type == 'dist':
         rate_dist = log10normal(RATE, 2, N_SRCS)
-        rates, values = hist(rate_dist, bin_type='log', norm='prob')
+        rates, values = hist(rate_dist, bin_type='lin', norm='prob')
 
     ax2.step(rates, values, where='mid', label=dist_type, color=color)
 
@@ -100,9 +104,9 @@ for i, dist_type in enumerate(dist_types):
         if PLOT_SNR:
             plt.clf()
             snr = surv_pop.frbs.snr
-            plt.step(*hist(snr, bin_type='log', norm='prob'), where='mid',
+            plt.step(*hist(snr, bin_type='lin', norm='prob'), where='mid',
                      color=color, linestyle=linestyle)
-            plt.xscale('log')
+            # plt.xscale('log')
             plt.yscale('log')
             plt.show()
             exit()
@@ -136,7 +140,9 @@ ax1.set_ylim(1e-2, 1e0)
 
 ax2.set_xlabel(r'Poisson Rate (day$^{-1}$)')
 ax2.set_ylabel(r'Fraction')
-ax2.set_xscale('log')
+# ax2.set_xscale('log')
+ax2.set_xlim(-0.01, 0.5)
+ax2.set_ylim(0, 1)
 ax2.yaxis.set_label_position('right')
 ax2.yaxis.tick_right()
 ax2.set_ylim(0, 1.1)
@@ -152,7 +158,7 @@ for i, dist_type in enumerate(dist_types):
     elements.append((line, label))
 lines, labels = zip(*elements)
 ax2.legend(lines, labels, title='Populations', prop={'size': 8},
-           loc='upper left')
+           loc='upper right')
 
 # Add line styles
 elements = []

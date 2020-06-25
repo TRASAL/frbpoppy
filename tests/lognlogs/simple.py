@@ -7,16 +7,18 @@ from frbpoppy import unpickle
 
 from tests.convenience import plot_aa_style, rel_path
 
-MAKE = False
+MAKE = True
 SURVEYS = ('askap-fly', 'fast', 'htru', 'apertif')
 
 
 if MAKE:
     surv_pops = []
-    pop = CosmicPopulation.simple(1e8, generate=True)
-    pop.set_dist(model='vol_co', z_max=2.0)
-    pop.set_lum(model='constant', value=1e40)
-    pop.set_dm(mw=True, igm=True, host=True)
+    pop = CosmicPopulation.simple(1e7, generate=True)
+    pop.set_dist(model='vol_co', z_max=0.01)
+    pop.set_lum(model='constant', value=1e36)
+    pop.set_dm(mw=False, igm=True, host=True)
+    pop.set_w(model='lognormal', mean=0.1, std=0.7)
+    pop.name = 'local'
     pop.generate()
 
     for name in SURVEYS:
@@ -27,7 +29,7 @@ if MAKE:
 else:
     surv_pops = []
     for name in SURVEYS:
-        surv_pops.append(unpickle(f'simple_{name}'))
+        surv_pops.append(unpickle(f'local_{name}'))
 
 # Start plot
 plot_aa_style()
@@ -61,4 +63,4 @@ for i, surv_pop in enumerate(surv_pops):
 
 plt.legend()
 plt.tight_layout()
-plt.savefig(rel_path('./plots/logn_logs_cosmo.pdf'))
+plt.savefig(rel_path('./plots/logn_logs_local_lum_1e36_w_int.pdf'))

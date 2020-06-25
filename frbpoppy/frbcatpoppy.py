@@ -1,5 +1,6 @@
 """Do things with frbcat."""
 import os
+import numpy as np
 import pandas as pd
 
 from frbcat import Frbcat as PureFrbcat
@@ -64,6 +65,18 @@ class Frbcat(PureFrbcat):
         self.df = pd.merge(self.df, self._surveys, on=cols, how='left')
         # Clean up possible unnamed columns
         self.df = self.df.loc[:, ~self.df.columns.str.contains('unnamed')]
+
+        # Add single survey instruments
+        # Bit rough, but will work in a pinch
+        def cond(t):
+            return (self.df.telescope == t) & (self.df.survey.isnull())
+        self.df.at[cond('apertif'), 'survey'] = 'apertif'
+        self.df.at[cond('askap'), 'survey'] = 'askap-incoh'
+        self.df.at[cond('chime'), 'survey'] = 'chime'
+        self.df.at[cond('srt'), 'survey'] = 'srt'
+        self.df.at[cond('effelsberg'), 'survey'] = 'effelsberg'
+        self.df.at[cond('gbt'), 'survey'] = 'guppi'
+        self.df.at[cond('fast'), 'survey'] = 'crafts'
 
         # Check whether any FRBs have not yet been assigned
         no_surveys = self.df['survey'].isnull()

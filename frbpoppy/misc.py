@@ -66,7 +66,7 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
         parameter = np.array(parameter)
 
     # Drop NaN-values
-    parameter = parameter[~np.isnan(parameter)]
+    parameter = parameter[~(np.isnan(parameter) | np.isinf(parameter))]
 
     # Determine number of bins
     if n_bins != 25:
