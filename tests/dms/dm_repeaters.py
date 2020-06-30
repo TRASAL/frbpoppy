@@ -5,16 +5,16 @@ import matplotlib.pyplot as plt
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 from frbpoppy import split_pop, pprint
 
-from convenience import hist, plot_aa_style, rel_path
+from tests.convenience import hist, plot_aa_style, rel_path
 
 DAYS = 4
 INTERACTIVE_PLOT = False
 PLOTTING_LIMIT_N_SRCS = 0
-SNR = True
+SNR = False
 
-r = CosmicPopulation.simple(n_srcs=int(1e4), n_days=DAYS, repeaters=True)
+r = CosmicPopulation.simple(n_srcs=int(1e5), n_days=DAYS, repeaters=True)
 r.set_dist(z_max=0.01)
-r.set_lum(model='powerlaw', low=1e35, high=1e45, power=2.5,
+r.set_lum(model='powerlaw', low=1e35, high=1e45, power=-1.7,
           per_source='different')
 r.set_time(model='poisson', rate=3)
 r.set_dm_igm(model='ioka', slope=1000, std=0)
@@ -28,7 +28,7 @@ r.generate()
 survey = Survey('perfect', n_days=DAYS)
 survey.set_beam(model='perfect')
 # survey.t_samp = 1
-survey.snr_limit = 1e16
+survey.snr_limit = 1e6
 
 surv_pop = SurveyPopulation(r, survey)
 

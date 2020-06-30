@@ -646,7 +646,10 @@ def coord_to_offset(xref, yref, x, y):
     dx = (cosy * sindx) / cosc
     dy = (cosyref * siny - sinyref * cosy * cosdx) / cosc
 
-    if cosc < 0:
+    if isinstance(cosc, np.ndarray):
+        dx[cosc < 0] = np.nan
+        dy[cosc < 0] = np.nan
+    elif cosc < 0:
         dx, dy = np.nan, np.nan
 
     return dx, dy

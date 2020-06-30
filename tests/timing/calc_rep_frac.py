@@ -88,12 +88,12 @@ for i, dist_type in enumerate(dist_types):
     if dist_type == 'mix':
         rate = np.array([RATE, 0])
 
-    bins = np.linspace(0, 0.5, 20)
+    bins = np.linspace(0, 0.5, 40)
     rates, values = hist(rate, bins=bins, norm='prob')
 
     if dist_type == 'dist':
         rate_dist = log10normal(RATE, 2, N_SRCS)
-        rates, values = hist(rate_dist, bin_type='lin', norm='prob')
+        rates, values = hist(rate_dist, bins=bins, norm='prob')
 
     ax2.step(rates, values, where='mid', label=dist_type, color=color)
 
