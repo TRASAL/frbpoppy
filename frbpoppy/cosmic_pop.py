@@ -505,7 +505,7 @@ class CosmicPopulation(Population):
         pop.set_dist(model='vol_co', z_max=0.01, alpha=-1.5,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
         pop.set_dm(mw=False, igm=False, host=False)
-        pop.set_emission_range(low=100e6, high=10e9)
+        pop.set_emission_range(low=10e7, high=10e9)
         pop.set_lum(model='constant', value=1e38)
         pop.set_w(model='constant', value=10)
         pop.set_si(model='constant', value=0)

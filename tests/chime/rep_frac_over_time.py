@@ -8,8 +8,11 @@ from frbpoppy import unpickle
 
 from tests.convenience import plot_aa_style, rel_path
 
+from obs_rep_frac import calc_rep_frac
+
 init_surv_time_frac = 0.05
 MAKE = False
+PLOT_CHIME = False
 
 N_SRCS = 3.6e4
 N_DAYS = 100
@@ -60,7 +63,7 @@ n_pointings = chime.n_pointings
 days = np.linspace(0, N_DAYS, (N_DAYS*n_pointings)+1)
 fracs = []
 
-for day in tqdm(days):
+for day in tqdm(days, desc="frbpoppy"):
     t = surv_pop.frbs.time.copy()
     time = np.where(t < day, t, np.nan)
     n_rep = ((~np.isnan(time)).sum(1) > 1).sum()
@@ -68,15 +71,33 @@ for day in tqdm(days):
     frac = n_rep / (n_rep + n_one_offs)
     fracs.append(frac)
 
-ax1.plot(days, fracs)
+ax1.plot(days, fracs, label='frbpoppy')
+
+if PLOT_CHIME:
+
+    # See how the real fraction changes over time
+    chime_fracs = []
+    dts = calc_rep_frac()
+    days = [d for d in range(301)]
+    for day in tqdm(days, desc='frbcat'):
+        n_rep = sum([dt <= day for dt in dts])
+        n_one_offs = 2*day
+        try:
+            frac = n_rep / (n_rep + n_one_offs)
+        except ZeroDivisionError:
+            frac = np.nan
+        chime_fracs.append(frac)
+
+    ax1.plot(days, chime_fracs, label='chime')
 
 # Further plot details
 ax1.set_xlabel(r'Time (days)')
-ax1.set_ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
+ax1.set_ylabel(r'$f_{\textrm{rep}}$')
+# ax1.set_ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
 ax1.set_xlim(0, max(days))
 ax1.set_yscale('log')
 
 # Save figure
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/rep_frac_over_time.pdf'))
+plt.savefig(rel_path(f'plots/rep_frac_chime.pdf'))
 plt.clf()

@@ -25,7 +25,7 @@ def get_chime_rep():
 
         src_dict = {'ra': ra, 'dec': dec, 'gl': gl, 'gb': gb, 'ymw16': ymw16,
                     'ne2001': ne2001, 'publication': publication,
-                    'localized': localized}
+                    'localized': localized, 'name': frb_name}
 
         dates = [key for key in src_parameters.keys() if key.isdigit()]
 
@@ -53,4 +53,29 @@ def get_chime_rep():
                 d[key].append(value)
 
     chime_rep = pd.DataFrame(d)
+    chime_rep.timestamp = pd.to_datetime(chime_rep.timestamp)
     return chime_rep
+
+
+def calc_rep_frac():
+    df = get_chime_rep()
+    df.timestamp = pd.to_datetime(df.timestamp)
+    df.sort_values('timestamp', inplace=True)
+
+    starting_time = df['timestamp'].iloc[0]
+    srcs_seen_once = []
+    srcs_seen_twice = []
+    time_rep_seen = []
+    for index, row in df.iterrows():
+        src = row['name']
+        dt = (row['timestamp'] - starting_time).total_seconds() / 86400
+
+        if src not in srcs_seen_once:
+            srcs_seen_once.append(src)
+            continue
+        elif src not in srcs_seen_twice:
+            # Timedelta at which repeater detected
+            time_rep_seen.append(dt)
+            srcs_seen_twice.append(src)
+
+    return time_rep_seen
