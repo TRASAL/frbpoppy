@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, merge_pop
-from frbpoppy import pprint, log10normal, hist
+from frbpoppy import log10normal, hist, clustered
 
 from tests.convenience import plot_aa_style, rel_path
 
@@ -19,7 +19,8 @@ def setup_pop(n_srcs):
     pop = CosmicPopulation.simple(n_srcs, n_days=MAX_DAYS,
                                   repeaters=True)
     pop.set_dist(z_max=0.01)
-    pop.set_lum(model='powerlaw', per_source='different', low=1e35, high=1e40, power=-1.7)
+    pop.set_lum(model='powerlaw', per_source='different', low=1e35, high=1e40,
+                power=-1.7)
     pop.set_w(model='constant', value=1)
     pop.set_dm(mw=False, igm=True, host=False)
     pop.set_dm_igm(model='ioka', slope=1000, std=0)
@@ -35,6 +36,11 @@ def adapt_pop(pop, dist_type):
     elif dist_type == 'dist':
         rate_dist = log10normal(RATE, 2, N_SRCS)
         pop.set_time(model='poisson', rate=rate_dist)
+        pop.generate()
+        return pop
+
+    elif dist_type == 'weibull':
+        pop.set_time(model='clustered', r=RATE, k=0.34)
         pop.generate()
         return pop
 
@@ -94,11 +100,11 @@ dist_types = ['rep', 'dist', 'mix']
 ax1.set_xlabel(r'Poisson Rate (day$^{-1}$)')
 ax1.set_ylabel(r'Fraction')
 ax1.set_xlim(-0.01, 0.5)
-ax1.set_ylim(0, 1)
+# ax1.set_ylim(0, 1)
+# ax1.set_yscale('log')
 
 ax2.set_xlabel(r'Time (days)')
 ax2.set_ylabel(r'$f_{\text{rep}}$')
-# ax2.set_ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
 ax2.set_xlim(0, MAX_DAYS)
 ax2.set_yscale('log')
 ax2.set_ylim(1e-1, 1e0)
@@ -125,6 +131,10 @@ for i, dist_type in enumerate(dist_types):
 
     if dist_type == 'dist':
         rate_dist = log10normal(RATE, 2, N_SRCS)
+        rates, values = hist(rate_dist, bins=bins, norm='prob')
+
+    if dist_type == 'weibull':
+        rate_dist = clustered(n_srcs=N_SRCS, n_days=MAX_DAYS, z=0)
         rates, values = hist(rate_dist, bins=bins, norm='prob')
 
     ax1.step(rates, values, where='mid', label=dist_type, color=color)

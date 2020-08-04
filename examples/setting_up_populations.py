@@ -22,7 +22,7 @@ pop.set_dm_mw(model='ne2001')
 pop.set_emission_range(low=100e6, high=10e9)
 
 # Luminsity of FRBs
-# See the per_source argument? That always you to give different properties
+# See the per_source argument? That allows you to give different properties
 # to different bursts from the same source. You can do that for the luminosity,
 # or any of the following parameters
 pop.set_lum(model='powerlaw', low=1e38, high=1e38, power=0,
@@ -43,4 +43,3 @@ pop.generate()
 # Or simply use some predefined models
 pop_simple = CosmicPopulation.simple(1e4, generate=True)
 pop_complex = CosmicPopulation.complex(1e4, generate=True)
-# Note that for generating these you have to set generate=True

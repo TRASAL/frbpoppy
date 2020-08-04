@@ -6,7 +6,7 @@ from matplotlib.lines import Line2D
 
 from frbpoppy import Survey, int_pro_fixed
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 T_OBS = 60*60  # seconds
 OBJ_OFFSET = 1  # deg
@@ -83,8 +83,8 @@ for i, dec in enumerate(decs):
         ax.scatter(dx, dy, color=colors[i % 9], marker='x', s=20)
 
 # Set axis labels
-ax.set_xlabel(r'X Offset ($^{\circ}$)')
-ax.set_ylabel(r'Y Offset ($^{\circ}$)')
+ax.set_xlabel(r'East-West Offset ($^{\circ}$)')
+ax.set_ylabel(r'North-South Offset ($^{\circ}$)')
 
 # Set axis limits
 ax.set_xlim(extent[0], extent[1])
@@ -109,4 +109,4 @@ ax.legend(lines, labels, loc='upper center', ncol=3, framealpha=1,
 
 # Save figure
 plt.tight_layout()
-plt.savefig(rel_path('./plots/obj_through_beam.pdf'))
+plt.savefig(rel_path('./plots/obj_through_beam.pdf'), dpi=600)

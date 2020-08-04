@@ -177,7 +177,6 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
     ra = np.deg2rad(ra)
     dec = np.deg2rad(dec)
     ra_p, dec_p, lst, lat = np.deg2rad(args)
-    # import IPython; IPython.embed()
 
     if mount_type == 'equatorial':
         # Convert input coordinates to offset in ra and dec

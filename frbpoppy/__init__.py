@@ -15,3 +15,4 @@ from .rates import *
 from .survey import Survey
 from .survey_pop import SurveyPopulation
 from .frbcatpoppy import Frbcat
+from .time_dists import clustered

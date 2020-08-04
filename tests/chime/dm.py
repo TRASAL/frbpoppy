@@ -1,7 +1,6 @@
 """Plot DM/SNR distributions of repeater populations."""
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import ks_2samp
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 from frbpoppy import split_pop, pprint
@@ -11,10 +10,10 @@ from tests.convenience import hist, plot_aa_style, rel_path
 DAYS = 4
 INTERACTIVE_PLOT = False
 PLOTTING_LIMIT_N_SRCS = 0
-SNR = False
+SNR = True
 
-r = CosmicPopulation.simple(n_srcs=int(1e5), n_days=DAYS, repeaters=True)
-r.set_dist(z_max=0.01)
+r = CosmicPopulation.simple(n_srcs=int(1e4), n_days=DAYS, repeaters=True)
+r.set_dist(z_max=2)
 r.set_lum(model='powerlaw', low=1e35, high=1e45, power=-1.7,
           per_source='different')
 r.set_time(model='poisson', rate=3)
@@ -26,10 +25,10 @@ r.set_w('constant', value=1)
 r.generate()
 
 # Set up survey
-survey = Survey('perfect', n_days=DAYS)
-survey.set_beam(model='perfect')
+survey = Survey('chime', n_days=DAYS)
+survey.set_beam(model='chime')
 # survey.t_samp = 1
-survey.snr_limit = 1e6
+survey.snr_limit = 1e-13
 
 surv_pop = SurveyPopulation(r, survey)
 
@@ -80,7 +79,7 @@ for i, pop in enumerate(pops):
     # Do stuff with data
     dm = pop.frbs.dm
     x, y = hist(dm)
-    x *= 200  # Normalise x-axis z=0.01, z=2
+    # x *= 200  # Normalise x-axis z=0.01, z=2
 
     # Plot DM distributions
     ax1.step(x, y, where='mid', linestyle=linestyle, label=label,
@@ -102,7 +101,7 @@ for i, pop in enumerate(pops):
         pprint('Zero sources available to plot')
         continue
 
-ax1.set_xlabel(r'DM$_{\textrm{ex}}$ ($\textrm{pc}\ \textrm{cm}^{-3}$)')
+ax1.set_xlabel(r'DM ($\textrm{pc}\ \textrm{cm}^{-3}$)')
 ax1.set_ylabel('Fraction')
 
 if SNR:
@@ -115,11 +114,6 @@ else:
     plt.figlegend(loc='upper center', ncol=3, framealpha=1, prop={'size': 8},
                   bbox_to_anchor=(0.5, 1.07), bbox_transform=ax1.transAxes)
 
-# Test the difference between the distributions
-rep = pops[1].frbs.dm[:50]  # First 20 repeaters
-one = pops[2].frbs.dm[:min([1200, len(pops[2].frbs.dm)])]  # First x one-offs
-print(f'KS test: {ks_2samp(rep, one)}')
-
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/rep_dm_dist.pdf'))
+plt.savefig(rel_path(f'plots/rep_dm_dist_chime.pdf'))
 plt.clf()
