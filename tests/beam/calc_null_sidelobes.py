@@ -2,9 +2,8 @@
 from scipy.special import j1
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 STEPSIZE = 1e-6
 PLOT = True
@@ -29,7 +28,7 @@ if PLOT:
     ax = fig.add_subplot(111)
     plt.title(title)
     plt.plot(x_range[::10], y_range[::10])
-    plt.scatter(x_null, y_null)
+    plt.scatter(x_null, y_null, marker='x')
     plt.yscale('log')
     plt.tight_layout()
 

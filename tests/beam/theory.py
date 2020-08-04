@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from frbpoppy.survey import Survey
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 PATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
 SURVEY = 'apertif'
@@ -49,4 +49,4 @@ plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend(loc='upper right')
 plt.tight_layout()
-plt.savefig(rel_path('plots/int_pro_theory.pdf'))
+plt.savefig(rel_path('plots/beam_int_theory.pdf'))

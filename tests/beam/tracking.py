@@ -109,4 +109,4 @@ ax.legend(lines, labels, loc='upper center', ncol=3, framealpha=1,
 
 # Save figure
 plt.tight_layout()
-plt.savefig(rel_path('./plots/obj_through_beam.pdf'), dpi=600)
+plt.savefig(rel_path('./plots/tracking.pdf'), dpi=600)

@@ -4,7 +4,7 @@ import numpy as np
 
 from frbpoppy.survey import Survey
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 SIDELOBES = [0, 1, 2, 8]
 SURVEY = 'apertif'
@@ -41,4 +41,4 @@ plt.ylabel('Intensity Profile')
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()
-plt.savefig(rel_path('./plots/int_pro_sidelobes.pdf'))
+plt.savefig(rel_path('./plots/beam_int_sidelobes.pdf'))

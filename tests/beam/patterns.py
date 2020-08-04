@@ -5,11 +5,10 @@ from scipy.stats import binned_statistic as bstat
 
 from frbpoppy.survey import Survey
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 OBSERVATORIES = [('parkes', 'htru'),
-                 ('apertif', 'apertif'),
-                 ('chime', 'chime')]
+                 ('apertif', 'apertif')]
 
 n = int(1e6)
 
@@ -47,8 +46,7 @@ for obs in OBSERVATORIES:
 
 plt.xlabel(r'Offset ($^{\circ}$)')
 plt.ylabel('Intensity Profile')
-plt.xlim(0, 5)
 plt.yscale('log')
 plt.legend()
 plt.tight_layout()
-plt.savefig(rel_path('plots/int_pro_surveys.pdf'))
+plt.savefig(rel_path('plots/beam_int_patterns.pdf'))
