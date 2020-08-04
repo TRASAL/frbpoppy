@@ -156,7 +156,7 @@ class Survey:
         """Generate pointings."""
         self.pointings = self.point_func()
 
-    def set_beam(self, model='gaussian', size=None, random_loc=True,
+    def set_beam(self, model='perfect', size=None, random_loc=True,
                  n_sidelobes=0.5):
         """Set intensity profile.
 

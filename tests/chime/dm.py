@@ -20,7 +20,6 @@ r.set_time(model='poisson', rate=3)
 r.set_dm_igm(model='ioka', slope=1000, std=0)
 r.set_dm(mw=False, igm=True, host=False)
 r.set_w('constant', value=1)
-# r.set_w(model='lognormal', mu=np.log(1), sigma=np.log(2))
 
 r.generate()
 

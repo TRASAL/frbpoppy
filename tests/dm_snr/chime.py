@@ -7,9 +7,9 @@ import numpy as np
 from scipy.stats import ks_2samp
 
 from frbcat import ChimeRepeaters
-from frbpoppy import Frbcat, split_pop, unpickle
+from frbpoppy import Frbcat, split_pop, unpickle, hist
 
-from tests.convenience import hist, plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 N_DAYS = 100
 

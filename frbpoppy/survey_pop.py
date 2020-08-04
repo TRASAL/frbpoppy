@@ -268,11 +268,6 @@ class SurveyPopulation(Population):
         # If not an intensity of zero, they were inside the beam pattern
         p_ix = ~np.isnan(int_pro)
 
-        # Save the offset for later use
-        if self.test_beam_placement:
-            self.dxys[0].extend(dx[p_ix])
-            self.dxys[1].extend(dy[p_ix])
-
         # Time & position
         tp_ix = (t_ix[0][p_ix], t_ix[1][p_ix])
 

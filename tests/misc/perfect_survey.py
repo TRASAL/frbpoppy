@@ -1,18 +1,15 @@
 """Test perfect survey."""
 import matplotlib.pyplot as plt
 
-from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
-from convenience import hist, plot_aa_style, rel_path
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, hist
+from tests.convenience import plot_aa_style, rel_path
 
-cosmic_pop = CosmicPopulation.simple(1e4, generate=False)
-cosmic_pop.z_max = 0.01
-cosmic_pop.lum_min = 1e38
-cosmic_pop.lum_max = 1e38
-cosmic_pop.generate()
+pop = CosmicPopulation.simple(1e4, generate=False)
+pop.generate()
 
 survey = Survey('perfect')
 
-survey_pop = SurveyPopulation(cosmic_pop, survey)
+survey_pop = SurveyPopulation(pop, survey)
 
 plot_aa_style()
 plt.rcParams["figure.figsize"] = (5.75373, 5.75373)
@@ -24,17 +21,12 @@ axes[0, 0].set_title('SNR')
 
 axes[1, 0].step(*hist(s.T_sys, bin_type='log'), where='mid')
 axes[1, 0].set_title(r'T$_{\text{sys}}$')
-axes[1, 0].set_xlim(1, 1e2)
-axes[1, 0].set_ylim(1e-3, 1)
 
 axes[0, 1].step(*hist(s.s_peak, bin_type='log'), where='mid')
 axes[0, 1].set_title(r'S$_{\text{peak}}$')
-axes[0, 1].set_xlim(1e-3, 1)
-axes[0, 1].set_ylim(1e-3, 1)
 
 axes[1, 1].step(*hist(s.w_arr, bin_type='log'), where='mid')
 axes[1, 1].set_title(r'w$_{\text{arr}}$')
-axes[1, 1].set_ylim(1e-3, 1)
 
 for x in [0, 1]:
     for y in [0, 1]:

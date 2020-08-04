@@ -2,13 +2,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from frbpoppy import distributions
+from frbpoppy import gen_dists
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 POWER = -1
 
-pl = distributions.powerlaw(1e35, 1e40, POWER, 100000)
+pl = gen_dists.powerlaw(1e35, 1e40, POWER, 100000)
 minx = min(pl)
 maxx = max(pl)
 bins = 10 ** np.linspace(np.log10(minx), np.log10(maxx), 50)

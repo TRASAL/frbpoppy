@@ -10,7 +10,7 @@ from matplotlib.markers import MarkerStyle
 from frbpoppy import Frbcat, pprint
 import frbpoppy.galacticops as go
 
-from convenience import plot_aa_style, rel_path, set_axes_equal
+from tests.convenience import rel_path
 
 
 def import_frbcat():
@@ -237,7 +237,7 @@ def plot_data(df):
 if __name__ == '__main__':
 
     RELOAD = False
-    csv_path = './tests/plots/transients.csv'
+    csv_path = rel_path('./plots/transients.csv')
 
     if RELOAD:
         test = pd.DataFrame({'obj': ['a', 'a', 'b'],

@@ -1,4 +1,4 @@
-"""TODO."""
+"""Plot effective pulse width against rate for CHIME repeaters."""
 from scipy.integrate import quad
 from scipy.stats import chi2, norm
 import matplotlib.pyplot as plt
@@ -122,7 +122,7 @@ def plot_w_eff_rate(df):
         plt.yscale('log', nonposy='clip')
 
     plt.tight_layout()
-    plt.savefig(rel_path('./plots/w_eff_rate_frbcat.pdf'))
+    plt.savefig(rel_path('./plots/rate_w_eff_chime.pdf'))
 
     # Save data
     a = np.asarray([width, width_err[0], width_err[1],
