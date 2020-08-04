@@ -54,7 +54,7 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
 
     Args:
         parameter (array): To be binned
-        bin_type (str): Either 'lin' or 'log' or 'ln'
+        bin_type (str): Either 'lin', 'log' or 'ln'
         n_bins (int): Number of bins. Can be overriden internally
         norm (bool): Whether to normalise to 'max' or 'prob' or none
 

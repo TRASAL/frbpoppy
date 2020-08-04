@@ -2,8 +2,6 @@
 import numpy as np
 import pandas as pd
 
-# TODO: Finish describing parameters
-
 
 class FRBs:
     """Class containing FRB properties."""
@@ -109,7 +107,7 @@ class FRBs:
                 setattr(self, attr, out)
 
     def to_df(self):
-        """Convert properties over to a Pandas DataFrame."""
+        """Convert properties to a Pandas DataFrame."""
         # Find all source properties
         df = pd.DataFrame()
         for attr in self.__dict__.keys():
@@ -134,3 +132,34 @@ class FRBs:
     def to_csv(self, path):
         """Export properties to a csv file."""
         self.to_df().to_csv(path)
+
+    def calc_logn_logs(self, parameter='fluence', min_p=None, max_p=None):
+        """Rough method to retrive the slope of a LogNlogS distribution."""
+        p = getattr(self, parameter)
+
+        # For repeaters with 2D arrays of parameters
+        if p.ndim > 1:
+            p = p.flatten()
+
+        # Add value limits if wished
+        if min_p is None:
+            f_0 = np.min(p)
+        else:
+            f_0 = min_p
+            p = p[p >= min_p]
+
+        if max_p is not None:
+            p = p[p <= max_p]
+
+        n = p.size
+        alpha = -1/((1/n)*sum([np.log(f/f_0) for f in p]))
+        alpha *= (n-1)/n  # Removing bias in alpha
+        alpha_err = n*alpha/((n-1)*(n-2)**0.5)
+        norm = n / (f_0**alpha)  # Normalisation at lowest value
+
+        return alpha, alpha_err, norm
+
+
+if __name__ == '__main__':
+    frbs = FRBs()
+    import IPython; IPython.embed()

@@ -1,5 +1,4 @@
 """Classes to hold rate counters."""
-from copy import deepcopy
 import numpy as np
 from frbpoppy.misc import pprint
 
@@ -38,9 +37,11 @@ class Rates:
         t += line
 
         def r(value, d=4):
+            """Round a value"""
             return round(value, d)
 
         def per(value):
+            """Calculate the percentage."""
             return r(value/self.tot * 100)
 
         # Format rates

@@ -1,5 +1,4 @@
 """Group together various number density descriptors."""
-import random
 import numpy as np
 import frbpoppy.precalc as pc
 

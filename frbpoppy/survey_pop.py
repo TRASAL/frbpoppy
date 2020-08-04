@@ -13,7 +13,7 @@ class SurveyPopulation(Population):
     """Class to create a survey population of FRBs."""
 
     def __init__(self, cosmic_pop, survey, scat=False, scin=False,
-                 test_beam_placement=False, mute=False, scale_by_area=True):
+                 mute=False, scale_by_area=True):
         """
         Run a survey to detect FRB sources.
 
@@ -24,6 +24,9 @@ class SurveyPopulation(Population):
                 noise calculations.
             scin (bool, optional): Whether to apply scintillation to
                 observations.
+            mute (bool): Whether to suppress printing to terminal
+            scale_by_area (bool): Whether to scale detection rates to the sky
+                area visible to a survey. Only relevant for one-offs.
         """
         if not mute:
             pprint(f'Surveying {cosmic_pop.name} with {survey.name}')
@@ -54,7 +57,6 @@ class SurveyPopulation(Population):
         self.scat = scat
         self.scin = scin
         self.survey = survey
-        self.test_beam_placement = test_beam_placement
         self.scale_by_area = scale_by_area
 
         # Set survey attributes if not available
@@ -115,8 +117,6 @@ class SurveyPopulation(Population):
 
         # Calculations differ whether dealing with repeaters or not
         if self.repeaters:
-            if self.test_beam_placement:
-                self.dxys = ([], [])  # dx, dy
             self.det_repeaters()
         else:
             self.det_oneoffs()
@@ -390,27 +390,6 @@ class SurveyPopulation(Population):
         if not self.repeaters:
             self.source_rate.f_area = f_area
             self.source_rate.scale_by_area()
-
-    def calc_logn_logs(self, parameter='fluence', min_p=None, max_p=None):
-        """TODO. Currently unfinished."""
-        parms = getattr(self.frbs, parameter)
-
-        if min_p is None:
-            f_0 = min(parms)
-        else:
-            f_0 = min_p
-            parms = parms[parms >= min_p]
-
-        if max_p is not None:
-            parms = parms[parms <= max_p]
-
-        n = len(parms)
-        alpha = -1/((1/n)*sum([math.log(f/f_0) for f in parms]))
-        alpha *= (n-1)/n  # Removing bias in alpha
-        alpha_err = n*alpha/((n-1)*(n-2)**0.5)
-        norm = n / (f_0**alpha)  # Normalisation at lowest parameter
-
-        return alpha, alpha_err, norm
 
 
 def fast_where(a, min_v, max_v):

@@ -45,7 +45,6 @@ class LargePopulation:
 
             for surv in self.surveys:
                 surv_pop = SurveyPopulation(pop, surv, scale_by_area=False)
-                surv_pop.name = f'{self.base_name}_{surv_pop.name}'
                 surv_pop.uid = pop.uid
                 surv_pop.save()
 
@@ -74,7 +73,7 @@ class LargePopulation:
 
                     try:
                         merged_parm = np.concatenate(parms, axis=0)
-                    except ValueError as e:
+                    except ValueError:
                         # Check maximum size values should be padded to
                         max_size = max([p.shape[1] for p in parms])
                         new_parms = []
@@ -129,18 +128,16 @@ def main():
     from frbpoppy.survey_pop import SurveyPopulation
     from frbpoppy.do_plot import plot
 
-    pop = CosmicPopulation(int(5e5), name='test', generate=False)
-
-    surveys = []
-    for s in ['apertif']:
-        surveys.append(Survey(s))
-
-    large_pops = LargePopulation(pop, *surveys).pops
+    pop = CosmicPopulation.simple(int(3e3), generate=False)
+    pop.name = 'large'
+    survey = Survey('perfect')
+    large_pop = LargePopulation(pop, survey, max_size=1e3).pops[0]
 
     # For comparison
-    surv_pop = SurveyPopulation(pop, surveys[0])
+    surv_pop = SurveyPopulation(pop, survey)
+    surv_pop.name = 'normal'
 
-    plot(*large_pops, surv_pop, mute=False, frbcat=False)
+    plot(large_pop, surv_pop, mute=False, frbcat=False)
 
 
 if __name__ == '__main__':

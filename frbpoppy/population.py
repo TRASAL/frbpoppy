@@ -4,7 +4,6 @@ import dill as pickle
 import numpy as np
 from copy import deepcopy
 
-from frbpoppy.misc import pprint
 from frbpoppy.paths import paths
 from frbpoppy.frbs import FRBs
 
@@ -107,6 +106,7 @@ class Population:
             return self.n_sources()
 
     def n_oneoffs(self):
+        """Return the numer of one-offs in a population."""
         return self.n_one_offs()
 
 
@@ -161,12 +161,12 @@ def split_pop(pop, mask):
     return pop_true, pop_false
 
 
-
 def merge_pop(*args, random=False):
     """Merge populations.
 
     Args:
         Populations to merge
+        random (bool): If wishing to shuffle the frbs from different pops
 
     Returns:
         Population

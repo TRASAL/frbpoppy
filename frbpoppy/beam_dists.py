@@ -35,7 +35,8 @@ def get_beam_props(model, fwhm):
         beam_size = 180*80  # [sq deg]
         # If integrating over 180*80 degrees
         # Wolfram Alpha input:
-        # integral_0^pi integral_0^(4*pi/9) sin(theta) d theta d phi square radians to square degrees
+        # integral_0^pi integral_0^(4*pi/9) sin(theta) d theta d phi
+        # square radians to square degrees
         beam_size = 8522  # [sq deg]
     elif model == 'gaussian':
         pixel_scale = fwhm / 95  # Degrees per pixel [deg]
@@ -85,13 +86,19 @@ def calc_max_offset(n, fwhm):
 
 def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
                    central_freq=1400, beam_array=None, pixel_scale=None):
-    """Calculate the intensity profile in random spots of a beam.
+    """Calculate the intensity profile in random places of a beam pattern.
 
     Args:
         shape (tuple): The shape of the array with intensities that you need.
+        pattern (str): Beam pattern types (Gaussian, perfect etc)
+        fwhm (float): FWHM [degree].
+        max_offset (float): Maximum offset from centre of beam [degree].
+        central_freq (float): Central frequency [MHz].
+        beam_array (array): Numpy array of beam pattern
+        pixel_scale (float): Degrees per pixel of beam_array [degree]
 
     Returns:
-        array, array: intensity profile, offset from beam [degree]
+        array, array: intensity, offset from beam [degree]
 
     """
     offset = fwhm/2  # Radius [deg]
@@ -158,9 +165,14 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         ra_p (float): Right ascension of pointing [deg]
         dec_p (float): Declination of pointing [deg]
         lst (float): Local Sidereal Time [deg]
+        pattern (str): Beam pattern types (Gaussian, perfect etc)
+        latitude (float): Latitude of survey [degree].
+        beam_array (array): Numpy array of beam pattern
+        pixel_scale (float): Degrees per pixel of beam_array [degree]
+        mount_type (str): Survey mount type
 
     Returns:
-        type: Description of returned object.
+        array, array, array: intensity, x offset [deg], y offset [deg]
 
     """
     # Weed out perfect beam
@@ -185,6 +197,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         # Convert input right ascension to hour angle
         ha = lst - ra
         ha_p = lst - ra_p
+        # There has to be a nicer way than this, but this works for now
         if isinstance(ha, np.ndarray):
             ha[ha > np.pi] -= 2*np.pi
             ha[ha < -np.pi] += 2*np.pi
@@ -193,6 +206,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
                 ha -= 2*np.pi
             if ha < -np.pi:
                 ha += 2*np.pi
+        # The same holds for pointing coordinates
         if isinstance(ha_p, np.ndarray):
             ha_p[ha_p > np.pi] -= 2*np.pi
             ha_p[ha_p < -np.pi] += 2*np.pi
@@ -211,7 +225,6 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         # A transit telescope always looks straight up
         az_p = np.deg2rad(180)
         alt_p = np.deg2rad(90)
-
         # Convert input right ascension to hour angle
         ha = lst - ra
         if isinstance(ha, np.ndarray):
@@ -256,6 +269,5 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
 
     intensity = np.asarray(beam_array[y, x])
     intensity[((x == 0) & (y == 0))] = np.nan
-
 
     return intensity, np.rad2deg(dx), np.rad2deg(dy)

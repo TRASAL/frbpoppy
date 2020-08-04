@@ -26,9 +26,10 @@ def uniform(min_ra=0, max_ra=360, min_dec=-90, max_dec=90, n_srcs=1):
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    ra, dec = uniform(min_ra=0, max_ra=360, min_dec=45, max_dec=90,
+    ra, dec = uniform(min_ra=0, max_ra=360, min_dec=-45, max_dec=90,
                       n_srcs=int(1e4))
-    plt.scatter(ra, dec)
-    plt.xlim(0, 360)
-    plt.ylim(-90, 90)
+    ra[ra > 180] = ra[ra > 180] - 360  # Wrap for plotting
+    plt.subplot(111, projection="aitoff")
+    plt.scatter(np.radians(ra), np.radians(dec))
+    plt.grid(True)
     plt.show()

@@ -1,6 +1,5 @@
 """Do things with frbcat."""
 import os
-import numpy as np
 import pandas as pd
 
 from frbcat import Frbcat as PureFrbcat

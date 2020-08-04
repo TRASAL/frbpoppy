@@ -204,11 +204,6 @@ def separation(ra_1, dec_1, ra_2, dec_2):
     return np.rad2deg(sep)
 
 
-def ergspers_to_watts(e):
-    """Quick converstion from luminosity given in ergs/s to Watts."""
-    return e*1e-7
-
-
 def ne2001_dist_to_dm(dist, gl, gb):
     """
     Convert position to a dispersion measure using NE2001.
@@ -675,7 +670,7 @@ def hadec_to_azalt(ha, dec, lat):
     sinalt = np.sin(dec) * np.sin(lat) + np.cos(dec) * np.cos(lat) * np.cos(ha)
     alt = np.arcsin(sinalt)
 
-    # azimuth (note this uses altitude)
+    # Azimuth (note this uses altitude)
     cosaz = (np.sin(dec)-np.sin(alt)*np.sin(lat)) / (np.cos(alt)*np.cos(lat))
 
     convert_to_float = False
@@ -735,7 +730,7 @@ def in_region(ra, dec, gl, gb,
 
 
 def calc_sky_radius(area):
-    """Determine the radius along the sky of an area in sq. degrees."""
+    """Determine the radius [deg] along the sky of an area [sq. degrees]."""
     # Check whether the full sky
     if np.allclose(area, 4*np.pi*(180/np.pi)**2):
         return 180
@@ -747,5 +742,5 @@ def calc_sky_radius(area):
 
 
 def calc_sky_area(radius):
-    """Determine the area in sq. degree of a radius along the sky."""
+    """Determine the area [sq. degree] of a radius [deg] along the sky."""
     return (1 - np.cos(np.deg2rad(radius)))*(2*180**2)/np.pi

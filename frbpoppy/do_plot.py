@@ -20,6 +20,7 @@ def plot(*pops, files=[], frbcat=False, show=True,
             True
         show (bool, optional): Whether to display the plot or not. Mainly used
             for debugging purposes. Defaults to True.
+        mute (bool): Show output from Bokeh or not
         port (int): The port on which to launch Bokeh
         print_command (bool): Whether to show the command do_plot is running
 

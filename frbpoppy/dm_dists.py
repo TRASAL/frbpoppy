@@ -1,4 +1,4 @@
-"""Functions to generate Dispersion measure distributions."""
+"""Functions to generate dispersion measure distributions."""
 import numpy as np
 import frbpoppy.gen_dists as gd
 

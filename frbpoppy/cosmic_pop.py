@@ -516,46 +516,22 @@ class CosmicPopulation(Population):
         return pop
 
     @classmethod
-    def default(cls, n_srcs, n_days=1, generate=False, version=1):
-        """Set up a default population.
-
-        TODO: Update!
-        """
-        if version == 1:
-            pop = cls(n_srcs=n_srcs, n_days=n_days, name='complex',
-                      repeaters=False, generate=False)
-            pop.set_dist(model='sfr', z_max=2.5, alpha=-1.5,
-                         H_0=67.74, W_m=0.3089, W_v=0.6911)
-            pop.set_dm_host(model='gauss', mean=100, std=200)
-            pop.set_dm_igm(model='ioka', slope=1000, std=None)
-            pop.set_dm_mw(model='ne2001')
-            pop.set_dm(mw=True, igm=True, host=True)
-            pop.set_emission_range(low=10e6, high=10e9)
-            pop.set_lum(model='powerlaw', low=1e40, high=1e45, power=0)
-            pop.set_w(model='lognormal', mean=0.1, std=0.5)
-            pop.set_si(model='gauss', mean=-1.4, std=1)
-            if generate:
-                pop.generate()
-            return pop
-
-    @classmethod
-    def complex(cls, n_srcs, n_days=1, generate=False):
-        """Set up a complex population.
-
-        TODO: Update for repeaters.
-        """
+    def complex(cls, n_srcs, n_days=1, repeaters=False, generate=False):
+        """Set up a complex population."""
         pop = cls(n_srcs=n_srcs, n_days=n_days, name='complex',
                   repeaters=False, generate=False)
-        pop.set_dist(model='vol_co', z_max=2.5, alpha=-1.5,
+        pop.set_dist(model='vol_co', z_max=1, alpha=-1.5,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
         pop.set_dm_host(model='gauss', mean=100, std=200)
         pop.set_dm_igm(model='ioka', slope=1000, std=None)
         pop.set_dm_mw(model='ne2001')
         pop.set_dm(mw=True, igm=True, host=True)
-        pop.set_emission_range(low=10e6, high=10e9)
-        pop.set_lum(model='powerlaw', low=1e39, high=1e45, power=0)
-        pop.set_w(model='lognormal', mean=0.1, std=0.7)
+        pop.set_emission_range(low=10e7, high=10e9)
+        pop.set_lum(model='powerlaw', low=1e40, high=1e45, power=0)
+        pop.set_w(model='lognormal', mean=0.1, std=1)
         pop.set_si(model='gauss', mean=-1.4, std=1)
+        if pop.repeaters:
+            pop.set_time(model='poisson', rate=9)
         if generate:
             pop.generate()
         return pop
