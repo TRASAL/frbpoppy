@@ -741,7 +741,9 @@ def calc_sky_radius(area):
         return 180
     else:
         cos_r = (1 - (area*np.pi)/(2*180**2))
-        return np.rad2deg(np.arccos(cos_r))
+        # Suppressing warnings when cos_r is invalid (will nan anyway)
+        with np.errstate(invalid='ignore'):
+            return np.rad2deg(np.arccos(cos_r))
 
 
 def calc_sky_area(radius):

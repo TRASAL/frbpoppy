@@ -94,7 +94,10 @@ class Population:
 
     def n_repeaters(self):
         """Return the numer of repeaters in a population."""
-        return np.sum((~np.isnan(self.frbs.time)).sum(1) > 1)
+        try:
+            return np.sum((~np.isnan(self.frbs.time)).sum(1) > 1)
+        except TypeError:
+            return 0
 
     def n_one_offs(self):
         """Return the numer of one-offs in a population."""
@@ -102,6 +105,10 @@ class Population:
             return np.sum((~np.isnan(self.frbs.time)).sum(1) <= 1)
         except TypeError:
             return self.n_sources()
+
+    def n_oneoffs(self):
+        return self.n_one_offs()
+
 
 def unpickle(filename=None, uid=None):
     """Quick function to unpickle a population.
