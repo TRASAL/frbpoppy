@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+from tests.convenience import plot_aa_style, rel_path
+
 TEST_TRANSIT = True
 
 # Change working directory
@@ -26,10 +28,6 @@ def calc_transit_time(lat, dec, unit='deg', beamsize=20626.5):
         lat = np.deg2rad(lat)
         dec = np.deg2rad(dec)
 
-    # Beamsize to radius in fractional degrees
-    r = np.sqrt(beamsize/np.pi)
-    extra_lim = np.deg2rad(90 - r)
-
     times = np.ones_like(dec)
     lim = np.pi/2. - lat
     always_visible = dec > lim
@@ -46,16 +44,16 @@ def calc_transit_time(lat, dec, unit='deg', beamsize=20626.5):
 
 
 if TEST_TRANSIT:
+    plot_aa_style()
     latitude_obs = 52.  # deg
     decs = np.linspace(-90, 90, 100)
     lat = latitude_obs
     times = calc_transit_time(lat, decs)
-    plt.style.use('./aa.mplstyle')  # Use A&A styling for plots
     plt.ylabel('Fraction of day at which visible')
     plt.xlabel('Declination sources')
     plt.plot(decs, times)
     plt.tight_layout()
-    plt.savefig('plots/transit_times.pdf')
+    plt.savefig(rel_path('./plots/transit_times.pdf'))
 
 
 def gen_times(n):
