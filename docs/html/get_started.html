@@ -1,26 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get Started &#8212; frbpoppy by David Gardenier</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="shortcut icon" href="_static/logo_small.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -29,15 +21,17 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="get-started">
@@ -45,33 +39,32 @@
 <div class="section" id="how-can-i-install-it">
 <h2>How can I install it?<a class="headerlink" href="#how-can-i-install-it" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
-<li><p class="first">Ensure <code class="docutils literal"><span class="pre">gfortran</span></code> is installed on your system (used for NE2001).</p>
-</li>
-<li><p class="first">Get the files from the github repository:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/davidgardenier/frbpoppy
+<li><p>Ensure <code class="docutils literal notranslate"><span class="pre">gfortran</span></code> is installed on your system (used for NE2001).</p></li>
+<li><p>Get the files from the github repository:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/davidgardenier/frbpoppy
 </pre></div>
 </div>
 </li>
-<li><p class="first">Install frbpoppy locally on Ubuntu by going to the downloaded directory</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd ./frbpoppy
+<li><p>Install frbpoppy locally on Ubuntu by going to the downloaded directory</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd ./frbpoppy
 </pre></div>
 </div>
 </li>
-<li><p class="first">Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo python3 setup.py develop
+<li><p>Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo python3 setup.py develop
 </pre></div>
 </div>
 <p>Macs should also be supported, however no tests have been done on Windows.</p>
 </li>
-<li><p class="first">Test whether frbpoppy is working with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python3
+<li><p>Test whether frbpoppy is working with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3
 &gt;&gt;&gt; import frbpoppy
 </pre></div>
 </div>
 <p>If you don’t get any errors - hurray, all should be working!</p>
 </li>
-<li><p class="first">Put frbpoppy through its paces:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python3 examples/_starting_with_frbpoppy_.py
+<li><p>Put frbpoppy through its paces:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 examples/_starting_with_frbpoppy_.py
 </pre></div>
 </div>
 <p>The first time you run frbpoppy it will generate lookup tables to speed up future runs. This can take up to 2h on a standard 4 core laptop. Subsequent runs will be mere seconds.</p>
@@ -82,33 +75,33 @@
 <h2>How do I use it?<a class="headerlink" href="#how-do-i-use-it" title="Permalink to this headline">¶</a></h2>
 <p>Population synthesis always involves three steps:</p>
 <ol class="arabic">
-<li><p class="first"><strong>Model a population</strong></p>
-<p>Generating a population in <code class="docutils literal"><span class="pre">frbpoppy</span></code> can be done using the <code class="docutils literal"><span class="pre">generate</span></code> function:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="k">import</span> <span class="n">CosmicPopulation</span>
+<li><p><strong>Model a population</strong></p>
+<p>Generating a population in <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code> can be done using the <code class="docutils literal notranslate"><span class="pre">generate</span></code> function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="kn">import</span> <span class="n">CosmicPopulation</span>
 <span class="n">pop</span> <span class="o">=</span> <span class="n">CosmicPopulation</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The generate function takes a number of parameters, allowing you generate the exact population you want, from a steep luminosity function to ultra-long intrinsic pulses. It’s all possible. The population you’ve just generated is called a cosmic population. The next step will be to observe it with whichever survey takes your fancy.</p>
 </li>
-<li><p class="first"><strong>Model a survey</strong></p>
-<p>In <code class="docutils literal"><span class="pre">frbpoppy</span></code>, a population can be observed with a number of different surveys. While many current surveys have been included within <code class="docutils literal"><span class="pre">frbpoppy</span></code>, it is possible to define your own survey, or adapt the ones available. To use a survey included in frbpoppy, simply use the code below. Options for adapting the survey, for instance its beam pattern, can also be given as options to the Survey class.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="k">import</span> <span class="n">Survey</span>
+<li><p><strong>Model a survey</strong></p>
+<p>In <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code>, a population can be observed with a number of different surveys. While many current surveys have been included within <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code>, it is possible to define your own survey, or adapt the ones available. To use a survey included in frbpoppy, simply use the code below. Options for adapting the survey, for instance its beam pattern, can also be given as options to the Survey class.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="kn">import</span> <span class="n">Survey</span>
 <span class="n">survey</span> <span class="o">=</span> <span class="n">Survey</span><span class="p">(</span><span class="s1">&#39;apertif&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
 </ol>
 <ol class="arabic" start="2">
-<li><p class="first"><strong>Create a survey population</strong></p>
+<li><p><strong>Create a survey population</strong></p>
 <p>Use the both the CosmicPopulation and Survey you’ve set up to create a surveyed population, incorporating all of the selection effects you didn’t even know about. Simply</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="k">import</span> <span class="n">SurveyPopulation</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="kn">import</span> <span class="n">SurveyPopulation</span>
 <span class="n">surv_pop</span> <span class="o">=</span> <span class="n">SurveyPopulation</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">survey</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first"><strong>Compare obtained results with actual survey results</strong>
+<li><p><strong>Compare obtained results with actual survey results</strong>
 One of the easiest ways to compare the observed results to actual observations is to use the built in interactive viewer. Simply pass the populations as arguments in to the plot function, and explore away!</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="k">import</span> <span class="n">plot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="kn">import</span> <span class="n">plot</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">surv_pop</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -117,12 +110,13 @@ One of the easiest ways to compare the observed results to actual observations i
 </div>
 <div class="section" id="what-now">
 <h2>What now?<a class="headerlink" href="#what-now" title="Permalink to this headline">¶</a></h2>
-<p>These are the basics, but <code class="docutils literal"><span class="pre">frbpoppy</span></code> offers much more functionality than given in this brief guide. Feel free to pursue the <a class="reference internal" href="documentation.html"><span class="doc">Documentation</span></a>, the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/tree/master/tests">tests</a> directory in <code class="docutils literal"><span class="pre">frbpoppy</span></code>, or even the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy">code base</a> itself to find out more.</p>
+<p>These are the basics, but <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code> offers much more functionality than given in this brief guide. Feel free to pursue the <a class="reference internal" href="documentation.html"><span class="doc">Documentation</span></a>, the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/tree/master/tests">tests</a> directory in <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code>, or even the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy">code base</a> itself to find out more.</p>
 </div>
 </div>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
