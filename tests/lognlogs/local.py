@@ -1,11 +1,11 @@
-"""Check the log N log F slope of a population."""
+"""Check the log N log F slope of a local population."""
 import numpy as np
 import matplotlib.pyplot as plt
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 from frbpoppy.population import unpickle
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 MAKE = True
 
@@ -32,9 +32,9 @@ hist, edges = np.histogram(parms, bins=log_bins)
 n_gt_s = np.cumsum(hist[::-1])[::-1]
 
 # Calculate alpha
-alpha, alpha_err, norm = surv_pop.calc_logn_logs(parameter='fluence',
-                                                 min_p=min_p,
-                                                 max_p=max_p)
+alpha, alpha_err, norm = surv_pop.frbs.calc_logn_logs(parameter='fluence',
+                                                      min_p=min_p,
+                                                      max_p=max_p)
 
 print(alpha, alpha_err, norm)
 xs = 10**((np.log10(edges[:-1]) + np.log10(edges[1:])) / 2)
@@ -51,7 +51,7 @@ plt.plot(xs, ys, linestyle='--',
          label=rf'$\alpha$ = {alpha:.3} $\pm$ {round(abs(alpha_err), 2)}')
 
 plt.xlabel('Fluence (Jy ms)')
-plt.ylabel(r'N(${>}\text{S}_{\text{min}}$)')
+plt.ylabel(r'N(${>}Fluence$)')
 plt.xscale('log')
 plt.yscale('log')
 plt.legend()

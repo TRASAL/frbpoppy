@@ -22,7 +22,7 @@ def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
     if remake is False:
         for alpha in alphas:
             for s in surveys:
-                surv_rates = unpickle(f'simple_alpha_{alpha}_{s}').rates()
+                surv_rates = unpickle(f'simple_alpha_{alpha}_{s}').source_rate
                 pprint(f'Alpha:{alpha:.2}, Survey: {s}, Det: {surv_rates.det}')
                 rate = (surv_rates.det / surv_rates.days)
                 rates[s].append(rate)
@@ -44,7 +44,7 @@ def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
             surv_pops = LargePopulation(pop, *ss).pops
 
             for i, s in enumerate(surveys):
-                surv_rates = surv_pops[i].rates()
+                surv_rates = surv_pops[i].source_rate
                 pprint(f'Alpha:{alpha:.2}, Survey: {s}, Det: {surv_rates.det}')
                 rate = (surv_rates.det / surv_rates.days)
                 rates[s].append(rate)

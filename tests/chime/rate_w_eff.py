@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from frbcat import Frbcat
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 SCALE = 'log'
 

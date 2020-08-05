@@ -4,12 +4,12 @@ from matplotlib.offsetbox import AnchoredText
 from scipy.stats import ks_2samp
 
 from frbpoppy import CosmicPopulation, Survey, Frbcat, pprint, LargePopulation
-from frbpoppy import paths, unpickle
+from frbpoppy import paths, unpickle, hist
 
-from convenience import hist, plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 PLOT = True
-SIZE = 1e8
+SIZE = 1e5
 REMAKE = True
 TELESCOPES = ['parkes', 'askap']
 
@@ -103,19 +103,16 @@ def get_data():
         if telescope == 'askap':
             s = 'askap-fly'
 
-        surveys.append(Survey(s, beam_pattern=pattern, n_sidelobes=1))
+        survey = Survey(s)
+        survey.set_beam(model=pattern, n_sidelobes=1)
+        surveys.append(survey)
 
     return LargePopulation(cosmic_pop, *surveys).pops
 
 
-def main():
-    """Run main part of code."""
+if __name__ == '__main__':
     surv_pops = get_data()
 
     if PLOT:
         for i, telescope in enumerate(TELESCOPES):
             plot_dists(surv_pops[i], telescope)
-
-
-if __name__ == '__main__':
-    main()

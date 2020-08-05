@@ -9,7 +9,7 @@ from scipy.signal import savgol_filter
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 SIS = (-2, 0, 2)  # Spectral indices
 n_tot = 1e5  # Number of sources
@@ -20,13 +20,14 @@ for si in SIS:
     if si == min(SIS):
         pop[si] = CosmicPopulation.simple(n_tot)
         pop[si].name = f'si-{si}'
-        pop[si].si_mu = si
-        pop[si].z_max = 2.5
+        pop[si].set_si(model='constant', value=si)
+        pop[si].set_dist(z_max=2.5)
         pop[si].generate()
         pop[si].save()
     else:
         pop[si] = copy.deepcopy(pop[min(SIS)])
-        pop[si].frbs.si = np.random.normal(si, 0, int(n_tot))
+        pop[si].set_si(model='constant', value=si)
+        pop[si].gen_si()
         pop[si].name = f'si-{si}'
         pop[si].save()
 
@@ -39,7 +40,7 @@ for si in SIS:
     # Observe populations
     pop_obs[si] = SurveyPopulation(pop[si], perfect)
     pop_obs[si].name = f'si-{si}-obs'
-    pop_obs[si].rates()
+    pop_obs[si].source_rate
     pop_obs[si].save()
 
 plot_aa_style()

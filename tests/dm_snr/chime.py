@@ -41,7 +41,8 @@ def get_frbcat_data():
     frbcat['o']['dm'] = chime_o.dm
 
     # All the different SNRs per repeater (or one_offs)
-    frbcat['r']['snr'] = chime_r.sort_values('timestamp').groupby('name').snr.first().values
+    r_snr = chime_r.sort_values('timestamp').groupby('name').snr.first().values
+    frbcat['r']['snr'] = r_snr
     frbcat['o']['snr'] = chime_o.snr
 
     # Number of repeaters vs one offs
@@ -154,8 +155,7 @@ def plot(frbcat, frbpop):
 
     elements.append((patch(cmap[0]), 'Frbcat'))
     elements.append((patch(cmap[1]), 'Frbpoppy'))
-    # # Add gap in legend
-    # elements.append((Line2D([0], [0], color='white'), ''))
+
     # Add line styles
     elements.append((Line2D([0], [0], color='gray'), 'One-offs'))
     elements.append((Line2D([0], [0], color='gray', linestyle='dashed'),
@@ -166,19 +166,12 @@ def plot(frbcat, frbpop):
     lgd = plt.figlegend(lines, labels, loc='upper center', ncol=4,
                         framealpha=1,  bbox_to_anchor=(0.485, 1.04),
                         columnspacing=1.1, handletextpad=0.3)
-    # plt.tight_layout()
-    # plt.legend(lines, labels, bbox_to_anchor=(0.5, 1.04), loc="upper center")
 
-    path = rel_path(f'./plots/frbcat_chime.pdf')
+    path = rel_path(f'./plots/frbpoppy_chime.pdf')
     plt.savefig(path, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-def main():
-    """Run code."""
+if __name__ == '__main__':
     frbcat = get_frbcat_data()
     frbpop = get_frbpoppy_data()
     plot(frbcat, frbpop)
-
-
-if __name__ == '__main__':
-    main()

@@ -1,4 +1,4 @@
-"""Check the log N log F slope of a population."""
+"""Check the log N log F slope of various populations."""
 import numpy as np
 import matplotlib.pyplot as plt
 

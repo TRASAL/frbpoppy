@@ -2,12 +2,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
+from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, pprint
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 BEAMPATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
-SIZE = 1e6
+SIZE = 1e5
 
 
 def get_data():
@@ -16,7 +16,7 @@ def get_data():
     pop = CosmicPopulation(n_srcs=SIZE, n_days=1, name='standard_candle')
     pop.set_dist(model='sfr', z_max=2.5, H_0=67.74, W_m=0.3089, W_v=0.6911)
     pop.set_dm_host(model='constant', value=100)
-    pop.set_dm_igm(model='ioka', slope=1000, sigma=None)
+    pop.set_dm_igm(model='ioka', slope=1000, std=None)
     pop.set_dm_mw(model='ne2001')
     pop.set_emission_range(low=10e6, high=10e9)
     pop.set_lum(model='constant', value=1e36)
@@ -27,7 +27,7 @@ def get_data():
     # Survey population
     pops = {}
     for b in BEAMPATTERNS:
-
+        pprint(f'Surveying with {b} beampattern')
         n_s = 0
         bp = b
         if b.startswith('airy'):
@@ -36,10 +36,9 @@ def get_data():
 
         survey = Survey(name='perfect-small')
         # Prevent beam from getting larger than the sky
-        survey.beam_size_fwhm = 10.
-        survey.set_beam(model=bp, n_sidelobes=n_s)
+        survey.set_beam(model=bp, n_sidelobes=n_s, size=10)
         surv_pop = SurveyPopulation(pop, survey)
-        print(surv_pop.rates())
+        print(surv_pop.source_rate)
         pops[b] = surv_pop
 
     return pops
@@ -83,11 +82,6 @@ def plot_dm(pops):
     plt.savefig(rel_path(f'./plots/dm_beams.pdf'))
 
 
-def main():
-    """Run scripts."""
+if __name__ == '__main__':
     pops = get_data()
     plot_dm(pops)
-
-
-if __name__ == '__main__':
-    main()

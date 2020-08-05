@@ -1,4 +1,4 @@
-"""Check the log N log F slope of a population."""
+"""Check the current state of the log N log F."""
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,7 +10,8 @@ SURVEYS = ('askap-fly', 'crafts', 'htru', 'apertif', 'askap-incoh')
 
 frbcat = Frbcat().df
 snrs = {s: frbcat[frbcat.survey == s].snr.values for s in SURVEYS}
-snrs['apertif'] = [15.4, 12.9, 13.2, 60, 13, 38.1, 18.1, 27, 16.7, 13, 18.8, 27.7, 18.9, 17.84, 10.2, 14.84, 10.25]
+snrs['apertif'] = [15.4, 12.9, 13.2, 60, 13, 38.1, 18.1, 27, 16.7, 13, 18.8,
+                   27.7, 18.9, 17.84, 10.2, 14.84, 10.25]
 snrs['crafts'] = [19]
 # Start plot
 plot_aa_style()
@@ -21,8 +22,6 @@ ax1.set_xlabel('S/N')
 ax1.set_xscale('log')
 ax1.set_ylabel(r'\#(${>}\text{S/N}$)')
 ax1.set_yscale('log')
-# ax1.set_xlim(9, 1e5)
-# ax1.set_ylim(1e-3, 1e3)
 
 # Update fluence plot
 for survey in SURVEYS:

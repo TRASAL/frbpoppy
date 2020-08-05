@@ -1,4 +1,4 @@
-"""Test repeater population."""
+"""Generate a repeater population and split into repeaters and one-offs."""
 import numpy as np
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation

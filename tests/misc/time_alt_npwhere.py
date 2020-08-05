@@ -1,3 +1,4 @@
+"""Test the speed of variations on np.where()"""
 import numpy as np
 import bisect
 import time

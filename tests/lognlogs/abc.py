@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 SIZE = 1e5
 GAMMAS = [-1.4, 1]
@@ -22,14 +22,14 @@ def get_further(gamma):
     """Construct populations going further out."""
     # Construct populations
     pop = CosmicPopulation.simple(SIZE)
-    pop.si_mu = gamma
-    pop.z_max = 2.5
-    pop.lum_min = 10**42.5
-    pop.lum_max = pop.lum_min
+    pop.set_dist(z_max=2.5)
+    pop.set_si(model='constant', value=gamma)
+    pop.set_lum(model='constant', value=10**42.5)
     pop.generate()
 
     if gamma == 1:
-        pop.frbs.lum_bol = np.ones_like(pop.frbs.lum_bol)*10**43
+        pop.set_lum(model='constant', value=10**43)
+        pop.gen_lum()
 
     # Survey populations
     survey = Survey('perfect')

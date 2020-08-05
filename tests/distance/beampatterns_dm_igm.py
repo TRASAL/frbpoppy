@@ -1,18 +1,18 @@
-"""Plot how sidelobes can change the IGM DM distribution."""
+"""Plot how beampatterns can change the IGM DM distribution."""
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 
-from convenience import plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
-SIDELOBES = [0, 1, 8]
+BEAMPATTERNS = ['perfect', 'airy', 'gaussian']
 
 # Generate population with standard candles
-pop = CosmicPopulation(n_srcs=5e5, n_days=1, name='standard')
+pop = CosmicPopulation(n_srcs=5e4, n_days=1, name='standard')
 pop.set_dist(model='sfr', z_max=2.5, H_0=67.74, W_m=0.3089, W_v=0.6911)
-pop.set_dm_igm(model='ioka', slope=1200, sigma=0)
+pop.set_dm_igm(model='ioka', slope=1200, std=0)
 pop.set_dm(mw=False, host=False, igm=True)
 pop.set_emission_range(low=10e6, high=10e9)
 pop.set_lum(model='constant', value=1e36)
@@ -23,23 +23,22 @@ pop.generate()
 pop_obs = {}
 
 survey = Survey('perfect-small')
-survey.beam_size_fwhm = 10.
-survey.set_beam(model='airy')
 
-for sidelobe in SIDELOBES:
+for pattern in BEAMPATTERNS:
 
-    survey.set_beam(model='airy', n_sidelobes=sidelobe)
+    survey.set_beam(model=pattern, n_sidelobes=0, size=90)
 
     # Observe populations
-    pop_obs[sidelobe] = SurveyPopulation(pop, survey)
-    pop_obs[sidelobe].name = f'obs-{sidelobe}'
-    pop_obs[sidelobe].rates()
-    pop_obs[sidelobe].save()
+    pop_obs[pattern] = SurveyPopulation(pop, survey)
+    pop_obs[pattern].name = f'obs-{pattern}'
+    pop_obs[pattern].source_rate
+    print(pop_obs[pattern].source_rate)
+    pop_obs[pattern].save()
 
 plot_aa_style()
 f, (ax1) = plt.subplots(1, 1)
 
-for p in SIDELOBES:
+for p in BEAMPATTERNS:
 
     pop = pop_obs[p]
     limit = 1e-9
@@ -66,4 +65,4 @@ ax1.set_ylabel(r'Fraction')
 ax1.set_ylim([0, 1])
 ax1.legend()
 plt.tight_layout()
-plt.savefig(rel_path(f'./plots/dm_igm_sidelobes.pdf'))
+plt.savefig(rel_path('./plots/dm_igm_beampatterns.pdf'))

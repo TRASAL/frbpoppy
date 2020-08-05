@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 from scipy.stats import ks_2samp
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
-from frbpoppy import split_pop, pprint
+from frbpoppy import split_pop, pprint, hist
 
-from tests.convenience import hist, plot_aa_style, rel_path
+from tests.convenience import plot_aa_style, rel_path
 
 DAYS = 4
 INTERACTIVE_PLOT = False
@@ -21,7 +21,6 @@ r.set_time(model='poisson', rate=3)
 r.set_dm_igm(model='ioka', slope=1000, std=0)
 r.set_dm(mw=False, igm=True, host=False)
 r.set_w('constant', value=1)
-# r.set_w(model='lognormal', mu=np.log(1), sigma=np.log(2))
 
 r.generate()
 
@@ -116,8 +115,8 @@ else:
                   bbox_to_anchor=(0.5, 1.07), bbox_transform=ax1.transAxes)
 
 # Test the difference between the distributions
-rep = pops[1].frbs.dm[:50]  # First 20 repeaters
-one = pops[2].frbs.dm[:min([1200, len(pops[2].frbs.dm)])]  # First x one-offs
+rep = pops[1].frbs.dm[:20]  # First 20 repeaters
+one = pops[2].frbs.dm[:min([200, len(pops[2].frbs.dm)])]  # First x one-offs
 print(f'KS test: {ks_2samp(rep, one)}')
 
 plt.tight_layout()
