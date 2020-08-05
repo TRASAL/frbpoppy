@@ -99,5 +99,5 @@ ax1.set_yscale('log')
 
 # Save figure
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/rep_frac_chime.pdf'))
+plt.savefig(rel_path('plots/rep_frac_chime.pdf'))
 plt.clf()

@@ -138,7 +138,7 @@ def plot(frbcat, frbpop):
 
             text = fr'$p={round(ks[1], 2)}$'
             if ks[1] < 0.01:
-                text = fr'$p < 0.01$'
+                text = r'$p < 0.01$'
             anchored_text = AnchoredText(text, loc='upper right',
                                          borderpad=0.5, frameon=False)
             axes[row, col].add_artist(anchored_text)
@@ -167,7 +167,7 @@ def plot(frbcat, frbpop):
                         framealpha=1,  bbox_to_anchor=(0.485, 1.04),
                         columnspacing=1.1, handletextpad=0.3)
 
-    path = rel_path(f'./plots/frbpoppy_chime.pdf')
+    path = rel_path('./plots/frbpoppy_chime.pdf')
     plt.savefig(path, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 

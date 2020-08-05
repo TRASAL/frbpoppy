@@ -79,7 +79,7 @@ def plot_dm(pops):
     ax1.legend()
 
     plt.tight_layout()
-    plt.savefig(rel_path(f'./plots/dm_beams.pdf'))
+    plt.savefig(rel_path('./plots/dm_beams.pdf'))
 
 
 if __name__ == '__main__':

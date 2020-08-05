@@ -34,7 +34,7 @@ pprint(f'{r.n_bursts()}:{surv_pop.n_bursts()}')
 pprint(f'{surv_pop.n_sources()} sources detected')
 
 if r.n_bursts() < PLOTTING_LIMIT_N_SRCS:
-    pprint(f'Not sufficient FRB sources for plotting')
+    pprint('Not sufficient FRB sources for plotting')
     exit()
 
 # Split population into seamingly one-off and repeater populations
@@ -112,5 +112,5 @@ else:
                   bbox_to_anchor=(0.5, 1.07), bbox_transform=ax1.transAxes)
 
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/sim_dm_snr_chime.pdf'))
+plt.savefig(rel_path('plots/sim_dm_snr_chime.pdf'))
 plt.clf()

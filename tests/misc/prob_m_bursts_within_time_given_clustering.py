@@ -78,7 +78,7 @@ def plot(prob, show=False):
     if show:
         plt.show()
     else:
-        plt.savefig(rel_path(f'./plots/prob_m_bursts.pdf'))
+        plt.savefig(rel_path('./plots/prob_m_bursts.pdf'))
 
 
 if __name__ == '__main__':

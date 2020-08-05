@@ -1,7 +1,6 @@
 """Class to generate a survey population of FRBs."""
 from copy import deepcopy
 from tqdm import tqdm
-import math
 import numpy as np
 
 from frbpoppy.misc import pprint

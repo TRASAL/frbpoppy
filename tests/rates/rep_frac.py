@@ -183,5 +183,5 @@ for i, dist_type in enumerate(dist_types):
 
 # Save figure
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/rep_frac.pdf'))
+plt.savefig(rel_path('plots/rep_frac.pdf'))
 plt.clf()

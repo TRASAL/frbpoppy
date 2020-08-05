@@ -114,7 +114,7 @@ def tracking(n_gen, **kwargs):
 if __name__ == '__main__':
     """Plot pointings to test pointing generation."""
     import matplotlib.pyplot as plt
-    import mpl_toolkits.mplot3d
+    from mpl_toolkits.mplot3d import Axes3D
     from frbpoppy import Survey
 
     N_POINTS = 1000
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         z = np.sin(dec)
 
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection=Axes3D.name)
         p = ax.scatter(x, y, z, c=np.arange(0, x.size))
         plt.colorbar(p)
         ax.axes.set_xlim3d(left=-1, right=1)

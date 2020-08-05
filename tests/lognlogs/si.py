@@ -103,4 +103,4 @@ ax2.set_ylabel(r'$\alpha$')
 ax2.set_ylim(ax2.get_ylim()[::-1])
 
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/logn_logs_si.pdf'))
+plt.savefig(rel_path('plots/logn_logs_si.pdf'))

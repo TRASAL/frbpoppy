@@ -53,7 +53,7 @@ for i, lum_func in enumerate(lum_funcs):
 
     pprint(f'{pop_ngt1.n_bursts()} repeater bursts')
     if pop_ngt1.n_bursts() < 10:
-        pprint(f'Insufficient FRB sources for plotting')
+        pprint('Insufficient FRB sources for plotting')
 
     # Plot
     if SCATTER:
@@ -127,5 +127,5 @@ ax2.tick_params(axis='y', labelcolor=colors[len(lum_funcs)])
 ax1.set_xlabel(r'DM$_{\textrm{ex}}$ ($\textrm{pc}\ \textrm{cm}^{-3}$)')
 
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/burstiness.pdf'))
+plt.savefig(rel_path('plots/burstiness.pdf'))
 plt.clf()

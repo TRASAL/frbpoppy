@@ -1,6 +1,5 @@
 """Plot information on various CHIME runs"""
 import pandas as pd
-import mpl_toolkits.mplot3d
 import matplotlib.pyplot as plt
 
 from tests.convenience import rel_path
@@ -34,9 +33,7 @@ for i, txt in enumerate(df.index):
     ax2.annotate(txt, (df.srcs.iat[i], df.rate.iat[i]))
 
 clb = fig.colorbar(d, ax=ax2, label='Differene w.r.t. sought value')
-# clb.ax.set_title('Difference w.r.t. sought value')
 plt.show()
-
 
 # Plot change in rates between multiple generations
 db = df[(df.srcs == 34000) & (df.rate == 9.0)]

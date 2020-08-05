@@ -1,6 +1,6 @@
 """Create a 4D graph of radio transient objects."""
 import matplotlib.pyplot as plt
-import mpl_toolkits.mplot3d
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
@@ -142,7 +142,7 @@ def plot_data(df):
     plt.rcParams['pdf.fonttype'] = 42
 
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    ax = fig.add_subplot(111, projection=Axes3D.name)
 
     # Clean data
     df = df[df.bw < 1e10]
