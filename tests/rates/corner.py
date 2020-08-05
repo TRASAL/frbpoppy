@@ -2,7 +2,7 @@
 
 Linked with the ideas in cube.py -> generating a range of parameters.
 
-TODO: In progress.
+TODO: In progress
 """
 import numpy as np
 import os

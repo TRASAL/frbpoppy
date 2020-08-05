@@ -1,4 +1,4 @@
-"""Simulate large CHIME population."""
+"""Simulate a number of large CHIME populations."""
 from frbpoppy import CosmicPopulation, lognormal, Survey
 from frbpoppy import SurveyPopulation, pprint
 

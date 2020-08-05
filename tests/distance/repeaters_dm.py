@@ -27,7 +27,6 @@ r.generate()
 # Set up survey
 survey = Survey('perfect', n_days=DAYS)
 survey.set_beam(model='perfect')
-# survey.t_samp = 1
 survey.snr_limit = 1e6
 
 surv_pop = SurveyPopulation(r, survey)

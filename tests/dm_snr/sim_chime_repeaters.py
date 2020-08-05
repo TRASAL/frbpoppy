@@ -1,4 +1,4 @@
-"""Plot DM/SNR distributions of repeater populations."""
+"""Plot DM/SNR distributions of repeater populations observed with CHIME."""
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -26,7 +26,6 @@ r.generate()
 # Set up survey
 survey = Survey('chime', n_days=DAYS)
 survey.set_beam(model='chime')
-# survey.t_samp = 1
 survey.snr_limit = 1e-13
 
 surv_pop = SurveyPopulation(r, survey)
@@ -78,7 +77,6 @@ for i, pop in enumerate(pops):
     # Do stuff with data
     dm = pop.frbs.dm
     x, y = hist(dm)
-    # x *= 200  # Normalise x-axis z=0.01, z=2
 
     # Plot DM distributions
     ax1.step(x, y, where='mid', linestyle=linestyle, label=label,
@@ -114,5 +112,5 @@ else:
                   bbox_to_anchor=(0.5, 1.07), bbox_transform=ax1.transAxes)
 
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/rep_dm_dist_chime.pdf'))
+plt.savefig(rel_path(f'plots/sim_dm_snr_chime.pdf'))
 plt.clf()

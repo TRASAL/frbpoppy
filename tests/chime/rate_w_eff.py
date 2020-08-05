@@ -1,4 +1,8 @@
-"""Plot effective pulse width against rate for CHIME repeaters."""
+"""Plot effective pulse width against rate for CHIME repeaters.
+
+For Fig. 3 of 'Beaming as an explanation of the repetition/width relation
+in FRBs'
+"""
 from scipy.integrate import quad
 from scipy.stats import chi2, norm
 import matplotlib.pyplot as plt

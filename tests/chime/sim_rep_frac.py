@@ -93,7 +93,7 @@ if PLOT_CHIME:
 # Further plot details
 ax1.set_xlabel(r'Time (days)')
 ax1.set_ylabel(r'$f_{\textrm{rep}}$')
-# ax1.set_ylabel(r'$N_{\textrm{repeaters}}/N_{\textrm{detections}}$')
+# Equal to $N_{\textrm{repeaters}}/N_{\textrm{detections}}$
 ax1.set_xlim(0, max(days))
 ax1.set_yscale('log')
 

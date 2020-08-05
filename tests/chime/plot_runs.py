@@ -1,4 +1,4 @@
-# Plot CHIME runs
+"""Plot information on various CHIME runs"""
 import pandas as pd
 import mpl_toolkits.mplot3d
 import matplotlib.pyplot as plt
@@ -9,66 +9,6 @@ df = pd.read_csv(rel_path('chime/runs.csv'), index_col=0)
 
 exp_one = 200
 exp_rep = 2.5
-
-# fig = plt.figure()
-# ax1 = fig.add_subplot(121, projection='3d')
-#
-# cmap = plt.cm.get_cmap('viridis')
-#
-# ax1.scatter(df.srcs,
-#             df.rate,
-#             df.one_offs,
-#             label='One Offs',
-#             marker='x',
-#             s=50,
-#             cmap=cmap,
-#             c=range(len(df)))
-#
-# ax1.set_xlabel('# sources')
-# ax1.set_ylabel('rate (/day)')
-# ax1.set_zlabel('# one-off detections')
-#
-# ax2 = fig.add_subplot(122, projection='3d')
-#
-# c = ax2.scatter(df.srcs,
-#                 df.rate,
-#                 df.repeaters,
-#                 label='Repeaters',
-#                 marker='o',
-#                 s=50,
-#                 cmap=cmap,
-#                 c=range(len(df)))
-#
-#
-# ax2.set_xlabel('# sources')
-# ax2.set_ylabel('rate (/day)')
-# ax2.set_zlabel('# repeater detections')
-#
-# plt.colorbar(c)
-# plt.show()
-
-# fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, sharex=True)
-#
-# ax1.scatter(df.index, (df.repeaters/exp_rep), label='repeaters')
-# ax1.scatter(df.index, (df.one_offs/exp_one), label='one-offs')
-# ax1.set_ylabel('Fraction of expectation value')
-#
-# ax2.scatter(df.index, (df.repeaters-exp_rep), label='repeaters')
-# ax2.scatter(df.index, (df.one_offs-exp_one), label='one-offs')
-# ax2.set_ylabel('Difference with expectation value')
-#
-# ax3.scatter(df.index, df.one_offs, label='one-offs')
-# ax3.axhline(200, c='r', ls='-')
-# ax3.set_ylabel('Value')
-#
-# ax4.scatter(df.index, [0]*len(df.index), label='one-offs', alpha=0)
-# ax4.scatter(df.index, df.repeaters, label='repeaters')
-# ax4.axhline(2.5, c='r', ls='-')
-# ax4.set_ylabel('Value')
-#
-# ax4.set_xlabel('Run number')
-# ax1.legend()
-# plt.show()
 
 fig, axes = plt.subplots(1, 2, sharex=True, sharey=True)
 ax1, ax2 = axes

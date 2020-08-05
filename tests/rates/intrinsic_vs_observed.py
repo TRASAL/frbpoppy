@@ -1,6 +1,9 @@
-"""Compare the input versus output poisson rate.
+"""Compare the input versus output rate.
 
-TODO: Finish script
+Note this comparison doesn't quite hold - the intrinsic rate plotted here is
+the poisson rate value.
+
+TODO: Fix this
 """
 import numpy as np
 import matplotlib.pyplot as plt
