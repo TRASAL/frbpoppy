@@ -1,14 +1,13 @@
 """Use simple rate comparisions, try predicting event rates."""
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 
 from frbpoppy import Survey
 
 from tests.convenience import plot_aa_style, rel_path
 
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
-SURVEYS = ('askap-fly', 'fast')
+SURVEYS = ('htru', 'palfa', 'askap-fly', 'fast')
 
 
 def compare_surveys(surv1, surv2, alpha):
@@ -24,8 +23,8 @@ def compare_surveys(surv1, surv2, alpha):
     return omega * (SEFD * S_min)**alpha * (bw)**(-alpha/2)
 
 
-def toy_rates(surveys=SURVEYS, alphas=ALPHAS):
-    """Use a toy model to scale detection rates to various alphas."""
+def analytical_rates(surveys=SURVEYS, alphas=ALPHAS):
+    """Use a analytical model to scale detection rates to various alphas."""
     rates = {}
 
     for surv in surveys:
@@ -46,8 +45,8 @@ def toy_rates(surveys=SURVEYS, alphas=ALPHAS):
 
 
 def main():
-    """Plot toy rates."""
-    rates = toy_rates()
+    """Plot analytical rates."""
+    rates = analytical_rates()
 
     for surv in rates:
         rate = rates[surv]
@@ -61,10 +60,10 @@ def main():
         plt.xlim((min(ALPHAS), max(ALPHAS)))
         plt.yscale('log')
         plt.legend()
-        plt.grid()
         plt.gca().invert_xaxis()
+        plt.grid(True)
         plt.tight_layout()
-        plt.savefig(rel_path('./plots/toy_rates.pdf'))
+        plt.savefig(rel_path('./plots/rates_analytical.pdf'))
 
 
 if __name__ == '__main__':

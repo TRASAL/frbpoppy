@@ -1,4 +1,7 @@
-"""Input versus output poisson rate."""
+"""Compare the input versus output poisson rate.
+
+TODO: Finish script
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -8,9 +11,9 @@ from frbpoppy import hist
 from tests.convenience import plot_aa_style, rel_path
 
 N_DAYS = 50
-N_SRCS = int(1e4)
+N_SRCS = int(1e3)
 RATE = 0.1  # per day
-SINGLE_INPUT_RATE = False
+SINGLE_INPUT_RATE = True
 init_surv_time_frac = 0.1
 
 # Set up a population
@@ -30,9 +33,8 @@ pop.generate()
 
 # Survey the high fluences
 survey = Survey('perfect', n_days=N_DAYS)
-survey.mount_type = 'transit'
 survey.set_beam(model='perfect')
-survey.snr_limit = 1e0
+survey.snr_limit = 1e-6
 survey.t_obs = 60*60  # seconds
 
 # Check the burst rate
@@ -71,16 +73,10 @@ plt.step(rates, values, where='mid', zorder=1,
          label=r'100\% of survey time')
 
 # Set up plot details
-plt.xlabel('Poisson rate (per day)')
+plt.xlabel('Rate (per day)')
 plt.ylabel('Fraction')
 plt.xscale('log')
 plt.yscale('log')
 plt.legend()
-
-# Save plot
 plt.tight_layout()
-if SINGLE_INPUT_RATE:
-    path = './plots/rate_in_vs_out_single_input.pdf'
-else:
-    path = './plots/rate_in_vs_out.pdf'
-plt.savefig(rel_path(path))
+plt.savefig(rel_path('./plots/rate_intrinsic_vs_observed.pdf'))

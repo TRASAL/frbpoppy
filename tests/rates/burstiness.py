@@ -1,4 +1,4 @@
-"""Plot redshift versus observed repetition rate."""
+"""Plot the 'burstiness': the observed repetition rate versus redshift."""
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -126,15 +126,6 @@ ax2.tick_params(axis='y', labelcolor=colors[len(lum_funcs)])
 
 ax1.set_xlabel(r'DM$_{\textrm{ex}}$ ($\textrm{pc}\ \textrm{cm}^{-3}$)')
 
-# # Add simulated chime burstiness
-# surv_pop = unpickle('cosmic_chime')
-# # Split population into seamingly one-off and repeater populations
-# mask = ((~np.isnan(surv_pop.frbs.time)).sum(1) > 1)
-# pop_ngt1, pop_nle1 = split_pop(surv_pop, mask)
-#
-# n_bursts = np.sum(~np.isnan(pop_ngt1.frbs.time), axis=1)
-# ax2.scatter(pop_ngt1.frbs.dm, n_bursts, label='frbpoppy', color=colors[len(lum_funcs)+1])
-
 plt.tight_layout()
-plt.savefig(rel_path(f'plots/dm_rep_rate.pdf'))
+plt.savefig(rel_path(f'plots/burstiness.pdf'))
 plt.clf()

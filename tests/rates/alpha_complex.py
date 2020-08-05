@@ -12,6 +12,8 @@ REMAKE = True
 ALPHAS = np.around(np.linspace(-0.5, -2.0, 7), decimals=2)
 SURVEYS = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
 SIZE = 1e8
+# Change population size to ensure enough detections
+ADAPTATIVE_SCALING = False
 
 
 def complex_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
@@ -29,9 +31,9 @@ def complex_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
     else:
         pops = []
         for alpha in alphas:
-            if alpha <= -1.0:
+            if alpha <= -1.0 and ADAPTATIVE_SCALING:
                 size = 1e7
-            if alpha <= -1.5:
+            if alpha <= -1.5 and ADAPTATIVE_SCALING:
                 size = 1e8
             pop = CosmicPopulation.complex(size)
             pop.set_dist(model='vol_co', z_max=2.5, alpha=alpha,

@@ -1,14 +1,14 @@
 """Calculate rate cube over alpha, spectral & luminosity index."""
 from glob import glob
 from matplotlib.widgets import Slider, RadioButtons, CheckButtons
-from scipy.integrate import quad
-from scipy.stats import chi2, norm
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
 
-from frbpoppy import paths, unpickle, hist
+from frbpoppy import paths, unpickle, hist, poisson_interval
+
+from alpha_real import EXPECTED
 
 CSV_PATH = os.path.join(paths.populations(), 'cube_rates.csv')
 
@@ -21,14 +21,14 @@ LIS = np.linspace(-2, 0, 5)  # Luminosity function index
 SIS = np.linspace(-2, 2, 5)  # Spectral index
 SURVEY_NAMES = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
 
-# Current detection rates
-EXPECTED = {'htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
-            'apertif': [9, 1100/24],  # 1100 hours
-            'askap-fly': [20, 32840 / 8 / 24],
-            'palfa': [1, 24.1],
-            'guppi': [0.4, 81],  # 0.4 is my own assumption
-            'fast': [1, 1500/24]
-            }
+# # Current detection rates
+# EXPECTED = {'htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
+#             'apertif': [9, 1100/24],  # 1100 hours
+#             'askap-fly': [20, 32840 / 8 / 24],
+#             'palfa': [1, 24.1],
+#             'guppi': [0.4, 81],  # 0.4 is my own assumption
+#             'fast': [1, 1500/24]
+#             }
 
 
 def generate(parallel=False):
@@ -106,25 +106,6 @@ def generate(parallel=False):
             iter_alpha(i)
 
     df.to_csv(CSV_PATH)
-
-
-def poisson_interval(k, sigma=1):
-    """
-    Use chi-squared info to get the poisson interval.
-
-    Give a number of observed events, which range of observed events would have
-    been just as likely given a particular interval?
-
-    Based off https://stackoverflow.com/questions/14813530/
-    poisson-confidence-interval-with-numpy
-    """
-    gauss = norm(0, 1).pdf
-    a = 1 - quad(gauss, -sigma, sigma, limit=1000)[0]
-    low, high = (chi2.ppf(a/2, 2*k) / 2, chi2.ppf(1-a/2, 2*k + 2) / 2)
-    if k == 0:
-        low = 0.0
-
-    return low, high
 
 
 def get_pops(alpha='*', li='*', si='*', survey='*', get_range=False):
@@ -246,7 +227,7 @@ def plot():
             expects[i].set_xdata([left, right])
             expects[i].set_ydata([middle]*2)
 
-        # Fluence plot        ax1.autoscale_view()
+        # Fluence plot
 
         # Rates plot
         ax2.set_xlim(min(x), max(x))

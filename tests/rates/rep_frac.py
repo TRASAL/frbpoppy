@@ -1,4 +1,4 @@
-"""Calculate fraction of repeaters in detected frbs."""
+"""Calculate repeater fraction over time for various rate distributions."""
 from copy import deepcopy
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt

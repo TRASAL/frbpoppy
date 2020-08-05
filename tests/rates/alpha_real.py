@@ -1,8 +1,8 @@
 """Calculate the real frb detection rates."""
-from scipy.stats import chi2, norm
-from scipy.integrate import quad
 import matplotlib.pyplot as plt
 import numpy as np
+
+from frbpoppy import poisson_interval
 
 from tests.convenience import plot_aa_style, rel_path
 
@@ -14,27 +14,8 @@ EXPECTED = {'htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
             'fast': [1, 1500/24]
             }
 
-SURVEYS = ('askap-fly', 'fast')
+SURVEYS = ('htru', 'apertif', 'askap-fly', 'fast', 'palfa')
 ALPHAS = np.around(np.linspace(-0.5, -2.0, 7), decimals=2)
-
-
-def poisson_interval(k, sigma=1):
-    """
-    Use chi-squared info to get the poisson interval.
-
-    Give a number of observed events, which range of observed events would have
-    been just as likely given a particular interval?
-
-    Based off https://stackoverflow.com/questions/14813530/
-    poisson-confidence-interval-with-numpy
-    """
-    gauss = norm(0, 1).pdf
-    a = 1 - quad(gauss, -sigma, sigma, limit=1000)[0]
-    low, high = (chi2.ppf(a/2, 2*k) / 2, chi2.ppf(1-a/2, 2*k + 2) / 2)
-    if k == 0:
-        low = 0.0
-
-    return low, high
 
 
 def real_rates(surveys=SURVEYS):
@@ -85,7 +66,7 @@ def main():
     plt.legend()
     plt.gca().invert_xaxis()
     plt.tight_layout()
-    plt.savefig(rel_path('./plots/real_rates.pdf'))
+    plt.savefig(rel_path('./plots/rates_rm.pdf'))
 
 
 if __name__ == '__main__':

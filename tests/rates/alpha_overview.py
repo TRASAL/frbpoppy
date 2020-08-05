@@ -5,19 +5,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from tests.convenience import plot_aa_style, rel_path
-from complex import complex_rates
-from real import real_rates
-from simple import simple_rates
-from toy import toy_rates
+from alpha_complex import complex_rates
+from alpha_real import real_rates
+from alpha_simple import simple_rates
+from alpha_analytical import analytical_rates
 
 REMAKE = True
-SIZE = 1e6
+SIZE = 1e4
 SURVEYS = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
-ELEMENTS = {'toy': True, 'real': True, 'simple': False, 'complex': True}
+ELEMENTS = {'analytical': True, 'real': True, 'simple': False, 'complex': True}
 ALPHAS = np.around(np.linspace(-0.5, -2.0, 7), decimals=2)
 
 
-def plot(toy=True, simple=False, complex=False, real=True):
+def plot(analytical=True, simple=False, complex=False, real=True):
     """Plot rates panel."""
     surveys = SURVEYS
 
@@ -36,11 +36,11 @@ def plot(toy=True, simple=False, complex=False, real=True):
     ax1.set_yscale('log', nonposy='mask')
     ax2.set_yscale('log', nonposy='mask')
 
-    # Plot simple versus toy
+    # Plot simple versus analytical
     for i, surv in enumerate(surveys):
-        if toy:
-            ax1.plot(ALPHAS, toy[surv], color=cmap(i), linestyle='dotted',
-                     zorder=0)
+        if analytical:
+            ax1.plot(ALPHAS, analytical[surv], color=cmap(i),
+                     linestyle='dotted', zorder=0)
         if simple:
             ax1.plot(ALPHAS, simple[surv], zorder=1)
 
@@ -112,7 +112,7 @@ def plot(toy=True, simple=False, complex=False, real=True):
     elements.append((Line2D([0], [0], color='white'), ''))
 
     # Add line styles
-    if toy:
+    if analytical:
         n = 'analytical'
         elements.append((Line2D([0], [0], color='gray', linestyle='dotted'),
                         n))
@@ -131,15 +131,15 @@ def plot(toy=True, simple=False, complex=False, real=True):
     lines, labels = zip(*elements)
     plt.legend(lines, labels, bbox_to_anchor=(1.04, 0.5), loc="center left")
 
-    plt.savefig(rel_path('plots/rates.pdf'), bbox_inches='tight')
+    plt.savefig(rel_path('plots/rates_overview.pdf'), bbox_inches='tight')
 
 
 def main():
     """Get rates."""
 
-    if ELEMENTS['toy']:
-        ELEMENTS['toy'] = toy_rates(surveys=SURVEYS,
-                                    alphas=ALPHAS)
+    if ELEMENTS['analytical']:
+        ELEMENTS['analytical'] = analytical_rates(surveys=SURVEYS,
+                                                  alphas=ALPHAS)
 
     if ELEMENTS['simple']:
         ELEMENTS['simple'] = simple_rates(remake=REMAKE,

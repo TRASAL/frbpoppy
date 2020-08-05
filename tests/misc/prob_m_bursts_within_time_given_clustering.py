@@ -1,4 +1,4 @@
-"""Test the behaviour of clustered burts."""
+"""Plot the number of bursts seen from clustered sourcces over a max time."""
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm

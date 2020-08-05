@@ -3,10 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from tests.convenience import plot_aa_style, rel_path
-from complex import complex_rates
+from alpha_complex import complex_rates
 
 REMAKE = False
-SIZE = 1e8
+SIZE = 1e4
 SURVEYS = ['htru', 'askap-fly', 'askap-incoh']
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 

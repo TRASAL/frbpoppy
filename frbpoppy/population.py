@@ -143,17 +143,20 @@ def unpickle(filename=None, uid=None):
     return pop
 
 
-def split_pop(pop, mask):
+def split_pop(pop, mask=None):
     """Split a population.
 
     Args:
         pop (Population): Population to be split
-        mask (array): Numpy boolean mask
+        mask (array): Numpy boolean mask. If none, split into repeaters and
+            one_offs in that order
 
     Returns:
         tuple: Tuple of population classes
 
     """
+    if not mask:
+        mask = ((~np.isnan(pop.frbs.time)).sum(1) > 1)
     pop_true = deepcopy(pop)
     pop_false = deepcopy(pop)
     pop_true.frbs.apply(mask)

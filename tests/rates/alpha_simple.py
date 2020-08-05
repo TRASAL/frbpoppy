@@ -8,10 +8,10 @@ from frbpoppy import (CosmicPopulation, Survey, LargePopulation, pprint,
 
 from tests.convenience import plot_aa_style, rel_path
 
-REMAKE = False
+REMAKE = True
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
 SURVEYS = ('palfa', 'htru', 'askap-fly')
-SIZE = 1e5
+SIZE = 1e7
 
 
 def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
@@ -37,7 +37,8 @@ def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
             # Set up surveys
             ss = []
             for s in surveys:
-                survey = Survey(name=s, beam_pattern='perfect',
+                survey = Survey(name=s)
+                survey.set_beam(model='perfect',
                                 n_sidelobes=0.5)
                 ss.append(survey)
 
@@ -78,7 +79,7 @@ def main():
     plt.gca().invert_xaxis()
     plt.tight_layout()
     plt.grid()
-    plt.savefig(rel_path('./plots/simple_rates.pdf'))
+    plt.savefig(rel_path('./plots/rates_simple.pdf'))
 
 
 if __name__ == '__main__':

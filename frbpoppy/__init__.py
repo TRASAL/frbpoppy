@@ -6,7 +6,7 @@ from .do_plot import plot
 from .frbs import FRBs
 from .galacticops import *
 from .large_pop import LargePopulation
-from .misc import pprint, hist
+from .misc import pprint, hist, poisson_interval
 from .number_density import NumberDensity
 from .paths import paths
 from .population import Population, unpickle, split_pop, merge_pop

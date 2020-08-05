@@ -1,14 +1,19 @@
-"""Plot a corner plot showing best fit for rates."""
+"""Plot corner plots showing best fit for rates.
+
+Linked with the ideas in cube.py -> generating a range of parameters.
+
+TODO: In progress.
+"""
 import numpy as np
 import os
 from glob import glob
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-from frbpoppy import paths, unpickle
+from frbpoppy import paths, unpickle, poisson_interval
 
 from tests.convenience import plot_aa_style, rel_path
-from cube import EXPECTED, poisson_interval
+from alpha_real import EXPECTED
 
 # # Set parameters needed for generating a rate cube
 # GENERATE = False
