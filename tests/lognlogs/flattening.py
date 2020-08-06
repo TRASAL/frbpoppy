@@ -19,12 +19,10 @@ class Flattening:
         self.zs = [0.01, 2, 6]
         self.survey = Survey('perfect')
         self.survey.set_beam('perfect')
-        self.name = 'lognlogs_'
         self.plot()
 
     def gen_def_pop(self):
         self.default_pop = CosmicPopulation.simple(self.size)
-        self.default_pop.name = self.name
         self.default_pop.generate()
 
     def survey_pop(self, pop):
@@ -35,7 +33,7 @@ class Flattening:
         pops = []
         for z in self.zs:
             cosmo_pop.set_dist(z_max=z)
-            cosmo_pop.name = self.name + r'z$_{\text{max}}$=' + str(z)
+            cosmo_pop.name = r'z$_{\text{max}}$=' + str(z)
             cosmo_pop.generate()
             surv_pop = self.survey_pop(cosmo_pop)
             surv_pop.z_max = z
@@ -50,7 +48,7 @@ class Flattening:
             # Standard candles
             lum_pop.set_lum(model='constant', value=1e40)
             lum_pop.generate()
-            lum_pop.name = self.name + f'std candle'
+            lum_pop.name = f'std candle'
             surv_pop = self.survey_pop(lum_pop)
             surv_pop.z_max = z
             pops.append(surv_pop)
@@ -59,7 +57,7 @@ class Flattening:
             power = -1
             lum_pop.set_lum(model='powerlaw', low=1e40, high=1e43, power=power)
             lum_pop.generate()
-            lum_pop.name = self.name + f'li={power}'
+            lum_pop.name = f'li={power}'
             surv_pop = self.survey_pop(lum_pop)
             surv_pop.z_max = z
             pops.append(surv_pop)
@@ -68,7 +66,7 @@ class Flattening:
             power = -2
             lum_pop.set_lum(model='powerlaw', low=1e40, high=1e43, power=power)
             lum_pop.generate()
-            lum_pop.name = self.name + f'li={power}'
+            lum_pop.name = f'li={power}'
             surv_pop = self.survey_pop(lum_pop)
             surv_pop.z_max = z
             pops.append(surv_pop)
@@ -83,7 +81,7 @@ class Flattening:
             si_pop.set_dist(z_max=z)
             for si in [-2, 0, 2]:
                 si_pop.set_si(model='constant', value=si)
-                si_pop.name = self.name + f'si={si}'
+                si_pop.name = f'si={si}'
                 si_pop.generate()
                 surv_pop = self.survey_pop(si_pop)
                 surv_pop.z_max = z
@@ -101,7 +99,7 @@ class Flattening:
             # Constant
             w_pop.set_w(model='constant', value=10)
             w_pop.generate()
-            w_pop.name = self.name + f'constant'
+            w_pop.name = f'constant'
             surv_pop = self.survey_pop(w_pop)
             surv_pop.z_max = z
             pops.append(surv_pop)
@@ -109,7 +107,7 @@ class Flattening:
             # Normal
             w_pop.set_w(model='gauss', mean=10, std=10)
             w_pop.generate()
-            w_pop.name = self.name + f'normal'
+            w_pop.name = f'normal'
             surv_pop = self.survey_pop(w_pop)
             surv_pop.z_max = z
             pops.append(surv_pop)
@@ -117,7 +115,7 @@ class Flattening:
             # Lognormal
             w_pop.set_w(model='lognormal', mean=10, std=10)
             w_pop.generate()
-            w_pop.name = self.name + f'lognormal'
+            w_pop.name = f'lognormal'
             surv_pop = self.survey_pop(w_pop)
             surv_pop.z_max = z
             pops.append(surv_pop)
@@ -168,7 +166,7 @@ class Flattening:
         ax.set_ylabel(r'\#(${>}\text{S/N}$)')
 
         for i, pop in enumerate(pops):
-            label = '_'.join(pop.name.split('_')[1:-1])
+            label = '_'.join(pop.name.split('_')[0:-1])
             ax.step(*self.calc_cum_hist(pop), where='mid',
                     label=rf'{label}', linestyle=self.linestyles[i],
                     color='grey')
@@ -183,7 +181,7 @@ class Flattening:
         for i, pop in enumerate(pops):
             linestyle = self.lz[pop.z_max]
             colour = self.colours[int(i % (len(pops)/2))]
-            label = '_'.join(pop.name.split('_')[1:-1])
+            label = '_'.join(pop.name.split('_')[0:-1])
             if i > (len(pops)/2 - 1):  # Turn off some line labels
                 label = f'_{label}'
             ax.step(*self.calc_cum_hist(pop), where='mid',
@@ -202,7 +200,7 @@ class Flattening:
         for i, pop in enumerate(pops):
             linestyle = self.lz[pop.z_max]
             colour = self.colours[int(i % (len(pops)/2))]
-            label = '_'.join(pop.name.split('_')[1:-1])
+            label = '_'.join(pop.name.split('_')[0:-1])
             if i > (len(pops)/2 - 1):  # Turn off some line labels
                 label = f'_{label}'
             ax.step(*self.calc_cum_hist(pop), where='mid',
@@ -220,7 +218,7 @@ class Flattening:
         for i, pop in enumerate(pops):
             linestyle = self.lz[pop.z_max]
             colour = self.colours[int(i % (len(pops)/2))]
-            label = '_'.join(pop.name.split('_')[1:-1])
+            label = '_'.join(pop.name.split('_')[0:-1])
             if i > (len(pops)/2 - 1):  # Turn off some line labels
                 label = f'_{label}'
             ax.step(*self.calc_cum_hist(pop), where='mid',
