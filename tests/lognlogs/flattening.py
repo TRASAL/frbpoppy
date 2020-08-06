@@ -124,15 +124,30 @@ class Flattening:
 
         return pops
 
-    def plot(self):
+    def plot(self, euclidean_lines=True):
 
         plot_aa_style()
         plt.rcParams["figure.figsize"] = (5.75373, 5.75373)
-        f, self.axes = plt.subplots(2, 2, sharey='row')
+        f, self.axes = plt.subplots(2, 2, sharex='col', sharey='row')
 
         self.linestyles = ['solid', 'dashed', 'dotted']
         self.colours = plt.rcParams['axes.prop_cycle'].by_key()['color']
         self.lz = dict(zip(self.zs, self.linestyles))
+
+        for ax in self.axes.flat:
+            ax.set_xscale('log')
+            ax.set_yscale('log')
+            ax.set_xlim(1, 1e6)
+            ax.set_ylim(10**-np.log10(self.size), 10**(np.log10(self.size)/2))
+
+            if euclidean_lines:
+                xlims = ax.get_xlim()
+                xs = np.logspace(np.log10(xlims[0]),
+                                 np.log10(xlims[1]),
+                                 100)
+                for n in range(-10, 10):
+                    ys = 10**((np.log10(xs)+n)*-1.5)
+                    ax.plot(xs, ys, 'k:', linewidth=0.25)
 
         self.plot_cosmo()
         self.plot_lum()
@@ -140,13 +155,7 @@ class Flattening:
         self.plot_w()
 
         for ax in self.axes.flat:
-            ax.set_xscale('log')
-            ax.set_yscale('log')
             ax.legend()
-            # Make the axis such that the diagonal is alpha=-1.5
-            # ax.set_xlim(1, 10**(np.log10(self.size)/1.5))
-            ax.set_xlim(1, 1e6)
-
         plt.tight_layout()
         plt.savefig(rel_path('plots/logn_logs_flattening.pdf'))
 
