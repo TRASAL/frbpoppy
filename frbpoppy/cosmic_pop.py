@@ -407,6 +407,11 @@ class CosmicPopulation(Population):
         if model in funcs:
             func = getattr(ld, model)
 
+            # Help out the user
+            for s in ['slope', 'index']:
+                if s in kwargs:
+                    kwargs['power'] = kwargs.pop(s)
+
             # If you're getting fancy with combined distributions
             self._transpose_lum = False
             for kw_value in kwargs.values():
