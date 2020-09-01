@@ -1,7 +1,7 @@
 """Calculate the actual CHIME repeater fraction."""
 import pandas as pd
 
-from Frbcat import ChimeRepeaters
+from frbcat import ChimeRepeaters
 
 
 def calc_rep_frac():

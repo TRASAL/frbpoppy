@@ -15,7 +15,7 @@ SNR = False
 
 r = CosmicPopulation.simple(n_srcs=int(1e5), n_days=DAYS, repeaters=True)
 r.set_dist(z_max=0.01)
-r.set_lum(model='powerlaw', low=1e35, high=1e45, power=-1.7,
+r.set_lum(model='powerlaw', low=1e35, high=1e45, power=-1.5,
           per_source='different')
 r.set_time(model='poisson', rate=3)
 r.set_dm_igm(model='ioka', slope=1000, std=0)

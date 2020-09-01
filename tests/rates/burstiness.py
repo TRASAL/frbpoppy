@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, pprint, split_pop
+from frbcat import ChimeRepeaters
 
 from tests.convenience import plot_aa_style, rel_path
-from tests.chime.obs_rep_frac import get_chime_rep
 
 n_srcs = 1e5
 n_days = 4
@@ -24,7 +24,7 @@ pop.set_w('constant', value=1)
 pop.generate()
 
 survey = Survey('perfect', n_days=n_days)
-survey.snr_limit = 1e6
+survey.snr_limit = 4e6
 
 plot_aa_style(cols=1)
 f, ax1 = plt.subplots(1, 1)
@@ -35,7 +35,7 @@ for i, lum_func in enumerate(lum_funcs):
 
     if lum_func == 'neg. pl.':
         pop.set_lum(model='powerlaw', per_source='different', low=1e40,
-                    high=1e45, power=-1.7)
+                    high=1e45, power=-1.5)
     elif lum_func == 'flat pl.':
         pop.set_lum(model='powerlaw', per_source='different', low=1e40,
                     high=1e45, power=0)
@@ -92,7 +92,7 @@ ax1.set_ylabel(r'$\bar{n}_{\text{obs.~bursts, frbpoppy}}$')
 
 plt.legend()
 
-df = get_chime_rep()
+df = ChimeRepeaters().df
 chime_dms = []
 chime_n_bursts = []
 
