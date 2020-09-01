@@ -9,20 +9,21 @@ from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, hist
 
 from tests.convenience import plot_aa_style, rel_path
 
-SIZE = 1e4
+SIZE = 1e5
+SURVEYS = ['perfect', 'apertif', 'htru', 'fast']
 
 
 class Flattening:
 
-    def __init__(self, size):
+    def __init__(self, size, survey):
         self.size = size
         self.zs = [0.01, 2, 6]
-        self.survey = Survey('perfect')
-        self.survey.set_beam('perfect')
+        self.survey = survey
         self.plot()
 
     def gen_def_pop(self):
         self.default_pop = CosmicPopulation.simple(self.size)
+        self.default_pop.set_lum(model='constant', value=1e43)
         self.default_pop.generate()
 
     def survey_pop(self, pop):
@@ -155,7 +156,8 @@ class Flattening:
         for ax in self.axes.flat:
             ax.legend()
         plt.tight_layout()
-        plt.savefig(rel_path('plots/logn_logs_flattening.pdf'))
+        p = f'plots/logn_logs_flattening_{self.survey.name}.pdf'
+        plt.savefig(rel_path(p))
 
     def plot_cosmo(self):
         self.gen_def_pop()
@@ -228,6 +230,8 @@ class Flattening:
     def calc_cum_hist(self, pop):
         # Bin up parameter in a cumulative bin
         edges, values = hist(pop.frbs.snr, bin_type='log')
+        if isinstance(edges, float):
+            return np.nan, np.nan
         n_gt_s = np.cumsum(values[::-1])[::-1]
 
         # Normalise to S/N of 10^5
@@ -237,48 +241,10 @@ class Flattening:
         return edges, n_gt_s
 
 
-#
-# for i, pops in enumerate(pops_to_plot):
-#     for pop in pops:
-#         # Bin up parameter in a cumulative bin
-#         edges, values = hist(pop.frbs.snr, bin_type='log')
-#         n_gt_s = np.cumsum(values[::-1])[::-1]
-#
-#         # Normalise to S/N of 10^5
-#         log_diff = (np.log10(edges[0]) - np.log10(1e0))
-#         edges = 10**(np.log10(edges) - log_diff)
-#
-#         # Set line type
-#         linestyle = linestyles[0]
-#         if hasattr(pop, 'z_max'):
-#             try:
-#                 ls_ix = self.zs.index(pop.z_max)
-#             except ValueError:
-#                 ls_ix = len(self.zs)
-#             linestyle = linestyles[ls_ix]
-#
-#         # Create label
-#         label = ' '.join(pop.name.split('_')[2:-1])
-#         if 'z=' in label:
-#             label = label.replace('z=', r'z$_{\text{max}}$=')
-#
-#         # Plot histogram
-#         subplots[i].step(edges, n_gt_s, where='mid',
-#                          label=rf'{label}', linestyle=linestyle)
-#
-#     # Figure out title
-#     parameter = pop.name.split('_')[1]
-#     if parameter == 'cosmo':
-#         title = 'Cosmology'
-#     elif parameter == 'lum':
-#         title = 'Luminosity'
-#     elif parameter == 'si':
-#         title = 'Spectral Index'
-#     elif parameter == 'w':
-#         title = 'Pulse Width'
-#     else:
-
-
-
 if __name__ == '__main__':
-    Flattening(SIZE)
+    for s in SURVEYS:
+        survey = Survey(s)
+        survey.set_beam('gaussian')
+        if s == 'perfect':
+            survey.set_beam('perfect')
+        Flattening(SIZE, survey)

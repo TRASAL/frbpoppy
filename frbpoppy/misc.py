@@ -67,6 +67,9 @@ def hist(parameter, bin_type='lin', n_bins=25, norm='max', edges=True,
     if isinstance(parameter, list):
         parameter = np.array(parameter)
 
+    if len(parameter) == 0:
+        return np.nan, np.nan
+
     # Drop NaN-values
     parameter = parameter[~(np.isnan(parameter) | np.isinf(parameter))]
 

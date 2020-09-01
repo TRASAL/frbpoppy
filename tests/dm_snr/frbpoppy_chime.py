@@ -170,6 +170,16 @@ def plot(frbcat, frbpop):
     path = rel_path('./plots/frbpoppy_chime.pdf')
     plt.savefig(path, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
+    # Check p-value above S/N 15
+    for subpop in ['r', 'o']:
+        mask_frbpop = (frbpop[subpop]['snr'] > 15)
+        mask_frbcat = (frbcat[subpop]['snr'] > 15)
+        for par in ['dm', 'snr']:
+            ks = ks_2samp(frbpop[subpop][par][mask_frbpop],
+                          frbcat[subpop][par][mask_frbcat])
+            print(subpop, par, ks, len(frbpop[subpop][par][mask_frbpop]),
+                  len(frbcat[subpop][par][mask_frbcat]))
+
 
 if __name__ == '__main__':
     frbcat = get_frbcat_data()

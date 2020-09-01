@@ -83,6 +83,9 @@ class Population:
         """Return the number of FRB sources."""
         return len(self.frbs.ra)
 
+    def n_srcs(self):
+        return self.n_sources()
+
     def n_bursts(self):
         """Return the number of bursts."""
         try:  # Will only work for a repeater population
@@ -97,6 +100,9 @@ class Population:
             return np.sum((~np.isnan(self.frbs.time)).sum(1) > 1)
         except TypeError:
             return 0
+
+    def n_rep(self):
+        return self.n_repeaters()
 
     def n_one_offs(self):
         """Return the numer of one-offs in a population."""
@@ -155,7 +161,7 @@ def split_pop(pop, mask=None):
         tuple: Tuple of population classes
 
     """
-    if not mask:
+    if mask is None:
         mask = ((~np.isnan(pop.frbs.time)).sum(1) > 1)
     pop_true = deepcopy(pop)
     pop_false = deepcopy(pop)
