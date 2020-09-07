@@ -50,6 +50,7 @@ def make_mesh(x_par, y_par, survey):
                 for pop in pops:
                     rate = pop.source_rate.det / pop.source_rate.days
                     rate_err = poisson_interval(pop.source_rate.det, sigma=1)
+                    rate_err /= pop.source_rate.days
                     if pop.source_rate.det == 0:
                         rate = np.nan
                     rates.append(rate)

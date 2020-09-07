@@ -16,14 +16,15 @@ class Frbcat(PureFrbcat):
     Get the pandas dataframe with Frbcat().df
     """
 
-    def __init__(self, frbpoppy=True, repeat_bursts=False, **kwargs):
+    def __init__(self, frbpoppy=True, repeat_bursts=False, mute=False,
+                 **kwargs):
         """Initialize."""
         super().__init__(self, path=paths.frbcat(), **kwargs)
 
         # Transform the data
         if frbpoppy is True:
             self.frbpoppify()
-            self.match_surveys()
+            self.match_surveys(interrupt=not mute)
 
         # Just for neating up
         self.df = self.df.sort_values('utc', ascending=False)
