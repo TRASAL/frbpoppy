@@ -12,6 +12,7 @@ from frbpoppy import Frbcat, split_pop, unpickle, hist
 from tests.convenience import plot_aa_style, rel_path
 
 N_DAYS = 100
+SNR_LIMIT = 10
 
 
 def get_frbcat_data():
@@ -22,19 +23,24 @@ def get_frbcat_data():
             with entries for 'dm' and 'snr'
 
     """
-    fc = Frbcat(frbpoppy=False, repeaters=True)
+    fc = Frbcat(frbpoppy=False, repeaters=True, update=False)
     chime_df = fc.df[fc.df.telescope == 'chime']
     chime_df = chime_df.sort_values(by=['frb_name'])
+
+    chime_df = chime_df[(chime_df.snr > SNR_LIMIT)]
 
     frbcat = {'r': {}, 'o': {}}
 
     # Chime one-offs
     chime_o = chime_df.drop_duplicates(subset=['frb_name'], keep=False)
+    chime_o = chime_o[(chime_o.snr > SNR_LIMIT)]
 
     # Chime repeaters
     chime_r = chime_df.loc[chime_df['frb_name'].duplicated(), :]
     # Actually use the Chime repeaters database
     chime_r = ChimeRepeaters().df.sort_values(by='name')
+
+    chime_r = chime_r[(chime_r.snr > SNR_LIMIT)]
 
     # One DM value per repeater (used the average between bursts)
     frbcat['r']['dm'] = chime_r.groupby('name').mean().reset_index().dm
@@ -55,6 +61,12 @@ def get_frbcat_data():
 def get_frbpoppy_data():
     """Get frbpoppy data."""
     surv_pop = unpickle('cosmic_chime')
+
+    # Limit to population above S/N >= 10
+    mask = (surv_pop.frbs.snr > SNR_LIMIT)
+    surv_pop.frbs.apply(mask)
+    print(f'{surv_pop.n_repeaters()} repeaters')
+    print(f'{surv_pop.n_one_offs()} one-offs')
 
     # Split population into seamingly one-off and repeater populations
     mask = ((~np.isnan(surv_pop.frbs.time)).sum(1) > 1)
@@ -130,15 +142,16 @@ def plot(frbcat, frbpop):
             col = 0
             if p == 'snr':
                 col = 1
-            if t == 'o':
+            if t == 'r':
                 row = 1
 
             ks = ks_2samp(frbpop[t][p], frbcat[t][p])
-            print(f'KS test: {ks}')
+            print(t, p, ks)
 
             text = fr'$p={round(ks[1], 2)}$'
             if ks[1] < 0.01:
-                text = r'$p < 0.01$'
+                # text = r'$p < 0.01$'
+                text = fr'$p={round(ks[1], 3)}$'
             anchored_text = AnchoredText(text, loc='upper right',
                                          borderpad=0.5, frameon=False)
             axes[row, col].add_artist(anchored_text)
@@ -171,14 +184,14 @@ def plot(frbcat, frbpop):
     plt.savefig(path, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
     # Check p-value above S/N 15
-    for subpop in ['r', 'o']:
-        mask_frbpop = (frbpop[subpop]['snr'] > 15)
-        mask_frbcat = (frbcat[subpop]['snr'] > 15)
+    for t in ['r', 'o']:
+        mask_frbpop = (frbpop[t]['snr'] > 15)
+        mask_frbcat = (frbcat[t]['snr'] > 15)
         for par in ['dm', 'snr']:
-            ks = ks_2samp(frbpop[subpop][par][mask_frbpop],
-                          frbcat[subpop][par][mask_frbcat])
-            print(subpop, par, ks, len(frbpop[subpop][par][mask_frbpop]),
-                  len(frbcat[subpop][par][mask_frbcat]))
+            ks = ks_2samp(frbpop[t][par][mask_frbpop],
+                          frbcat[t][par][mask_frbcat])
+            print(t, par, ks, len(frbpop[t][par][mask_frbpop]),
+                  len(frbcat[t][par][mask_frbcat]))
 
 
 if __name__ == '__main__':

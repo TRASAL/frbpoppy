@@ -8,7 +8,7 @@ def powerlaw(low, high, power, shape=1):
     Return random variables distributed according to power law.
 
     The power law distribution power is simply the power, not including a minus
-    sign (P scales with x^n with n the power). A flat powerlaw can therefore
+    sign (N(x) scales with x^p with p the power). A flat powerlaw can therefore
     be created by taking setting power to zero.
 
     Args:

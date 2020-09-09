@@ -54,6 +54,10 @@ if MAKE:
 else:
     surv_pop = unpickle('cosmic_chime')
 
+# Limit population to above S/N >= 10
+mask = (surv_pop.frbs.snr >= 10)
+surv_pop.frbs.apply(mask)
+
 # Set up plot style
 plot_aa_style(cols=1)
 f, ax1 = plt.subplots(1, 1)
@@ -72,6 +76,7 @@ for day in tqdm(days, desc="frbpoppy"):
     fracs.append(frac)
 
 ax1.plot(days, fracs, label='frbpoppy')
+ax1.set_xlim(0, max(days))
 
 if PLOT_CHIME:
 
@@ -89,12 +94,12 @@ if PLOT_CHIME:
         chime_fracs.append(frac)
 
     ax1.plot(days, chime_fracs, label='chime')
+    plt.legend()
 
 # Further plot details
 ax1.set_xlabel(r'Time (days)')
 ax1.set_ylabel(r'$f_{\textrm{rep}}$')
 # Equal to $N_{\textrm{repeaters}}/N_{\textrm{detections}}$
-ax1.set_xlim(0, max(days))
 ax1.set_yscale('log')
 
 # Save figure
