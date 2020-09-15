@@ -40,7 +40,7 @@ for n in N_SRCS:
         r.generate()
 
         surv_pop = SurveyPopulation(r, s)
-        surv_pop.name = 'complex_chime'
+        surv_pop.name = 'cosmic_chime'
         print(surv_pop.source_rate)
         print(surv_pop.burst_rate)
         pprint(f'# one-offs: {surv_pop.n_one_offs()}')

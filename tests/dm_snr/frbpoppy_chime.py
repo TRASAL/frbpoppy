@@ -12,7 +12,8 @@ from frbpoppy import Frbcat, split_pop, unpickle, hist
 from tests.convenience import plot_aa_style, rel_path
 
 N_DAYS = 100
-SNR_LIMIT = 10
+SNR_LIMIT_ONE_OFFS = 10
+SNR_LIMIT_REPS = 10
 
 
 def get_frbcat_data():
@@ -27,20 +28,18 @@ def get_frbcat_data():
     chime_df = fc.df[fc.df.telescope == 'chime']
     chime_df = chime_df.sort_values(by=['frb_name'])
 
-    chime_df = chime_df[(chime_df.snr > SNR_LIMIT)]
-
     frbcat = {'r': {}, 'o': {}}
 
     # Chime one-offs
     chime_o = chime_df.drop_duplicates(subset=['frb_name'], keep=False)
-    chime_o = chime_o[(chime_o.snr > SNR_LIMIT)]
+    chime_o = chime_o[(chime_o.snr > SNR_LIMIT_ONE_OFFS)]
 
     # Chime repeaters
     chime_r = chime_df.loc[chime_df['frb_name'].duplicated(), :]
     # Actually use the Chime repeaters database
     chime_r = ChimeRepeaters().df.sort_values(by='name')
 
-    chime_r = chime_r[(chime_r.snr > SNR_LIMIT)]
+    chime_r = chime_r[(chime_r.snr > SNR_LIMIT_REPS)]
 
     # One DM value per repeater (used the average between bursts)
     frbcat['r']['dm'] = chime_r.groupby('name').mean().reset_index().dm
@@ -62,17 +61,19 @@ def get_frbpoppy_data():
     """Get frbpoppy data."""
     surv_pop = unpickle('cosmic_chime')
 
-    # Limit to population above S/N >= 10
-    mask = (surv_pop.frbs.snr > SNR_LIMIT)
-    surv_pop.frbs.apply(mask)
-    print(f'{surv_pop.n_repeaters()} repeaters')
-    print(f'{surv_pop.n_one_offs()} one-offs')
-
     # Split population into seamingly one-off and repeater populations
     mask = ((~np.isnan(surv_pop.frbs.time)).sum(1) > 1)
     pop_ngt1, pop_nle1 = split_pop(surv_pop, mask)
     pop_ngt1.name += ' (> 1 burst)'
     pop_nle1.name += ' (1 burst)'
+
+    # Limit to population above S/N limits
+    mask = (pop_ngt1.frbs.snr > SNR_LIMIT_REPS)
+    pop_ngt1.frbs.apply(mask)
+    mask = (pop_nle1.frbs.snr > SNR_LIMIT_ONE_OFFS)
+    pop_nle1.frbs.apply(mask)
+    print(f'{surv_pop.n_repeaters()} repeaters')
+    print(f'{surv_pop.n_one_offs()} one-offs')
 
     frbpop = {'r': {}, 'o': {}}
     for i, pop in enumerate((pop_ngt1, pop_nle1)):
@@ -131,7 +132,7 @@ def plot(frbcat, frbpop):
                             color=cmap[i], alpha=alpha)
 
             # Plot SNR distribution
-            bins = np.logspace(0.5, 3.5, n_bins)
+            bins = np.logspace(0.8, 3.5, n_bins)
             axes[a, 1].step(*hist(p[t]['snr'], norm='max', bins=bins),
                             where='mid', linestyle=linestyle, label=label,
                             color=cmap[i], alpha=alpha)

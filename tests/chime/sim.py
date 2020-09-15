@@ -36,7 +36,7 @@ r.set_direction(model='uniform',
 r.generate()
 
 surv_pop = SurveyPopulation(r, s)
-surv_pop.name = 'complex_chime'
+surv_pop.name = 'cosmic_chime'
 surv_pop.save()
 
 print(surv_pop.source_rate)
