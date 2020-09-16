@@ -30,11 +30,11 @@ PLOT = True
 class Run:
     """Hold information relevant to a single Monte Carlo run."""
 
-    def __init__(self, alpha, li, si):
+    def __init__(self, alpha, li, si, survey_name=None):
         self.li = li
         self.si = si
         self.alpha = alpha
-        self.survey_name = None
+        self.survey_name = survey_name
         self.ks_dm = np.nan
         self.ks_snr = np.nan
         self.ks_rate = np.nan

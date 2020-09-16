@@ -11,7 +11,8 @@ EXPECTED = {'htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
             'askap-fly': [20, 32840 / 8 / 24],
             'palfa': [1, 24.1],
             'guppi': [0.4, 81],  # 0.4 is my own assumption
-            'fast': [1, 1500/24]
+            'fast': [1, 1500/24],
+            'chime': [2, 1]  # My own assumption
             }
 
 SURVEYS = ('htru', 'apertif', 'askap-fly', 'fast', 'palfa')
