@@ -15,10 +15,10 @@ from tests.convenience import plot_aa_style, rel_path
 
 from run_mc import Run
 
-r = Run(survey_name='htru',
-        li=-1.5,
-        si=-1.1,
-        alpha=-2.0)
+r = Run(survey_name='askap-fly',
+        li=-.5,
+        si=0,
+        alpha=-1.5)
 
 # Find closest population match
 path = rel_path('../data/populations/mc')
@@ -41,9 +41,17 @@ r.alpha, r.li, r.si = map(options[i].split('_').__getitem__, [2, 4, 6])
 
 f = f'mc/complex_alpha_{r.alpha}_lum_{r.li}_si_{r.si}_{r.survey_name}'
 surv_pop = unpickle(f)
-df = TNS(repeaters=False).df
-import IPython; IPython.embed()
 
+# Get actual data
+df = TNS(repeaters=False).df
+telescope = r.survey_name
+if telescope == 'htru':
+    telescope = 'parkes'
+if telescope == 'askap-fly':
+    telescope = 'askap'
+mask = (df.telescope.str.lower() == telescope)
+
+# Start with plotting
 plot_aa_style()
 plt.rcParams["figure.figsize"] = (5.75373, 5.75373)
 fig, axes = plt.subplots(2, 2)
@@ -79,11 +87,13 @@ axes[0, 1].text(.5, .7, text,
 # DM distributions
 ax = axes[1, 0]
 ax.step(*hist(surv_pop.frbs.dm), where='mid')
-mask = df.telescope.str.lower() == r.survey_name
 ax.step(*hist(df[mask].dm), where='mid')
 
 # Compare distributions
-ks = ks_2samp(surv_pop.frbs.dm, df[mask].dm)
+try:
+    ks = ks_2samp(surv_pop.frbs.dm, df[mask].dm)
+except ValueError:
+    ks = (0.0, 0.0)
 text = fr'$p={round(ks[1], 2)}$'
 if ks[1] < 0.01:
     text = fr'$p={ks[1]:.2e}$'
@@ -98,7 +108,10 @@ ax.step(*hist(surv_pop.frbs.snr, bin_type='log'), where='mid')
 ax.step(*hist(df[mask].snr, bin_type='log'), where='mid')
 
 # Compare distributions
-ks = ks_2samp(surv_pop.frbs.snr, df[mask].snr)
+try:
+    ks = ks_2samp(surv_pop.frbs.snr, df[mask].snr)
+except ValueError:
+    ks = (0.0, 0.0)
 text = fr'$p={round(ks[1], 2)}$'
 if ks[1] < 0.01:
     text = fr'$p={ks[1]:.2e}$'

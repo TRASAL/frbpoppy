@@ -18,9 +18,9 @@ from tests.rates.alpha_real import EXPECTED
 from tests.convenience import plot_aa_style, rel_path
 
 SURVEY_NAMES = ['apertif', 'askap-fly', 'htru', 'chime']
-ALPHAS = np.linspace(-2, -0.5, 3)
-LIS = np.linspace(-2, 0, 5)
-SIS = np.linspace(-2, 2, 5)
+ALPHAS = np.linspace(-2, -0.5, 11)
+LIS = np.linspace(-2, 0, 11)
+SIS = np.linspace(-2, 2, 11)
 POP_SIZE = 1e6
 MAKE = False
 TEST_DATA = False
@@ -145,13 +145,28 @@ class MonteCarlo:
             return run
 
         if run.survey_name in EXPECTED:
-            exp = EXPECTED[run.survey_name]
+            n_frbs, n_days = EXPECTED[run.survey_name]
         else:
-            exp = [np.nan, np.nan]
+            n_frbs, n_days = [np.nan, np.nan]
 
-        actual_rate = exp[0]/exp[1]
+        # Determine ratio of detection rates
+        surv_sim_rate = run.rate
+        surv_real_rate = n_frbs/n_days
+        surv_ratio = surv_sim_rate / surv_real_rate
+
+        # Get normalisation properties
+        norm_surv = 'htru'
+        norm_real_n_frbs, norm_real_n_days = EXPECTED[norm_surv]
+        f = f'mc/complex_alpha_{alpha}_lum_{li}_si_{si}_{norm_surv}'
+        norm_pop = unpickle(f)
+        norm_sim_n_frbs = norm_pop.source_rate.det
+        norm_sim_n_days = norm_pop.source_rate.days
+        norm_sim_rate = norm_sim_n_frbs / norm_sim_n_days
+        norm_real_rate = norm_real_n_frbs / norm_real_n_days
+        norm_ratio = norm_sim_rate / norm_real_rate
+
         # TODO: Update to include information on the Poisson intervals
-        run.ks_rate = np.abs(run.rate - actual_rate)
+        run.ks_rate = np.abs(surv_ratio - norm_ratio)
 
         mask = (self.frbcat.survey == run.survey_name)
         run.ks_dm = ks_2samp(surv_pop.frbs.dm, self.frbcat[mask].dm)[1]
@@ -182,7 +197,7 @@ class MonteCarlo:
             self.plot_run(ks_type, df)
         # nd one total combined plot
         ks_cols = [col for col in df if col.startswith('ks_')]
-        df['ks_all'] = df[ks_cols].product(axis=1, skipna=True, min_count=1)
+        df['ks_all'] = df[ks_cols].median(axis=1, skipna=True)
         self.plot_run('ks_all', df)
 
     def plot_run(self, ks_type, df):
@@ -200,7 +215,7 @@ class MonteCarlo:
 
         # Add color grids
         args = {'cmap': 'viridis', 'norm': LogNorm(),
-                'vmin': 1e-6, 'vmax': 1e0}
+                'vmin': 1e-2, 'vmax': 1e1}
         axes[2, 0].pcolormesh(*self.make_mesh('alpha', 'si', df, ks_type),
                               **args)
         axes[1, 0].pcolormesh(*self.make_mesh('alpha', 'li', df, ks_type),
@@ -296,7 +311,7 @@ class MonteCarlo:
         for i, x_val in enumerate(x_vals):
             for j, y_val in enumerate(y_vals):
                 mask = ((df[x_par] == x_val) & (df[y_par] == y_val))
-                v[i, j] = df[mask][ks_type].prod(skipna=True, min_count=1)
+                v[i, j] = df[mask][ks_type].median(skipna=True)
 
         return x_vals-dx/2., y_vals-dy/2., v.T
 
@@ -306,7 +321,7 @@ class MonteCarlo:
         probs = []
         for par_val in par_vals:
             mask = (df[par] == par_val)
-            prob = df[mask][ks_type].prod(skipna=True, min_count=1)
+            prob = df[mask][ks_type].median(skipna=True)
             probs.append(prob)
 
         # Add edges to histograms
@@ -324,6 +339,7 @@ class MonteCarlo:
             # Add test data
             df[c] = df[c].apply(lambda v: np.random.random())
         return df
+
 
 if __name__ == '__main__':
     mc = MonteCarlo(ALPHAS, LIS, SIS, SURVEY_NAMES, POP_SIZE)
