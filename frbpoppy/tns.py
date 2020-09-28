@@ -28,7 +28,7 @@ class TNS(BaseTNS):
             self.match_surveys(interrupt=not mute)
 
         # Just for neating up
-        self.df = self.df.sort_values('utc', ascending=False)
+        self.df = self.df.sort_values('photometry_date', ascending=False)
         self.df = self.df.reindex(sorted(self.df.columns), axis=1)
 
     def frbpoppify(self):
@@ -41,7 +41,6 @@ class TNS(BaseTNS):
                    'burst_width': 'w_eff',
                    'burst_width_err': 'w_eff_err',
                    'burst_bandwidth': 'bw',
-                   'photometry_date': 'utc',
                    'ra_frac': 'ra',
                    'dec_frac': 'dec',
                    'flux': 's_peak',
@@ -80,7 +79,7 @@ class TNS(BaseTNS):
             return mask
 
         # Should be accurate up till 2020
-        self.df.at[cond('WSRT', 'Apertif'), 'survey'] = 'wrst-apertif'
+        self.df.at[cond('WSRT', 'Apertif'), 'survey'] = 'wsrt-apertif'
         self.df.at[cond('askap', 'Incoherent'), 'survey'] = 'askap-incoh'
         self.df.at[cond('askap', '900MHz'), 'survey'] = 'askap-incoh'
         self.df.at[cond('askap', 'Coherent'), 'survey'] = 'askap-coh'
@@ -99,13 +98,14 @@ class TNS(BaseTNS):
         self.df.at[cond('Arecibo', 'L-Wide'), 'survey'] = 'arecibo-l-wide'
 
         # Parkes is more tricky
+        c = 'photometry_date'
         pmsurv = cond('Parkes') & (self.df.back_end == 'AFB-MB20')
         self.df.at[pmsurv, 'survey'] = 'parkes-pmsurv'
-        htru = cond('Parkes') & (self.df.utc.dt.year > 2008)
-        htru &= (self.df.utc.dt.year < 2015)
+        htru = cond('Parkes') & (self.df[c].dt.year > 2008)
+        htru &= (self.df[c].dt.year < 2015)
         self.df.at[htru, 'survey'] = 'parkes-htru'
         # This means the default survey for Parkes is superb!
-        superb = cond('Parkes') & (self.df.utc.dt.year >= 2015)
+        superb = cond('Parkes') & (self.df[c].dt.year >= 2015)
         self.df.at[superb, 'survey'] = 'parkes-superb'
 
         # Manually add some tricky ones

@@ -2,7 +2,7 @@
 
 TODO: Work in progress."""
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
-from frbpoppy import pprint, unpickle, Frbcat, poisson_interval
+from frbpoppy import pprint, unpickle, TNS, poisson_interval
 from joblib import Parallel, delayed
 from matplotlib.colors import LogNorm
 from scipy.stats import ks_2samp
@@ -17,7 +17,8 @@ import pandas as pd
 from tests.rates.alpha_real import EXPECTED
 from tests.convenience import plot_aa_style, rel_path
 
-SURVEY_NAMES = ['apertif', 'askap-fly', 'htru', 'chime']
+SURVEY_NAMES = ['parkes-htru', 'chime-frb', 'askap-incoh', 'wsrt-apertif']
+NORM_SURV = 'parkes-htru'
 ALPHAS = np.linspace(-2, -0.5, 11)
 LIS = np.linspace(-2, 0, 11)
 SIS = np.linspace(-2, 2, 11)
@@ -61,14 +62,15 @@ class MonteCarlo:
         self.sis = sis
         self.pop_size = pop_size
         self.survey_names = survey_names
+        self.norm_surv = NORM_SURV
         self.set_up_surveys()
         self.set_up_dir()
-        self.get_frbcat()
+        self.get_tns()
         self.runs = []
 
-    def get_frbcat(self):
+    def get_tns(self):
         # Only get one-offs
-        self.frbcat = Frbcat(repeaters=False, mute=True).df
+        self.tns = TNS(repeaters=False, mute=True).df
 
     def set_up_surveys(self):
         """Set up surveys."""
@@ -152,25 +154,25 @@ class MonteCarlo:
         # Determine ratio of detection rates
         surv_sim_rate = run.rate
         surv_real_rate = n_frbs/n_days
-        surv_ratio = surv_sim_rate / surv_real_rate
 
         # Get normalisation properties
-        norm_surv = 'htru'
-        norm_real_n_frbs, norm_real_n_days = EXPECTED[norm_surv]
-        f = f'mc/complex_alpha_{alpha}_lum_{li}_si_{si}_{norm_surv}'
+        norm_real_n_frbs, norm_real_n_days = EXPECTED[self.norm_surv]
+        f = f'mc/complex_alpha_{alpha}_lum_{li}_si_{si}_{self.norm_surv}'
         norm_pop = unpickle(f)
         norm_sim_n_frbs = norm_pop.source_rate.det
         norm_sim_n_days = norm_pop.source_rate.days
         norm_sim_rate = norm_sim_n_frbs / norm_sim_n_days
         norm_real_rate = norm_real_n_frbs / norm_real_n_days
-        norm_ratio = norm_sim_rate / norm_real_rate
+
+        sim_ratio = surv_sim_rate / norm_sim_rate
+        real_ratio = surv_real_rate / norm_real_rate
 
         # TODO: Update to include information on the Poisson intervals
-        run.ks_rate = np.abs(surv_ratio - norm_ratio)
+        run.ks_rate = np.abs(sim_ratio - real_ratio)
 
-        mask = (self.frbcat.survey == run.survey_name)
-        run.ks_dm = ks_2samp(surv_pop.frbs.dm, self.frbcat[mask].dm)[1]
-        run.ks_snr = ks_2samp(surv_pop.frbs.snr, self.frbcat[mask].snr)[1]
+        mask = (self.tns.survey == run.survey_name)
+        run.ks_dm = ks_2samp(surv_pop.frbs.dm, self.tns[mask].dm)[1]
+        run.ks_snr = ks_2samp(surv_pop.frbs.snr, self.tns[mask].snr)[1]
 
         return run
 
@@ -188,6 +190,7 @@ class MonteCarlo:
     def plot(self):
         # Convert to a pandas dataframe
         pprint('Plotting')
+
         df = pd.DataFrame([r.to_dict() for r in self.runs])
 
         for ks_type in ('ks_dm', 'ks_snr', 'ks_rate'):
@@ -215,7 +218,10 @@ class MonteCarlo:
 
         # Add color grids
         args = {'cmap': 'viridis', 'norm': LogNorm(),
-                'vmin': 1e-2, 'vmax': 1e1}
+                'vmin': 1e-2, 'vmax': 1e0}
+        if ks_type == 'ks_rate':
+            args = {'cmap': 'viridis', 'norm': LogNorm(),
+                    'vmin': 1e-2, 'vmax': 1e2}
         axes[2, 0].pcolormesh(*self.make_mesh('alpha', 'si', df, ks_type),
                               **args)
         axes[1, 0].pcolormesh(*self.make_mesh('alpha', 'li', df, ks_type),
@@ -283,9 +289,13 @@ class MonteCarlo:
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
 
         # # Put colorbar in right position
-        cbaxes = inset_axes(axes[0, 2], width="100%", height="3%", loc='center')
+        cbaxes = inset_axes(axes[0, 2], width="100%", height="3%",
+                            loc='center')
         clb = plt.colorbar(im, cax=cbaxes, orientation='horizontal')
-        clb.set_label('p-value')
+        if ks_type == 'ks_rate':
+            clb.set_label(f'diff rate ratio wrt {self.norm_surv}')
+        else:
+            clb.set_label('p-value')
 
         # Save to subdirectory
         path_to_save = rel_path('./plots/mc/')
