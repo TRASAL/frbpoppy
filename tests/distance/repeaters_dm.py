@@ -45,7 +45,7 @@ pop_rep.name += ' (> 1 burst)'
 pop_one.name += ' (1 burst)'
 
 if INTERACTIVE_PLOT:
-    plot(r, pop_rep, pop_one, frbcat=False, mute=False)
+    plot(r, pop_rep, pop_one, tns=False, mute=False)
 
 # Plot dm distribution
 if SNR:

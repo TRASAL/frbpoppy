@@ -84,7 +84,7 @@ if PLOT_CHIME:
     chime_fracs = []
     dts = calc_rep_frac()
     days = [d for d in range(301)]
-    for day in tqdm(days, desc='frbcat'):
+    for day in tqdm(days, desc='tns'):
         n_rep = sum([dt <= day for dt in dts])
         n_one_offs = 2*day
         try:

@@ -5,8 +5,8 @@ Can be run with:
     $ bokeh serve --show code/plot.py --args <pop_example.csv>
 
 in which all csv-files with populations can be given after ``--args``, and as
-well as the optional arguments of ``-noshow`` and ``-nofrbcat``, to
-respectively not show the resulting plot, and to not overplot frbcat
+well as the optional arguments of ``-noshow`` and ``-notns``, to
+respectively not show the resulting plot, and to not overplot tns
 """
 
 import numpy as np
@@ -21,7 +21,7 @@ from bokeh.models.widgets import Select
 from bokeh.palettes import Category10, viridis
 from bokeh.plotting import figure
 
-from frbpoppy.frbcatpoppy import Frbcat
+from frbpoppy.tns import TNS
 from frbpoppy.do_hist import histogram
 from frbpoppy.misc import pprint
 from frbpoppy import unpickle
@@ -40,11 +40,11 @@ class Tab():
 class Plot():
     """Gather plotting options."""
 
-    def __init__(self, files=[], frbcat=True):
+    def __init__(self, files=[], tns=True):
         """Initializing."""
         # From arguments
         self.files = files
-        self.frbcat = frbcat
+        self.tns = tns
 
         # Predefined
         self.height = 700  # Plot height
@@ -95,7 +95,7 @@ class Plot():
         """Determine which colours need to be used."""
         # Ensure number of overplots is known
         n = len(self.files)
-        if self.frbcat:
+        if self.tns:
             n += 1
         if n > 10:
             self.colours = viridis(n)
@@ -146,22 +146,22 @@ class Plot():
                 self.labels.append(name)
                 self.n_df += 1
 
-        # Add on frbcat
-        if self.frbcat:
-            df = Frbcat(frbpoppy=True).df
+        # Add on tns
+        if self.tns:
+            df = TNS(frbpoppy=True).df
             # Filter by survey if wished
-            if isinstance(self.frbcat, str):
-                if df['survey'].str.match(self.frbcat).any():
-                    df = df[df.survey == self.frbcat]
-                elif df['telescope'].str.match(self.frbcat).any():
-                    df = df[df.telescope == self.frbcat]
+            if isinstance(self.tns, str):
+                if not df[df.survey == self.tns].empty:
+                    df = df[df.survey == self.tns]
+                elif not df[df.telescope == self.tns].empty:
+                    df = df[df.telescope == self.tns]
                 else:
-                    m = 'Your chosen input for frbcat is not found.'
+                    m = 'Your chosen input for tns is not found.'
                     raise ValueError(m)
 
             df['color'] = self.colours[len(self.dfs)]
             self.dfs.append(df)
-            self.labels.append(f'frbcat {self.frbcat}')
+            self.labels.append(f'tns {self.tns}')
 
     def set_widgets(self):
         """Set up widget details."""
@@ -355,13 +355,13 @@ class Plot():
 # (I know ArgumentParser is nicer, but bokeh only works with argv)
 args = sys.argv
 
-# Whether to plot the frbcat population
-if '-frbcat' in args:
-    frbcat = args[args.index('-frbcat') + 1]
-    if frbcat == 'True':
-        frbcat = True
-    elif frbcat == 'False':
-        frbcat = False
+# Whether to plot the tns population
+if '-tns' in args:
+    tns = args[args.index('-tns') + 1]
+    if tns == 'True':
+        tns = True
+    elif tns == 'False':
+        tns = False
 else:
     frcat = True
 
@@ -376,4 +376,4 @@ for a in args:
 if len(files) == 0:
     pprint('Nothing to plot: plot arguments are empty')
 else:
-    Plot(files=files, frbcat=frbcat)
+    Plot(files=files, tns=tns)

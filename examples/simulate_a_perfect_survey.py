@@ -18,4 +18,4 @@ print(survey_pop.source_rate)
 # all bursts within the observing time
 
 # Plot populations
-plot(cosmic_pop, survey_pop, frbcat=False, mute=False)
+plot(cosmic_pop, survey_pop, tns=False, mute=False)

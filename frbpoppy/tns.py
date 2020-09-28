@@ -64,6 +64,9 @@ class TNS(BaseTNS):
                             self.df['t_scat']**2 -
                             self.df['t_samp']**2)**0.5
 
+        # Set up telescope names
+        self.df['telescope'] = self.df.telescope.str.lower()
+
     def match_surveys(self, interrupt=True):
         """Match up frbs with surveys."""
         self.df['survey'] = None

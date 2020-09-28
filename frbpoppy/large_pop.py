@@ -137,7 +137,7 @@ def main():
     surv_pop = SurveyPopulation(pop, survey)
     surv_pop.name = 'normal'
 
-    plot(large_pop, surv_pop, mute=False, frbcat=False)
+    plot(large_pop, surv_pop, mute=False, tns=False)
 
 
 if __name__ == '__main__':

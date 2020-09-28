@@ -14,7 +14,7 @@ cosmic_pop = CosmicPopulation.complex(1e5, n_days=0.01)
 cosmic_pop.generate()
 
 # Setup a survey
-survey = Survey('htru')
+survey = Survey('parkes-htru')
 survey.set_beam(model='gaussian', n_sidelobes=0.5)
 
 # Observe the FRB population
@@ -24,4 +24,4 @@ survey_pop = SurveyPopulation(cosmic_pop, survey)
 print(survey_pop.source_rate)
 
 # Plot populations in a browser
-plot(cosmic_pop, survey_pop, frbcat='parkes')
+plot(cosmic_pop, survey_pop, tns='parkes')
