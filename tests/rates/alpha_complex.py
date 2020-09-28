@@ -10,7 +10,7 @@ from tests.convenience import plot_aa_style, rel_path
 
 REMAKE = True
 ALPHAS = np.around(np.linspace(-0.5, -2.0, 7), decimals=2)
-SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wrst-apertif', 'arecibo-palfa')
+SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wsrt-apertif', 'arecibo-palfa')
 SIZE = 1e8
 # Change population size to ensure enough detections
 ADAPTATIVE_SCALING = False

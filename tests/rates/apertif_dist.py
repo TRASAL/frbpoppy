@@ -13,7 +13,7 @@ SCALE_TO = 'parkes-htru'
 pop = CosmicPopulation.complex(n_srcs=1e5, n_days=N_DAYS)
 pop.generate()
 
-apertif = Survey('wrst-apertif', n_days=N_DAYS)
+apertif = Survey('wsrt-apertif', n_days=N_DAYS)
 apertif.set_beam(model='apertif_real')
 
 if SCALE_TO == 'parkes-htru':

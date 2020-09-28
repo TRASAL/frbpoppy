@@ -5,14 +5,15 @@ from frbpoppy import CosmicPopulation, Survey, SurveyPopulation
 from frbpoppy import pprint, unpickle, TNS, poisson_interval
 from joblib import Parallel, delayed
 from matplotlib.colors import LogNorm
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from scipy.stats import ks_2samp
 from tqdm import tqdm
 import frbpoppy.paths
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import numpy as np
 import os
 import pandas as pd
+import warnings
 
 from tests.rates.alpha_real import EXPECTED
 from tests.convenience import plot_aa_style, rel_path
@@ -136,6 +137,14 @@ class MonteCarlo:
         run.survey_name = n[-1]
         run.pop_name = surv_pop.name
 
+        # Dealing with old survey names
+        if run.survey_name == 'chime':
+            run.survey_name = 'chime-frb'
+        if run.survey_name == 'htru':
+            run.survey_name = 'parkes-htru'
+        if run.survey_name == 'apertif':
+            run.survey_name = 'wsrt-apertif'
+
         # Add rate details
         sr = surv_pop.source_rate
         run.n_srcs = sr.det
@@ -192,6 +201,9 @@ class MonteCarlo:
         pprint('Plotting')
 
         df = pd.DataFrame([r.to_dict() for r in self.runs])
+
+        # Suppress warnings on empty slices
+        warnings.simplefilter("ignore", category=RuntimeWarning)
 
         for ks_type in ('ks_dm', 'ks_snr', 'ks_rate'):
             for i, group in df.groupby('survey_name'):

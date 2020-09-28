@@ -18,14 +18,14 @@ def get_beam_props(model, fwhm):
 
     """
     # Set up beam arrays
-    models = ('wrst-apertif', 'parkes-htru', 'chime-frb', 'gaussian', 'airy',
-              'wrst-apertif_real')
+    models = ('wsrt-apertif', 'parkes-htru', 'chime-frb', 'gaussian', 'airy',
+              'wsrt-apertif_real')
     if model in models:
         place = paths.models() + f'/beams/{model}.npy'
         beam_array = np.load(place)
 
     # Set up details if using beam arrays
-    if model.startswith('wrst-apertif'):
+    if model.startswith('wsrt-apertif'):
         pixel_scale = 0.94/60  # Degrees per pixel [deg]
         beam_size = 25.  # [sq deg]
     elif model == 'parkes-htru':

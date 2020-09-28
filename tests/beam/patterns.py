@@ -8,7 +8,7 @@ from frbpoppy.survey import Survey
 from tests.convenience import plot_aa_style, rel_path
 
 OBSERVATORIES = [('parkes-htru', 'parkes-htru'),
-                 ('wrst-apertif', 'wrst-apertif')]
+                 ('wsrt-apertif', 'wsrt-apertif')]
 
 n = int(1e6)
 

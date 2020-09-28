@@ -6,7 +6,7 @@ from frbpoppy.survey import Survey
 from tests.convenience import plot_aa_style, rel_path
 
 PATTERNS = ['perfect', 'gaussian', 'airy-0', 'airy-4']
-SURVEY = 'wrst-apertif'
+SURVEY = 'wsrt-apertif'
 MIN_Y = 1e-6
 n = 500000
 

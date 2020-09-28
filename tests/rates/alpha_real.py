@@ -7,7 +7,7 @@ from frbpoppy import poisson_interval
 from tests.convenience import plot_aa_style, rel_path
 
 EXPECTED = {'parkes-htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
-            'wrst-apertif': [9, 1100/24],  # 1100 hours
+            'wsrt-apertif': [9, 1100/24],  # 1100 hours
             'askap-fly': [20, 32840 / 8 / 24],
             'arecibo-palfa': [1, 24.1],
             'guppi': [0.4, 81],  # 0.4 is my own assumption
@@ -15,7 +15,7 @@ EXPECTED = {'parkes-htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
             'chime-frb': [2, 1]  # My own assumption
             }
 
-SURVEYS = ('parkes-htru', 'wrst-apertif', 'askap-fly', 'fast-crafts', 'arecibo-palfa')
+SURVEYS = ('parkes-htru', 'wsrt-apertif', 'askap-fly', 'fast-crafts', 'arecibo-palfa')
 ALPHAS = np.around(np.linspace(-0.5, -2.0, 7), decimals=2)
 
 

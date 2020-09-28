@@ -6,12 +6,12 @@ from frbpoppy import Frbcat, hist
 
 from tests.convenience import plot_aa_style, rel_path
 
-SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wrst-apertif',
+SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wsrt-apertif',
            'askap-incoh')
 
 frbcat = Frbcat().df
 snrs = {s: frbcat[frbcat.survey == s].snr.values for s in SURVEYS}
-snrs['wrst-apertif'] = [15.4, 12.9, 13.2, 60, 13, 38.1, 18.1, 27, 16.7, 13, 18.8,
+snrs['wsrt-apertif'] = [15.4, 12.9, 13.2, 60, 13, 38.1, 18.1, 27, 16.7, 13, 18.8,
                    27.7, 18.9, 17.84, 10.2, 14.84, 10.25]
 snrs['fast-crafts'] = [19]
 # Start plot

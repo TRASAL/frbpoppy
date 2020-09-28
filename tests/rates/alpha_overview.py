@@ -12,7 +12,7 @@ from alpha_analytical import analytical_rates
 
 REMAKE = True
 SIZE = 1e4
-SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wrst-apertif', 'arecibo-palfa')
+SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wsrt-apertif', 'arecibo-palfa')
 ELEMENTS = {'analytical': True, 'real': True, 'simple': False, 'complex': True}
 ALPHAS = np.around(np.linspace(-0.5, -2.0, 7), decimals=2)
 
