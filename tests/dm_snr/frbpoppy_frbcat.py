@@ -82,9 +82,12 @@ def get_data():
         path = ''
         surv_pops = []
         for telescope in TELESCOPES:
+            survey = telescope
             if telescope == 'askap':
-                telescope = 'askap-fly'
-            name = f'{telescope}'
+                survey = 'askap-fly'
+            if telescope == 'parkes':
+                survey = 'parkes-htru'
+            name = f'{survey}'
             path = paths.populations() + f'complex_{name}.p'
             surv_pops.append(unpickle(path))
 
@@ -97,7 +100,7 @@ def get_data():
 
         pattern = 'airy'
         if telescope == 'parkes':
-            pattern = telescope
+            pattern = 'parkes-htru'
 
         s = telescope
         if telescope == 'askap':

@@ -24,8 +24,8 @@ r.set_w('constant', value=1)
 r.generate()
 
 # Set up survey
-survey = Survey('chime', n_days=DAYS)
-survey.set_beam(model='chime')
+survey = Survey('chime-frb', n_days=DAYS)
+survey.set_beam(model='chime-frb')
 survey.snr_limit = 1e-13
 
 surv_pop = SurveyPopulation(r, survey)

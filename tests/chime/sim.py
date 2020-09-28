@@ -33,8 +33,8 @@ def iter_run(i):
     r.set_time(model='poisson', rate=rate)
 
     # Set up survey
-    s = Survey('chime', n_days=N_DAYS)
-    s.set_beam(model='chime')
+    s = Survey('chime-frb', n_days=N_DAYS)
+    s.set_beam(model='chime-frb')
     s.gen_pointings()  # To ensure each sub pop has the same pointings
 
     # Only generate FRBs in CHIME's survey region

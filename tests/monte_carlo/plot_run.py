@@ -44,11 +44,7 @@ surv_pop = unpickle(f)
 
 # Get actual data
 df = TNS(repeaters=False).df
-telescope = r.survey_name
-if telescope == 'htru':
-    telescope = 'parkes'
-if telescope == 'askap-fly':
-    telescope = 'askap'
+telescope = r.survey_name.split('-')[0]
 mask = (df.telescope.str.lower() == telescope)
 
 # Start with plotting

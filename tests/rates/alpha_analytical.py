@@ -7,7 +7,7 @@ from frbpoppy import Survey
 from tests.convenience import plot_aa_style, rel_path
 
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
-SURVEYS = ('htru', 'palfa', 'askap-fly', 'fast')
+SURVEYS = ('parkes-htru', 'arecibo-palfa', 'askap-fly', 'fast-crafts')
 
 
 def compare_surveys(surv1, surv2, alpha):

@@ -8,7 +8,7 @@ from frbpoppy import unpickle
 from tests.convenience import plot_aa_style, rel_path
 
 MAKE = True
-SURVEYS = ('askap-fly', 'fast', 'htru', 'apertif')
+SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wrst-apertif')
 
 
 if MAKE:

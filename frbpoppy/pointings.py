@@ -137,7 +137,7 @@ if __name__ == '__main__':
         ax.axes.set_zlim3d(bottom=-1, top=1)
         plt.show()
 
-    _transit = Survey('chime')
+    _transit = Survey('chime-frb')
     _transit.set_pointings(mount_type='transit', n_pointings=N_POINTS)
     _transit.gen_pointings()
     plot_coordinates(*_transit.pointings)

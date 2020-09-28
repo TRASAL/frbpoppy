@@ -7,8 +7,8 @@ from frbpoppy.survey import Survey
 
 from tests.convenience import plot_aa_style, rel_path
 
-OBSERVATORIES = [('parkes', 'htru'),
-                 ('apertif', 'apertif')]
+OBSERVATORIES = [('parkes-htru', 'parkes-htru'),
+                 ('wrst-apertif', 'wrst-apertif')]
 
 n = int(1e6)
 
@@ -16,8 +16,8 @@ plot_aa_style()
 
 for obs in OBSERVATORIES:
 
-    survey = obs[1]
     pattern = obs[0]
+    survey = obs[1]
 
     s = Survey(survey)
     s.set_beam(model=pattern)

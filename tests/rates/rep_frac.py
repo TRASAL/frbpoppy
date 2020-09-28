@@ -85,7 +85,7 @@ survey.set_beam(model='perfect')
 survey.snr_limit = 10000
 
 chime_survey = deepcopy(survey)
-chime_survey.set_beam(model='chime')
+chime_survey.set_beam(model='chime-frb')
 chime_survey.snr_limit = 1
 
 # Set up plot style
@@ -168,7 +168,7 @@ for i, dist_type in enumerate(dist_types):
 
 # Plot surveys with chime beam components
 ax2_elements.append((Line2D([0], [0], color='gray', linestyle='dashed'),
-                     'chime'))
+                     'chime-frb'))
 # Add line styles
 lines, labels = zip(*ax2_elements)
 ax2.legend(lines, labels, title='Beam patterns', prop={'size': 8},

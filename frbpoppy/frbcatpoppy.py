@@ -70,7 +70,7 @@ class Frbcat(PureFrbcat):
         # Bit rough, but will work in a pinch
         def cond(t):
             return (self.df.telescope == t) & (self.df.survey.isnull())
-        self.df.at[cond('apertif'), 'survey'] = 'apertif'
+        self.df.at[cond('wrst-apertif'), 'survey'] = 'wrst-apertif'
         self.df.at[cond('askap'), 'survey'] = 'askap-incoh'
         self.df.at[cond('chime'), 'survey'] = 'chime'
         self.df.at[cond('srt'), 'survey'] = 'srt'

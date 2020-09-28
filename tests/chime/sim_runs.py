@@ -27,8 +27,8 @@ for n in N_SRCS:
         r.set_time(model='poisson', rate=rate)
 
         # Set up survey
-        s = Survey('chime', n_days=N_DAYS)
-        s.set_beam(model='chime')
+        s = Survey('chime-frb', n_days=N_DAYS)
+        s.set_beam(model='chime-frb')
 
         # Only generate FRBs in CHIME's survey region
         r.set_direction(model='uniform',

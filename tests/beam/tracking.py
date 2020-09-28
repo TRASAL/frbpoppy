@@ -13,8 +13,8 @@ OBJ_OFFSET = 1  # deg
 INTENSITY_LIMIT = 1e-8
 
 # Set up survey
-survey = Survey('chime', n_days=0.99)
-survey.set_beam('chime')
+survey = Survey('chime-frb', n_days=0.99)
+survey.set_beam('chime-frb')
 
 # Get beam properties
 beam_array = survey.beam_array

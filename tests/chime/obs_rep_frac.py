@@ -51,7 +51,7 @@ if __name__ == '__main__':
             frac = np.nan
         chime_fracs.append(frac)
 
-    ax1.plot(days, chime_fracs, label='chime')
+    ax1.plot(days, chime_fracs, label='chime-frb')
 
     # Further plot details
     ax1.set_xlabel(r'Time (days)')

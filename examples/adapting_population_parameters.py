@@ -12,7 +12,7 @@ cosmic_pop.set_lum(model='powerlaw', low=1e44, high=1e45)
 cosmic_pop.generate()
 
 # Setup a survey
-survey = Survey('apertif')
+survey = Survey('wrst-apertif')
 # and adapt the survey with
 survey.set_beam('airy', n_sidelobes=2)
 survey.snr_limit = 2

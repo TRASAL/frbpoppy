@@ -11,7 +11,7 @@ r.set_time(model='regular', rate=2)
 r.set_lum(model='powerlaw', low=1e40, high=1e45, per_source='different')
 r.generate()
 
-survey = Survey('chime', n_days=DAYS)
+survey = Survey('chime-frb', n_days=DAYS)
 survey.set_beam(model='perfect')
 surv_pop = SurveyPopulation(r, survey)
 

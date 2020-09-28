@@ -10,7 +10,7 @@ from tests.convenience import plot_aa_style, rel_path
 
 REMAKE = True
 ALPHAS = np.around(np.linspace(-0.2, -2.5, 7), decimals=2)
-SURVEYS = ('palfa', 'htru', 'askap-fly')
+SURVEYS = ('arecibo-palfa', 'parkes-htru', 'askap-fly')
 SIZE = 1e7
 
 
@@ -52,12 +52,12 @@ def simple_rates(remake=REMAKE, alphas=ALPHAS, size=SIZE, surveys=SURVEYS):
 
     # Scale rates to HTRU
     for s in surveys:
-        if s != 'htru':
+        if s != 'parkes-htru':
             norm = []
             for i, r in enumerate(rates[s]):
-                norm.append(r/rates['htru'][i])
+                norm.append(r/rates['parkes-htru'][i])
             rates[s] = norm
-    rates['htru'] = [r/r for r in rates['htru']]
+    rates['parkes-htru'] = [r/r for r in rates['parkes-htru']]
 
     return rates
 

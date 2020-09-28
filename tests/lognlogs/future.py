@@ -8,7 +8,7 @@ from frbpoppy import unpickle, pprint
 from tests.convenience import plot_aa_style, rel_path
 
 MAKE = True
-SURVEYS = ('htru', 'fast', 'puma-full', 'chord', 'ska1-low', 'ska1-mid')
+SURVEYS = ('parkes-htru', 'fast-crafts', 'puma-full', 'chord', 'ska1-low', 'ska1-mid')
 
 
 if MAKE:

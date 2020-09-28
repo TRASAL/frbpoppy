@@ -114,10 +114,10 @@ if CHIME_HIST:
         n_burst_per_src = chime_n_bursts[ii]
         n_bursts.append(np.mean(n_burst_per_src))
 
-    ax2.step(bins[:-1], np.array(n_bursts), where='mid', label='chime',
+    ax2.step(bins[:-1], np.array(n_bursts), where='mid', label='chime-frb',
              color=colors[len(lum_funcs)])
 else:
-    ax2.scatter(chime_dms, chime_n_bursts, label='chime', marker='x',
+    ax2.scatter(chime_dms, chime_n_bursts, label='chime-frb', marker='x',
                 color=colors[len(lum_funcs)])
 
 

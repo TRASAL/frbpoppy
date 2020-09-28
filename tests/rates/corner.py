@@ -21,7 +21,7 @@ from alpha_real import EXPECTED
 vs = {'alpha': np.linspace(-1, -2, 5)[::-1][1:4],
       'li': np.linspace(-2, 0, 5),  # Luminosity function index
       'si': np.linspace(-2, 2, 5)}  # Spectral index
-SURVEYS = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
+SURVEYS = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wrst-apertif', 'arecibo-palfa')
 
 
 def get_pops(alpha='*', li='*', si='*', survey='*'):

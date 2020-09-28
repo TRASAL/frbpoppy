@@ -19,15 +19,16 @@ SIZE = 1e3
 ALPHAS = np.linspace(-1, -2, 5)[1:4]
 LIS = np.linspace(-2, 0, 5)  # Luminosity function index
 SIS = np.linspace(-2, 2, 5)  # Spectral index
-SURVEY_NAMES = ('askap-fly', 'fast', 'htru', 'apertif', 'palfa')
+SURVEY_NAMES = ('askap-fly', 'fast-crafts', 'parkes-htru', 'wrst-apertif',
+                'arecibo-palfa')
 
 # # Current detection rates
-# EXPECTED = {'htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
-#             'apertif': [9, 1100/24],  # 1100 hours
+# EXPECTED = {'parkes-htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
+#             'wrst-apertif': [9, 1100/24],  # 1100 hours
 #             'askap-fly': [20, 32840 / 8 / 24],
-#             'palfa': [1, 24.1],
+#             'arecibo-palfa': [1, 24.1],
 #             'guppi': [0.4, 81],  # 0.4 is my own assumption
-#             'fast': [1, 1500/24]
+#             'fast-crafts': [1, 1500/24]
 #             }
 
 

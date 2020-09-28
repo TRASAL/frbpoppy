@@ -163,8 +163,8 @@ class Survey:
         Set properties for int pro
 
         Args:
-            model (str): Beam pattern. Choice from 'apertif', 'parkes',
-                'chime', 'gaussian', 'airy'.
+            model (str): Beam pattern. Choice from 'wrst-apertif',
+                'parkes-htru', 'chime-frb', 'gaussian', 'airy'.
             size (float): Beam size at FWHM [sq. deg].
                 Defaults to that of the survey file
             random_loc (bool): Whether to calculate the precise or random

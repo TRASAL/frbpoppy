@@ -10,7 +10,7 @@ from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, hist
 from tests.convenience import plot_aa_style, rel_path
 
 SIZE = 1e5
-SURVEYS = ['perfect', 'apertif', 'htru', 'fast']
+SURVEYS = ['perfect', 'wrst-apertif', 'parkes-htru', 'fast-crafts']
 
 
 class Flattening:

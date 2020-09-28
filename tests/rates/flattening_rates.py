@@ -8,7 +8,7 @@ from frbpoppy import poisson_interval
 from tests.convenience import plot_aa_style, rel_path
 
 ACTUAL_RATES = False
-SURVEYS = ['askap-fly', 'fast', 'chime', 'apertif']
+SURVEYS = ['askap-fly', 'fast-crafts', 'chime-frb', 'wrst-apertif']
 SIZE = 1e5
 
 
@@ -253,5 +253,5 @@ class Rates:
 
 
 if __name__ == '__main__':
-    rates = {'apertif': 1, 'htru': 2, 'fast': 5, 'askap': 10}
+    rates = {'wrst-apertif': 1, 'parkes-htru': 2, 'fast-crafts': 5, 'askap': 10}
     Rates(SIZE, SURVEYS, rates)

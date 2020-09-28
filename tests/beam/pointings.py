@@ -27,7 +27,7 @@ def plot_coordinates(ra, dec):
 
 
 if __name__ == '__main__':
-    transit = Survey('chime')
+    transit = Survey('chime-frb')
     transit.set_pointings(mount_type='transit', n_pointings=N_POINTS)
     transit.gen_pointings()
     plot_coordinates(*transit.pointings)

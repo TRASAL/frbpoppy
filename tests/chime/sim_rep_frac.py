@@ -22,8 +22,8 @@ RATE = 9  # per day
 N_CHIME = {'rep': 9, 'one-offs': 365*2, 'time': 365}
 
 # Set up survey
-chime = Survey('chime', n_days=N_DAYS)
-chime.set_beam(model='chime')
+chime = Survey('chime-frb', n_days=N_DAYS)
+chime.set_beam(model='chime-frb')
 
 if MAKE:
 
@@ -93,7 +93,7 @@ if PLOT_CHIME:
             frac = np.nan
         chime_fracs.append(frac)
 
-    ax1.plot(days, chime_fracs, label='chime')
+    ax1.plot(days, chime_fracs, label='chime-frb')
     plt.legend()
 
 # Further plot details

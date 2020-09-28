@@ -7,7 +7,7 @@ from frbpoppy.survey import Survey
 from tests.convenience import plot_aa_style, rel_path
 
 SIDELOBES = [0, 1, 2, 8]
-SURVEY = 'apertif'
+SURVEY = 'wrst-apertif'
 MIN_Y = 1e-7
 n = 50000
 
