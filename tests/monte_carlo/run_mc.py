@@ -7,6 +7,7 @@ from joblib import Parallel, delayed
 from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from scipy.stats import ks_2samp
+from scipy.optimize import curve_fit
 from tqdm import tqdm
 import frbpoppy.paths
 import matplotlib.pyplot as plt
@@ -79,6 +80,8 @@ class MonteCarlo:
         for name in self.survey_names:
             survey = Survey(name=name)
             survey.set_beam(model='airy', n_sidelobes=1)
+            if name in ('chime-frb', 'wsrt-apertif', 'parkes-htru'):
+                survey.set_beam(model=name)
             self.surveys.append(survey)
 
     def set_up_dir(self):
@@ -128,6 +131,17 @@ class MonteCarlo:
 
         self.runs = [i for sublist in p for i in sublist]
 
+    def get_runs(self):
+        """Load in populations to get information on the runs."""
+        for alpha in self.alphas:
+            for li in self.lis:
+                for si in self.sis:
+                    for surv in self.survey_names:
+                        f = f'mc/complex_alpha_{alpha}_lum_{li}_si_{si}_{surv}'
+                        surv_pop = unpickle(f)
+                        run = self.pop_to_run(surv_pop)
+                        self.runs.append(run)
+
     def pop_to_run(self, surv_pop):
         """Given population information, construct run information."""
         # Save output
@@ -138,6 +152,7 @@ class MonteCarlo:
         run.pop_name = surv_pop.name
 
         # Dealing with old survey names
+        # TODO: Remove after new runs
         if run.survey_name == 'chime':
             run.survey_name = 'chime-frb'
         if run.survey_name == 'htru':
@@ -177,24 +192,15 @@ class MonteCarlo:
         real_ratio = surv_real_rate / norm_real_rate
 
         # TODO: Update to include information on the Poisson intervals
-        run.ks_rate = np.abs(sim_ratio - real_ratio)
+        run.ks_rate = 1/np.abs(sim_ratio - real_ratio)
+        if run.survey_name == self.norm_surv:
+            run.ks_rate = np.nan
 
         mask = (self.tns.survey == run.survey_name)
         run.ks_dm = ks_2samp(surv_pop.frbs.dm, self.tns[mask].dm)[1]
         run.ks_snr = ks_2samp(surv_pop.frbs.snr, self.tns[mask].snr)[1]
 
         return run
-
-    def get_runs(self):
-        """Load in populations to get information on the runs."""
-        for alpha in self.alphas:
-            for li in self.lis:
-                for si in self.sis:
-                    for surv in self.survey_names:
-                        f = f'mc/complex_alpha_{alpha}_lum_{li}_si_{si}_{surv}'
-                        surv_pop = unpickle(f)
-                        run = self.pop_to_run(surv_pop)
-                        self.runs.append(run)
 
     def plot(self):
         # Convert to a pandas dataframe
@@ -206,13 +212,14 @@ class MonteCarlo:
         warnings.simplefilter("ignore", category=RuntimeWarning)
 
         for ks_type in ('ks_dm', 'ks_snr', 'ks_rate'):
+            pprint(f'ks-type: {ks_type}')
             for i, group in df.groupby('survey_name'):
                 self.plot_run(ks_type, group)
             # A combined plot per ks type
             self.plot_run(ks_type, df)
         # nd one total combined plot
-        ks_cols = [col for col in df if col.startswith('ks_')]
-        df['ks_all'] = df[ks_cols].median(axis=1, skipna=True)
+        ks_cols = ['ks_dm', 'ks_snr']
+        df['ks_all'] = df[ks_cols].median(axis='columns', skipna=True)
         self.plot_run('ks_all', df)
 
     def plot_run(self, ks_type, df):
@@ -227,13 +234,17 @@ class MonteCarlo:
             survey_name = df.survey_name.unique()[0]
         else:
             survey_name = 'combined'
+        if survey_name == self.norm_surv and ks_type == 'ks_rate':
+            return
+        pprint(f' - survey: {survey_name}')
 
         # Add color grids
         args = {'cmap': 'viridis', 'norm': LogNorm(),
                 'vmin': 1e-2, 'vmax': 1e0}
         if ks_type == 'ks_rate':
+            # Inversting colorbar as smaller is better!
             args = {'cmap': 'viridis', 'norm': LogNorm(),
-                    'vmin': 1e-2, 'vmax': 1e2}
+                    'vmin': 1e-2, 'vmax': 1e0}
         axes[2, 0].pcolormesh(*self.make_mesh('alpha', 'si', df, ks_type),
                               **args)
         axes[1, 0].pcolormesh(*self.make_mesh('alpha', 'li', df, ks_type),
@@ -242,9 +253,9 @@ class MonteCarlo:
                                    **args)
 
         # Add histograms
-        axes[0, 0].step(*self.make_hist('alpha', df, ks_type), where='mid')
-        axes[1, 1].step(*self.make_hist('li', df, ks_type), where='mid')
-        axes[2, 2].step(*self.make_hist('si', df, ks_type), where='mid')
+        self.plot_hist(axes[0, 0], 'alpha', df, ks_type)
+        self.plot_hist(axes[1, 1], 'li', df, ks_type)
+        self.plot_hist(axes[2, 2], 'si', df, ks_type)
 
         # Add plot information
         axes[0, 2].text(.5, .7, fr'{survey_name} | {ks_type[3:]}',
@@ -288,7 +299,7 @@ class MonteCarlo:
         axes[1, 1].yaxis.tick_right()
         axes[1, 1].set_yscale('log')
         axes[1, 2].set_axis_off()
-        axes[2, 0].set_xlabel('alpha')
+        axes[2, 0].set_xlabel(r'$\alpha$')
         axes[2, 0].set_ylabel('si')
         axes[2, 0].get_shared_y_axes().join(axes[2, 0], axes[2, 1])
         axes[2, 1].set_xlabel('li')
@@ -305,7 +316,7 @@ class MonteCarlo:
                             loc='center')
         clb = plt.colorbar(im, cax=cbaxes, orientation='horizontal')
         if ks_type == 'ks_rate':
-            clb.set_label(f'diff rate ratio wrt {self.norm_surv}')
+            clb.set_label(f'1/diff rate ratio wrt {self.norm_surv}')
         else:
             clb.set_label('p-value')
 
@@ -328,7 +339,7 @@ class MonteCarlo:
         x_vals = np.linspace(min(x_vals), max(x_vals) + dx, len(x_vals)+1)
         y_vals = np.linspace(min(y_vals), max(y_vals) + dy, len(y_vals)+1)
         v = np.zeros([len(x_vals), len(y_vals)])
-        pprint(f'{x_par}, {y_par}')
+        pprint(f'    - {x_par}, {y_par}')
 
         for i, x_val in enumerate(x_vals):
             for j, y_val in enumerate(y_vals):
@@ -336,6 +347,29 @@ class MonteCarlo:
                 v[i, j] = df[mask][ks_type].median(skipna=True)
 
         return x_vals-dx/2., y_vals-dy/2., v.T
+
+    def plot_hist(self, ax, parameter, df, ks_type):
+        bin_centres, values = self.make_hist(parameter, df, ks_type)
+        ax.step(bin_centres, values, where='mid', zorder=5)
+        # Limited as the bin_centres have extra values to look nice
+        bins, hist_fit, coeff, fit_err = self.make_fit(bin_centres[1:-1],
+                                                       values[1:-1])
+        ax.step(bins, hist_fit, where='mid', color='grey', linewidth=1)
+        mu, sigma, norm = coeff
+        if not np.isnan(mu):
+            ax.axvline(x=mu, linewidth=1, color='grey')
+            ax.axvline(x=mu-sigma, linewidth=1, color='grey',
+                       linestyle='dashed')
+            ax.axvline(x=mu+sigma, linewidth=1, color='grey',
+                       linestyle='dashed')
+            p = parameter
+            if parameter == 'alpha':
+                p = r'$\alpha$'
+            title = fr'{p}=${mu:.1f}\pm{np.abs(sigma):.1f}$'
+            title += '\n'
+            title += fr'($\sigma={fit_err:.2e}$)'
+            ax.set_title(title,
+                         fontsize=10)
 
     def make_hist(self, par, df, ks_type):
         """Construct histogram details."""
@@ -355,6 +389,29 @@ class MonteCarlo:
         probs = np.insert(probs, len(probs), 0)
 
         return par_vals, probs
+
+    def make_fit(self, bin_centres, hist):
+        """Fit a function to the constructed median histograms."""
+        mask = ~(np.isnan(bin_centres) | np.isnan(hist))
+        bin_centres = bin_centres[mask]
+        hist = hist[mask]
+
+        def gauss(x, *p):
+            mu, sigma, norm = p
+            return norm*np.exp(-(x-mu)**2/(2.*sigma**2))
+
+        p0 = [0., 1., 1.]
+        try:
+            coeff, var_matrix = curve_fit(gauss, bin_centres, hist, p0=p0)
+            fit_err = np.sum(np.sqrt(np.diag(var_matrix))**2)
+        except (TypeError, RuntimeError) as e:
+            return np.nan, np.nan, [np.nan, np.nan, np.nan], np.nan
+
+        # Get the fitted curve
+        bins = np.linspace(bin_centres[0], bin_centres[-1], 1000)
+        hist_fit = gauss(bins, *coeff)
+
+        return bins, hist_fit, coeff, fit_err
 
     def apply_test(self, df):
         for c in ('ks_dm', 'ks_snr', 'ks_rate'):

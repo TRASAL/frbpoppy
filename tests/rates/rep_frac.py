@@ -72,6 +72,8 @@ def get_frac_over_time(surv_pop, survey):
         n_one_offs = ((~np.isnan(time)).sum(1) == 1).sum()
         frac = n_rep / (n_rep + n_one_offs)
         fracs.append(frac)
+    print(f'# one-offs: {n_one_offs}')
+    print(f'# repeaters: {n_rep}')
     return days, fracs
 
 
@@ -118,6 +120,7 @@ ax1_elements = []
 ax2_elements = [(Line2D([0], [0], color='gray'), 'perfect')]
 
 for i, dist_type in enumerate(dist_types):
+    print(f'Distribution type: {dist_type}')
     color = colors[i]
 
     # Plot rates
