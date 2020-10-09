@@ -155,7 +155,7 @@ class Plot():
         elements.append((line, label))
 
         lines, labels = zip(*elements)
-        self.fig.legend(lines, labels, bbox_to_anchor=(0.80, 0.4),
+        self.fig.legend(lines, labels, bbox_to_anchor=(0.85, 0.4),
                         loc='center')
 
         ax.set_axis_off()
