@@ -1,5 +1,5 @@
 from frbpoppy import hist
-from goodness_of_fit import GoodnessOfFit, Fit
+from goodness_of_fit import GoodnessOfFit
 from matplotlib.lines import Line2D
 from tests.convenience import plot_aa_style, rel_path
 import matplotlib.pyplot as plt
@@ -18,6 +18,8 @@ class Plot():
         plt.rcParams['axes.titlepad'] = 10
         self.fig, self.axes = plt.subplots(4, 3, sharey='row')
         self.colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        self.gf = GoodnessOfFit(calc=False, plot=False)
+        self.df = self.gf.so.df
 
         # Plot various subplots
         self.alpha()
@@ -33,15 +35,12 @@ class Plot():
         self.dm_host()
         self.axes[3, 2].set_axis_off()
 
-        # Testing
-        self.gen_test()
-
         # Plot run rectangles
         self.runs()
 
         # Save plot
         plt.tight_layout(rect=[0, 0, 0.98, 1])
-        plt.savefig(rel_path('./plots/mc.pdf'))
+        plt.savefig(rel_path('./plots/mc/mc.pdf'))
 
     def alpha(self):
         ax = self.axes[0, 0]
@@ -49,6 +48,17 @@ class Plot():
         ax.set_ylabel(r'g.o.f.')
         parm = r'\alpha'
         ax.set_xlabel(rf'${parm}$')
+
+        df = self.df[self.df.run == 1]
+        gofs = []
+        bins = []
+        for bin_val, group in df.groupby('alpha'):
+            gof = self.gf.weighted_median(group)
+            gofs.append(gof)
+            bins.append(bin_val)
+        bins, gofs = self.gf.add_edges_to_hist(bins, gofs, bin_type='log')
+        ax.step(bins, gofs, where='mid')
+        ax.set_xlim(np.nanmin(bins), np.nanmax(bins))
 
         best_value, best_value_err = 1, 1
         ax.set_title(rf'${parm}={best_value}\pm{best_value_err}$',

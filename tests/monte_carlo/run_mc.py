@@ -151,15 +151,6 @@ class MonteCarlo:
         run.survey_name = n[-1]
         run.pop_name = surv_pop.name
 
-        # Dealing with old survey names
-        # TODO: Remove after new runs
-        if run.survey_name == 'chime':
-            run.survey_name = 'chime-frb'
-        if run.survey_name == 'htru':
-            run.survey_name = 'parkes-htru'
-        if run.survey_name == 'apertif':
-            run.survey_name = 'wsrt-apertif'
-
         # Add rate details
         sr = surv_pop.source_rate
         run.n_srcs = sr.det
