@@ -12,7 +12,8 @@ EXPECTED = {'parkes-htru': [9, 1549 / 0.551 / 24],  # N_frbs, N_days
             'arecibo-palfa': [1, 24.1],
             'guppi': [0.4, 81],  # 0.4 is my own assumption
             'fast-crafts': [1, 1500/24],
-            'chime-frb': [2, 1]  # My own assumption
+            'chime-frb': [2, 1],  # My own assumption
+            'askap-incoh': [9, 45]  # My own assumption
             }
 
 SURVEYS = ('parkes-htru', 'wsrt-apertif', 'askap-fly', 'fast-crafts', 'arecibo-palfa')

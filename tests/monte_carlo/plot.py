@@ -1,6 +1,7 @@
 from frbpoppy import hist
 from goodness_of_fit import GoodnessOfFit
 from matplotlib.lines import Line2D
+from scipy.optimize import curve_fit
 from tests.convenience import plot_aa_style, rel_path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,8 +19,14 @@ class Plot():
         plt.rcParams['axes.titlepad'] = 10
         self.fig, self.axes = plt.subplots(4, 3, sharey='row')
         self.colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-        self.gf = GoodnessOfFit(calc=False, plot=False)
+        self.gf = GoodnessOfFit(calc_gofs=False, plot=False)
         self.df = self.gf.so.df
+
+        # Calculate global maximums
+        self.gm = {}
+        for run in self.df.run.unique():
+            self.gm[run] = self.gf.calc_global_max(run)
+        print(self.gm)
 
         # Plot various subplots
         self.alpha()
@@ -44,41 +51,102 @@ class Plot():
 
     def alpha(self):
         ax = self.axes[0, 0]
-        ax.set_yscale('log')
+        ax.set_yscale('log', nonposy='clip')
         ax.set_ylabel(r'g.o.f.')
-        parm = r'\alpha'
-        ax.set_xlabel(rf'${parm}$')
+        parm = r'$\alpha$'
+        ax.set_xlabel(parm)
 
-        df = self.df[self.df.run == 1]
-        gofs = []
-        bins = []
-        for bin_val, group in df.groupby('alpha'):
-            gof = self.gf.weighted_median(group)
-            gofs.append(gof)
-            bins.append(bin_val)
-        bins, gofs = self.gf.add_edges_to_hist(bins, gofs, bin_type='log')
+        # Plot run
+        run = 1
+        bins, gofs = self.get_data(run, 'alpha')
         ax.step(bins, gofs, where='mid')
-        ax.set_xlim(np.nanmin(bins), np.nanmax(bins))
 
-        best_value, best_value_err = 1, 1
-        ax.set_title(rf'${parm}={best_value}\pm{best_value_err}$',
-                     color=self.colors[2])
+        # Plot global maximum
+        best = self.gm[run]['alpha']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[0])
+
+        if not np.isnan(best):
+            title = fr'{parm}=${best:.1f}$'
+            ax.set_title(title, fontsize=10, color=self.colors[0])
+
+        # Plot run
+        run = 5
+        bins, gofs = self.get_data(run, 'alpha')
+        ax.step(bins, gofs, where='mid')
+
+        # Plot global maximum
+        best = self.gm[run]['alpha']
+        ax.axvline(x=best, linestyle='dotted', color='orange')
+        # # Plot fit
+        # bins = bins[1:-1]
+        # gofs = gofs[1:-1]
+        # bins_fit, hist_fit, coeff, fit_err = self.get_fit(bins, gofs)
+        # ax.plot(bins_fit, hist_fit, color='grey', linewidth=1)
+        #
+        # # Plot best fit values
+        # mu, sigma, norm = coeff
+        # if not np.isnan(mu):
+        #     ax.axvline(x=mu, linewidth=1, color='grey')
+        #     # ax.axvline(x=mu-sigma, linewidth=1, color='grey',
+        #     #            linestyle='dashed')
+        #     # ax.axvline(x=mu+sigma, linewidth=1, color='grey',
+        #     #            linestyle='dashed')
+        #     title = fr'{parm}=${mu:.1f}\pm{np.abs(sigma):.1f}$'
+        #     ax.set_title(title, fontsize=10)
 
     def si(self):
         ax = self.axes[0, 1]
         parm = r'\text{si}'
         ax.set_xlabel(rf'${parm}$')
-        best_value, best_value_err = 1, 1
-        ax.set_title(rf'${parm}={best_value}\pm{best_value_err}$',
-                     color=self.colors[2])
+
+        # Plot run
+        run = 1
+        bins, gofs = self.get_data(run, 'si')
+        ax.step(bins, gofs, where='mid')
+
+        # Plot global maximum
+        best = self.gm[run]['si']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[0])
+
+        if not np.isnan(best):
+            title = fr'{parm}=${best:.1f}$'
+            ax.set_title(title, fontsize=10, color=self.colors[0])
+
+        # Plot run
+        run = 5
+        bins, gofs = self.get_data(run, 'si')
+        ax.step(bins, gofs, where='mid', color=self.colors[1])
+
+        # Plot global maximum
+        best = self.gm[run]['si']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[1])
 
     def li(self):
         ax = self.axes[0, 2]
         parm = r'\text{lum$_{\text{i}}$}'
         ax.set_xlabel(rf'${parm}$')
-        best_value, best_value_err = 1, 1
-        ax.set_title(rf'${parm}={best_value}\pm{best_value_err}$',
-                     color=self.colors[2])
+
+        # Plot run
+        run = 1
+        bins, gofs = self.get_data(run, 'li')
+        ax.step(bins, gofs, where='mid')
+
+        # Plot global maximum
+        best = self.gm[run]['li']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[0])
+
+        if not np.isnan(best):
+            title = fr'{parm}=${best:.1f}$'
+            ax.set_title(title, fontsize=10, color=self.colors[0])
+
+        # Plot run
+        run = 5
+        bins, gofs = self.get_data(run, 'li')
+        ax.step(bins, gofs, where='mid', color=self.colors[1])
+
+        # Plot global maximum
+        best = self.gm[run]['li']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[1])
 
     def li_2(self):
         ax = self.axes[1, 0]
@@ -86,25 +154,57 @@ class Plot():
         ax.set_ylabel(r'g.o.f.')
         parm = r'\text{lum$_{\text{i}}$}'
         ax.set_xlabel(rf'${parm}$')
-        best_value, best_value_err = 1, 1
-        ax.set_title(rf'${parm}={best_value}\pm{best_value_err}$',
-                     color=self.colors[2])
+
+        # Plot run
+        run = 2
+        bins, gofs = self.get_data(run, 'li')
+        ax.step(bins, gofs, where='mid')
+
+        # Plot global maximum
+        best = self.gm[run]['li']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[0])
+
+        if not np.isnan(best):
+            title = fr'{parm}=${best:.1f}$'
+            ax.set_title(title, fontsize=10, color=self.colors[0])
 
     def lum_min(self):
         ax = self.axes[1, 1]
         parm = r'\text{lum$_{\text{min}}$}'
         ax.set_xlabel(rf'${parm}$')
-        best_value, best_value_err = 1, 1
-        ax.set_title(rf'${parm}={best_value}\pm{best_value_err}$',
-                     color=self.colors[2])
+        ax.set_xscale('log')
+
+        # Plot run
+        run = 2
+        bins, gofs = self.get_data(run, 'lum_min')
+        ax.step(bins, gofs, where='mid')
+
+        # Plot global maximum
+        best = self.gm[run]['lum_min']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[0])
+
+        if not np.isnan(best):
+            title = fr'{parm}=${best:.1E}$'
+            ax.set_title(title, fontsize=10, color=self.colors[0])
 
     def lum_max(self):
         ax = self.axes[1, 2]
         parm = r'\text{lum$_{\text{max}}$}'
         ax.set_xlabel(rf'${parm}$')
-        best_value, best_value_err = 1, 1
-        ax.set_title(rf'${parm}={best_value}\pm{best_value_err}$',
-                     color=self.colors[2])
+        ax.set_xscale('log')
+
+        # Plot run
+        run = 2
+        bins, gofs = self.get_data(run, 'lum_max')
+        ax.step(bins, gofs, where='mid')
+
+        # Plot global maximum
+        best = self.gm[run]['lum_max']
+        ax.axvline(x=best, linestyle='dotted', color=self.colors[0])
+
+        if not np.isnan(best):
+            title = fr'{parm}=${best:.1E}$'
+            ax.set_title(title, fontsize=10, color=self.colors[0])
 
     def w_int_mean(self):
         ax = self.axes[2, 0]
@@ -226,6 +326,42 @@ class Plot():
 
             # Postset value
             ax.axvline(x=0, color=self.colors[2], lw=1)
+
+    def get_data(self, run_number, par):
+        df = self.df[self.df.run == run_number]
+        gofs = []
+        bins = []
+        for bin_val, group in df.groupby(par):
+            gof = self.gf.weighted_median(group)
+            gofs.append(gof)
+            bins.append(bin_val)
+        bins = np.array(bins)
+        gofs = np.array(gofs)
+        bins, gofs = self.gf.add_edges_to_hist(bins, gofs, bin_type='lin')
+        return bins, gofs
+
+    def get_fit(self, bin_centres, hist):
+        """Fit a Gaussian function to the constructed median histograms."""
+        mask = ~(np.isnan(bin_centres) | np.isnan(hist))
+        bin_centres = bin_centres[mask]
+        hist = hist[mask]
+
+        def gauss(x, *p):
+            mu, sigma, norm = p
+            return norm*np.exp(-(x-mu)**2/(2.*sigma**2))
+
+        p0 = [0., 1., 1.]
+        try:
+            coeff, var_matrix = curve_fit(gauss, bin_centres, hist, p0=p0)
+            fit_err = np.sum(np.sqrt(np.diag(var_matrix))**2)
+        except (TypeError, RuntimeError) as e:
+            return np.nan, np.nan, [np.nan, np.nan, np.nan], np.nan
+
+        # Get the fitted curve
+        bins = np.linspace(bin_centres[0], bin_centres[-1], 1000)
+        hist_fit = gauss(bins, *coeff)
+
+        return bins, hist_fit, coeff, fit_err
 
 
 if __name__ == '__main__':

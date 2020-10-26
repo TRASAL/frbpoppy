@@ -13,12 +13,13 @@ from tqdm import tqdm
 import uuid
 
 KEEP_CSV = True
-SIZE = 1e1
-RUNS = [2]
-ALPHA = -1.5
-SI = 0
-LI = -1
-L_MIN = 1e40
+SIZE = 1e7
+RUNS = [3]
+ALPHA = -1.7
+SI = 2.0
+LI = -1.0
+LI_2 = -0.9
+L_MIN = 5e41
 L_MAX = 1e45
 W_MEAN = 1
 W_STD = 1
@@ -48,7 +49,7 @@ class SimulationOverview:
         self.df.to_csv(self.filename)
 
     def append(self, df):
-        self.df = self.df.append(df)
+        self.df = self.df.append(df, ignore_index=True)
 
     def map_surveys(self, ix, names):
         mapping = dict(zip(ix, names))
@@ -72,6 +73,7 @@ class MonteCarlo:
         self.set_up_dirs()
 
         for n in self.runs:
+            self.so.df = self.so.df[(self.so.df.run != n)]
             if n == 1:
                 self.run_1()
             if n == 2:
@@ -117,6 +119,7 @@ class MonteCarlo:
         lis = np.linspace(-2, 0, 11)
 
         # Put all options into a dataframe
+        self.so.df = self.so.df[self.so.df.run != run_number]
         opt = np.meshgrid(alphas, sis, lis, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 4)
         df = pd.DataFrame(options, columns=('alpha', 'si', 'li', 'survey'))
@@ -137,11 +140,11 @@ class MonteCarlo:
             alpha = alphas[i]
             pop = CosmicPopulation.complex(self.pop_size)
 
-            # Basically a sanity check
-            if run_number == 5:
-                pop.set_w(model='lognormal', mean=W_MEAN, std=W_STD)
-                pop.set_dm_igm(model='ioka', slope=DM_IGM_SLOPE)
-                pop.set_dm_host(model='constant', value=DM_HOST)
+            # # Basically a sanity check
+            # if run_number == 5:
+            #     pop.set_w(model='lognormal', mean=W_MEAN, std=W_STD)
+            #     pop.set_dm_igm(model='ioka', slope=DM_IGM_SLOPE)
+            #     pop.set_dm_host(model='constant', value=DM_HOST)
 
             pop.set_dist(model='vol_co', z_max=1.0, alpha=alpha)
             pop.set_lum(model='constant', value=1)
@@ -183,12 +186,13 @@ class MonteCarlo:
         else:
             [iter_alpha(i) for i in tqdm(range(len(alphas)))]
 
-    def run_2(self, run_number=2):
-        lis = np.linspace(-2, 0, 11)
+    def run_2(self, run_number=2, parallel=True):
+        lis = np.linspace(-1.5, 0, 11)
         lum_mins = 10**np.linspace(34, 45, 11)
         lum_maxs = 10**np.linspace(34, 45, 11)
 
         # Put all options into a dataframe
+        self.so.df = self.so.df[self.so.df.run != 2]
         opt = np.meshgrid(lis, lum_mins, lum_maxs, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 4)
         cols = ('li', 'lum_min', 'lum_max', 'survey')
@@ -196,6 +200,7 @@ class MonteCarlo:
         df['run'] = run_number
         df['uuid'] = [uuid.uuid4() for _ in range(len(df.index))]
         df['date'] = datetime.today()
+        df = df[~(df.lum_max < df.lum_min)]
         self.so.append(df)
         self.so.map_surveys(self.survey_ix, self.survey_names)
         self.so.save()
@@ -214,6 +219,8 @@ class MonteCarlo:
 
         def adapt_pop(e):
             li, lum_min, lum_max = e
+            if lum_max < lum_min:
+                return
             t_pop = deepcopy(pop)
             t_pop.set_lum(model='powerlaw', low=lum_min, high=lum_max,
                           power=li)
@@ -236,13 +243,17 @@ class MonteCarlo:
         pprint(f'{os.cpu_count()} CPUs available')
         mg = np.meshgrid(lis, lum_mins, lum_maxs)
         loop_over = np.array(mg).T.reshape(-1, 3)
-        Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+        if parallel:
+            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+        else:
+            [adapt_pop(e) for e in tqdm(loop_over)]
 
-    def run_3(self, run_number=3):
-        w_means = np.linspace(1, 0, 11)  # TODO!
-        w_stds = 10**np.linspace(34, 45, 11)  # TODO!
+    def run_3(self, run_number=3, parallel=True):
+        w_means = 10**np.linspace(-2, 2, 11)  # TODO!
+        w_stds = np.linspace(0, 3, 11)  # TODO!
 
         # Put all options into a dataframe
+        self.so.df = self.so.df[self.so.df.run != 3]
         opt = np.meshgrid(w_means, w_stds, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 3)
         cols = ('w_mean', 'w_std', 'survey')
@@ -263,7 +274,7 @@ class MonteCarlo:
         pop = CosmicPopulation.complex(self.pop_size)
         pop.set_dist(model='vol_co', z_max=1.0, alpha=ALPHA)
         pop.set_si(model='constant', value=SI)
-        pop.set_lum(model='powerlaw', low=L_MIN, high=L_MAX, index=LI)
+        pop.set_lum(model='powerlaw', low=L_MIN, high=L_MAX, index=LI_2)
         pop.generate()
 
         def adapt_pop(e):
@@ -288,13 +299,17 @@ class MonteCarlo:
         pprint(f'{os.cpu_count()} CPUs available')
         mg = np.meshgrid(w_means, w_stds)
         loop_over = np.array(mg).T.reshape(-1, 2)
-        Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+        if parallel:
+            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+        else:
+            [adapt_pop(e) for e in tqdm(loop_over)]
 
-    def run_4(self, run_number=4):
+    def run_4(self, run_number=4, parallel=True):
         dm_igm_slopes = np.linspace(800, 1200, 11)
         dm_hosts = np.linspace(0, 500, 11)
 
         # Put all options into a dataframe
+        self.so.df = self.so.df[self.so.df.run != 4]
         opt = np.meshgrid(dm_igm_slopes, dm_hosts, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 3)
         cols = ('dm_igm_slope', 'dm_host', 'survey')
@@ -315,7 +330,7 @@ class MonteCarlo:
         pop = CosmicPopulation.complex(self.pop_size)
         pop.set_dist(model='vol_co', z_max=1.0, alpha=ALPHA)
         pop.set_si(model='constant', value=SI)
-        pop.set_lum(model='powerlaw', low=L_MIN, high=L_MAX, index=LI)
+        pop.set_lum(model='powerlaw', low=L_MIN, high=L_MAX, index=LI_2)
         pop.set_w(model='lognormal', mean=W_MEAN, std=W_STD)
         pop.generate()
 
@@ -344,7 +359,10 @@ class MonteCarlo:
         pprint(f'{os.cpu_count()} CPUs available')
         mg = np.meshgrid(dm_igm_slopes, dm_hosts)
         loop_over = np.array(mg).T.reshape(-1, 2)
-        Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+        if parallel:
+            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+        else:
+            [adapt_pop(e) for e in tqdm(loop_over)]
 
 
 if __name__ == '__main__':
