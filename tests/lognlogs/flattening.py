@@ -46,6 +46,8 @@ class Flattening:
         pops = []
 
         for z in [0.01, 6]:
+            lum_pop.set_dist(z_max=z)
+
             # Standard candles
             lum_pop.set_lum(model='constant', value=1e40)
             lum_pop.generate()
