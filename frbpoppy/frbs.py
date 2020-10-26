@@ -67,7 +67,7 @@ class FRBs:
         """
         for attr in self.__dict__.keys():
             parm = getattr(self, attr)
-            if type(parm) is np.ndarray:
+            if isinstance(parm, np.ndarray):
                 # 1D mask on 1D or 2D array
                 if mask.ndim == 1:
                     setattr(self, attr, parm[mask])
