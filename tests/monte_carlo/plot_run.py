@@ -1,123 +1,75 @@
-"""Plot distributions from a single Monte Carlo run."""
+"""Visualise run."""
 import matplotlib.pyplot as plt
-from scipy.stats import ks_2samp
-from matplotlib.offsetbox import AnchoredText
 import numpy as np
-import os
-from functools import reduce
+from mpl_toolkits.mplot3d import Axes3D
 
-from frbpoppy import poisson_interval, unpickle, hist
+from simulations import SimulationOverview
+from goodness_of_fit import GoodnessOfFit
 
-from frbcat import TNS
+RUN = 5
+run_pars = {1: ['alpha', 'si', 'li'],
+            2: ['lum_min', 'lum_max', 'li'],
+            3: ['w_mean', 'w_std'],
+            4: ['dm_igm_slope', 'dm_host']}
 
-from tests.rates.alpha_real import EXPECTED
-from tests.convenience import plot_aa_style, rel_path
+so = SimulationOverview()
+df = so.df[so.df.run == RUN].copy()
+par_set = df.par_set.iloc[0]
+cols = run_pars[par_set]
 
-from run_mc import Run
+# Group together survey results
+gofs = {c: [] for c in cols}
+gofs['gof'] = []
+gf = GoodnessOfFit()
+for vals, group in df.groupby(cols):
+    gofs['gof'].append(gf.weighted_median(group))
+    for i, c in enumerate(cols):
+        gofs[c].append(vals[i])
 
-r = Run(survey_name='askap-fly',
-        li=-.5,
-        si=0,
-        alpha=-1.5)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
-# Find closest population match
-path = rel_path('../data/populations/mc')
-options = os.listdir(path)
-alphas = np.zeros(len(options))
-lis = np.zeros(len(options))
-sis = np.zeros(len(options))
+# Log business
+labels = []
+for col in cols:
+    diff = np.diff(np.sort(list(set(gofs[col]))))
+    if not np.isclose(diff[0], diff[-1]):
+        gofs[col] = np.log10(gofs[col])
+        label = f'log {col}'
+    else:
+        label = col
+    labels.append(label)
 
-for i, line in enumerate(options):
-    if line.split('_')[-1].split('.')[0] != r.survey_name:
-        continue
-    values = map(line.split('_').__getitem__, [2, 4, 6])
-    alphas[i], lis[i], sis[i] = [float(v) for v in values]
+x = gofs[cols[0]]
+y = gofs[cols[1]]
+colours = np.array(gofs['gof'])
+if len(cols) == 2:
+    z = 0
+else:
+    z = gofs[cols[2]]
+    ax.set_zlabel(labels[2])
 
-alpha_i = np.where(np.abs(alphas-r.alpha) == np.abs(alphas-r.alpha).min())
-li_i = np.where(np.abs(lis-r.li) == np.abs(lis-r.li).min())
-si_i = np.where(np.abs(sis-r.si) == np.abs(sis-r.si).min())
-i = reduce(np.intersect1d, (alpha_i, li_i, si_i))[0]
-r.alpha, r.li, r.si = map(options[i].split('_').__getitem__, [2, 4, 6])
+p = ax.scatter(x, y, z, c=colours, s=20*10**colours)
+cbar = fig.colorbar(p, orientation='horizontal',
+                    cax=fig.add_axes([0.05, 0.9, 0.2, 0.03]))
+cbar.ax.set_ylabel('GoF')  #, rotation=-90, va="bottom")
 
-f = f'mc/complex_alpha_{r.alpha}_lum_{r.li}_si_{r.si}_{r.survey_name}'
-surv_pop = unpickle(f)
+xlabel = labels[0]
+ylabel = labels[1]
 
-# Get actual data
-df = TNS(repeaters=False).df
-telescope = r.survey_name.split('-')[0]
-mask = (df.telescope.str.lower() == telescope)
+# ugly, but quick
+if xlabel == 'alpha':
+    xlabel = r'$\alpha$'
+if xlabel == 'log lum_min':
+    xlabel = r'lum$_{\rm min}$'
+if xlabel == 'log lum_max':
+    xlabel = r'lum$_{\rm max}$'
+if ylabel == 'log lum_min':
+    ylabel = r'lum$_{\rm min}$'
+if ylabel == 'log lum_max':
+    ylabel = r'lum$_{\rm max}$'
+ax.set_xlabel(xlabel)
+ax.set_ylabel(ylabel)
 
-# Start with plotting
-plot_aa_style()
-plt.rcParams["figure.figsize"] = (5.75373, 5.75373)
-fig, axes = plt.subplots(2, 2)
-
-# Rates
-ax = axes[0, 0]
-# Frbcat
-n_frbs, n_days = EXPECTED[r.survey_name]
-errs = [e/n_days for e in poisson_interval(n_frbs)]
-ax.errorbar(n_frbs/n_days, 0.6, xerr=np.array([errs]).T, fmt='x')
-# Frbpoppy
-errs = [e/surv_pop.n_days for e in poisson_interval(surv_pop.n_sources())]
-ax.errorbar(surv_pop.n_sources()/surv_pop.n_days, 0.4, xerr=np.array([errs]).T,
-            fmt='x')
-
-# Other axes properties
-ax.set_xscale('log')
-ax.set_xlabel(r'Rate (day$^{-1}$)')
-ax.set_yticks([0.6, 0.4])
-ax.set_ylim([0, 1])
-ax.set_yticklabels(['frbcat', 'frbpoppy'])
-
-# Plot information
-axes[0, 1].set_axis_off()
-text = f'{r.survey_name} \n li={r.li} \n si={r.si} \n alpha={r.alpha}'
-axes[0, 1].text(.5, .7, text,
-                horizontalalignment='center',
-                verticalalignment='center',
-                transform=axes[0, 1].transAxes,
-                linespacing=1.6)
-
-
-# DM distributions
-ax = axes[1, 0]
-ax.step(*hist(surv_pop.frbs.dm), where='mid')
-ax.step(*hist(df[mask].dm), where='mid')
-
-# Compare distributions
-try:
-    ks = ks_2samp(surv_pop.frbs.dm, df[mask].dm)
-except ValueError:
-    ks = (0.0, 0.0)
-text = fr'$p={round(ks[1], 2)}$'
-if ks[1] < 0.01:
-    text = fr'$p={ks[1]:.2e}$'
-anchored_text = AnchoredText(text, loc=1, borderpad=1., frameon=False)
-ax.add_artist(anchored_text)
-ax.set_xlabel(r'DM ($\textrm{pc}\ \textrm{cm}^{-3}$)')
-ax.set_ylabel('Fraction')
-
-# SNR distribution
-ax = axes[1, 1]
-ax.step(*hist(surv_pop.frbs.snr, bin_type='log'), where='mid')
-ax.step(*hist(df[mask].snr, bin_type='log'), where='mid')
-
-# Compare distributions
-try:
-    ks = ks_2samp(surv_pop.frbs.snr, df[mask].snr)
-except ValueError:
-    ks = (0.0, 0.0)
-text = fr'$p={round(ks[1], 2)}$'
-if ks[1] < 0.01:
-    text = fr'$p={ks[1]:.2e}$'
-anchored_text = AnchoredText(text, loc=1, borderpad=1., frameon=False)
-ax.add_artist(anchored_text)
-ax.set_xlabel(r'SNR')
-ax.set_xscale('log')
-ax.set_ylabel('Fraction')
-
-# Final settings
 plt.tight_layout()
-p = f'./plots/run.pdf'
-plt.savefig(rel_path(p))
+plt.show()

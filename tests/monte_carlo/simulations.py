@@ -12,19 +12,7 @@ import pandas as pd
 from tqdm import tqdm
 import uuid
 
-KEEP_CSV = True
-SIZE = 1e7
-RUNS = [3]
-ALPHA = -1.7
-SI = 2.0
-LI = -1.0
-LI_2 = -0.9
-L_MIN = 5e41
-L_MAX = 1e45
-W_MEAN = 1
-W_STD = 1
-DM_IGM_SLOPE = 950
-DM_HOST = 100
+POP_SIZE = 5e7
 
 
 class SimulationOverview:
@@ -58,32 +46,17 @@ class SimulationOverview:
 
 class MonteCarlo:
 
-    def __init__(self, runs=[1], load_csv=True):
+    def __init__(self, pop_size=1e2, load_csv=True):
         self.survey_names = ['parkes-htru',
                              'chime-frb',
                              'askap-incoh',
                              'wsrt-apertif']
-        self.pop_size = SIZE
         self.load_csv = load_csv
-        self.runs = runs
-
+        self.pop_size = pop_size
         self.survey_ix = [i for i in range(len(self.survey_names))]
         self.surveys = self.set_up_surveys()
         self.so = SimulationOverview(load_csv=self.load_csv)
         self.set_up_dirs()
-
-        for n in self.runs:
-            self.so.df = self.so.df[(self.so.df.run != n)]
-            if n == 1:
-                self.run_1()
-            if n == 2:
-                self.run_2()
-            if n == 3:
-                self.run_3()
-            if n == 4:
-                self.run_4()
-            if n == 5:
-                self.run_1(5)
 
     def set_up_surveys(self):
         """Set up surveys."""
@@ -96,7 +69,7 @@ class MonteCarlo:
             surveys.append(survey)
         return surveys
 
-    def set_up_dirs(self, run_number=None):
+    def set_up_dirs(self, run=np.nan):
         """Create subdirectory for saving populations.
 
         Returns True if directory had to be set up."""
@@ -105,49 +78,60 @@ class MonteCarlo:
             os.mkdir(f)
             return True
 
-        if run_number:
-            f = f'{frbpoppy.paths.populations()}mc/run_{run_number}/'
+        if not np.isnan(run):
+            f = f'{frbpoppy.paths.populations()}mc/run_{run}/'
             if not os.path.isdir(f):
                 os.mkdir(f)
                 return True
 
         return False
 
-    def run_1(self, run_number=1, parallel=True):
-        alphas = np.linspace(-2, -0.5, 11)
+    def gen_par_set_1(self,
+                      parallel=True,
+                      lum_min=np.nan,
+                      lum_max=np.nan,
+                      w_mean=np.nan,
+                      w_std=np.nan,
+                      dm_igm_slope=np.nan,
+                      dm_host=np.nan,
+                      run=0):
+        alphas = np.linspace(-2.5, -1, 11)
         sis = np.linspace(-2, 2, 11)
         lis = np.linspace(-2, 0, 11)
 
         # Put all options into a dataframe
-        self.so.df = self.so.df[self.so.df.run != run_number]
+        if 'run' in self.so.df:
+            self.so.df = self.so.df[self.so.df.run != run]
         opt = np.meshgrid(alphas, sis, lis, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 4)
         df = pd.DataFrame(options, columns=('alpha', 'si', 'li', 'survey'))
-        df['run'] = run_number
+        df['run'] = run
+        df['par_set'] = 1
         df['uuid'] = [uuid.uuid4() for _ in range(len(df.index))]
         df['date'] = datetime.today()
         self.so.append(df)
         self.so.map_surveys(self.survey_ix, self.survey_names)
         self.so.save()
 
-        # Remove previous run of the same number
-        if not self.set_up_dirs(run_number=run_number):
-            fs = f'{frbpoppy.paths.populations()}mc/run_{run_number}/*'
+        # Remove previous par_set of the same number
+        if not self.set_up_dirs(run=run):
+            fs = f'{frbpoppy.paths.populations()}mc/run_{run}/*'
             for f in glob(fs):
                 os.remove(f)
 
-        def iter_alpha(i, parallel=None):
+        def iter_alpha(i):
             alpha = alphas[i]
             pop = CosmicPopulation.complex(self.pop_size)
 
-            # # Basically a sanity check
-            # if run_number == 5:
-            #     pop.set_w(model='lognormal', mean=W_MEAN, std=W_STD)
-            #     pop.set_dm_igm(model='ioka', slope=DM_IGM_SLOPE)
-            #     pop.set_dm_host(model='constant', value=DM_HOST)
-
             pop.set_dist(model='vol_co', z_max=1.0, alpha=alpha)
             pop.set_lum(model='constant', value=1)
+
+            if not np.isnan(w_mean):
+                pop.set_w(model='lognormal', mean=w_mean, std=w_std)
+            if not np.isnan(dm_igm_slope):
+                pop.set_dm_igm(model='ioka', slope=dm_igm_slope)
+                pop.set_dm_host(model='constant', value=dm_host)
+
             pop.generate()
 
             for si in sis:
@@ -159,9 +143,9 @@ class MonteCarlo:
                                 low=1e40,
                                 high=1e45, power=li)
 
-                    if run_number == 5:
-                        pop.set_lum(model='powerlaw', low=L_MIN,
-                                    high=L_MAX, index=li)
+                    if not np.isnan(lum_min):
+                        pop.set_lum(model='powerlaw', low=lum_min,
+                                    high=lum_max, index=li)
 
                     pop.gen_lum()
 
@@ -169,13 +153,14 @@ class MonteCarlo:
                         surv_pop = SurveyPopulation(pop, survey)
 
                         # Get unique identifier
-                        mask = (self.so.df.run == run_number)
+                        mask = (self.so.df.par_set == 1)
+                        mask &= (self.so.df.run == run)
                         mask &= (self.so.df.alpha == alpha)
                         mask &= (self.so.df.si == si)
                         mask &= (self.so.df.li == li)
                         mask &= (self.so.df.survey == survey.name)
                         uuid = self.so.df[mask].uuid.iloc[0]
-                        surv_pop.name = f'mc/run_{run_number}/{uuid}'
+                        surv_pop.name = f'mc/run_{run}/{uuid}'
                         surv_pop.save()
 
         if parallel:
@@ -186,18 +171,27 @@ class MonteCarlo:
         else:
             [iter_alpha(i) for i in tqdm(range(len(alphas)))]
 
-    def run_2(self, run_number=2, parallel=True):
+    def gen_par_set_2(self,
+                      parallel=True,
+                      alpha=-1.5,
+                      si=0,
+                      w_mean=np.nan,
+                      w_std=np.nan,
+                      dm_igm_slope=np.nan,
+                      dm_host=np.nan,
+                      run=np.nan):
         lis = np.linspace(-1.5, 0, 11)
-        lum_mins = 10**np.linspace(34, 45, 11)
-        lum_maxs = 10**np.linspace(34, 45, 11)
+        lum_mins = 10**np.linspace(38, 46, 11)
+        lum_maxs = 10**np.linspace(38, 46, 11)
 
         # Put all options into a dataframe
-        self.so.df = self.so.df[self.so.df.run != 2]
+        self.so.df = self.so.df[self.so.df.run != run]
         opt = np.meshgrid(lis, lum_mins, lum_maxs, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 4)
         cols = ('li', 'lum_min', 'lum_max', 'survey')
         df = pd.DataFrame(options, columns=cols)
-        df['run'] = run_number
+        df['par_set'] = 2
+        df['run'] = run
         df['uuid'] = [uuid.uuid4() for _ in range(len(df.index))]
         df['date'] = datetime.today()
         df = df[~(df.lum_max < df.lum_min)]
@@ -205,16 +199,23 @@ class MonteCarlo:
         self.so.map_surveys(self.survey_ix, self.survey_names)
         self.so.save()
 
-        # Remove previous run of the same number
-        if not self.set_up_dirs(run_number=run_number):
-            fs = f'{frbpoppy.paths.populations()}mc/run_{run_number}/*'
+        # Remove previous par_set of the same number
+        if not self.set_up_dirs(run=run):
+            fs = f'{frbpoppy.paths.populations()}mc/run_{run}/*'
             for f in glob(fs):
                 os.remove(f)
 
         pop = CosmicPopulation.complex(self.pop_size)
-        pop.set_dist(model='vol_co', z_max=1.0, alpha=ALPHA)
-        pop.set_si(model='constant', value=SI)
-        pop.set_lum(model='constant', value=1)
+        if not np.isnan(alpha):
+            pop.set_dist(model='vol_co', z_max=1.0, alpha=alpha)
+            pop.set_si(model='constant', value=si)
+            pop.set_lum(model='constant', value=1)
+        if not np.isnan(w_mean):
+            pop.set_w(model='lognormal', mean=w_mean, std=w_std)
+        if not np.isnan(dm_igm_slope):
+            pop.set_dm_igm(model='ioka', slope=dm_igm_slope)
+            pop.set_dm_host(model='constant', value=dm_host)
+
         pop.generate()
 
         def adapt_pop(e):
@@ -230,51 +231,69 @@ class MonteCarlo:
                 surv_pop = SurveyPopulation(t_pop, survey)
 
                 # Get unique identifier
-                mask = (self.so.df.run == run_number)
+                mask = (self.so.df.par_set == 2)
+                mask &= (self.so.df.run == run)
                 mask &= (self.so.df.li == li)
                 mask &= (self.so.df.lum_min == lum_min)
                 mask &= (self.so.df.lum_max == lum_max)
                 mask &= (self.so.df.survey == survey.name)
                 uuid = self.so.df[mask].uuid.iloc[0]
-                surv_pop.name = f'mc/run_{run_number}/{uuid}'
+                surv_pop.name = f'mc/run_{run}/{uuid}'
                 surv_pop.save()
 
         n_cpu = min([3, os.cpu_count() - 1])
         pprint(f'{os.cpu_count()} CPUs available')
         mg = np.meshgrid(lis, lum_mins, lum_maxs)
-        loop_over = np.array(mg).T.reshape(-1, 3)
+        loop = np.array(mg).T.reshape(-1, 3)
         if parallel:
-            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop))
         else:
-            [adapt_pop(e) for e in tqdm(loop_over)]
+            [adapt_pop(e) for e in tqdm(loop)]
 
-    def run_3(self, run_number=3, parallel=True):
-        w_means = 10**np.linspace(-2, 2, 11)  # TODO!
-        w_stds = np.linspace(0, 3, 11)  # TODO!
+    def gen_par_set_3(self,
+                      parallel=True,
+                      alpha=-1.5,
+                      si=0,
+                      li=-1,
+                      lum_min=1e40,
+                      lum_max=1e40,
+                      dm_igm_slope=np.nan,
+                      dm_host=np.nan,
+                      run=np.nan):
+        w_means = 10**np.linspace(-3, 1, 11)
+        w_stds = np.linspace(0, 3, 11)
 
         # Put all options into a dataframe
-        self.so.df = self.so.df[self.so.df.run != 3]
+        self.so.df = self.so.df[self.so.df.run != run]
         opt = np.meshgrid(w_means, w_stds, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 3)
         cols = ('w_mean', 'w_std', 'survey')
         df = pd.DataFrame(options, columns=cols)
-        df['run'] = run_number
+        df['run'] = run
+        df['par_set'] = 3
         df['uuid'] = [uuid.uuid4() for _ in range(len(df.index))]
         df['date'] = datetime.today()
         self.so.append(df)
         self.so.map_surveys(self.survey_ix, self.survey_names)
         self.so.save()
 
-        # Remove previous run of the same number
-        if not self.set_up_dirs(run_number=run_number):
-            fs = f'{frbpoppy.paths.populations()}mc/run_{run_number}/*'
+        # Remove previous par_set of the same number
+        if not self.set_up_dirs(run=run):
+            fs = f'{frbpoppy.paths.populations()}mc/run_{run}/*'
             for f in glob(fs):
                 os.remove(f)
 
         pop = CosmicPopulation.complex(self.pop_size)
-        pop.set_dist(model='vol_co', z_max=1.0, alpha=ALPHA)
-        pop.set_si(model='constant', value=SI)
-        pop.set_lum(model='powerlaw', low=L_MIN, high=L_MAX, index=LI_2)
+
+        if not np.isnan(alpha):
+            pop.set_dist(model='vol_co', z_max=1.0, alpha=alpha)
+            pop.set_si(model='constant', value=si)
+        if not np.isnan(lum_min):
+            pop.set_lum(model='powerlaw', low=lum_min, high=lum_max, index=li)
+        if not np.isnan(dm_igm_slope):
+            pop.set_dm_igm(model='ioka', slope=dm_igm_slope)
+            pop.set_dm_host(model='constant', value=dm_host)
+
         pop.generate()
 
         def adapt_pop(e):
@@ -287,51 +306,67 @@ class MonteCarlo:
                 surv_pop = SurveyPopulation(t_pop, survey)
 
                 # Get unique identifier
-                mask = (self.so.df.run == run_number)
+                mask = (self.so.df.par_set == 3)
+                mask &= (self.so.df.run == run)
+                mask &= (self.so.df.run == run)
                 mask &= (self.so.df.w_mean == w_mean)
                 mask &= (self.so.df.w_std == w_std)
                 mask &= (self.so.df.survey == survey.name)
                 uuid = self.so.df[mask].uuid.iloc[0]
-                surv_pop.name = f'mc/run_{run_number}/{uuid}'
+                surv_pop.name = f'mc/run_{run}/{uuid}'
                 surv_pop.save()
 
         n_cpu = min([3, os.cpu_count() - 1])
         pprint(f'{os.cpu_count()} CPUs available')
         mg = np.meshgrid(w_means, w_stds)
-        loop_over = np.array(mg).T.reshape(-1, 2)
+        loop = np.array(mg).T.reshape(-1, 2)
         if parallel:
-            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop))
         else:
-            [adapt_pop(e) for e in tqdm(loop_over)]
+            [adapt_pop(e) for e in tqdm(loop)]
 
-    def run_4(self, run_number=4, parallel=True):
+    def gen_par_set_4(self,
+                      parallel=True,
+                      alpha=-1.5,
+                      si=0,
+                      li=-1,
+                      lum_min=1e40,
+                      lum_max=1e40,
+                      w_mean=np.nan,
+                      w_std=np.nan,
+                      run=np.nan):
         dm_igm_slopes = np.linspace(800, 1200, 11)
         dm_hosts = np.linspace(0, 500, 11)
 
         # Put all options into a dataframe
-        self.so.df = self.so.df[self.so.df.run != 4]
+        self.so.df = self.so.df[self.so.df.run != run]
         opt = np.meshgrid(dm_igm_slopes, dm_hosts, self.survey_ix)
         options = np.array(opt).T.reshape(-1, 3)
         cols = ('dm_igm_slope', 'dm_host', 'survey')
         df = pd.DataFrame(options, columns=cols)
-        df['run'] = run_number
+        df['run'] = run
+        df['par_set'] = 4
         df['uuid'] = [uuid.uuid4() for _ in range(len(df.index))]
         df['date'] = datetime.today()
         self.so.append(df)
         self.so.map_surveys(self.survey_ix, self.survey_names)
         self.so.save()
 
-        # Remove previous run of the same number
-        if not self.set_up_dirs(run_number=run_number):
-            fs = f'{frbpoppy.paths.populations()}mc/run_{run_number}/*'
+        # Remove previous par_set of the same number
+        if not self.set_up_dirs(run=run):
+            fs = f'{frbpoppy.paths.populations()}mc/run_{run}/*'
             for f in glob(fs):
                 os.remove(f)
 
         pop = CosmicPopulation.complex(self.pop_size)
-        pop.set_dist(model='vol_co', z_max=1.0, alpha=ALPHA)
-        pop.set_si(model='constant', value=SI)
-        pop.set_lum(model='powerlaw', low=L_MIN, high=L_MAX, index=LI_2)
-        pop.set_w(model='lognormal', mean=W_MEAN, std=W_STD)
+
+        if not np.isnan(alpha):
+            pop.set_dist(model='vol_co', z_max=1.0, alpha=alpha)
+            pop.set_si(model='constant', value=si)
+        if not np.isnan(lum_min):
+            pop.set_lum(model='powerlaw', low=lum_min, high=lum_max, index=li)
+        if not np.isnan(w_mean):
+            pop.set_w(model='lognormal', mean=w_mean, std=w_std)
         pop.generate()
 
         def adapt_pop(e):
@@ -341,30 +376,27 @@ class MonteCarlo:
             t_pop.gen_dm_igm()
             t_pop.set_dm_host(model='constant', value=dm_host)
             t_pop.gen_dm_host()
-            t_pop.frbs.dm = t_pop.frbs.dm_mw + t_pop.frbs.dm_igm + t_pop.frbs.dm_host
+            t_pop.frbs.dm = t_pop.frbs.dm_mw + t_pop.frbs.dm_igm
+            t_pop.frbs.dm += t_pop.frbs.dm_host
 
             for survey in self.surveys:
                 surv_pop = SurveyPopulation(t_pop, survey)
 
                 # Get unique identifier
-                mask = (self.so.df.run == run_number)
+                mask = (self.so.df.par_set == 4)
+                mask &= (self.so.df.run == run)
                 mask &= (self.so.df.dm_igm_slope == dm_igm_slope)
                 mask &= (self.so.df.dm_host == dm_host)
                 mask &= (self.so.df.survey == survey.name)
                 uuid = self.so.df[mask].uuid.iloc[0]
-                surv_pop.name = f'mc/run_{run_number}/{uuid}'
+                surv_pop.name = f'mc/run_{run}/{uuid}'
                 surv_pop.save()
 
-        n_cpu = min([3, os.cpu_count() - 1])
+        n_cpu = min([4, os.cpu_count() - 1])
         pprint(f'{os.cpu_count()} CPUs available')
         mg = np.meshgrid(dm_igm_slopes, dm_hosts)
-        loop_over = np.array(mg).T.reshape(-1, 2)
+        loop = np.array(mg).T.reshape(-1, 2)
         if parallel:
-            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop_over))
+            Parallel(n_jobs=n_cpu)(delayed(adapt_pop)(e) for e in tqdm(loop))
         else:
-            [adapt_pop(e) for e in tqdm(loop_over)]
-
-
-if __name__ == '__main__':
-    MonteCarlo(load_csv=KEEP_CSV,
-               runs=RUNS)
+            [adapt_pop(e) for e in tqdm(loop)]

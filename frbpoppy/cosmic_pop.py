@@ -541,6 +541,26 @@ class CosmicPopulation(Population):
             pop.generate()
         return pop
 
+    @classmethod
+    def optimal(cls, n_srcs, n_days=1, repeaters=False, generate=False):
+        """Set up a complex population."""
+        pop = cls(n_srcs=n_srcs, n_days=n_days, name='optimal',
+                  repeaters=False, generate=False)
+        pop.set_dist(model='vol_co', z_max=2.5, alpha=-2.2,
+                     H_0=67.74, W_m=0.3089, W_v=0.6911)
+        pop.set_dm_host(model='constant', value=50)
+        pop.set_dm_igm(model='ioka', slope=1000, std=None)
+        pop.set_dm_mw(model='ne2001')
+        pop.set_dm(mw=True, igm=True, host=True)
+        pop.set_emission_range(low=10e7, high=10e9)
+        pop.set_lum(model='powerlaw', low=1e40, high=1e45, power=-0.8)
+        pop.set_w(model='lognormal', mean=6.3e-3, std=.6)
+        pop.set_si(model='constant', value=-0.4)
+        if pop.repeaters:
+            pop.set_time(model='poisson', rate=9)
+        if generate:
+            pop.generate()
+        return pop
 
 if __name__ == '__main__':
     # Quick test whether everything seems to be working or not

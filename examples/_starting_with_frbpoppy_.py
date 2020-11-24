@@ -15,7 +15,7 @@ cosmic_pop.generate()
 
 # Setup a survey
 survey = Survey('parkes-htru')
-survey.set_beam(model='gaussian', n_sidelobes=0.5)
+survey.set_beam(model='parkes-htru')
 
 # Observe the FRB population
 survey_pop = SurveyPopulation(cosmic_pop, survey)

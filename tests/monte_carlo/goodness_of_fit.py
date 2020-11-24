@@ -2,49 +2,34 @@ from weighted_quantiles import median
 from scipy.stats import ks_2samp
 import numpy as np
 import os
-import pandas as pd
 import matplotlib.pyplot as plt
 
 from frbpoppy import unpickle, TNS, poisson_interval, pprint
 from tests.rates.alpha_real import EXPECTED
 from tests.convenience import plot_aa_style, rel_path
-from simulations import SimulationOverview
-from simulations import SIZE
+from simulations import SimulationOverview, POP_SIZE
 
-RUNS = [5]
-CALC_GOFS = True
-PLOT = False
 NORM_SURV = 'parkes-htru'
 
 
 class GoodnessOfFit:
 
-    def __init__(self, runs=[1], calc_gofs=False, plot=False):
-        self.runs = runs
+    def __init__(self):
         self.run_pars = {1: ['alpha', 'si', 'li'],
                          2: ['li', 'lum_min', 'lum_max'],
                          3: ['w_mean', 'w_std'],
-                         4: ['dm_igm_slope', 'dm_host'],
-                         5: ['alpha', 'si', 'li']}
+                         4: ['dm_igm_slope', 'dm_host']}
         self.norm_surv = NORM_SURV
         self.so = SimulationOverview()
         self.tns = self.get_tns()
 
-        for run in self.runs:
-            if calc_gofs:
-                self.calc_gofs(run)
-            # if calc_weights:
-            #     self.calc_weights()
-            if plot:
-                self.plot(run)
-
     def get_tns(self):
         # Only get one-offs
-        return TNS(repeaters=False, mute=True).df
+        return TNS(repeaters=False, mute=True, update=False).df
 
     def dm(self, pop, survey_name):
         """Calculate GoodnessOfFit for DM distributions."""
-        mask = (self.tns.survey == survey_name)
+        mask = ((self.tns.survey == survey_name) & (self.tns.dm <= 950))
         try:
             ks_dm = ks_2samp(pop.frbs.dm, self.tns[mask].dm)[1]
         except ValueError:
@@ -52,7 +37,7 @@ class GoodnessOfFit:
         return ks_dm
 
     def snr(self, pop, survey_name):
-        mask = (self.tns.survey == survey_name)
+        mask = ((self.tns.survey == survey_name) & (self.tns.dm <= 950))
         try:
             ks_snr = ks_2samp(pop.frbs.snr, self.tns[mask].snr)[1]
         except ValueError:
@@ -85,7 +70,7 @@ class GoodnessOfFit:
         norm_real_rate = norm_real_n_frbs / norm_real_n_days
 
         if norm_sim_rate == 0:
-            norm_sim_rate = SIZE / norm_sim_n_days
+            norm_sim_rate = POP_SIZE / norm_sim_n_days
 
         sim_ratio = surv_sim_rate / norm_sim_rate
         real_ratio = surv_real_rate / norm_real_rate
@@ -101,48 +86,50 @@ class GoodnessOfFit:
     def calc_gofs(self, run):
 
         # For each requested run
-        df = self.so.df
+        self.so = SimulationOverview()
+        par_set = self.so.df[self.so.df.run == run].par_set.iloc[0]
+        pprint(f'Calculating goodness of fit for run {run}, par set {par_set}')
+        pars = self.run_pars[par_set]
+        values = []
 
-        pprint(f'Calculating goodness of fit for run {run}')
+        # Loop through all combination of parameters
+        for values, group in self.so.df[self.so.df.run == run].groupby(pars):
+            pprint(f'    - {list(zip(pars, values))}')
+            # Calculate goodness of fit values for each simulation
+            for row_ix, row in group.iterrows():
+                survey_name = row.survey
+                uuid = row.uuid
+                pop = unpickle(f'mc/run_{run}/{uuid}')
 
-        # For each parameter
-        for main_par in self.run_pars[run]:
-            pprint(f' - {main_par}')
-            pars = [e for e in self.run_pars[run] if e != main_par]
-            pars.append('survey')
+                # Apply a DM cutoff
+                mask = (pop.frbs.dm <= 950)
+                pop.frbs.apply(mask)
+                pop.source_rate.det = pop.n_sources() * pop.source_rate.f_area
 
-            # Loop over the remaining parameters
-            for i, group in df[df.run == run].groupby(pars):
-                s = group.survey.values[0]
-                pprint(f'    - {list(zip(pars, i))}')
+                dm_gof = self.dm(pop, survey_name)
+                snr_gof = self.snr(pop, survey_name)
+                self.so.df.at[row_ix, 'dm_gof'] = dm_gof
+                self.so.df.at[row_ix, 'snr_gof'] = snr_gof
 
-                # Calculate goodness of fit values for each simulation
-                for row_ix, row in group.iterrows():
-                    # Unpickle population
-                    uuid = row.uuid
-                    pop = unpickle(f'mc/run_{run}/{uuid}')
-                    self.so.df.at[row_ix, 'dm_gof'] = self.dm(pop, s)
-                    self.so.df.at[row_ix, 'snr_gof'] = self.snr(pop, s)
+                if pop.n_sources() == 0:
+                    self.so.df.at[row_ix, 'weight'] = 0
+                    self.so.df.at[row_ix, 'n_det'] = pop.n_sources()
+                    pprint(f'        -  No sources in {survey_name}')
+                    continue
 
-                    if np.isnan(self.so.df.iloc[row_ix]['dm_gof']):
-                        self.so.df.at[row_ix, 'weight'] = 0
-                        self.so.df.at[row_ix, 'n_det'] = 0
-                        continue
+                # Find corresponding rate normalisation population uuid
+                norm_mask = dict(zip(pars, values))
+                norm_mask['survey'] = self.norm_surv
+                norm_mask['run'] = run
+                k = norm_mask.keys()
+                v = norm_mask.values()
+                norm_uuid = group.loc[group[k].isin(v).all(axis=1), :].uuid
+                norm_uuid = norm_uuid.values[0]
+                rate_diff, n_det = self.rate(pop, survey_name, norm_uuid, run)
 
-                    # Find corresponding rate normalisation population uuid
-                    norm_mask = dict(zip(pars, i))
-                    norm_mask['survey'] = self.norm_surv
-                    norm_mask['run'] = run
-                    norm_mask[main_par] = row[main_par]
-                    k = norm_mask.keys()
-                    v = norm_mask.values()
-                    norm_uuid = df.loc[df[k].isin(v).all(axis=1), :].uuid
-                    norm_uuid = norm_uuid.values[0]
-                    rate_diff, n_det = self.rate(pop, s, norm_uuid, run)
-
-                    # Get rate weighting
-                    self.so.df.at[row_ix, 'weight'] = rate_diff
-                    self.so.df.at[row_ix, 'n_det'] = n_det
+                # Get rate weighting
+                self.so.df.at[row_ix, 'weight'] = rate_diff
+                self.so.df.at[row_ix, 'n_det'] = n_det
 
         pprint(f'Saving the results for run {run}')
         # Best matching in terms of rates
@@ -154,11 +141,12 @@ class GoodnessOfFit:
         # Get data
         # For each requested run
         df = self.so.df
+        par_set = df[df.run == run].par_set.iloc[0]
 
         # For each parameter
-        for main_par in self.run_pars[run]:
+        for main_par in self.run_pars[par_set]:
             pprint(f'Plotting {main_par}')
-            other_pars = [e for e in self.run_pars[run] if e != main_par]
+            other_pars = [e for e in self.run_pars[par_set] if e != main_par]
 
             for compare_par in ['dm', 'snr']:
                 compare_col = f'{compare_par}_gof'
@@ -173,10 +161,12 @@ class GoodnessOfFit:
                     plt.rcParams["figure.figsize"] = (5.75373*3, 5.75373*3)
                     plt.rcParams['figure.max_open_warning'] = 125
                     n_x = group_surv[other_pars[0]].nunique()
-                    n_y = group_surv[other_pars[1]].nunique()
+                    if len(other_pars) > 1:
+                        n_y = group_surv[other_pars[1]].nunique()
+                    else:
+                        n_y = 1
                     fig, ax = plt.subplots(n_x, n_y,
                                            sharex='col', sharey='row')
-                    # cmap = plt.get_cmap()
 
                     groups = group_surv.groupby(other_pars)
                     x = -1
@@ -185,25 +175,37 @@ class GoodnessOfFit:
                         values = group[compare_col].values
                         bins, values = self.add_edges_to_hist(bins, values)
 
-                        y = i % n_y
-                        if y == 0:
-                            x += 1
+                        if n_y > 1:
+                            y = i % n_y
+                            if y == 0:
+                                x += 1
+                            a = ax[y, x]
+                        else:
+                            y = i
+                            a = ax[y]
 
-                        ax[y, x].step(bins, values, where='mid')
-                        ax[y, x].set_title = str(other_pars_vals)
+                        a.step(bins, values, where='mid')
+                        a.set_title = str(other_pars_vals)
+
+                        diff = np.diff(bins)
+                        if diff[1] != diff[0]:
+                            a.set_xscale('log')
 
                         # Set axis label
                         if y == n_y - 1:
                             p = other_pars[0]
-                            val = other_pars_vals[0]
+                            if isinstance(other_pars_vals, float):
+                                val = other_pars_vals
+                            else:
+                                val = other_pars_vals[0]
                             p = p.replace('_', ' ')
-                            ax[y, x].set_xlabel(f'{p} = {val:.2}')
+                            a.set_xlabel(f'{p} = {val:.2}')
 
                         if x == 0:
                             p = other_pars[1]
                             val = other_pars_vals[1]
                             p = p.replace('_', ' ')
-                            ax[y, x].set_ylabel(f'{p} = {val:.2}')
+                            a.set_ylabel(f'{p} = {val:.2}')
 
                     # Set axis limits
                     subset = df[df.run == run][main_par]
@@ -240,21 +242,19 @@ class GoodnessOfFit:
     def add_edges_to_hist(self, bins, n, bin_type='lin'):
         """Add edges to histograms"""
 
-        # TODO: If plotting n on a log axis, minumum value should be linear
         np.seterr(divide='ignore', invalid='ignore')
 
         if bin_type == 'lin':
             bin_dif = np.diff(bins)[-1]
             bins = np.insert(bins, 0, bins[0] - bin_dif)
             bins = np.insert(bins, len(bins), bins[-1] + bin_dif)
-            n = np.insert(n, 0, 0)
-            n = np.insert(n, len(n), 0)
         else:
             bin_dif = np.diff(np.log10(bins))[-1]
             bins = np.insert(bins, 0, 10**(np.log10(bins[0])-bin_dif))
             bins = np.insert(bins, len(bins), 10**(np.log10(bins[-1])+bin_dif))
-            n = np.insert(n, 0, 0)
-            n = np.insert(n, len(n), 0)
+
+        n = np.insert(n, 0, np.nan)
+        n = np.insert(n, len(n), np.nan)
 
         return bins, n
 
@@ -268,8 +268,10 @@ class GoodnessOfFit:
         return median(gofs, weights)
 
     def calc_global_max(self, run):
+        self.so = SimulationOverview()
         df = self.so.df[self.so.df.run == run]
-        cols = self.run_pars[run]
+        par_set = df[df.run == run].par_set.iloc[0]
+        cols = self.run_pars[par_set]
         values = []
         gofs = []
 
@@ -283,13 +285,10 @@ class GoodnessOfFit:
 
         # Find maximum (best gof)
         if np.isnan(gofs).all():
-            return dict(zip(cols, [np.nan for i in cols]))
+            return dict(zip(cols, [(np.nan, np.nan) for i in cols]))
         else:
             best_ix = np.nanargmax(gofs)
             best_values = values[best_ix]
+            best_gofs = [gofs[best_ix]]*len(cols)
 
-        return dict(zip(cols, best_values))
-
-
-if __name__ == '__main__':
-    GoodnessOfFit(runs=RUNS, calc_gofs=CALC_GOFS, plot=PLOT)
+        return dict(zip(cols, zip(best_values, best_gofs)))
