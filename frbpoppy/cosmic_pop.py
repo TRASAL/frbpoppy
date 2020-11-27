@@ -442,7 +442,7 @@ class CosmicPopulation(Population):
 
         Args:
             model (str): Options from ('single', 'regular', 'clustered',
-                'poisson')
+                'poisson', 'cyclic')
         If model == 'regular':
             rate (float): Number of bursts per day
         If model == 'poisson':
@@ -450,6 +450,10 @@ class CosmicPopulation(Population):
         If model == 'clustered':
             r (float): Rate parameter
             k (float): Shape parameter
+        If model == 'cyclic':
+            rate (float): Number of bursts per day
+            period (float): Period of activity cycle (days)
+            frac (float): Fraction of activity cycle a source is active
         """
         if not isinstance(model, str):
             # These lambda functions look complex, but aren't.
