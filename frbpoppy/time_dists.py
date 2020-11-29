@@ -56,22 +56,25 @@ def cyclic(rate=2, n_days=1, n_srcs=1, period=1, frac=.1, z=0):
 
     # get number of bursts to generate for each source
     nburst_per_cycle = (rate * frac * period).astype(int)
-    nburst_per_source = ((n_days / period) * nburst_per_cycle).astype(int)
+    nburst_per_source_max = ((n_days / period) * nburst_per_cycle).astype(int).max()
 
     # generate burst arrival times within each active period
     times = np.random.uniform(0, frac[:, np.newaxis] * period[:, np.newaxis],
-                              (n_srcs, nburst_per_source.max())).astype(np.float32)
+                              (n_srcs, nburst_per_source_max)).astype(np.float32)
 
     # need to add jump when going to next cycle
     for src_ind in range(n_srcs):
+        times += (np.arange(nburst_per_source_max) // nburst_per_cycle[src_ind]) * period[src_ind]
 
-        times += (np.arange(nburst_per_source.max()) // nburst_per_cycle[src_ind]) * period[src_ind]
+    # sort arrival times per source
+    times.sort(axis=1)
 
     # Add redshift
-    t0 = times[:, 0][:, np.newaxis]
-    times -= t0
-    times *= (1+z)[:, np.newaxis]
-    times += t0
+    if nburst_per_source_max > 0:
+        t0 = times[:, 0][:, np.newaxis]
+        times -= t0
+        times *= (1+z)[:, np.newaxis]
+        times += t0
 
     # Remove bursts past n_days
     times[(times > n_days)] = np.nan
