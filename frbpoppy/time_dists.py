@@ -37,6 +37,51 @@ def regular(rate=2, n_srcs=1, n_days=1, z=0):
     return time
 
 
+def cyclic(rate=2, n_days=1, n_srcs=1, period=1, frac=.1, z=0):
+    """Generate a series of uniform burst times within an activity cycle."
+
+    Args:
+        rate (float/array): Number of events per day
+        n_days (int): Number of days
+        n_srcs (int): Number of sources
+        period (float/array): Period of activity cycle (days)
+        frac (float/array): Fraction of activity cycle a source is active
+        z (float/array): Redshift of sources
+    """
+    # ensure arguments that may be floats or arrays are arrays (length is number of sources)
+    rate = np.atleast_1d(rate)
+    period = np.atleast_1d(period)
+    frac = np.atleast_1d(frac)
+    z = np.atleast_1d(z)
+
+    # get number of bursts to generate for each source
+    nburst_per_cycle = (rate * frac * period).astype(int)
+    nburst_per_source_max = ((n_days / period) * nburst_per_cycle).astype(int).max()
+
+    # generate burst arrival times within each active period
+    times = np.random.uniform(0, frac[:, np.newaxis] * period[:, np.newaxis],
+                              (n_srcs, nburst_per_source_max)).astype(np.float32)
+
+    # need to add jump when going to next cycle
+    for src_ind in range(n_srcs):
+        times += (np.arange(nburst_per_source_max) // nburst_per_cycle[src_ind]) * period[src_ind]
+
+    # sort arrival times per source
+    times.sort(axis=1)
+
+    # Add redshift
+    if nburst_per_source_max > 0:
+        t0 = times[:, 0][:, np.newaxis]
+        times -= t0
+        times *= (1+z)[:, np.newaxis]
+        times += t0
+
+    # Remove bursts past n_days
+    times[(times > n_days)] = np.nan
+
+    return times
+
+
 def poisson(**kwargs):
     """Generate a series of poisson times.
 
