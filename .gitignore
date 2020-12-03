@@ -103,4 +103,3 @@ tests/plots/*
 tests/temp*.py
 data/populations/*
 *.mmap
-tests/monte_carlo/*
