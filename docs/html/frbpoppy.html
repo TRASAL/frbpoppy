@@ -134,6 +134,7 @@
 <p>Class to generate a cosmic population of FRBs.</p>
 <dl class="py class">
 <dt id="cosmic_pop.CosmicPopulation">
+<<<<<<< HEAD
 <em class="property">class </em><code class="sig-prename descclassname">cosmic_pop.</code><code class="sig-name descname">CosmicPopulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_srcs</span><span class="o">=</span><span class="default_value">10000.0</span></em>, <em class="sig-param"><span class="n">n_days</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">'cosmic'</span></em>, <em class="sig-param"><span class="n">repeaters</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">generate</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">frbpoppy.population.Population</span></code></p>
 <p>Generate a cosmic FRB population.</p>
@@ -454,12 +455,127 @@ std (float): Standard deviation pulse width [ms].</p>
 <dl class="py method">
 <dt id="cosmic_pop.CosmicPopulation.simple">
 <em class="property">classmethod </em><code class="sig-name descname">simple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_srcs</span></em>, <em class="sig-param"><span class="n">n_days</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">repeaters</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">generate</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.simple" title="Permalink to this definition">¶</a></dt>
+=======
+<em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=67.74, W_m=0.3089, W_v=0.6911, dm_host_model='gaussian', dm_host_mu=100, dm_host_sigma=200, dm_igm_index=1000, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+45], lum_index=0, n_model='sfr', alpha=-1.5, w_model='lognormal', w_range=[0.1, 10], w_mu=0.1, w_sigma=0.5, si_mu=-1.4, si_sigma=1.0, z_max=2.5, generate=True</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">frbpoppy.population.Population</span></code></p>
+<p>Generate a cosmic FRB population.</p>
+<p>Generate a popuation of FRBs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n_gen</strong> (<em>int</em>) – Number of FRB sources/sky/time to generate.</li>
+<li><strong>days</strong> (<em>float</em>) – Number of days over which FRBs are generated.</li>
+<li><strong>name</strong> (<em>str</em>) – Population name.</li>
+<li><strong>H_0</strong> (<em>float</em>) – Hubble constant.</li>
+<li><strong>W_m</strong> (<em>float</em>) – Density parameter Ω_m.</li>
+<li><strong>W_v</strong> (<em>float</em>) – Cosmological constant Ω_Λ.</li>
+<li><strong>dm_host_model</strong> (<em>float</em>) – Dispersion measure host model. Options are
+‘normal’ or ‘lognormal’.</li>
+<li><strong>dm_host_mu</strong> (<em>float</em>) – Mean dispersion measure host [pc/cm^3].</li>
+<li><strong>dm_host_sigma</strong> (<em>float</em>) – Deviation dispersion measure host [pc/cm^3].</li>
+<li><strong>dm_igm_index</strong> (<em>float</em>) – Dispersion measure slope for IGM [pc/cm^3].</li>
+<li><strong>dm_igm_sigma</strong> (<em>float</em>) – Scatter around dm_igm. Defaults 0.2*slope*z</li>
+<li><strong>dm_mw_model</strong> (<em>str</em>) – Dispersion measure model for the Milky Way.
+Options are ‘ne2001’ or ‘zero’.</li>
+<li><strong>emission_range</strong> (<em>list</em>) – The frequency range [Hz] between which FRB
+sources should emit the given bolometric luminosity.</li>
+<li><strong>lum_range</strong> (<em>list</em>) – Bolometric luminosity (distance) range [erg/s].</li>
+<li><strong>lum_index</strong> (<em>float</em>) – Power law index.</li>
+<li><strong>n_model</strong> (<em>str</em>) – Number density model. Either ‘vol_co’, ‘sfr’ or
+‘smd’.</li>
+<li><strong>alpha</strong> (<em>float</em>) – Desired logN/logS of perfectly detected population.</li>
+<li><strong>w_model</strong> (<em>str</em>) – Pulse width model, ‘lognormal’ or ‘uniform’.</li>
+<li><strong>w_range</strong> (<em>list</em>) – Pulse width range [ms].</li>
+<li><strong>w_mu</strong> (<em>float</em>) – Mean pulse width [ms].</li>
+<li><strong>w_sigma</strong> (<em>float</em>) – Deviation pulse width [ms].</li>
+<li><strong>si_mu</strong> (<em>float</em>) – Mean spectral index.</li>
+<li><strong>si_sigma</strong> (<em>float</em>) – Standard deviation spectral index.</li>
+<li><strong>z_max</strong> (<em>float</em>) – Maximum redshift.</li>
+<li><strong>generate</strong> (<em>bool</em>) – Whether to create a population</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population of FRBs.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#population.Population" title="population.Population">Population</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="classmethod">
+<dt id="cosmic_pop.CosmicPopulation.complex">
+<em class="property">classmethod </em><code class="descname">complex</code><span class="sig-paren">(</span><em>n</em>, <em>generate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.complex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up a complex population.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_direction">
+<code class="descname">gen_direction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the direction of frbs.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_dist">
+<code class="descname">gen_dist</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate distances.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_dm">
+<code class="descname">gen_dm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_dm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate dispersion measures.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_dm_host">
+<code class="descname">gen_dm_host</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_dm_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate dm host contributions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_gal_coords">
+<code class="descname">gen_gal_coords</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_gal_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate galactic coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_lum">
+<code class="descname">gen_lum</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_lum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate luminosities.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_si">
+<code class="descname">gen_si</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_si" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate spectral indices.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.gen_w">
+<code class="descname">gen_w</code><span class="sig-paren">(</span><em>shape</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.gen_w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate pulse widths.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cosmic_pop.CosmicPopulation.generate">
+<code class="descname">generate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all manner of intrinsic parameters.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="cosmic_pop.CosmicPopulation.simple">
+<em class="property">classmethod </em><code class="descname">simple</code><span class="sig-paren">(</span><em>n</em>, <em>generate=False</em><span class="sig-paren">)</span><a class="headerlink" href="#cosmic_pop.CosmicPopulation.simple" title="Permalink to this definition">¶</a></dt>
+>>>>>>> master
 <dd><p>Set up a simple, local population.</p>
 </dd></dl>
 
 </dd></dl>
 
 </div>
+<<<<<<< HEAD
 <div class="section" id="module-direction_dists">
 <span id="direction-dists"></span><h2>direction_dists<a class="headerlink" href="#module-direction_dists" title="Permalink to this headline">¶</a></h2>
 <p>Spatial direction distributions for FRB sources.</p>
@@ -585,6 +701,73 @@ in between the Cordes and Petroff reviews.</p>
 <dd class="field-odd"><p>array</p>
 </dd>
 </dl>
+=======
+<div class="section" id="module-distributions">
+<span id="distributions"></span><h2>distributions<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h2>
+<p>Define distributions from which to get random numbers.</p>
+<dl class="function">
+<dt id="distributions.oppermann_pen">
+<code class="descclassname">distributions.</code><code class="descname">oppermann_pen</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#distributions.oppermann_pen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Following Oppermann &amp; Pen (2017), simulate repeat times.
+:returns: List of burst times
+:rtype: ts (list)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="distributions.powerlaw">
+<code class="descclassname">distributions.</code><code class="descname">powerlaw</code><span class="sig-paren">(</span><em>low</em>, <em>high</em>, <em>power</em>, <em>shape=1</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.powerlaw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return random variables distributed according to power law.</p>
+<p>The power law distribution power is simply the power, not including a minus
+sign (P scales with x^n with n the power). A flat powerlaw can therefore
+be created by taking setting power to zero.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>low</strong> (<em>float</em>) – Lower limit of distribution</li>
+<li><strong>high</strong> (<em>float</em>) – Higher limit of distribution</li>
+<li><strong>power</strong> (<em>float</em>) – Power of power law distribution</li>
+<li><strong>shape</strong> (<em>int/tuple</em>) – Shape of array to be generated. Can also be a int.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Random variable picked from power law distribution</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="distributions.trunc_norm">
+<code class="descclassname">distributions.</code><code class="descname">trunc_norm</code><span class="sig-paren">(</span><em>mu</em>, <em>sigma</em>, <em>n_gen=1</em>, <em>lower=0</em>, <em>upper=inf</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.trunc_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw from a truncated normal distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mu</strong> (<em>number</em>) – Mu</li>
+<li><strong>sigma</strong> (<em>number</em>) – Sigma</li>
+<li><strong>n_gen</strong> (<em>number</em>) – Number to generate</li>
+<li><strong>lower</strong> (<em>number</em>) – Lower limit</li>
+<li><strong>upper</strong> (<em>number</em>) – Upper limit</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Numpy of required length</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
+</td>
+</tr>
+</tbody>
+</table>
+>>>>>>> master
 </dd></dl>
 
 </div>
@@ -643,6 +826,7 @@ for debugging purposes. Defaults to True.</p></li>
 <div class="section" id="module-frbcatpoppy">
 <span id="frbcatpoppy"></span><h2>frbcatpoppy<a class="headerlink" href="#module-frbcatpoppy" title="Permalink to this headline">¶</a></h2>
 <p>Do things with frbcat.</p>
+<<<<<<< HEAD
 <dl class="py class">
 <dt id="frbcatpoppy.Frbcat">
 <em class="property">class </em><code class="sig-prename descclassname">frbcatpoppy.</code><code class="sig-name descname">Frbcat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">frbpoppy</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">repeat_bursts</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#frbcatpoppy.Frbcat" title="Permalink to this definition">¶</a></dt>
@@ -659,6 +843,55 @@ for debugging purposes. Defaults to True.</p></li>
 <dl class="py method">
 <dt id="frbcatpoppy.Frbcat.match_surveys">
 <code class="sig-name descname">match_surveys</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interrupt</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#frbcatpoppy.Frbcat.match_surveys" title="Permalink to this definition">¶</a></dt>
+=======
+<dl class="class">
+<dt id="frbcat.Frbcat">
+<em class="property">class </em><code class="descclassname">frbcat.</code><code class="descname">Frbcat</code><span class="sig-paren">(</span><em>frbpoppy=True</em>, <em>one_per_frb=True</em>, <em>repeat_bursts=True</em>, <em>repeaters=True</em>, <em>update=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Do things with the frbcat.</p>
+<p>Mostly used for playing nicely with frbpoppy. Get the pandas dataframe
+with Frbcat().df</p>
+<p>Initializing.</p>
+<dl class="method">
+<dt id="frbcat.Frbcat.clean">
+<code class="descname">clean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.clean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean up the data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.coor_trans">
+<code class="descname">coor_trans</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.coor_trans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply coordinate transformations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.filter">
+<code class="descname">filter</code><span class="sig-paren">(</span><em>one_per_frb=True</em>, <em>repeat_bursts=False</em>, <em>repeaters=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter frbcat in various ways.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>internet=True</em>, <em>save=True</em>, <em>local=False</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get frbcat from online or from a local file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>internet</strong> (<em>bool</em>) – Whether to get a new version of frbcat</li>
+<li><strong>local</strong> (<em>bool</em>) – Whether to use a local version of frbcat</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="frbcat.Frbcat.match_surveys">
+<code class="descname">match_surveys</code><span class="sig-paren">(</span><em>interrupt=True</em><span class="sig-paren">)</span><a class="headerlink" href="#frbcat.Frbcat.match_surveys" title="Permalink to this definition">¶</a></dt>
+>>>>>>> master
 <dd><p>Match up frbs with surveys.</p>
 </dd></dl>
 
@@ -710,7 +943,17 @@ for debugging purposes. Defaults to True.</p></li>
 <dd><p>Export properties to a csv file.</p>
 </dd></dl>
 
+<<<<<<< HEAD
 <dl class="py method">
+=======
+<dl class="method">
+<dt id="frbs.FRBs.to_csv">
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#frbs.FRBs.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export properties to a csv file.</p>
+</dd></dl>
+
+<dl class="method">
+>>>>>>> master
 <dt id="frbs.FRBs.to_df">
 <code class="sig-name descname">to_df</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#frbs.FRBs.to_df" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert properties to a Pandas DataFrame.</p>
@@ -731,6 +974,7 @@ for debugging purposes. Defaults to True.</p></li>
 <p>Convert redshift to a various measures.</p>
 <p>Based on James Schombert’s python implementation of Edward L. Wright’s
 cosmology calculator.</p>
+<<<<<<< HEAD
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -752,6 +996,34 @@ cosmology calculator.</p>
 </dd>
 </dl>
 <dl class="py method">
+=======
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>z</strong> (<em>array</em>) – Redshift</li>
+<li><strong>self.H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter.</li>
+<li><strong>self.W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter.</li>
+<li><strong>self.W_v</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>One of the distance measures [Gpc], or comoving volume from</dt>
+<dd><p class="first last">Earth to the source [Gpc^3]</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+>>>>>>> master
 <dt id="galacticops.Redshift.dist_co">
 <code class="sig-name descname">dist_co</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.Redshift.dist_co" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the corresponding comoving distance [Gpc].</p>
@@ -1088,6 +1360,7 @@ cancel each other in the limit of large populations.</p>
 <dd><p>Calculate scattering timescale (values default to those from Bhat et al.
 (2004, DOI:10.1086/382680) and to simluate the scatter around this
 relationship, draw from a Gaussian around this value.</p>
+<<<<<<< HEAD
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1111,12 +1384,45 @@ Defaults to 1400 MHz</p></li>
 <dt id="galacticops.separation">
 <code class="sig-prename descclassname">galacticops.</code><code class="sig-name descname">separation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra_1</span></em>, <em class="sig-param"><span class="n">dec_1</span></em>, <em class="sig-param"><span class="n">ra_2</span></em>, <em class="sig-param"><span class="n">dec_2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.separation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Separation between points on sky [degrees].</p>
+=======
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>dm</strong> (<em>array</em>) – Dispersion measure [pc*cm^-3]</li>
+<li><strong>offset</strong> (<em>float</em>) – Offset of scattering relationship. Defaults to -6.46</li>
+<li><strong>scindex</strong> (<em>float</em>) – Scattering index. Defaults to -3.86</li>
+<li><strong>freq</strong> (<em>float</em>) – Frequency at which to evaluate scattering time [MHz].
+Defaults to 1400 MHz</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Scattering timescale [ms]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="galacticops.separation">
+<code class="descclassname">galacticops.</code><code class="descname">separation</code><span class="sig-paren">(</span><em>ra_1</em>, <em>dec_1</em>, <em>ra_2</em>, <em>dec_2</em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.separation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Separation between points on sky [degree].</p>
+>>>>>>> master
 <p>Using a special case of the Vincenty formula for an ellipsoid with equal
 major and minor axes.</p>
 <p>See <a class="reference external" href="https://en.wikipedia.org/wiki/Great-circle_distance">https://en.wikipedia.org/wiki/Great-circle_distance</a> for more info.</p>
 </dd></dl>
 
+<<<<<<< HEAD
 <dl class="py function">
+=======
+<dl class="function">
+>>>>>>> master
 <dt id="galacticops.z_to_d_approx">
 <code class="sig-prename descclassname">galacticops.</code><code class="sig-name descname">z_to_d_approx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">z</span></em>, <em class="sig-param"><span class="n">H_0</span><span class="o">=</span><span class="default_value">67.74</span></em><span class="sig-paren">)</span><a class="headerlink" href="#galacticops.z_to_d_approx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate distance in Gpc from a redshift.</p>
@@ -1291,6 +1597,7 @@ be created by taking setting power to zero.</p>
 </dd></dl>
 
 </div>
+<<<<<<< HEAD
 <div class="section" id="module-misc">
 <span id="misc"></span><h2>misc<a class="headerlink" href="#module-misc" title="Permalink to this headline">¶</a></h2>
 <p>Convenience functions.</p>
@@ -1353,6 +1660,97 @@ poisson-confidence-interval-with-numpy</p>
 <dd class="field-odd"><p>type</p>
 </dd>
 </dl>
+=======
+<div class="section" id="module-large_pop">
+<span id="large-pop"></span><h2>large_pop<a class="headerlink" href="#module-large_pop" title="Permalink to this headline">¶</a></h2>
+<p>Methods to deal with large populations.</p>
+<dl class="class">
+<dt id="large_pop.LargePopulation">
+<em class="property">class </em><code class="descclassname">large_pop.</code><code class="descname">LargePopulation</code><span class="sig-paren">(</span><em>pop</em>, <em>*surveys</em>, <em>max_size=10000000.0</em>, <em>run=True</em><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.LargePopulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Method to deal with a large population.</p>
+<p>Basically splits it up, and merges the results.</p>
+<p>Set arguments.</p>
+<dl class="method">
+<dt id="large_pop.LargePopulation.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.LargePopulation.merge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="large_pop.LargePopulation.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.LargePopulation.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="large_pop.main">
+<code class="descclassname">large_pop.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#large_pop.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compare a standard Survey Population with a Large Survey Population.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-log">
+<span id="log"></span><h2>log<a class="headerlink" href="#module-log" title="Permalink to this headline">¶</a></h2>
+<p>Quick and dirty logging functions.</p>
+<dl class="function">
+<dt id="log.hist">
+<code class="descclassname">log.</code><code class="descname">hist</code><span class="sig-paren">(</span><em>parameter</em>, <em>bins='lin'</em>, <em>n_bins=25</em>, <em>norm=True</em><span class="sig-paren">)</span><a class="headerlink" href="#log.hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bin up a parameter either in a lin or log space.</p>
+<p>Why is this not a standard option in numpy or matplotlib?</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>parameter</strong> (<em>array</em>) – To be binned</li>
+<li><strong>bins</strong> (<em>str</em>) – Either ‘lin’ or ‘log’</li>
+<li><strong>n_bins</strong> (<em>int</em>) – Number of bins. Can be overriden internally</li>
+<li><strong>norm</strong> (<em>bool</em>) – Whether to normalise</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">bin centers, values per bin</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="log.pprint">
+<code class="descclassname">log.</code><code class="descname">pprint</code><span class="sig-paren">(</span><em>*s</em>, <em>output=True</em><span class="sig-paren">)</span><a class="headerlink" href="#log.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hack to make for more informative print statements.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="log.progressbar">
+<code class="descclassname">log.</code><code class="descname">progressbar</code><span class="sig-paren">(</span><em>it</em>, <em>prefix=''</em>, <em>size=69</em>, <em>file=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#log.progressbar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Progressbar from adapted from Stack Overflow.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>it</strong> (<em>generator</em>) – range of values</li>
+<li><strong>prefix</strong> (<em>str</em>) – Words displayed before the progress bar</li>
+<li><strong>size</strong> (<em>int</em>) – Display width</li>
+<li><strong>file</strong> – Where to direct output</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Description of returned object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">type</p>
+</td>
+</tr>
+</tbody>
+</table>
+>>>>>>> master
 </dd></dl>
 
 </div>
@@ -1389,7 +1787,11 @@ non-cosmological population.</p></li>
 
 <dl class="py method">
 <dt id="number_density.NumberDensity.from_smd">
+<<<<<<< HEAD
 <code class="sig-name descname">from_smd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_gen</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#number_density.NumberDensity.from_smd" title="Permalink to this definition">¶</a></dt>
+=======
+<code class="descname">from_smd</code><span class="sig-paren">(</span><em>n_gen=1</em><span class="sig-paren">)</span><a class="headerlink" href="#number_density.NumberDensity.from_smd" title="Permalink to this definition">¶</a></dt>
+>>>>>>> master
 <dd><p>Return a random redshift for sources following Stellar Mass Density.</p>
 <p>Follows Madau &amp; Dickinson (2014), eq. 2 &amp; 15. For more info see
 <a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
@@ -1450,7 +1852,11 @@ non-cosmological population.</p></li>
 <dd><p>Where all populations are to be stored.</p>
 </dd></dl>
 
+<<<<<<< HEAD
 <dl class="py method">
+=======
+<dl class="method">
+>>>>>>> master
 <dt id="paths.Paths.store">
 <code class="sig-name descname">store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">default</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="headerlink" href="#paths.Paths.store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Where files are to be stored.</p>
@@ -1644,6 +2050,7 @@ that grid.</p>
 
 <dl class="py method">
 <dt id="population.Population.save">
+<<<<<<< HEAD
 <code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write out source properties as data file.</p>
 <dl class="field-list simple">
@@ -1662,6 +2069,32 @@ that grid.</p>
 <dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – Path to which to write</p>
 </dd>
 </dl>
+=======
+<code class="descname">save</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out source properties as data file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) – Path to which to save.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="population.Population.to_csv">
+<code class="descname">to_csv</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#population.Population.to_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a population to a csv file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) – Path to which to write</td>
+</tr>
+</tbody>
+</table>
+>>>>>>> master
 </dd></dl>
 
 <dl class="py method">
@@ -1721,6 +2154,7 @@ one_offs in that order</p></li>
 </dl>
 </dd></dl>
 
+<<<<<<< HEAD
 <dl class="py function">
 <dt id="population.unpickle">
 <code class="sig-prename descclassname">population.</code><code class="sig-name descname">unpickle</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">uid</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#population.unpickle" title="Permalink to this definition">¶</a></dt>
@@ -1742,14 +2176,72 @@ or give the population name</p></li>
 </dl>
 </dd></dl>
 
+=======
+<dl class="function">
+<dt id="population.split_pop">
+<code class="descclassname">population.</code><code class="descname">split_pop</code><span class="sig-paren">(</span><em>pop</em>, <em>mask</em><span class="sig-paren">)</span><a class="headerlink" href="#population.split_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split a population.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pop</strong> (<a class="reference internal" href="#population.Population" title="population.Population"><em>Population</em></a>) – Population to be split</li>
+<li><strong>mask</strong> (<em>Numpy</em>) – Numpy boolean mask</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Tuple of population classes</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="population.unpickle">
+<code class="descclassname">population.</code><code class="descname">unpickle</code><span class="sig-paren">(</span><em>filename=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#population.unpickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quick function to unpickle a population.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Define the path to the pickled population,
+or give the population name</li>
+<li><strong>uid</strong> (<em>str</em><em>, </em><em>optional</em>) – Unique Identifier</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Population class</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#population.Population" title="population.Population">Population</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+>>>>>>> master
 </div>
 <div class="section" id="module-precalc">
 <span id="precalc"></span><h2>precalc<a class="headerlink" href="#module-precalc" title="Permalink to this headline">¶</a></h2>
 <p>Create a lookup tables for redshift and the NE2001 dispersion measure.</p>
+<<<<<<< HEAD
 <dl class="py class">
 <dt id="precalc.DistanceTable">
 <em class="property">class </em><code class="sig-prename descclassname">precalc.</code><code class="sig-name descname">DistanceTable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H_0</span><span class="o">=</span><span class="default_value">67.74</span></em>, <em class="sig-param"><span class="n">W_m</span><span class="o">=</span><span class="default_value">0.3089</span></em>, <em class="sig-param"><span class="n">W_v</span><span class="o">=</span><span class="default_value">0.6911</span></em>, <em class="sig-param"><span class="n">test</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+=======
+<dl class="class">
+<dt id="precalc.DistanceTable">
+<em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">DistanceTable</code><span class="sig-paren">(</span><em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em>, <em>test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+>>>>>>> master
 <p>Create/use a lookup table for comoving distance, volume, redshift etc.</p>
 <p>Create a list of tuples to lookup the corresponding redshift for a comoving
 distance [Gpc] (or the other way around). Uses formulas from
@@ -1758,6 +2250,7 @@ calculation times, it will check if a previous run with the same parameters
 has been done, which it will then load it. If not, it will calculate a new
 table, and save the table for later runs. Covers z, dist, vol, dvol,
 cdf_sfr and cdf_smd.</p>
+<<<<<<< HEAD
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1767,6 +2260,21 @@ cdf_sfr and cdf_smd.</p>
 </ul>
 </dd>
 </dl>
+=======
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>H_0</strong> (<em>float</em><em>, </em><em>optional</em>) – Hubble parameter. Defaults to 67.74 km/s/Mpc</li>
+<li><strong>W_m</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega matter. Defaults to 0.3089</li>
+<li><strong>W_k</strong> (<em>float</em><em>, </em><em>optional</em>) – Omega vacuum. Defaults to 0.6911</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+>>>>>>> master
 <p>Initializing.</p>
 <dl class="py method">
 <dt id="precalc.DistanceTable.create_table">
@@ -1776,7 +2284,11 @@ cdf_sfr and cdf_smd.</p>
 
 <dl class="py method">
 <dt id="precalc.DistanceTable.lookup">
+<<<<<<< HEAD
 <code class="sig-name descname">lookup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">z</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dist_co</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">vol_co</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dvol_co</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cdf_sfr</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cdf_smd</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable.lookup" title="Permalink to this definition">¶</a></dt>
+=======
+<code class="descname">lookup</code><span class="sig-paren">(</span><em>z=None</em>, <em>dist_co=None</em>, <em>vol_co=None</em>, <em>dvol_co=None</em>, <em>cdf_sfr=None</em>, <em>cdf_smd=None</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.DistanceTable.lookup" title="Permalink to this definition">¶</a></dt>
+>>>>>>> master
 <dd><p>Look up associated values with input values.</p>
 </dd></dl>
 
@@ -1790,13 +2302,22 @@ cdf_sfr and cdf_smd.</p>
 
 <dl class="py class">
 <dt id="precalc.NE2001Table">
+<<<<<<< HEAD
 <em class="property">class </em><code class="sig-prename descclassname">precalc.</code><code class="sig-name descname">NE2001Table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">test</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.NE2001Table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+=======
+<em class="property">class </em><code class="descclassname">precalc.</code><code class="descname">NE2001Table</code><span class="sig-paren">(</span><em>test=False</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.NE2001Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+>>>>>>> master
 <p>Create/use a NE2001 lookup table for dispersion measure.</p>
 <p>Initializing.</p>
 <dl class="py method">
 <dt id="precalc.NE2001Table.create_table">
+<<<<<<< HEAD
 <code class="sig-name descname">create_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.NE2001Table.create_table" title="Permalink to this definition">¶</a></dt>
+=======
+<code class="descname">create_table</code><span class="sig-paren">(</span><em>parallel=True</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.NE2001Table.create_table" title="Permalink to this definition">¶</a></dt>
+>>>>>>> master
 <dd><p>Create a lookup table for dispersion measure.</p>
 </dd></dl>
 
@@ -1828,17 +2349,29 @@ cdf_sfr and cdf_smd.</p>
 
 </dd></dl>
 
+<<<<<<< HEAD
 <dl class="py function">
 <dt id="precalc.sfr">
 <code class="sig-prename descclassname">precalc.</code><code class="sig-name descname">sfr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">z</span></em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.sfr" title="Permalink to this definition">¶</a></dt>
+=======
+<dl class="function">
+<dt id="precalc.sfr">
+<code class="descclassname">precalc.</code><code class="descname">sfr</code><span class="sig-paren">(</span><em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.sfr" title="Permalink to this definition">¶</a></dt>
+>>>>>>> master
 <dd><p>Return the number density of star forming rate at redshift z.</p>
 <p>Follows Madau &amp; Dickinson (2014), eq. 15. For more info see
 <a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
 </dd></dl>
 
+<<<<<<< HEAD
 <dl class="py function">
 <dt id="precalc.smd">
 <code class="sig-prename descclassname">precalc.</code><code class="sig-name descname">smd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">z</span></em>, <em class="sig-param"><span class="n">H_0</span><span class="o">=</span><span class="default_value">67.74</span></em>, <em class="sig-param"><span class="n">W_m</span><span class="o">=</span><span class="default_value">0.3089</span></em>, <em class="sig-param"><span class="n">W_v</span><span class="o">=</span><span class="default_value">0.6911</span></em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.smd" title="Permalink to this definition">¶</a></dt>
+=======
+<dl class="function">
+<dt id="precalc.smd">
+<code class="descclassname">precalc.</code><code class="descname">smd</code><span class="sig-paren">(</span><em>z</em>, <em>H_0=67.74</em>, <em>W_m=0.3089</em>, <em>W_v=0.6911</em><span class="sig-paren">)</span><a class="headerlink" href="#precalc.smd" title="Permalink to this definition">¶</a></dt>
+>>>>>>> master
 <dd><p>Return the number density of Stellar Mass Density at redshift z.</p>
 <p>Follows Madau &amp; Dickinson (2014), eq. 2 &amp; 15. For more info see
 <a class="reference external" href="https://arxiv.org/pdf/1403.0007.pdf">https://arxiv.org/pdf/1403.0007.pdf</a></p>
@@ -1880,6 +2413,7 @@ cdf_sfr and cdf_smd.</p>
 </dd></dl>
 
 </div>
+<<<<<<< HEAD
 <div class="section" id="module-si_dists">
 <span id="si-dists"></span><h2>si_dists<a class="headerlink" href="#module-si_dists" title="Permalink to this headline">¶</a></h2>
 <p>Spectral index distributions.</p>
@@ -1908,6 +2442,53 @@ cdf_sfr and cdf_smd.</p>
 <dd class="field-odd"><p>array</p>
 </dd>
 </dl>
+=======
+<div class="section" id="module-survey_pop">
+<span id="survey-pop"></span><h2>survey_pop<a class="headerlink" href="#module-survey_pop" title="Permalink to this headline">¶</a></h2>
+<p>Class to generate a survey population of FRBs.</p>
+<dl class="class">
+<dt id="survey_pop.SurveyPopulation">
+<em class="property">class </em><code class="descclassname">survey_pop.</code><code class="descname">SurveyPopulation</code><span class="sig-paren">(</span><em>cosmic_pop</em>, <em>survey</em>, <em>scat=False</em>, <em>scin=False</em>, <em>rate_limit=True</em><span class="sig-paren">)</span><a class="headerlink" href="#survey_pop.SurveyPopulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">frbpoppy.population.Population</span></code></p>
+<p>Class to create a survey population of FRBs.</p>
+<p>Run a survey to detect FRB sources.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cosmic_pop</strong> (<a class="reference internal" href="#population.Population" title="population.Population"><em>Population</em></a>) – Population class of FRB sources to observe</li>
+<li><strong>survey</strong> (<a class="reference internal" href="#survey.Survey" title="survey.Survey"><em>Survey</em></a>) – Survey class with which to observe</li>
+<li><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include scattering in signal to
+noise calculations.</li>
+<li><strong>scin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply scintillation to
+observations.</li>
+<li><strong>rate_limit</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to limit detections by 1/(1+z)
+due to limitation in observing time</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="survey_pop.SurveyPopulation.calc_logn_logs">
+<code class="descname">calc_logn_logs</code><span class="sig-paren">(</span><em>parameter='fluence'</em>, <em>min_p=None</em>, <em>max_p=None</em><span class="sig-paren">)</span><a class="headerlink" href="#survey_pop.SurveyPopulation.calc_logn_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO. Currently unfinished.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey_pop.SurveyPopulation.calc_rates">
+<code class="descname">calc_rates</code><span class="sig-paren">(</span><em>survey</em><span class="sig-paren">)</span><a class="headerlink" href="#survey_pop.SurveyPopulation.calc_rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the relative detection rates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey_pop.SurveyPopulation.rates">
+<code class="descname">rates</code><span class="sig-paren">(</span><em>scale_area=True</em>, <em>scale_time=False</em><span class="sig-paren">)</span><a class="headerlink" href="#survey_pop.SurveyPopulation.rates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale the rates by the beam area and time.</p>
+</dd></dl>
+
+>>>>>>> master
 </dd></dl>
 
 </div>
@@ -1916,19 +2497,38 @@ cdf_sfr and cdf_smd.</p>
 <p>Class holding survey properties.</p>
 <dl class="py class">
 <dt id="survey.Survey">
+<<<<<<< HEAD
 <em class="property">class </em><code class="sig-prename descclassname">survey.</code><code class="sig-name descname">Survey</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">'perfect'</span></em>, <em class="sig-param"><span class="n">n_days</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+=======
+<em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Survey</code><span class="sig-paren">(</span><em>name</em>, <em>gain_pattern='gaussian'</em>, <em>n_sidelobes=0.5</em>, <em>pointings=[]</em>, <em>max_time=1</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+>>>>>>> master
 <p>Method containing survey parameters and functions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – Name of survey with which to observe population. Can
 either be a predefined survey present in frbpoppy or a path name to
+<<<<<<< HEAD
 a new survey filename</p></li>
 <li><p><strong>n_days</strong> (<em>float</em>) – Time spent surveying [days]</p></li>
 </ul>
 </dd>
 </dl>
+=======
+a new survey filename</li>
+<li><strong>gain_pattern</strong> (<em>str</em>) – Set gain pattern</li>
+<li><strong>n_sidelobes</strong> (<em>float</em>) – Number of sidelobes to include. Use 0.5 for
+cutting beam at FWHM</li>
+<li><strong>pointings</strong> (<em>list</em>) – List of (RA, Dec) coordinates</li>
+<li><strong>max_time</strong> (<em>float</em>) – Maximum time spent surveying [days]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+>>>>>>> master
 <p>Initializing.</p>
 <dl class="py method">
 <dt id="survey.Survey.calc_T_sky">
@@ -2019,7 +2619,17 @@ changed due to the central frequency being given in MHz.</p>
 </dl>
 </dd></dl>
 
+<<<<<<< HEAD
 <dl class="py method">
+=======
+<dl class="method">
+<dt id="survey.Survey.calc_fluence">
+<code class="descname">calc_fluence</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.calc_fluence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate fluence [Jy*ms].</p>
+</dd></dl>
+
+<dl class="method">
+>>>>>>> master
 <dt id="survey.Survey.calc_fluence_limit">
 <code class="sig-name descname">calc_fluence_limit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_eff</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.calc_fluence_limit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the fluence limit.</p>
@@ -2119,6 +2729,7 @@ rigorous testing has been applied to this.</p>
 <p>Radiometer equation for single pulse (Dewey et al., 1984), but
 adapted to allow for a degradation factor reducing the peak flux
 as a pulse is stretched</p>
+<<<<<<< HEAD
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -2141,12 +2752,34 @@ as a pulse is stretched</p>
 </dd></dl>
 
 <dl class="py method">
+=======
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<a class="reference internal" href="#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRBs of which to calculate the signal to noise</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Signal to noise ratio based on the radiometer</dt>
+<dd>equation for a single pulse.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+>>>>>>> master
 <dt id="survey.Survey.calc_w_eff">
 <code class="sig-name descname">calc_w_eff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_arr</span></em>, <em class="sig-param"><span class="n">t_dm</span></em>, <em class="sig-param"><span class="n">t_scat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.calc_w_eff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate effective pulse width [ms].</p>
 <p>From Narayan (1987, DOI: 10.1086/165442), and also Cordes &amp; McLaughlin
 (2003, DOI: 10.1086/378231). For details see p. 30 of Emily Petroff’s
 thesis (2016), found here: <a class="reference external" href="http://hdl.handle.net/1959.3/417307">http://hdl.handle.net/1959.3/417307</a></p>
+<<<<<<< HEAD
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -2162,6 +2795,97 @@ thesis (2016), found here: <a class="reference external" href="http://hdl.handle
 <dd class="field-odd"><p>array</p>
 </dd>
 </dl>
+=======
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<a class="reference internal" href="#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRBs for which to calculate effective pulse width.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Effective pulse width [ms]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.dm_smear">
+<code class="descname">dm_smear</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.dm_smear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate delay in pulse across a channel due to dm smearing.</p>
+<p>Formula’s based on ‘Handbook of Pulsar Astronomy” by Duncan Lorimer
+&amp; Michael Kramer, section A2.4. Note the power of the forefactor has
+changed due to the central frequency being given in MHz.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<a class="reference internal" href="#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRB object with a dm attribute</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Time of delay [ms] at central band frequency</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">t_dm (array)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.in_pointings">
+<code class="descname">in_pointings</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.in_pointings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether within pointing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.in_region">
+<code class="descname">in_region</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.in_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the given frbs are within the survey region.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<em>Frbs</em>) – Frbs of which to check whether in survey region</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Boolean mask denoting whether frbs are within survey region</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.in_time">
+<code class="descname">in_time</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.in_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>For RepeaterPopulation only.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="survey.Survey.intensity_profile">
+<code class="descname">intensity_profile</code><span class="sig-paren">(</span><em>shape=1</em>, <em>dimensions=2</em>, <em>rep_loc='random'</em><span class="sig-paren">)</span><a class="headerlink" href="#survey.Survey.intensity_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate intensity profile.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>shape</strong> (<em>tuple</em>) – Usually the shape of frbs.s_peak</li>
+<li><strong>dimensions</strong> (<em>int</em>) – Use a 2D beampattern or a 1D one.</li>
+<li><strong>rep_loc</strong> (<em>str</em>) – ‘same’ or ‘random’. Whether repeaters are observed
+in the same spot or a different spot</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">intensity profile, offset from beam [arcmin]</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array, array</p>
+</td>
+</tr>
+</tbody>
+</table>
+>>>>>>> master
 </dd></dl>
 
 <dl class="py method">

@@ -99,6 +99,19 @@ large\_pop
    :undoc-members:
    :show-inheritance:
 
+<<<<<<< HEAD
+=======
+large\_pop
+--------------------
+
+.. automodule:: large_pop
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+log
+--------------------
+>>>>>>> master
 
 lum\_dists
 ---------------------------
