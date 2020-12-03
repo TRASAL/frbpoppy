@@ -1,26 +1,18 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentation &#8212; frbpoppy by David Gardenier</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="shortcut icon" href="_static/logo_small.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -29,15 +21,17 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
-  </head>
-  <body>
+  </head><body>
   
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="documentation">
@@ -51,8 +45,329 @@
 <div class="line"><br /></div>
 </div>
 <p>Class to generate a cosmic population of FRBs.</p>
-<dl class="class">
+<dl class="py class">
 <dt>
+<<<<<<< HEAD
+<em class="property">class </em><code class="sig-prename descclassname">cosmic_pop.</code><code class="sig-name descname">CosmicPopulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_srcs</span><span class="o">=</span><span class="default_value">10000.0</span></em>, <em class="sig-param"><span class="n">n_days</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">'cosmic'</span></em>, <em class="sig-param"><span class="n">repeaters</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">generate</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Generate a cosmic FRB population.</p>
+<p>Generate a popuation of FRBs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_srcs</strong> (<em>int</em>) – Number of FRB sources to generate.</p></li>
+<li><p><strong>n_days</strong> (<em>float</em>) – Number of days over which FRBs are to be generated.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Population name.</p></li>
+<li><p><strong>repeaters</strong> (<em>bool</em>) – Whether to generate a repeater population.</p></li>
+<li><p><strong>generate</strong> (<em>bool</em>) – Whether to create a population.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Population of FRBs</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population">Population</a></p>
+</dd>
+</dl>
+<dl class="py method">
+<dt>
+<em class="property">classmethod </em><code class="sig-name descname">complex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_srcs</span></em>, <em class="sig-param"><span class="n">n_days</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">repeaters</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">generate</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set up a complex population.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_direction</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate the direction of frbs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_dist</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate source distances.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_dm</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate total dispersion measure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_dm_host</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate host dispersion measure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_dm_igm</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate intergalactic dispersion measure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_dm_mw</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate Milky Way dispersion measure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_gal_coords</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate galactic coordinates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate indices for over each FRB source.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_lum</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate luminosities [ergs/s].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_precalc</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Check whether pre-calculations have been run.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_si</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate spectral indices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate time stamps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_w</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate pulse widths [ms].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">generate</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate a full CosmicPopulation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'uniform'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set the model for generating the directions of the frb sources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>str</em>) – Choice from (‘uniform’).</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>if model == ‘uniform’:</dt><dd><p>min_ra (float): Minimum right ascenion [frac deg].
+max_ra (float): Maximum right ascenion [frac deg].
+min_dec (float): Minimum declination [frac deg].
+max_dec (float): Maximum declination [frac deg].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_dist</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'vol_co'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set the number density model for calculating distances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em>) – Number density model to use. Choice from
+(‘vol_co’, ‘sfr’, ‘smd’).</p></li>
+<li><p><strong>z_max</strong> (<em>float</em>) – Maximum redshift.</p></li>
+<li><p><strong>H_0</strong> (<em>float</em>) – Hubble constant.</p></li>
+<li><p><strong>W_m</strong> (<em>float</em>) – Density parameter Ω_m.</p></li>
+<li><p><strong>W_v</strong> (<em>float</em>) – Cosmological constant Ω_Λ.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – Desired log N log S slope for a perfect,
+non-cosmological population.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_dm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mw</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">igm</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">host</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set total dispersion measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mw</strong> (<em>bool</em>) – Whether to include a Milky Way component</p></li>
+<li><p><strong>igm</strong> (<em>bool</em>) – Whether to include an IGM component</p></li>
+<li><p><strong>host</strong> (<em>bool</em>) – Whether to include a host galaxy component</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_dm_host</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'gauss'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set host galaxy dispersion measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>str</em>) – Options from (‘gauss’, ‘lognormal’).</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>if model in (‘gauss’, ‘lognormal’):</dt><dd><p>mean (float): Mean DM [pc/cm^3].
+std (float): Standard deviation DM [pc/cm^3].</p>
+</dd>
+<dt>if model == ‘constant’:</dt><dd><p>value (float): Value to adopt [pc/cm^3].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_dm_igm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'ioka'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set intergalactic dispersion measure model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>str</em>) – Option of ‘ioka’.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>if model == ‘ioka’:</dt><dd><p>slope (float): Slope of the DM-z relationship.
+std (float): Spread around the DM-z relationship.
+spread_dist (str): ‘normal’ or ‘lognormal’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_dm_mw</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'ne2001'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set the model for the Milky Way dispersion measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>str</em>) – Option of ‘ne2001’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_emission_range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">low</span><span class="o">=</span><span class="default_value">100000000.0</span></em>, <em class="sig-param"><span class="n">high</span><span class="o">=</span><span class="default_value">10000000000.0</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set the emission range [Hz].</p>
+<p>The frequency range between which FRB sources should emit the given
+bolometric luminosity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_min</strong> (<em>float</em>) – Lowest source frequency [Hz].</p></li>
+<li><p><strong>f_max</strong> (<em>float</em>) – Highest source frequency [Hz].</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_lum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'powerlaw'</span></em>, <em class="sig-param"><span class="n">per_source</span><span class="o">=</span><span class="default_value">'same'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set luminosity function [ergs/s].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em>) – Options from (‘powerlaw’)</p></li>
+<li><p><strong>per_source</strong> (<em>str</em>) – Model for a single source burst
+distribution. Options from (‘same’, ‘different’)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>If model == ‘powerlaw’:</dt><dd><p>low (float): Minimum bolometric luminosity [ergs/s]
+high (float): Maximum bolometric luminosity [ergs/s]
+power (float): Power of luminosity function</p>
+</dd>
+<dt>If model == ‘constant’:</dt><dd><p>value (float): Value for standard candle [ergs/s]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_si</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'gauss'</span></em>, <em class="sig-param"><span class="n">per_source</span><span class="o">=</span><span class="default_value">'same'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set spectral index model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em>) – Options from (‘gauss’)</p></li>
+<li><p><strong>per_source</strong> (<em>str</em>) – Model for a single source burst
+distribution. Options from (‘same’, ‘different’)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>If model == ‘constant’:</dt><dd><p>value (float): Default spectal index.</p>
+</dd>
+<dt>If model == ‘gauss’:</dt><dd><p>mean (float): Mean spectral index
+std (float): Standard deviation spectral index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_time</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'regular'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set model from which to generate time stamps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>str</em>) – Options from (‘single’, ‘regular’, ‘clustered’,
+‘poisson’)</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>If model == ‘regular’:</dt><dd><p>rate (float): Number of bursts per day</p>
+</dd>
+<dt>If model == ‘poisson’:</dt><dd><p>rate (float): Expected number of bursts per day</p>
+</dd>
+<dt>If model == ‘clustered’:</dt><dd><p>r (float): Rate parameter
+k (float): Shape parameter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_w</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'uniform'</span></em>, <em class="sig-param"><span class="n">per_source</span><span class="o">=</span><span class="default_value">'same'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set intrinsic pulse widths model [ms].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em>) – Options from (‘uniform’, ‘lognormal’)</p></li>
+<li><p><strong>per_source</strong> (<em>str</em>) – Model for a single source burst
+distribution. Options from ‘same’ or ‘different’</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>If model == ‘constant’:</dt><dd><p>value (float): Pulse width [ms].</p>
+</dd>
+<dt>If model == ‘uniform’:</dt><dd><p>low (float): Minimum pulse width [ms].
+high (float): Maximum pulse width [ms].</p>
+</dd>
+<dt>If model == ‘lognormal’:</dt><dd><p>mean (float): Mean pulse width [ms].
+std (float): Standard deviation pulse width [ms].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<em class="property">classmethod </em><code class="sig-name descname">simple</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_srcs</span></em>, <em class="sig-param"><span class="n">n_days</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">repeaters</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">generate</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span></dt>
+=======
 <em class="property">class </em><code class="descclassname">cosmic_pop.</code><code class="descname">CosmicPopulation</code><span class="sig-paren">(</span><em>n_gen, days=1, name='cosmic', H_0=67.74, W_m=0.3089, W_v=0.6911, dm_host_model='gaussian', dm_host_mu=100, dm_host_sigma=200, dm_igm_index=1000, dm_igm_sigma=None, dm_mw_model='ne2001', emission_range=[10000000.0, 10000000000.0], lum_range=[1e+40, 1e+45], lum_index=0, n_model='sfr', alpha=-1.5, w_model='lognormal', w_range=[0.1, 10], w_mu=0.1, w_sigma=0.5, si_mu=-1.4, si_sigma=1.0, z_max=2.5, generate=True</em><span class="sig-paren">)</span></dt>
 <dd><p>Generate a cosmic FRB population.</p>
 <p>Generate a popuation of FRBs.</p>
@@ -164,6 +479,7 @@ sources should emit the given bolometric luminosity.</li>
 <dl class="classmethod">
 <dt>
 <em class="property">classmethod </em><code class="descname">simple</code><span class="sig-paren">(</span><em>n</em>, <em>generate=False</em><span class="sig-paren">)</span></dt>
+>>>>>>> master
 <dd><p>Set up a simple, local population.</p>
 </dd></dl>
 
@@ -176,32 +492,37 @@ sources should emit the given bolometric luminosity.</li>
 <div class="line"><br /></div>
 </div>
 <p>Class holding survey properties.</p>
-<dl class="class">
+<dl class="py class">
 <dt>
+<<<<<<< HEAD
+<em class="property">class </em><code class="sig-prename descclassname">survey.</code><code class="sig-name descname">Survey</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">'perfect'</span></em>, <em class="sig-param"><span class="n">n_days</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span></dt>
+=======
 <em class="property">class </em><code class="descclassname">survey.</code><code class="descname">Survey</code><span class="sig-paren">(</span><em>name</em>, <em>gain_pattern='gaussian'</em>, <em>n_sidelobes=0.5</em>, <em>pointings=[]</em>, <em>max_time=1</em><span class="sig-paren">)</span></dt>
+>>>>>>> master
 <dd><p>Method containing survey parameters and functions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>str</em>) – Name of survey with which to observe population. Can
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of survey with which to observe population. Can
 either be a predefined survey present in frbpoppy or a path name to
+<<<<<<< HEAD
+a new survey filename</p></li>
+<li><p><strong>n_days</strong> (<em>float</em>) – Time spent surveying [days]</p></li>
+=======
 a new survey filename</li>
 <li><strong>gain_pattern</strong> (<em>str</em>) – Set gain pattern</li>
 <li><strong>n_sidelobes</strong> (<em>float</em>) – Number of sidelobes to include. Use 0.5 for
 cutting beam at FWHM</li>
 <li><strong>pointings</strong> (<em>list</em>) – List of (RA, Dec) coordinates</li>
 <li><strong>max_time</strong> (<em>float</em>) – Maximum time spent surveying [days]</li>
+>>>>>>> master
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>Initializing.</p>
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">calc_T_sky</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">calc_T_sky</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gl</span></em>, <em class="sig-param"><span class="n">gb</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate the sky temperature from the Haslam table.</p>
 <p>Afterwards scale to the survey frequency. The temperature sky map is
 given in the weird units of HealPix and despite looking up info on this
@@ -209,28 +530,90 @@ coordinate system, I don’t have the foggiest idea of how to transform
 these to galactic coordinates. I have therefore directly copied the
 following code from psrpoppy in the assumption Sam Bates managed to
 figure it out.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<a class="reference internal" href="frbpoppy.html#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – Needed for coordinates</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Sky temperature [K]</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gl</strong> (<em>array</em>) – Galactic longitude [deg]</p></li>
+<li><p><strong>gb</strong> (<em>array</em>) – Galactic latitude [deg]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Sky temperature [K]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">calc_Ts</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">calc_Ts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gl</span></em>, <em class="sig-param"><span class="n">gb</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Set temperatures for frbs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gl</strong> (<em>array</em>) – Galactic longitude [deg]</p></li>
+<li><p><strong>gb</strong> (<em>array</em>) – Galactic latitude [deg]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>T_sky, T_sys [K]</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
+<<<<<<< HEAD
+<code class="sig-name descname">calc_beam</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">repeaters</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">shape</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ra</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dec</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ra_p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dec_p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lst</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate intensity profile.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">calc_dm_smear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dm</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate delay in pulse across a channel due to dm smearing.</p>
+<p>Formula’s based on ‘Handbook of Pulsar Astronomy” by Duncan Lorimer
+&amp; Michael Kramer, section A2.4. Note the power of the forefactor has
+changed due to the central frequency being given in MHz.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dm</strong> (<em>array</em>) – Dispersion measure [pc/cm^3]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Time of delay [ms] at central band frequency</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>t_dm (array)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">calc_fluence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s_peak</span></em>, <em class="sig-param"><span class="n">w_eff</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate fluence [Jy ms].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s_peak</strong> (<em>array</em>) – Peak flux</p></li>
+<li><p><strong>w_eff</strong> (<em>array</em>) – Effective pulse width</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Fluence in Jy*ms</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">calc_fluence_limit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_eff</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span></dt>
+=======
 <code class="descname">calc_fluence</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate fluence [Jy*ms].</p>
 </dd></dl>
@@ -238,98 +621,130 @@ figure it out.</p>
 <dl class="method">
 <dt>
 <code class="descname">calc_fluence_limit</code><span class="sig-paren">(</span><em>w_eff=None</em><span class="sig-paren">)</span></dt>
+>>>>>>> master
 <dd><p>Calculate the fluence limit.</p>
 <p>Read Keane, Petroff (2015) for more details on how this is calculated.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>w_eff</strong> – Pulse width at which to calculate the fluence limit [ms].
-Default sets this to be at the maximum searched pulse width.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Fluence limit for a maximum pulse width burst [Jy ms]</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>w_eff</strong> – Pulse width at which to calculate the fluence limit [ms].
+Default sets this to be at the maximum searched pulse width.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Fluence limit for a maximum pulse width burst [Jy ms]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">calc_s_peak</code><span class="sig-paren">(</span><em>frbs</em>, <em>f_low=10000000.0</em>, <em>f_high=10000000000.0</em><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">calc_s_peak</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">si</span></em>, <em class="sig-param"><span class="n">lum_bol</span></em>, <em class="sig-param"><span class="n">z</span></em>, <em class="sig-param"><span class="n">dist_co</span></em>, <em class="sig-param"><span class="n">w_arr</span></em>, <em class="sig-param"><span class="n">w_eff</span></em>, <em class="sig-param"><span class="n">f_low</span><span class="o">=</span><span class="default_value">100000000.0</span></em>, <em class="sig-param"><span class="n">f_high</span><span class="o">=</span><span class="default_value">10000000000.0</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate the mean spectral flux density.</p>
 <p>Following Lorimer et al, 2013, eq. 9., at the central frequency
 of the survey.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>frbs</strong> (<a class="reference internal" href="frbpoppy.html#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRBs</li>
-<li><strong>f_low</strong> (<em>float</em>) – Source emission lower frequency limit [Hz].</li>
-<li><strong>f_high</strong> (<em>float</em>) – Source emission higher frequency limit [Hz].</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>si</strong> (<em>array</em>) – Spectral index</p></li>
+<li><p><strong>lum_bol</strong> (<em>array</em>) – Bolometric luminosity within emission band</p></li>
+<li><p><strong>z</strong> (<em>array</em>) – Redshift</p></li>
+<li><p><strong>dist_co</strong> (<em>array</em>) – Comoving distance [Gpc]</p></li>
+<li><p><strong>w_arr</strong> (<em>array</em>) – Pulse width at Earth [ms]</p></li>
+<li><p><strong>w_eff</strong> (<em>array</em>) – Pulse width at point of detection [ms]</p></li>
+<li><p><strong>f_low</strong> (<em>float</em>) – Source emission lower frequency limit [Hz].</p></li>
+<li><p><strong>f_high</strong> (<em>float</em>) – Source emission higher frequency limit [Hz].</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Mean spectral flux density [Jy]</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Mean spectral flux density [Jy]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">calc_scat</code><span class="sig-paren">(</span><em>dm</em><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">calc_scat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dm</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate scattering timescale for FRBs.</p>
 <p>Offset according to Lorimer et al. (doi:10.1093/mnrasl/slt098)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dm</strong> (<em>array</em>) – Dispersion Measure</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Scattering timescales [ms]</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dm</strong> (<em>array</em>) – Dispersion Measure</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Scattering timescales [ms]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">calc_scint</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">calc_scint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t_scat</span></em>, <em class="sig-param"><span class="n">dist_co</span></em>, <em class="sig-param"><span class="n">gl</span></em>, <em class="sig-param"><span class="n">gb</span></em>, <em class="sig-param"><span class="n">snr</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate scintillation effect on the signal to noise ratio.</p>
 <p>(Rather than adapting the flux, as the snr can change per survey
 attempt). Formulas based on ‘Handbook of Pulsar Astronomy” by Duncan
 Lorimer &amp; Michael Kramer, section 4.2. Test this before applying - no
 rigorous testing has been applied to this.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frbs</strong> (<a class="reference internal" href="frbpoppy.html#frbs.FRBs" title="frbs.FRBs"><em>FRBs</em></a>) – FRBs</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Signal to noise ratio modulation factors for scintillation</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">array</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_scat</strong> (<em>array</em>) – Scattering timescale for frbs [ms]
+(can use self.calc_scat to calculate this)</p></li>
+<li><p><strong>dist_co</strong> (<em>array</em>) – Comoving distance array [Gpc]</p></li>
+<li><p><strong>gl</strong> (<em>array</em>) – Galactic longitude [deg]</p></li>
+<li><p><strong>gb</strong> (<em>array</em>) – Galactic latitude [deg]</p></li>
+<li><p><strong>snr</strong> (<em>array</em>) – Signal to Noise array to modify</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Signal to noise ratio modulation factors for scintillation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">calc_snr</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">calc_snr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s_peak</span></em>, <em class="sig-param"><span class="n">w_arr</span></em>, <em class="sig-param"><span class="n">T_sys</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Caculate the SNR of several frbs.</p>
 <p>Radiometer equation for single pulse (Dewey et al., 1984), but
 adapted to allow for a degradation factor reducing the peak flux
 as a pulse is stretched</p>
+<<<<<<< HEAD
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s_peak</strong> (<em>array</em>) – Peak flux [Jy]</p></li>
+<li><p><strong>w_arr</strong> (<em>array</em>) – Pulse width at Earth [ms]</p></li>
+<li><p><strong>T_sys</strong> (<em>array</em>) – System temperature [K]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Signal to noise ratio based on the radiometer</dt><dd><p>equation for a single pulse.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">calc_w_eff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w_arr</span></em>, <em class="sig-param"><span class="n">t_dm</span></em>, <em class="sig-param"><span class="n">t_scat</span></em><span class="sig-paren">)</span></dt>
+=======
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -351,10 +766,34 @@ as a pulse is stretched</p>
 <dl class="method">
 <dt>
 <code class="descname">calc_w_eff</code><span class="sig-paren">(</span><em>frbs</em><span class="sig-paren">)</span></dt>
+>>>>>>> master
 <dd><p>Calculate effective pulse width [ms].</p>
 <p>From Narayan (1987, DOI: 10.1086/165442), and also Cordes &amp; McLaughlin
 (2003, DOI: 10.1086/378231). For details see p. 30 of Emily Petroff’s
 thesis (2016), found here: <a class="reference external" href="http://hdl.handle.net/1959.3/417307">http://hdl.handle.net/1959.3/417307</a></p>
+<<<<<<< HEAD
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w_arr</strong> (<em>array</em>) – Pulse width [ms]</p></li>
+<li><p><strong>t_dm</strong> (<em>array</em>) – Time delay due to dispersion [ms]</p></li>
+<li><p><strong>t_scat</strong> (<em>array</em>) – Time delay due to scattering [ms]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Effective pulse width [ms]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">gen_pointings</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Generate pointings.</p>
+=======
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -444,26 +883,62 @@ in the same spot or a different spot</li>
 </tr>
 </tbody>
 </table>
+>>>>>>> master
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">max_offset</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span></dt>
-<dd><p>Calculate the maximum offset of an FRB in an Airy disk.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x</strong> (<em>int</em>) – Maximum sidelobe wanted</td>
-</tr>
-</tbody>
-</table>
+<code class="sig-name descname">in_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ra</span></em>, <em class="sig-param"><span class="n">dec</span></em>, <em class="sig-param"><span class="n">gl</span></em>, <em class="sig-param"><span class="n">gb</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Check if the given frbs are within the survey region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dec</strong><strong>, </strong><strong>gl</strong><strong>, </strong><strong>gb</strong> (<em>ra</em><em>,</em>) – Coordinates to check whether in region</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Boolean mask denoting whether frbs are within survey region</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
-<code class="descname">read_survey_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">read_survey_parameters</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Read in survey parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_beam</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span><span class="o">=</span><span class="default_value">'perfect'</span></em>, <em class="sig-param"><span class="n">size</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">random_loc</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">n_sidelobes</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set intensity profile.</p>
+<p>Set properties for int pro</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em>) – Beam pattern. Choice from ‘apertif’, ‘parkes’,
+‘chime’, ‘gaussian’, ‘airy’.</p></li>
+<li><p><strong>size</strong> (<em>float</em>) – Beam size at FWHM [sq. deg].
+Defaults to that of the survey file</p></li>
+<li><p><strong>random_loc</strong> (<em>bool</em>) – Whether to calculate the precise or random
+location of each burst in the beam.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>if model in (‘gaussian’, ‘airy’):</dt><dd><dl class="simple">
+<dt>n_sidelobes (int): Number of sidelobes to include. Defaults to</dt><dd><p>cutting at the FWHM when set to 0.5.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<code class="sig-name descname">set_pointings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mount_type</span><span class="o">=</span><span class="default_value">'tracking'</span></em>, <em class="sig-param"><span class="n">n_pointings</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ra</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dec</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Set pointing properties.</p>
 </dd></dl>
 
 </dd></dl>
@@ -475,37 +950,44 @@ in the same spot or a different spot</li>
 <div class="line"><br /></div>
 </div>
 <p>Class to generate a survey population of FRBs.</p>
-<dl class="class">
+<dl class="py class">
 <dt>
-<em class="property">class </em><code class="descclassname">survey_pop.</code><code class="descname">SurveyPopulation</code><span class="sig-paren">(</span><em>cosmic_pop</em>, <em>survey</em>, <em>scat=False</em>, <em>scin=False</em>, <em>rate_limit=True</em><span class="sig-paren">)</span></dt>
+<em class="property">class </em><code class="sig-prename descclassname">survey_pop.</code><code class="sig-name descname">SurveyPopulation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cosmic_pop</span></em>, <em class="sig-param"><span class="n">survey</span></em>, <em class="sig-param"><span class="n">scat</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scin</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">mute</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">scale_by_area</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Class to create a survey population of FRBs.</p>
 <p>Run a survey to detect FRB sources.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>cosmic_pop</strong> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population"><em>Population</em></a>) – Population class of FRB sources to observe</li>
-<li><strong>survey</strong> (<a class="reference internal" href="frbpoppy.html#survey.Survey" title="survey.Survey"><em>Survey</em></a>) – Survey class with which to observe</li>
-<li><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include scattering in signal to
-noise calculations.</li>
-<li><strong>scin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply scintillation to
-observations.</li>
-<li><strong>rate_limit</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to limit detections by 1/(1+z)
-due to limitation in observing time</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cosmic_pop</strong> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population"><em>Population</em></a>) – Population class of FRB sources to observe</p></li>
+<li><p><strong>survey</strong> (<a class="reference internal" href="frbpoppy.html#survey.Survey" title="survey.Survey"><em>Survey</em></a>) – Survey class with which to observe</p></li>
+<li><p><strong>scat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to include scattering in signal to
+noise calculations.</p></li>
+<li><p><strong>scin</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to apply scintillation to
+observations.</p></li>
+<li><p><strong>mute</strong> (<em>bool</em>) – Whether to suppress printing to terminal</p></li>
+<li><p><strong>scale_by_area</strong> (<em>bool</em>) – Whether to scale detection rates to the sky
+area visible to a survey. Only relevant for one-offs.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
+</dd>
+</dl>
+<dl class="py method">
 <dt>
-<code class="descname">calc_logn_logs</code><span class="sig-paren">(</span><em>parameter='fluence'</em>, <em>min_p=None</em>, <em>max_p=None</em><span class="sig-paren">)</span></dt>
-<dd><p>TODO. Currently unfinished.</p>
+<code class="sig-name descname">calc_rates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">survey</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Calculate the relative detection rates.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt>
+<code class="sig-name descname">det_oneoffs</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Detect one-off frbs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt>
+<<<<<<< HEAD
+<code class="sig-name descname">det_repeaters</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Detect repeating frbs.</p>
+=======
 <code class="descname">calc_rates</code><span class="sig-paren">(</span><em>survey</em><span class="sig-paren">)</span></dt>
 <dd><p>Calculate the relative detection rates.</p>
 </dd></dl>
@@ -514,8 +996,15 @@ due to limitation in observing time</li>
 <dt>
 <code class="descname">rates</code><span class="sig-paren">(</span><em>scale_area=True</em>, <em>scale_time=False</em><span class="sig-paren">)</span></dt>
 <dd><p>Scale the rates by the beam area and time.</p>
+>>>>>>> master
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt>
+<code class="sig-prename descclassname">survey_pop.</code><code class="sig-name descname">fast_where</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">min_v</span></em>, <em class="sig-param"><span class="n">max_v</span></em><span class="sig-paren">)</span></dt>
+<dd><p>Faster implementation of np.where(((a &gt;= min_v) &amp; (a &lt;= max_v))).</p>
 </dd></dl>
 
 </div>
@@ -525,29 +1014,26 @@ due to limitation in observing time</li>
 <div class="line"><br /></div>
 </div>
 <p>Start up Bokeh server.</p>
-<dl class="function">
+<dl class="py function">
 <dt>
-<code class="descclassname">do_plot.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>*pops</em>, <em>files=[]</em>, <em>frbcat=True</em>, <em>show=True</em>, <em>mute=True</em>, <em>port=5006</em>, <em>print_command=False</em><span class="sig-paren">)</span></dt>
+<code class="sig-prename descclassname">do_plot.</code><code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">pops</span></em>, <em class="sig-param"><span class="n">files</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">frbcat</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">mute</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">port</span><span class="o">=</span><span class="default_value">5006</span></em>, <em class="sig-param"><span class="n">print_command</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span></dt>
 <dd><p>Plot populations with bokeh. Has to save populations before plotting.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>*pops</strong> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population"><em>Population</em></a><em>, </em><em>optional</em>) – Add the populations you would like to
-see plotted</li>
-<li><strong>files</strong> (<em>list</em><em>, </em><em>optional</em>) – List of population files to plot.</li>
-<li><strong>frbcat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot frbcat parameters. Defaults to
-True</li>
-<li><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to display the plot or not. Mainly used
-for debugging purposes. Defaults to True.</li>
-<li><strong>port</strong> (<em>int</em>) – The port on which to launch Bokeh</li>
-<li><strong>print_command</strong> (<em>bool</em>) – Whether to show the command do_plot is running</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*pops</strong> (<a class="reference internal" href="frbpoppy.html#population.Population" title="population.Population"><em>Population</em></a><em>, </em><em>optional</em>) – Add the populations you would like to
+see plotted</p></li>
+<li><p><strong>files</strong> (<em>list</em><em>, </em><em>optional</em>) – List of population files to plot.</p></li>
+<li><p><strong>frbcat</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot frbcat parameters. Defaults to
+True</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to display the plot or not. Mainly used
+for debugging purposes. Defaults to True.</p></li>
+<li><p><strong>mute</strong> (<em>bool</em>) – Show output from Bokeh or not</p></li>
+<li><p><strong>port</strong> (<em>int</em>) – The port on which to launch Bokeh</p></li>
+<li><p><strong>print_command</strong> (<em>bool</em>) – Whether to show the command do_plot is running</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -556,23 +1042,37 @@ for debugging purposes. Defaults to True.</li>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="frbpoppy.html">All Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-beam_dists">beam_dists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-cosmic_pop">cosmic_pop</a></li>
-<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-distributions">distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-direction_dists">direction_dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-dm_dists">dm_dists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_hist">do_hist</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-do_plot">do_plot</a></li>
-<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-frbcat">frbcat</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-frbcatpoppy">frbcatpoppy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-frbs">frbs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-galacticops">galacticops</a></li>
+<<<<<<< HEAD
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-gen_dists">gen_dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-large_pop">large_pop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-lum_dists">lum_dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-misc">misc</a></li>
+=======
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-large_pop">large_pop</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-log">log</a></li>
+>>>>>>> master
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-number_density">number_density</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-paths">paths</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-plot">plot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-plot_config">plot_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-pointings">pointings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-population">population</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-precalc">precalc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-rates">rates</a></li>
-<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-survey_pop">survey_pop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-si_dists">si_dists</a></li>
 <li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-survey">survey</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-survey_pop">survey_pop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-time_dists">time_dists</a></li>
+<li class="toctree-l2"><a class="reference internal" href="frbpoppy.html#module-w_dists">w_dists</a></li>
 </ul>
 </li>
 </ul>
@@ -583,6 +1083,7 @@ for debugging purposes. Defaults to True.</li>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">

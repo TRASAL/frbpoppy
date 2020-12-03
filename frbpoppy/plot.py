@@ -5,8 +5,8 @@ Can be run with:
     $ bokeh serve --show code/plot.py --args <pop_example.csv>
 
 in which all csv-files with populations can be given after ``--args``, and as
-well as the optional arguments of ``-noshow`` and ``-nofrbcat``, to
-respectively not show the resulting plot, and to not overplot frbcat
+well as the optional arguments of ``-noshow`` and ``-notns``, to
+respectively not show the resulting plot, and to not overplot tns
 """
 
 import numpy as np
@@ -15,15 +15,15 @@ import pandas as pd
 import sys
 
 from bokeh.io import curdoc
-from bokeh.layouts import layout, widgetbox
+from bokeh.layouts import layout, column
 from bokeh.models import ColumnDataSource, HoverTool, Div, Panel, Tabs
 from bokeh.models.widgets import Select
 from bokeh.palettes import Category10, viridis
 from bokeh.plotting import figure
 
-from frbpoppy.frbcat import Frbcat
+from frbpoppy.tns import TNS
 from frbpoppy.do_hist import histogram
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy import unpickle
 
 
@@ -40,11 +40,11 @@ class Tab():
 class Plot():
     """Gather plotting options."""
 
-    def __init__(self, files=[], frbcat=True):
+    def __init__(self, files=[], tns=True):
         """Initializing."""
         # From arguments
         self.files = files
-        self.frbcat = frbcat
+        self.tns = tns
 
         # Predefined
         self.height = 700  # Plot height
@@ -56,6 +56,7 @@ class Plot():
         self.n_df = 0
         self.dfs = []
         self.tabs = []
+        self.labels = []
 
         # Set parameters
         self.params = {'Comoving Distance (Gpc)': 'dist_co',
@@ -94,7 +95,7 @@ class Plot():
         """Determine which colours need to be used."""
         # Ensure number of overplots is known
         n = len(self.files)
-        if self.frbcat:
+        if self.tns:
             n += 1
         if n > 10:
             self.colours = viridis(n)
@@ -114,9 +115,11 @@ class Plot():
                     pprint(f'Unpacking {f} seemed to have failed.')
                     continue
                 if '.' in f:
-                    name = f.split('/')[-1].split('.')[0]
+                    name = '.'.join(f.split('/')[-1].split('.')[:-1])
                     if '_for_plotting' in name:
                         name = name.split('_for_plotting')[0]
+                    if len(name) > 15:
+                        name = name.split('_')[-1]
                 else:
                     name = f
 
@@ -131,7 +134,6 @@ class Plot():
                 pprint(f'Downsampling population {f} (else too big to plot)')
                 df = df.sample(n=10000)
 
-            df['population'] = name
             df['color'] = self.colours[self.n_df]
             df['lum_bol'] = df['lum_bol'] / 1e30  # Sidestepping Bokeh issue
 
@@ -141,25 +143,25 @@ class Plot():
                 continue
             else:
                 self.dfs.append(df)
+                self.labels.append(name)
                 self.n_df += 1
 
-        # Add on frbcat
-        if self.frbcat:
-            df = Frbcat().df
+        # Add on tns
+        if self.tns:
+            df = TNS(frbpoppy=True).df
             # Filter by survey if wished
-            if isinstance(self.frbcat, str):
-                if df['survey'].str.match(self.frbcat).any():
-                    df = df[df.survey == self.frbcat]
-                elif df['telescope'].str.match(self.frbcat).any():
-                    df = df[df.telescope == self.frbcat]
+            if isinstance(self.tns, str):
+                if not df[df.survey == self.tns].empty:
+                    df = df[df.survey == self.tns]
+                elif not df[df.telescope == self.tns].empty:
+                    df = df[df.telescope == self.tns]
                 else:
-                    m = 'Your chosen input for frbcat is not found.'
+                    m = 'Your chosen input for tns is not found.'
                     raise ValueError(m)
-
-                df['population'] = f'frbcat {self.frbcat}'
 
             df['color'] = self.colours[len(self.dfs)]
             self.dfs.append(df)
+            self.labels.append(f'tns {self.tns}')
 
     def set_widgets(self):
         """Set up widget details."""
@@ -178,7 +180,7 @@ class Plot():
         tab.name = 'Scatter'
 
         # Set up interactive tools
-        props = [("pop", "@population"), ("x", "@x"), ("y", "@y")]
+        props = [("x", "@x"), ("y", "@y")]  # ("pop", "@label")
         hover = HoverTool(tooltips=props)
         tools = ['box_zoom', 'pan', 'save', hover, 'reset', 'wheel_zoom']
 
@@ -193,18 +195,18 @@ class Plot():
         tab.fig.min_border_left = 80
 
         # Create Column Data Sources for interacting with the plot
-        props = dict(x=[], y=[], color=[], population=[])
+        props = dict(x=[], y=[], color=[])
         tab.sources = [ColumnDataSource(props) for df in self.dfs]
 
         # Plot scatter plot of FRB populations
-        for source in tab.sources:
+        for i, source in enumerate(tab.sources):
             tab.fig.circle(x='x',
                            y='y',
                            source=source,
                            size=7,
                            alpha=0.6,
                            color='color',
-                           legend='population')
+                           legend_label=self.labels[i])
 
         self.tabs.append(tab)
 
@@ -244,7 +246,7 @@ class Plot():
         # Create Column Data Sources for interacting with the plot
         hists = histogram(self.dfs, log=log, cum=cum)
 
-        props = dict(x=[], y=[], population=[])
+        props = dict(x=[], y=[])
         tab.sources = [ColumnDataSource(props) for hist in hists]
 
         # Plot histogram values
@@ -252,8 +254,8 @@ class Plot():
             tab.fig.step(x='x',
                          y='y',
                          color=self.colours[i],
+                         legend_label=self.labels[i],
                          alpha=0.8,
-                         legend='population',
                          line_width=2.5,
                          source=source,
                          mode='before')
@@ -281,10 +283,10 @@ class Plot():
 
             for i, source in enumerate(tab.sources):
 
-                cols = [f'{x_abr}_x', f'{x_abr}', 'population']
+                cols = [f'{x_abr}_x', f'{x_abr}']
 
                 if tab.name == 'Scatter':
-                    cols = [x_abr, y_abr, 'color', 'population']
+                    cols = [x_abr, y_abr, 'color']
                     dfs = self.dfs
                 elif tab.name == "Hist (Lin)":
                     dfs = self.hists_lin
@@ -307,13 +309,10 @@ class Plot():
                 if tab.name == 'Scatter':
                     source.data = dict(x=df[x_abr],
                                        y=df[y_abr],
-                                       color=df['color'],
-                                       population=df['population'])
+                                       color=df['color'])
                 else:
                     source.data = dict(x=df[f'{x_abr}_x'],
-                                       y=df[f'{x_abr}'],
-                                       population=df['population']
-                                       )
+                                       y=df[f'{x_abr}'])
 
     def set_layout(self):
         """Create the plot layout."""
@@ -332,7 +331,7 @@ class Plot():
         text_bottom = Div(text=path('text_bottom'))
 
         sidebar = [text_top, self.x_axis, self.y_axis, text_bottom]
-        s = widgetbox(sidebar, width=380)
+        s = column(sidebar, width=380)
 
         # Set up tabs
         panels = []
@@ -356,13 +355,13 @@ class Plot():
 # (I know ArgumentParser is nicer, but bokeh only works with argv)
 args = sys.argv
 
-# Whether to plot the frbcat population
-if '-frbcat' in args:
-    frbcat = args[args.index('-frbcat') + 1]
-    if frbcat == 'True':
-        frbcat = True
-    elif frbcat == 'False':
-        frbcat = False
+# Whether to plot the tns population
+if '-tns' in args:
+    tns = args[args.index('-tns') + 1]
+    if tns == 'True':
+        tns = True
+    elif tns == 'False':
+        tns = False
 else:
     frcat = True
 
@@ -377,4 +376,4 @@ for a in args:
 if len(files) == 0:
     pprint('Nothing to plot: plot arguments are empty')
 else:
-    Plot(files=files, frbcat=frbcat)
+    Plot(files=files, tns=tns)

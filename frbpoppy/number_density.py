@@ -1,5 +1,4 @@
 """Group together various number density descriptors."""
-import random
 import numpy as np
 import frbpoppy.precalc as pc
 
@@ -9,7 +8,7 @@ class NumberDensity:
 
     def __init__(self,
                  model='vol_co',
-                 z_max=6.0,
+                 z_max=2.0,
                  H_0=67.74,
                  W_m=0.3089,
                  W_v=0.6911,
@@ -17,10 +16,11 @@ class NumberDensity:
         """Draw from particular number density distributions.
 
         Args:
-            model (str): Which number density to follow.
-            z_max (float): Maximum redshift to which to draw.
-            vol_co_max (float, optional): Maximum comoving redshift [Gpc^3].
-            dist_co_max (float, optional): Maximum comoving distance [Gpc].
+            model (str): Which number density model to follow.
+            z_max (float): Maximum redshift.
+            H_0 (float): Hubble constant.
+            W_m (float): Density parameter Ω_m.
+            W_v (float): Cosmological constant Ω_Λ.
             alpha (float, optional): Desired log N log S slope for a perfect,
                 non-cosmological population.
         """

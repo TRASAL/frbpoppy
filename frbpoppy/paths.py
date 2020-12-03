@@ -1,6 +1,6 @@
 """Set all possible needed paths."""
 import os.path
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 
 
 class Paths():

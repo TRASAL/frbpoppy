@@ -3,14 +3,15 @@ Series of galactic operations (doesn't that sound cool?!).
 
 ...as in converting coordinates, calculating DM etc.
 """
-
+from datetime import timedelta
 import ctypes as C
 import math
-import os
 import numpy as np
+import os
+import pandas as pd
+import random
 
 from frbpoppy.paths import paths
-from frbpoppy.log import pprint
 
 # Import fortran libraries
 uni_mods = os.path.join(paths.models(), 'universe/')
@@ -173,7 +174,7 @@ def radec_to_lb(ra, dec, frac=False):
 
 
 def separation(ra_1, dec_1, ra_2, dec_2):
-    """Separation between points on sky [degree].
+    """Separation between points on sky [degrees].
 
     Using a special case of the Vincenty formula for an ellipsoid with equal
     major and minor axes.
@@ -201,11 +202,6 @@ def separation(ra_1, dec_1, ra_2, dec_2):
     sep = np.arctan2(upper, lower)
 
     return np.rad2deg(sep)
-
-
-def ergspers_to_watts(e):
-    """Quick converstion from luminosity given in ergs/s to Watts."""
-    return e*1e-7
 
 
 def ne2001_dist_to_dm(dist, gl, gb):
@@ -355,6 +351,7 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
                       Defaults to 1400 MHz
     Returns:
         array: Scattering timescale [ms]
+
     """
     log_t = offset + 0.154*np.log10(dm) + 1.07*np.log10(dm)**2
     log_t += scindex*np.log10(freq/1e3)
@@ -367,7 +364,9 @@ def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
 
 def load_T_sky():
     """
-    Read the Haslam sky temperature map into a list from which temperatures can
+    Read the Haslam sky temperature map into a list.
+
+    ... from which temperatures can
     be retrieved. The temperature sky map is given in the weird units of
     HealPix, and despite looking up info on this coordinate system, I don't
     have the foggiest idea of how to transform these to galactic coordinates. I
@@ -376,8 +375,8 @@ def load_T_sky():
 
     Returns:
         t_sky_list (list): List of sky temperatures in HealPix? coordinates?
-    """
 
+    """
     model = os.path.join(os.path.dirname(__file__), '../data/models/tsky/')
     path = os.path.join(model, 'haslam_2014.dat')
 
@@ -390,7 +389,7 @@ def load_T_sky():
                 temp_string = line[str_idx:str_idx+5]
                 try:
                     t_sky_list.append(float(temp_string))
-                except:
+                except ValueError:
                     pass
                 str_idx += 5
 
@@ -548,18 +547,200 @@ def dist_to_z(dist, H_0=67.74):
     return z
 
 
-def ioka_dm_igm(z, slope=1200, sigma=None):
-    """
-    Calculate the contribution of the igm to the dispersion measure.
+def datetime_to_julian(date):
+    """Convert a datetime object into julian float.
 
-    Follows Ioka (2003) and Inoue (2004)
+    See https://aa.usno.navy.mil/faq/docs/JD_Formula.php for more info.
 
     Args:
-        z (float): Redshift of source
-        slope (int, optional): Slope of relationship
+        date (datetime-object): Date in question
+
     Returns:
-        dm_igm (float): Dispersion measure of intergalactic medium [pc/cm^3]
+        float: Julian calculated datetime.
+
     """
-    if sigma is None:
-        sigma = 0.2*slope*z
-    return np.random.normal(slope*z, sigma).astype(np.float32)
+    # Add support for numpy arrays of datetime64
+    if np.issubdtype(date.dtype, np.datetime64):
+        date = pd.to_datetime(date)
+
+    # Define terms
+    y = date.year
+    m = date.month
+    d = date.day
+    h = date.hour
+    min = date.minute
+    sec = date.second
+
+    # Calculate julian day number
+    jdn = 367*y - ((7*(y + ((m+9)/12).astype(int)))/4).astype(int)
+    jdn += ((275*m)/9).astype(int) + d + 1721013.5
+    # Add fractional day
+    jd = jdn + h/24 + min/1440 + sec/86400
+
+    # Convert to a numpy array
+    if isinstance(jd, pd.Float64Index):
+        jd = jd.values
+
+    return jd
+
+
+def datetime_to_gmst(date):
+    """Calculate Greenwich Mean Sidereal Time.
+
+    See https://aa.usno.navy.mil/faq/docs/GAST.php for more info.
+    """
+    jd = datetime_to_julian(date)
+    return ((18.697374558 + 24.06570982441908*(jd - 2451545))*15) % 360
+
+
+def random_date(start, end):
+    """Generate a random datetime between two datetime objects."""
+    delta = end - start
+    int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
+    random_second = random.randrange(int_delta)
+    return start + timedelta(seconds=random_second)
+
+
+def coord_to_offset(xref, yref, x, y):
+    """
+    Convert point (x, y) to projected offset from reference (xref, yref).
+
+    Makes use of a gnomonic projection: see both
+        https://github.com/LSSTDESC/Coord/blob/master/coord/celestial.py
+        http://mathworld.wolfram.com/GnomonicProjection.html
+
+    Args:
+        xref (array): Reference RA or Az [rad]
+        yref (array): Reference Dec or Alt [rad]
+        x (array): Target RA or Az [rad]
+        y (array): Target Dec or Alt [rad]
+
+    Returns:
+        array, array: x and y offset [rad]
+
+    """
+    # Define convenience numbers
+    sinxref = np.sin(xref)
+    sinx = np.sin(x)
+    cosxref = np.cos(xref)
+    cosx = np.cos(x)
+
+    sinyref = np.sin(yref)
+    siny = np.sin(y)
+    cosyref = np.cos(yref)
+    cosy = np.cos(y)
+
+    # Sine and cosine of shift in x
+    cosdx = (cosxref * cosx) + (sinxref * sinx)
+    sindx = (cosxref * sinx) - (sinxref * cosx)
+
+    # Projection effect cosine
+    cosc = sinyref * siny + cosyref * cosy * cosdx
+
+    # Projected offsets
+    dx = (cosy * sindx) / cosc
+    dy = (cosyref * siny - sinyref * cosy * cosdx) / cosc
+
+    if isinstance(cosc, np.ndarray):
+        dx[cosc < 0] = np.nan
+        dy[cosc < 0] = np.nan
+    elif cosc < 0:
+        dx, dy = np.nan, np.nan
+
+    return dx, dy
+
+
+def hadec_to_azalt(ha, dec, lat):
+    """
+    Convert hour angle and declination to azimuth and altitude.
+
+    Args:
+        ha (array): Hour angle [rad]
+        dec (array): Declination [rad]
+        lat (float): Latitude [rad]
+
+    Returns:
+        array, array: az, alt [rad]
+
+    """
+    # Ha and dec should be same type
+    assert type(ha) == type(dec)
+
+    # Altitude
+    sinalt = np.sin(dec) * np.sin(lat) + np.cos(dec) * np.cos(lat) * np.cos(ha)
+    alt = np.arcsin(sinalt)
+
+    # Azimuth (note this uses altitude)
+    cosaz = (np.sin(dec)-np.sin(alt)*np.sin(lat)) / (np.cos(alt)*np.cos(lat))
+
+    convert_to_float = False
+    if isinstance(cosaz, float):
+        cosaz = np.array([cosaz])
+        convert_to_float = True
+
+    # Numerical instability can cause cosaz > 1
+    cosaz[cosaz > 1] = 1
+    cosaz[cosaz < -1] = -1
+    az = np.arccos(cosaz)
+
+    # Sign of azimuth is lost, but can be recovered using the input hour angle
+    mask = np.sin(ha) > 0
+    az[mask] = 2*np.pi - az[mask]
+
+    # Convert back to float if input was float
+    if convert_to_float:
+        az = float(az)
+
+    return az, alt
+
+
+def in_region(ra, dec, gl, gb,
+              ra_min=0, ra_max=360,
+              dec_min=-90, dec_max=90,
+              gl_min=-180, gl_max=180,
+              gb_min=-90, gb_max=90):
+    """
+    Check if the given frbs are within the survey region.
+
+    Args:
+        ra, dec, gl, gb (float): Coordinates to check whether in region
+
+    Returns:
+        array: Boolean mask denoting whether frbs are within survey region
+
+    """
+    # Create mask with False
+    mask = np.ones_like(ra, dtype=bool)
+
+    # Ensure in correct format
+    gl[gl > 180.] -= 360.
+
+    # Create region masks
+    gl_limits = (gl > gl_max) | (gl < gl_min)
+    gb_limits = (gb > gb_max) | (gb < gb_min)
+    ra_limits = (ra > ra_max) | (ra < ra_min)
+    dec_limits = (dec > dec_max) | (dec < dec_min)
+
+    mask[gl_limits] = False
+    mask[gb_limits] = False
+    mask[ra_limits] = False
+    mask[dec_limits] = False
+
+    return mask
+
+
+def calc_sky_radius(area):
+    """Determine the radius [deg] along the sky of an area [sq. degrees]."""
+    # Check whether the full sky
+    if np.allclose(area, 4*np.pi*(180/np.pi)**2):
+        return 180
+    else:
+        cos_r = (1 - (area*np.pi)/(2*180**2))
+        # Suppressing warnings when cos_r is invalid (will nan anyway)
+        with np.errstate(invalid='ignore'):
+            return np.rad2deg(np.arccos(cos_r))
+
+
+def calc_sky_area(radius):
+    """Determine the area [sq. degree] of a radius [deg] along the sky."""
+    return (1 - np.cos(np.deg2rad(radius)))*(2*180**2)/np.pi

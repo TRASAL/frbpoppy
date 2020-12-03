@@ -1,7 +1,6 @@
 """Bin up Pandas DataFrames into histograms ready for Bokeh plotting."""
 import numpy as np
 import pandas as pd
-from frbpoppy.log import pprint
 
 
 def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
@@ -92,8 +91,6 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
             hist[f'{c}'] = pd.Series(h)
             hist[f'{c}_x'] = pd.Series(bins[:-1])
 
-        hist['population'] = df['population'].iloc[0]
-
         hists.append(hist)
 
     # Ugly, but will have to do
@@ -103,7 +100,7 @@ def histogram(dfs, n_bins=50, log=False, mc=False, cum=False):
         for hist in hists:
             if c in hist:
                 h = hist[c]
-                m = np.min(h[np.nonzero(h)[0]])
+                m = np.min(h[h.to_numpy().nonzero()[0]])
                 if m < min_c:
                     min_c = m
 

@@ -6,17 +6,22 @@ machine. Subsequent runs will take mere seconds.
 """
 from frbpoppy import CosmicPopulation, Survey, SurveyPopulation, plot
 
-# Generate an FRB population
-cosmic_pop = CosmicPopulation(1e5, name='example', days=0.23)
+# Set up an FRB population of one-offs
+# Add repeaters=True to turn into an FRB population of repeaters
+cosmic_pop = CosmicPopulation.complex(1e5, n_days=0.01)
+
+# Generate your FRB population
+cosmic_pop.generate()
 
 # Setup a survey
-survey = Survey('htru')
+survey = Survey('parkes-htru')
+survey.set_beam(model='parkes-htru')
 
 # Observe the FRB population
 survey_pop = SurveyPopulation(cosmic_pop, survey)
 
 # Check the detection rates
-print(survey_pop.rates())
+print(survey_pop.source_rate)
 
 # Plot populations in a browser
-plot(cosmic_pop, survey_pop, frbcat='parkes')
+plot(cosmic_pop, survey_pop, tns='parkes')

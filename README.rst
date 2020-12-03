@@ -40,11 +40,13 @@ All requirements can be found in `setup.py <https://github.com/davidgardenier/fr
 
  - `bokeh >= 1.3.4` for interactive plotting
  - `numpy >= 1.17.0` for array calculations
- - `pandas >= 0.23.4` for interactive plotting and easy import of csvs
+ - `pandas >= 1.0.3` for interactive plotting and easy import of csvs
+ - `frbcat` for importing frbcat data
  - `scipy >= 1.1.0` for Bessel functions and integrations
  - `SQLAlchemy >= 1.3.0` for creating and querying  cosmological databases
  - `matplotlib >= 2.2.3,<3.1` for plotting
  - `requests >= 2.20.0.` for downloading new versions of frbcat
+ - `dill >= 0.3.1.1` for saving populations in pickled files
  - `tqdm >= 4.35.0` for nice progress bars during long calculations
  - `joblib >= 0.13.2` for parallel processing of long calculations
 

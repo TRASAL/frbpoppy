@@ -1,13 +1,13 @@
 """Class holding survey properties."""
-import math
+
 import numpy as np
 import os
 import pandas as pd
-from scipy.special import j1
 
 import frbpoppy.galacticops as go
-from frbpoppy.log import pprint
+import frbpoppy.pointings as pointings
 from frbpoppy.paths import paths
+import frbpoppy.beam_dists as bd
 
 
 class Survey:
@@ -18,34 +18,41 @@ class Survey:
         name (str): Name of survey with which to observe population. Can
             either be a predefined survey present in frbpoppy or a path name to
             a new survey filename
-        gain_pattern (str): Set gain pattern
-        n_sidelobes (float): Number of sidelobes to include. Use 0.5 for
-            cutting beam at FWHM
-        pointings (list): List of (RA, Dec) coordinates
-        max_time (float): Maximum time spent surveying [days]
+        n_days (float): Time spent surveying [days]
 
     """
 
     def __init__(self,
-                 name,
-                 gain_pattern='gaussian',
-                 n_sidelobes=0.5,
-                 pointings=[],
-                 max_time=1):
+                 name='perfect',
+                 n_days=1):
         """Initializing."""
         # Set up parameters
         self.name = name
-        self.gain_pattern = gain_pattern
-        self.n_sidelobes = n_sidelobes
-        self.pointings = pointings
-        self.max_time = max_time
-        self.pop_type = None
+        self.n_days = n_days
+
+        # Calculate some at a later stage
+        self.beam_size = None
+        self.beam_array = None
+        self.pointings = None
+
         # Parse survey file
         self.read_survey_parameters()
 
         # Special treatment for perfect survey
         if self.name == 'perfect':
-            self.gain_pattern = 'perfect'
+            self.beam_pattern = 'perfect'
+
+        # Un-used
+        self.strategy = 'regular'  # 'follow-up' not implemented
+        if self.mount_type == 'transit':
+            # Transit telescopes can't follow-up
+            self.strategy = 'regular'
+
+        # Set beam properties
+        self.set_beam()
+
+        # Set pointing properties
+        self.set_pointings(mount_type=self.mount_type)
 
     def __str__(self):
         """Define how to print a survey object to a console."""
@@ -80,9 +87,12 @@ class Survey:
         self.bw = survey['bandwidth (MHz)']
         self.bw_chan = survey['channel bandwidth (MHz)']
         self.n_pol = survey['number of polarizations']
-        self.beam_size_fwhm = survey['beam size (deg^2)']
+        self.beam_size_at_fwhm = survey['beam size (deg^2)']
         self.snr_limit = survey['signal-to-noise ratio [0-1]']
         self.max_w_eff = survey['maximum pulse width (ms)']
+        self.latitude = survey['latitude (deg)']
+        self.longitude = survey['longitude (deg)']
+        self.mount_type = survey['mount type']
         self.ra_min = survey['minimum RA (deg)']
         self.ra_max = survey['maximum RA (deg)']
         self.dec_min = survey['minimum DEC (deg)']
@@ -91,171 +101,144 @@ class Survey:
         self.gl_max = survey['maximum Galactic longitude (deg)']
         self.gb_min = survey['minimum Galactic latitude (deg)']
         self.gb_max = survey['maximum Galactic latitude (deg)']
-        self.up_time = survey['fractional uptime [0-1]']
 
-    def in_region(self, frbs):
+    def in_region(self, ra, dec, gl, gb):
         """
         Check if the given frbs are within the survey region.
 
         Args:
-            frbs (Frbs): Frbs of which to check whether in survey region
+            ra, dec, gl, gb (float): Coordinates to check whether in region
 
         Returns:
             array: Boolean mask denoting whether frbs are within survey region
 
         """
-        # Create mask with False
-        mask = np.ones_like(frbs.ra, dtype=bool)
-
-        # Ensure in correct format
-        frbs.gl[frbs.gl > 180.] -= 360.
-
-        # Create region masks
-        gl_limits = (frbs.gl > self.gl_max) | (frbs.gl < self.gl_min)
-        gb_limits = (frbs.gb > self.gb_max) | (frbs.gb < self.gb_min)
-        ra_limits = (frbs.ra > self.ra_max) | (frbs.ra < self.ra_min)
-        dec_limits = (frbs.dec > self.dec_max) | (frbs.dec < self.dec_min)
-        mask[gl_limits] = False
-        mask[gb_limits] = False
-        mask[ra_limits] = False
-        mask[dec_limits] = False
+        # Create mask with False if not in region
+        mask = go.in_region(ra, dec, gl, gb,
+                            ra_min=self.ra_min, ra_max=self.ra_max,
+                            dec_min=self.dec_min, dec_max=self.dec_max,
+                            gl_min=self.gl_min, gl_max=self.gl_max,
+                            gb_min=self.gb_min, gb_max=self.gb_max)
 
         return mask
 
-    def in_pointings(self, frbs):
-        """Whether within pointing."""
-        # Create mask with False
-        mask = np.zeros_like(frbs.ra, dtype=bool)
+    def set_pointings(self, mount_type='tracking', n_pointings=None, ra=None,
+                      dec=None):
+        """Set pointing properties."""
+        # If you want to use your own pointings
+        if ra and dec:
+            self.n_pointings = len(ra)
+            self.point_func = lambda: (ra, dec)
+            return
 
-        # Check whether FRBs are within pointing regions
-        r = np.sqrt(self.beam_size_fwhm/np.pi)
-        for ra, dec in self.pointings:
-            limit_pos = (go.separation(frbs.ra, frbs.dec, ra, dec) <= r)
-            mask[limit_pos] = True
+        # Calculate the number of pointings needed
+        self.n_pointings = n_pointings
+        if n_pointings is None:
+            self.n_pointings = int(self.n_days*24*60*60 / self.t_obs)
 
-        return mask
+        if mount_type == 'transit':
+            self.point_func = lambda: pointings.transit(self.n_pointings,
+                                                        self.latitude,
+                                                        self.longitude,
+                                                        self.t_obs)
+        else:
+            self.point_func = lambda: pointings.tracking(self.n_pointings,
+                                                         ra_min=self.ra_min,
+                                                         ra_max=self.ra_max,
+                                                         dec_min=self.dec_min,
+                                                         dec_max=self.dec_max,
+                                                         gl_min=self.gl_min,
+                                                         gl_max=self.gl_max,
+                                                         gb_min=self.gb_min,
+                                                         gb_max=self.gb_max)
 
-    def max_offset(self, x):
-        """Calculate the maximum offset of an FRB in an Airy disk.
+    def gen_pointings(self):
+        """Generate pointings."""
+        self.pointings = self.point_func()
+
+    def set_beam(self, model='perfect', size=None, random_loc=True,
+                 n_sidelobes=0.5):
+        """Set intensity profile.
+
+        Set properties for int pro
 
         Args:
-            x (int): Maximum sidelobe wanted
+            model (str): Beam pattern. Choice from 'wsrt-apertif',
+                'parkes-htru', 'chime-frb', 'gaussian', 'airy'.
+            size (float): Beam size at FWHM [sq. deg].
+                Defaults to that of the survey file
+            random_loc (bool): Whether to calculate the precise or random
+                location of each burst in the beam.
+        if model in ('gaussian', 'airy'):
+            n_sidelobes (int): Number of sidelobes to include. Defaults to
+                cutting at the FWHM when set to 0.5.
 
         """
-        # Null points of kasin for allow a number of sidelobes
-        kasin_nulls = [3.831706,
-                       7.015587,
-                       10.173468,
-                       13.323692,
-                       16.47063,
-                       19.615859,
-                       22.760084,
-                       25.903672,
-                       29.046829,
-                       32.18968,
-                       35.332308,
-                       38.474766]
+        # Set up beam properties
+        self.beam_pattern = model
+        self.n_sidelobes = n_sidelobes
+        self.beam_array = None
+        self.pixel_scale = None
 
-        # Allow for cut at FWHM
-        if x == 0.5:
-            return 1
+        # Calculate beam properties
+        if size is not None:
+            self.beam_size_at_fwhm = size
+        self.fwhm = 2*go.calc_sky_radius(self.beam_size_at_fwhm)
 
-        try:
-            arcsin = math.asin(self.fwhm*kasin_nulls[x]/(60*180))
-        except ValueError:
-            m = f'Beamsize including sidelobes would be larger than sky \n'
-            A = (90/kasin_nulls[x])**2*math.pi
-            m += f'Ensure beamsize is smaller than {A}'
-            raise ValueError(m)
+        # What should the maximum radius of the beam be?
+        self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
+        self.beam_size = go.calc_sky_area(self.max_offset)
 
-        return 2/self.fwhm * 60*180/math.pi * arcsin
+        beam_props = bd.get_beam_props(self.beam_pattern, self.fwhm)
+        self.beam_size_array, self.pixel_scale, self.beam_array = beam_props
 
-    def intensity_profile(self, shape=1, dimensions=2, rep_loc='random'):
-        """Calculate intensity profile.
+        if self.beam_size_array is not None:
+            self.beam_size = self.beam_size_array
+            # Not completely kosher -> a circle is not the same as a square,
+            # but this is the smallest radius in which the full beam pattern
+            # fits. The area of the circle extending beyond the beam pattern
+            # will have an intensity of zero.
+            self.max_offset = go.calc_sky_radius(self.beam_size)
 
-        Args:
-            shape (tuple): Usually the shape of frbs.s_peak
-            dimensions (int): Use a 2D beampattern or a 1D one.
-            rep_loc (str): 'same' or 'random'. Whether repeaters are observed
-                in the same spot or a different spot
+        self.beam_func_oneoffs = lambda x: bd.int_pro_random(
+                                 shape=x,
+                                 fwhm=self.fwhm,
+                                 pattern=self.beam_pattern,
+                                 max_offset=self.max_offset,
+                                 central_freq=self.central_freq,
+                                 beam_array=self.beam_array,
+                                 pixel_scale=self.pixel_scale)
 
-        Returns:
-            array, array: intensity profile, offset from beam [arcmin]
+        def int_pro(ra, dec, ra_p, dec_p, lst):
+            return bd.int_pro_fixed(ra, dec, ra_p, dec_p, lst,
+                                    pattern=self.beam_pattern,
+                                    latitude=self.latitude,
+                                    beam_array=self.beam_array,
+                                    pixel_scale=self.pixel_scale,
+                                    mount_type=self.mount_type)
 
-        """
-        # Calculate Full Width Half Maximum from beamsize
-        self.fwhm = 2*math.sqrt(self.beam_size_fwhm/math.pi) * 60  # [arcmin]
-        offset = self.fwhm/2  # Radius = diameter/2.
+        self.beam_func_rep = int_pro
 
-        if rep_loc == 'same':
-            r = r = np.random.random(shape[0])
+    def calc_beam(self, repeaters=False, shape=None, ra=None, dec=None,
+                  ra_p=None, dec_p=None, lst=None):
+        """Calculate intensity profile."""
+        if not repeaters and self.beam_pattern in ('airy', 'gaussian'):
+            # What should the maximum radius of the beam be?
+            self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
+            self.beam_size = go.calc_sky_area(self.max_offset)
+        elif self.beam_pattern.startswith('perfect'):
+            # What should the maximum radius of the beam be?
+            self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
+            self.beam_size = go.calc_sky_area(self.max_offset)
         else:
-            r = np.random.random(shape)
+            self.beam_size = self.beam_size_array
 
-        if dimensions == 2:  # 2D
-            offset *= np.sqrt(r)
-        elif dimensions == 1:  # 1D
-            offset *= r
-
-        # Allow for a perfect beam pattern in which all is detected
-        if self.gain_pattern == 'perfect':
-            int_pro = np.ones(shape)
-            self.beam_size = self.beam_size_fwhm
-            return int_pro, offset
-
-        # Formula's based on 'Interferometry and Synthesis in Radio
-        # Astronomy' by A. Richard Thompson, James. M. Moran and
-        # George W. Swenson, JR. (Second edition), around p. 15
-
-        max_offset = self.max_offset(self.n_sidelobes)
-        self.beam_size = math.pi*(self.fwhm/2*max_offset/60)**2  # [sq degrees]
-
-        if self.gain_pattern == 'gaussian':
-            # Set the maximum offset equal to the null after a sidelobe
-            # I realise this pattern isn't an airy, but you have to cut
-            # somewhere
-            offset *= max_offset
-            alpha = 2*math.sqrt(math.log(2))
-            int_pro = np.exp(-(alpha*offset/self.fwhm)**2)
-            return int_pro, offset
-
-        elif self.gain_pattern == 'airy':
-            # Set the maximum offset equal to the null after a sidelobe
-            offset *= max_offset
-            c = 299792458
-            conv = math.pi/(60*180)  # Conversion arcmins -> radians
-            eff_diam = c/(self.central_freq*1e6*conv*self.fwhm)
-            a = eff_diam/2  # Effective radius of telescope
-            lamda = c/(self.central_freq*1e6)
-            ka = (2*math.pi*a/lamda)
-            kasin = ka*np.sin(offset*conv)
-            int_pro = 4*(j1(kasin)/kasin)**2
-            return int_pro, offset
-
-        elif self.gain_pattern in ['parkes', 'apertif']:
-
-            place = paths.models() + f'/beams/{self.gain_pattern}.npy'
-            beam_array = np.load(place)
-            b_shape = beam_array.shape
-            ran_x = np.random.randint(0, b_shape[0], shape)
-            ran_y = np.random.randint(0, b_shape[1], shape)
-            int_pro = beam_array[ran_x, ran_y]
-            offset = np.sqrt((ran_x-b_shape[0]/2)**2 + (ran_y-b_shape[1]/2)**2)
-
-            # Scaling factors to correct for pixel scale
-            if self.gain_pattern == 'apertif':  # 1 pixel = 0.94'
-                offset *= 240/256  # [arcmin]
-                self.beam_size = 25.
-            if self.gain_pattern == 'parkes':  # 1 pixel = 54"
-                offset *= 0.9  # [arcmin]
-                self.beam_size = 9.
-
-            return int_pro, offset
-
+        if not repeaters:
+            return self.beam_func_oneoffs(shape)
         else:
-            pprint(f'Gain pattern "{self.gain_pattern}" not recognised')
+            return self.beam_func_rep(ra, dec, ra_p, dec_p, lst)
 
-    def dm_smear(self, frbs):
+    def calc_dm_smear(self, dm):
         """
         Calculate delay in pulse across a channel due to dm smearing.
 
@@ -264,14 +247,13 @@ class Survey:
         changed due to the central frequency being given in MHz.
 
         Args:
-            frbs (FRBs): FRB object with a dm attribute
+            dm (array): Dispersion measure [pc/cm^3]
 
         Returns:
             t_dm (array): Time of delay [ms] at central band frequency
 
         """
-        t_dm = 8.297616e6 * self.bw_chan * frbs.dm * (self.central_freq)**-3
-        return t_dm
+        return 8.297616e6 * self.bw_chan * dm * (self.central_freq)**-3
 
     def calc_scat(self, dm):
         """Calculate scattering timescale for FRBs.
@@ -286,22 +268,30 @@ class Survey:
 
         """
         freq = self.central_freq
-        t_scat = go.scatter_bhat(dm, scindex=-3.86, offset=-9.5, freq=freq)
-        return t_scat
+        return go.scatter_bhat(dm, scindex=-3.86, offset=-9.5, freq=freq)
 
-    def calc_Ts(self, frbs):
-        """Set temperatures for frbs."""
+    def calc_Ts(self, gl, gb):
+        """Set temperatures for frbs.
+
+        Args:
+            gl (array): Galactic longitude [deg]
+            gb (array): Galactic latitude [deg]
+
+        Returns:
+            T_sky, T_sys [K]
+
+        """
         # Special treatment for a perfect telescope
-        if self.name == 'perfect':
-            T_sky = np.zeros_like(frbs.index)
-            T_sys = np.ones_like(frbs.index)*self.T_rec
+        if self.name.startswith('perfect'):
+            T_sky = 0
+            T_sys = self.T_rec
         else:
-            T_sky = self.calc_T_sky(frbs)
+            T_sky = self.calc_T_sky(gl, gb)
             T_sys = self.T_rec + T_sky
 
         return T_sky, T_sys
 
-    def calc_T_sky(self, frbs):
+    def calc_T_sky(self, gl, gb):
         """
         Calculate the sky temperature from the Haslam table.
 
@@ -313,15 +303,17 @@ class Survey:
         figure it out.
 
         Args:
-            frbs (FRBs): Needed for coordinates
+            gl (array): Galactic longitude [deg]
+            gb (array): Galactic latitude [deg]
         Returns:
             array: Sky temperature [K]
+
         """
         T_sky_list = go.load_T_sky()
 
         # ensure l is in range 0 -> 360
-        B = frbs.gb
-        L = np.copy(frbs.gl)
+        B = gb
+        L = np.copy(gl)
         L[L < 0.] += 360
 
         # convert from l and b to list indices
@@ -341,7 +333,8 @@ class Survey:
 
         return T_sky
 
-    def calc_s_peak(self, frbs, f_low=10e6, f_high=10e9):
+    def calc_s_peak(self, si, lum_bol, z, dist_co, w_arr, w_eff,
+                    f_low=100e6, f_high=10e9):
         """
         Calculate the mean spectral flux density.
 
@@ -349,7 +342,12 @@ class Survey:
         of the survey.
 
         Args:
-            frbs (FRBs): FRBs
+            si (array): Spectral index
+            lum_bol (array): Bolometric luminosity within emission band
+            z (array): Redshift
+            dist_co (array): Comoving distance [Gpc]
+            w_arr (array): Pulse width at Earth [ms]
+            w_eff (array): Pulse width at point of detection [ms]
             f_low (float): Source emission lower frequency limit [Hz].
             f_high (float): Source emission higher frequency limit [Hz].
 
@@ -364,8 +362,6 @@ class Survey:
         f_2 *= 1e6  # MHz -> Hz
 
         # Spectral index
-        si = frbs.si
-        lum_bol = frbs.lum_bol
         if lum_bol.ndim == si.ndim:
             pass
         elif lum_bol.ndim > si.ndim:
@@ -378,10 +374,8 @@ class Survey:
 
         freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
 
-        z = frbs.z
-
         # Convert distance in Gpc to 10^25 metres
-        dist = frbs.dist_co * 3.085678
+        dist = dist_co * 3.085678
         dist = dist.astype(np.float64)
 
         # Convert luminosity in 10^7 Watts such that s_peak will be in Janskys
@@ -403,7 +397,7 @@ class Survey:
         s_peak = nom/den
 
         # Add degradation factor due to pulse broadening (see Connor 2019)
-        w_frac = (frbs.w_arr / frbs.w_eff)
+        w_frac = (w_arr / w_eff)
 
         # Dimension conversions
         if w_frac.ndim == s_peak.ndim:
@@ -417,7 +411,7 @@ class Survey:
 
         return s_peak.astype(np.float32)
 
-    def calc_w_eff(self, frbs):
+    def calc_w_eff(self, w_arr, t_dm, t_scat):
         """Calculate effective pulse width [ms].
 
         From Narayan (1987, DOI: 10.1086/165442), and also Cordes & McLaughlin
@@ -425,25 +419,22 @@ class Survey:
         thesis (2016), found here: http://hdl.handle.net/1959.3/417307
 
         Args:
-            frbs (FRBs): FRBs for which to calculate effective pulse width.
+            w_arr (array): Pulse width [ms]
+            t_dm (array): Time delay due to dispersion [ms]
+            t_scat (array): Time delay due to scattering [ms]
 
         Returns:
             array: Effective pulse width [ms]
 
         """
-        w_arr = frbs.w_arr
-        t_dm = frbs.t_dm
-        t_scat = frbs.t_scat
-
-        if frbs.w_arr.ndim > 1:
+        if w_arr.ndim > 1:
             t_dm = t_dm[:, None]
-            if isinstance(frbs.t_scat, np.ndarray):
+            if isinstance(t_scat, np.ndarray):
                 t_scat = t_scat[:, None]
 
-        w_eff = np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
-        return w_eff
+        return np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
 
-    def calc_snr(self, frbs):
+    def calc_snr(self, s_peak, w_arr, T_sys):
         """
         Caculate the SNR of several frbs.
 
@@ -452,43 +443,51 @@ class Survey:
         as a pulse is stretched
 
         Args:
-            frbs (FRBs): FRBs of which to calculate the signal to noise
+            s_peak (array): Peak flux [Jy]
+            w_arr (array): Pulse width at Earth [ms]
+            T_sys (array): System temperature [K]
 
         Returns:
             array: Signal to noise ratio based on the radiometer
                 equation for a single pulse.
 
         """
-        sp = frbs.s_peak
-        w_arr = frbs.w_arr
-        T_sys = frbs.T_sys
-
         # Dimension check
-        if sp.ndim == w_arr.ndim:
+        if s_peak.ndim == w_arr.ndim:
             pass
-        elif sp.ndim == 1:
-            sp = sp[:, None]
+        elif s_peak.ndim == 1:
+            s_peak = s_peak[:, None]
         elif w_arr.ndim == 1:
             w_arr = w_arr[:, None]
 
-        if (sp.ndim or w_arr.ndim) > 1:
-            T_sys = T_sys[:, None]
+        if (s_peak.ndim or w_arr.ndim) > 1:
+            if isinstance(T_sys, np.ndarray):
+                T_sys = T_sys[:, None]
 
-        snr = sp*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
+        snr = s_peak*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
         snr /= (T_sys * self.beta)
 
         return snr
 
-    def calc_fluence(self, frbs):
-        """Calculate fluence [Jy*ms]."""
-        if frbs.w_eff.ndim == frbs.s_peak.ndim:
-            return frbs.s_peak * frbs.w_eff
-        elif frbs.w_eff.ndim == 1:
-            return frbs.s_peak * frbs.w_eff[:, None]
-        elif frbs.s_peak.ndim == 1:
-            return frbs.s_peak[:, None] * frbs.w_eff
+    def calc_fluence(self, s_peak, w_eff):
+        """Calculate fluence [Jy ms].
 
-    def calc_scint(self, frbs):
+        Args:
+            s_peak (array): Peak flux
+            w_eff (array): Effective pulse width
+
+        Returns:
+            array: Fluence in Jy*ms
+
+        """
+        if w_eff.ndim == s_peak.ndim:
+            return s_peak * w_eff
+        elif w_eff.ndim == 1:
+            return s_peak * w_eff[:, None]
+        elif s_peak.ndim == 1:
+            return s_peak[:, None] * w_eff
+
+    def calc_scint(self, t_scat, dist_co, gl, gb, snr):
         """
         Calculate scintillation effect on the signal to noise ratio.
 
@@ -498,21 +497,26 @@ class Survey:
         rigorous testing has been applied to this.
 
         Args:
-            frbs (FRBs): FRBs
+            t_scat (array): Scattering timescale for frbs [ms]
+                (can use self.calc_scat to calculate this)
+            dist_co (array): Comoving distance array [Gpc]
+            gl (array): Galactic longitude [deg]
+            gb (array): Galactic latitude [deg]
+            snr (array): Signal to Noise array to modify
 
         Returns:
             array: Signal to noise ratio modulation factors for scintillation
 
         """
-        # Calculate scattering
-        if type(frbs.t_scat) is not np.ndarray:
-            frbs.t_scat = self.calc_scat(frbs.dm)
+        if not isinstance(t_scat, np.ndarray):
+            m = 'Please ensure t_scat is calculated using self.calc_scat'
+            raise ValueError(m)
 
         # Convert to seconds
-        frbs.t_scat /= 1000.
+        t_scat /= 1000.
 
         # Decorrelation bandwidth (eq. 4.39)
-        decorr_bw = 1.16/(2*math.pi*frbs.t_scat)
+        decorr_bw = 1.16/(2*np.pi*t_scat)
         # Convert to MHz
         decorr_bw /= 1e6
 
@@ -533,9 +537,9 @@ class Survey:
         # Taking the average kappa value
         kappa = 0.15
 
-        t_diss, decorr_bw = go.ne2001_scint_time_bw(frbs.dist_co,
-                                                    frbs.gl,
-                                                    frbs.gb,
+        t_diss, decorr_bw = go.ne2001_scint_time_bw(dist_co,
+                                                    gl,
+                                                    gb,
                                                     self.central_freq)
 
         # Following Cordes and Lazio (1991) (eq. 4.43)
@@ -553,7 +557,7 @@ class Survey:
         m[weak] = np.sqrt(m_diss**2 + m_riss**2 + m_diss*m_riss)
 
         # Distribute the scintillation according to gaussian distribution
-        snr = np.random.normal(frbs.snr, m*frbs.snr)
+        snr = np.random.normal(snr, m*snr)
 
         return snr
 
@@ -575,10 +579,10 @@ class Survey:
 
         # Line of constant S/N
         self.s_peak_limit = self.snr_limit*self.T_rec*self.beta
-        self.s_peak_limit /= self.gain*math.sqrt(self.n_pol*self.bw*1e3)
+        self.s_peak_limit /= self.gain*np.sqrt(self.n_pol*self.bw*1e3)
 
         # Line of constant fluence
-        self.fluence_limit = self.s_peak_limit / math.sqrt(w_eff)
+        self.fluence_limit = self.s_peak_limit / np.sqrt(w_eff)
         self.fluence_limit *= w_eff
 
         return self.fluence_limit

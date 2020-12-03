@@ -3,11 +3,11 @@ import os
 import subprocess
 import sys
 
-from frbpoppy.log import pprint
+from frbpoppy.misc import pprint
 from frbpoppy.paths import paths
 
 
-def plot(*pops, files=[], frbcat=True, show=True, no_browser=False,
+def plot(*pops, files=[], tns=False, show=True,
          mute=True, port=5006, print_command=False):
     """
     Plot populations with bokeh. Has to save populations before plotting.
@@ -16,10 +16,11 @@ def plot(*pops, files=[], frbcat=True, show=True, no_browser=False,
         *pops (Population, optional): Add the populations you would like to
             see plotted
         files (list, optional): List of population files to plot.
-        frbcat (bool, optional): Whether to plot frbcat parameters. Defaults to
+        tns (bool, optional): Whether to plot tns parameters. Defaults to
             True
         show (bool, optional): Whether to display the plot or not. Mainly used
             for debugging purposes. Defaults to True.
+        mute (bool): Show output from Bokeh or not
         port (int): The port on which to launch Bokeh
         print_command (bool): Whether to show the command do_plot is running
 
@@ -32,7 +33,13 @@ def plot(*pops, files=[], frbcat=True, show=True, no_browser=False,
             if type(pop) == str:
                 name = pop
             else:
-                pop.name = pop.name.lower() + '_for_plotting'
+                # Check whether empty population
+                if pop.n_sources() < 1:
+                    pprint(f'Skipping {pop.name} population as no sources')
+                    continue
+                pop.name = pop.name.lower()
+                if '_for_plotting' not in pop.name:
+                    pop.name += '_for_plotting'
                 name = pop.name
                 pop.save()
 
@@ -61,18 +68,23 @@ def plot(*pops, files=[], frbcat=True, show=True, no_browser=False,
     # For the arguments
     command.append('--args')
 
-    # Add frbcat
-    command.append('-frbcat')
-    if frbcat is False:
+    # Add tns
+    command.append('-tns')
+    if tns is False:
         command.append('False')
-    if frbcat is True:
+    if tns is True:
         command.append('True')
-    elif type(frbcat) == str and len(frbcat) > 0:
-        command.append(f'{frbcat}')
+    elif type(tns) == str and len(tns) > 0:
+        command.append(f'{tns}')
 
     # Add in populations
     for f in files:
         command.append(f'"{f}"')
+
+    # Check whether plotting is needed
+    if len(files) == 0 and tns is False:
+        pprint('No populations to plot')
+        return
 
     # Let people know what's happening
     pprint('Plotting populations')

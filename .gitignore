@@ -99,8 +99,8 @@ ENV/
 *screenshot*.png
 data/logs/*
 data/models/ne2001/libne2001\.so
-misc/
 tests/plots/*
-tests/temp.py
-temp\.csv
+tests/temp*.py
 data/populations/*
+*.mmap
+tests/monte_carlo/*

@@ -11,11 +11,11 @@ survey = Survey('perfect')
 survey_pop = SurveyPopulation(cosmic_pop, survey)
 
 # Check the detection rates
-print(survey_pop.rates())
+print(survey_pop.source_rate)
 
 # Note that due to redshift you won't see all bursts, as some will have
 # redshifted out of the observing time. But no matter how faint, you'll see
 # all bursts within the observing time
 
 # Plot populations
-plot(cosmic_pop, survey_pop, frbcat=False, mute=False)
+plot(cosmic_pop, survey_pop, tns=False, mute=False)

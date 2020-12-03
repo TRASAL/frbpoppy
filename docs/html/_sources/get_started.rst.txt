@@ -67,7 +67,7 @@ Population synthesis always involves three steps:
    ::
 
     from frbpoppy import Survey
-    survey = Survey('apertif')
+    survey = Survey('wsrt-apertif')
 
 2. **Create a survey population**
 

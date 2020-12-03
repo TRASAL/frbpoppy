@@ -1,12 +1,9 @@
 """Define a class to hold a population of FRBs."""
-from io import StringIO
 import os
-import pickle
+import dill as pickle
 import numpy as np
-import pandas as pd
 from copy import deepcopy
 
-from frbpoppy.log import pprint
 from frbpoppy.paths import paths
 from frbpoppy.frbs import FRBs
 
@@ -23,42 +20,8 @@ class Population:
         self.f_max = None
         self.f_min = None
 
-        # Dispersion Measure [pc/cm^3]
-        self.dm_host_model = None
-        self.dm_host_mu = None
-        self.dm_host_sigma = None
-        self.dm_igm_index = None
-        self.dm_igm_sigma = None
-        self.dm_mw_model = None
-
-        # Luminosity
-        self.lum_max = None
-        self.lum_min = None
-        self.lum_pow = None
-
-        # Spectral index
-        self.si_mu = None
-        self.si_sigma = None
-
-        # Pulse width [ms]
-        self.w_model = None
-        self.w_mu = None
-        self.w_sigma = None
-        self.w_max = None
-        self.w_min = None
-
-        # Cosmology
-        self.dist_co_max = None
-        self.H_0 = None
-        self.n_model = None
-        self.vol_co_max = None
-        self.W_m = None
-        self.W_v = None
-        self.z_max = None
-
         # Store FRB sources
         self.frbs = FRBs()
-        self.n_frbs = 0
         self.uid = None  # Unique Identifier
 
     def __str__(self):
@@ -116,6 +79,42 @@ class Population:
         pickle.dump(self, output, 2)
         output.close()
 
+    def n_sources(self):
+        """Return the number of FRB sources."""
+        return len(self.frbs.ra)
+
+    def n_srcs(self):
+        return self.n_sources()
+
+    def n_bursts(self):
+        """Return the number of bursts."""
+        try:  # Will only work for a repeater population
+            n = np.count_nonzero(~np.isnan(self.frbs.time))
+        except TypeError:
+            n = self.n_sources()
+        return n
+
+    def n_repeaters(self):
+        """Return the numer of repeaters in a population."""
+        try:
+            return np.sum((~np.isnan(self.frbs.time)).sum(1) > 1)
+        except TypeError:
+            return 0
+
+    def n_rep(self):
+        return self.n_repeaters()
+
+    def n_one_offs(self):
+        """Return the numer of one-offs in a population."""
+        try:
+            return np.sum((~np.isnan(self.frbs.time)).sum(1) <= 1)
+        except TypeError:
+            return self.n_sources()
+
+    def n_oneoffs(self):
+        """Return the numer of one-offs in a population."""
+        return self.n_one_offs()
+
 
 def unpickle(filename=None, uid=None):
     """Quick function to unpickle a population.
@@ -150,19 +149,75 @@ def unpickle(filename=None, uid=None):
     return pop
 
 
-def split_pop(pop, mask):
+def split_pop(pop, mask=None):
     """Split a population.
 
     Args:
         pop (Population): Population to be split
-        mask (Numpy): Numpy boolean mask
+        mask (array): Numpy boolean mask. If none, split into repeaters and
+            one_offs in that order
 
     Returns:
         tuple: Tuple of population classes
 
     """
+    if mask is None:
+        mask = ((~np.isnan(pop.frbs.time)).sum(1) > 1)
     pop_true = deepcopy(pop)
     pop_false = deepcopy(pop)
     pop_true.frbs.apply(mask)
     pop_false.frbs.apply(~mask)
     return pop_true, pop_false
+
+
+def merge_pop(*args, random=False):
+    """Merge populations.
+
+    Args:
+        Populations to merge
+        random (bool): If wishing to shuffle the frbs from different pops
+
+    Returns:
+        Population
+
+    """
+    mp = args[0]  # Main population
+
+    for pop in args:
+        # Merge each parameter
+        for attr in mp.frbs.__dict__.keys():
+            parm = getattr(mp.frbs, attr)
+            if type(parm) is np.ndarray:
+                parms = []
+                for pop in args:
+                    parms.append(getattr(pop.frbs, attr))
+
+                try:
+                    merged_parm = np.concatenate(parms, axis=0)
+                except ValueError:
+                    # Check maximum size values should be padded to
+                    max_size = max([p.shape[1] for p in parms])
+                    new_parms = []
+
+                    # Ensure matrices are the same shapes by padding them
+                    for p in parms:
+                        if p.shape[1] != max_size:
+                            padded_p = np.zeros((p.shape[0], max_size))
+                            padded_p[:] = np.nan
+                            padded_p[:, :p.shape[1]] = p
+                            new_parms.append(padded_p)
+                        else:
+                            new_parms.append(p)
+
+                    merged_parm = np.concatenate(new_parms, axis=0)
+
+                setattr(mp.frbs, attr, merged_parm)
+
+    if random:
+        shuffle = np.random.permutation(mp.frbs.z.shape[0])
+        for attr in mp.frbs.__dict__.keys():
+            parm = getattr(mp.frbs, attr)
+            if type(parm) is np.ndarray:
+                setattr(mp.frbs, attr, parm[shuffle])
+
+    return mp
