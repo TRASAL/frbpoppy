@@ -50,13 +50,8 @@
 </pre></div>
 </div>
 </li>
-<<<<<<< HEAD
 <li><p>Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo python3 setup.py develop
-=======
-<li><p class="first">Get a local installation of frbpoppy - it will allow to make changes to the frbpoppy code base and having them all instantly available across all your other scripts.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo python3 setup.py develop
->>>>>>> master
 </pre></div>
 </div>
 <p>Macs should also be supported, however no tests have been done on Windows.</p>
@@ -68,13 +63,8 @@
 </div>
 <p>If you don’t get any errors - hurray, all should be working!</p>
 </li>
-<<<<<<< HEAD
 <li><p>Put frbpoppy through its paces:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 examples/_starting_with_frbpoppy_.py
-=======
-<li><p class="first">Put frbpoppy through its paces:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python3 examples/_starting_with_frbpoppy_.py
->>>>>>> master
 </pre></div>
 </div>
 <p>The first time you run frbpoppy it will generate lookup tables to speed up future runs. This can take up to 2h on a standard 4 core laptop. Subsequent runs will be mere seconds.</p>
@@ -96,7 +86,7 @@
 <li><p><strong>Model a survey</strong></p>
 <p>In <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code>, a population can be observed with a number of different surveys. While many current surveys have been included within <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code>, it is possible to define your own survey, or adapt the ones available. To use a survey included in frbpoppy, simply use the code below. Options for adapting the survey, for instance its beam pattern, can also be given as options to the Survey class.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="kn">import</span> <span class="n">Survey</span>
-<span class="n">survey</span> <span class="o">=</span> <span class="n">Survey</span><span class="p">(</span><span class="s1">&#39;apertif&#39;</span><span class="p">)</span>
+<span class="n">survey</span> <span class="o">=</span> <span class="n">Survey</span><span class="p">(</span><span class="s1">&#39;wsrt-apertif&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </li>

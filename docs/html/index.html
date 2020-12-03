@@ -77,22 +77,17 @@ python3 examples/_starting_with_frbpoppy_.py
 19
 20
 21
-<<<<<<< HEAD
 22
 23
 24
 25
 26
 27</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Short example of how frbpoppy works.</span>
-=======
-22</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Short example of how frbpoppy works.</span>
->>>>>>> master
 
 <span class="sd">The first time you run frbpoppy, a series of cosmological databases will be</span>
 <span class="sd">constructed to set up subsequent runs. This first run can take ~2h on a 4 core</span>
 <span class="sd">machine. Subsequent runs will take mere seconds.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<<<<<<< HEAD
 <span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="kn">import</span> <span class="n">CosmicPopulation</span><span class="p">,</span> <span class="n">Survey</span><span class="p">,</span> <span class="n">SurveyPopulation</span><span class="p">,</span> <span class="n">plot</span>
 
 <span class="c1"># Set up an FRB population of one-offs</span>
@@ -101,16 +96,10 @@ python3 examples/_starting_with_frbpoppy_.py
 
 <span class="c1"># Generate your FRB population</span>
 <span class="n">cosmic_pop</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-=======
-<span class="kn">from</span> <span class="nn">frbpoppy</span> <span class="k">import</span> <span class="n">CosmicPopulation</span><span class="p">,</span> <span class="n">Survey</span><span class="p">,</span> <span class="n">SurveyPopulation</span><span class="p">,</span> <span class="n">plot</span>
-
-<span class="c1"># Generate an FRB population</span>
-<span class="n">cosmic_pop</span> <span class="o">=</span> <span class="n">CosmicPopulation</span><span class="p">(</span><span class="mf">1e5</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mf">0.23</span><span class="p">)</span>
->>>>>>> master
 
 <span class="c1"># Setup a survey</span>
-<span class="n">survey</span> <span class="o">=</span> <span class="n">Survey</span><span class="p">(</span><span class="s1">&#39;htru&#39;</span><span class="p">)</span>
-<span class="n">survey</span><span class="o">.</span><span class="n">set_beam</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">n_sidelobes</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">survey</span> <span class="o">=</span> <span class="n">Survey</span><span class="p">(</span><span class="s1">&#39;parkes-htru&#39;</span><span class="p">)</span>
+<span class="n">survey</span><span class="o">.</span><span class="n">set_beam</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;parkes-htru&#39;</span><span class="p">)</span>
 
 <span class="c1"># Observe the FRB population</span>
 <span class="n">survey_pop</span> <span class="o">=</span> <span class="n">SurveyPopulation</span><span class="p">(</span><span class="n">cosmic_pop</span><span class="p">,</span> <span class="n">survey</span><span class="p">)</span>
@@ -119,7 +108,7 @@ python3 examples/_starting_with_frbpoppy_.py
 <span class="nb">print</span><span class="p">(</span><span class="n">survey_pop</span><span class="o">.</span><span class="n">source_rate</span><span class="p">)</span>
 
 <span class="c1"># Plot populations in a browser</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">cosmic_pop</span><span class="p">,</span> <span class="n">survey_pop</span><span class="p">,</span> <span class="n">frbcat</span><span class="o">=</span><span class="s1">&#39;parkes&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">cosmic_pop</span><span class="p">,</span> <span class="n">survey_pop</span><span class="p">,</span> <span class="n">tns</span><span class="o">=</span><span class="s1">&#39;parkes&#39;</span><span class="p">)</span>
 </pre></div>
 </td></tr></table></div>
 <p>Curious about additional functionality in <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code>? Check the <a class="reference internal" href="get_started.html"><span class="doc">Get Started</span></a> guide, the <a class="reference internal" href="documentation.html"><span class="doc">Documentation</span></a>, or the <a class="reference external" href="https://github.com/davidgardenier/frbpoppy/tree/master/tests">tests</a> directory in <code class="docutils literal notranslate"><span class="pre">frbpoppy</span></code>.</p>
