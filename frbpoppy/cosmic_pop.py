@@ -528,7 +528,7 @@ class CosmicPopulation(Population):
     def complex(cls, n_srcs, n_days=1, repeaters=False, generate=False):
         """Set up a complex population."""
         pop = cls(n_srcs=n_srcs, n_days=n_days, name='complex',
-                  repeaters=False, generate=False)
+                  repeaters=repeaters, generate=False)
         pop.set_dist(model='vol_co', z_max=1, alpha=-1.5,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
         pop.set_dm_host(model='gauss', mean=100, std=200)
@@ -549,7 +549,7 @@ class CosmicPopulation(Population):
     def optimal(cls, n_srcs, n_days=1, repeaters=False, generate=False):
         """Set up a complex population."""
         pop = cls(n_srcs=n_srcs, n_days=n_days, name='optimal',
-                  repeaters=False, generate=False)
+                  repeaters=repeaters, generate=False)
         pop.set_dist(model='vol_co', z_max=2.5, alpha=-2.2,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
         pop.set_dm_host(model='constant', value=50)
