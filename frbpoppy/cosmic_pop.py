@@ -12,7 +12,7 @@ import frbpoppy.si_dists as sid
 import frbpoppy.lum_dists as ld
 import frbpoppy.galacticops as go
 import frbpoppy.precalc as pc
-
+import frbpoppy.healpix_maps as hpm
 
 class CosmicPopulation(Population):
     """Generate a cosmic FRB population."""
@@ -170,16 +170,15 @@ class CosmicPopulation(Population):
         """Set the model for the Milky Way dispersion measure.
 
         Args:
-            model (str): Option of 'ne2001'.
+            model (str): Option of 'ne2001' or 'ymw16'.
         """
         if not isinstance(model, str):
             self.dm_mw_func = lambda: model(**kwargs)
             return
 
         # Distribution from which to draw dm_mw
-        if model == 'ne2001':
-            self.dm_mw_func = lambda: pc.NE2001Table().lookup(self.frbs.gl,
-                                                              self.frbs.gb)
+        if model in('ne2001', 'ymw16'):
+            self.dm_mw_func = lambda: hpm.dm_mw(self.frbs.gl, self.frbs.gb, model)
         else:
             raise ValueError('set_dm_mw input not recognised')
 
