@@ -1,6 +1,7 @@
 import healpy as hp
 from frbpoppy.paths import paths
 import os
+import numpy as np
 
 
 def dm_mw(gl, gb, model='ne2001'):
@@ -18,7 +19,7 @@ def dm_mw(gl, gb, model='ne2001'):
         data_file = os.path.join(paths.models(), 'healpix/dm-ne2001-30kpc.fits')
     elif model == 'ymw16':
         data_file = os.path.join(paths.models(), 'healpix/dm-ymw16-30kpc.fits')
-    data = hp.read_map(data_file, verbose=False, dtype='float32')
+    data = hp.read_map(data_file, verbose=False, dtype=np.float64)
     nside = hp.npix2nside(len(data))  # This sets map resolution  (NSIDE)
     pixloc = hp.ang2pix(nside, gl, gb, lonlat=True)
     return data[pixloc]
