@@ -547,7 +547,7 @@ class CosmicPopulation(Population):
 
     @classmethod
     def optimal(cls, n_srcs, n_days=1, repeaters=False, generate=False):
-        """Set up a complex population."""
+        """Set up an optimal population."""
         pop = cls(n_srcs=n_srcs, n_days=n_days, name='optimal',
                   repeaters=repeaters, generate=False)
         pop.set_dist(model='vol_co', z_max=2.5, alpha=-2.2,
