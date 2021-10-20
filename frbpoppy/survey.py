@@ -334,7 +334,7 @@ class Survey:
         return T_sky
 
     def calc_s_peak(self, si, lum_bol, z, dist_co, w_arr, w_eff,
-                    f_low=100e6, f_high=10e9):
+                    f_low=10e6, f_high=10e9):
         """
         Calculate the mean spectral flux density.
 
