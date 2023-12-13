@@ -137,7 +137,7 @@ class SurveyPopulation(Population):
         frbs.fluence = survey.calc_fluence(frbs.s_peak, frbs.w_eff)
 
         # Calculate Signal to Noise Ratio
-        frbs.snr = survey.calc_snr(frbs.s_peak, frbs.w_arr, frbs.T_sys)
+        frbs.snr = survey.calc_snr(frbs.s_peak, frbs.w_eff, frbs.T_sys)
 
         # Add scintillation
         if self.scin:
