@@ -434,7 +434,7 @@ class Survey:
 
         return np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
 
-    def calc_snr(self, s_peak, w_arr, T_sys):
+    def calc_snr(self, s_peak, w_eff, T_sys):
         """
         Caculate the SNR of several frbs.
 
@@ -444,7 +444,7 @@ class Survey:
 
         Args:
             s_peak (array): Peak flux [Jy]
-            w_arr (array): Pulse width at Earth [ms]
+            w_eff (array): Pulse width at telescope [ms]
             T_sys (array): System temperature [K]
 
         Returns:
@@ -457,14 +457,14 @@ class Survey:
             pass
         elif s_peak.ndim == 1:
             s_peak = s_peak[:, None]
-        elif w_arr.ndim == 1:
-            w_arr = w_arr[:, None]
+        elif w_eff.ndim == 1:
+            w_eff = w_eff[:, None]
 
-        if (s_peak.ndim or w_arr.ndim) > 1:
+        if (s_peak.ndim or w_eff.ndim) > 1:
             if isinstance(T_sys, np.ndarray):
                 T_sys = T_sys[:, None]
 
-        snr = s_peak*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
+        snr = s_peak*self.gain*np.sqrt(self.n_pol*self.bw*w_eff*1e3)
         snr /= (T_sys * self.beta)
 
         return snr
