@@ -5,8 +5,10 @@ import numpy as np
 import sqlite3
 import sys
 from scipy.integrate import quad
+from scipy.interpolate import interp1d
 from tqdm import tqdm
 from joblib import Parallel, delayed
+import pandas as pd
 
 import frbpoppy.galacticops as go
 from frbpoppy.misc import pprint
@@ -322,11 +324,12 @@ class DistanceTable:
     def lookup(self, z=None, dist_co=None, vol_co=None, dvol_co=None,
                cdf_sfr=None, cdf_smd=None):
         """Look up associated values with input values."""
-        # Connect to database
+        # Connect to database and load into DataFrame
         conn = sqlite3.connect(self.file_name)
-        c = conn.cursor()
+        df = pd.read_sql_query("SELECT * FROM DISTANCES", conn)
+        conn.close()
 
-        # Check what's being looked up, set all other keywords to same length
+        # Check what's being looked up
         kw = {'z': z,
               'dist':  dist_co,
               'vol': vol_co,
@@ -339,27 +342,22 @@ class DistanceTable:
                 in_par = key
                 break
 
+        input_data = kw[in_par]
+
+        # Create the interpolation functions
+        interp_fns = {}
         for key, value in kw.items():
             if key != in_par:
-                kw[key] = np.ones_like(kw[in_par])
+                interp_fns[key] = interp1d(df[in_par], df[key])
 
         keys = list(kw.keys())
-
-        # Search database
-        query = f'select * from distances where {in_par} > ? limit 1'
-
-        for i, r in enumerate(kw[in_par]):
-            d = c.execute(query, [str(r)]).fetchone()
-            for ii, key in enumerate(keys):
-                if key == in_par:
-                    continue
-
-                kw[key][i] = d[ii]
-
-        # Close database
-        conn.close()
+        for ii, key in enumerate(keys):
+            if key == in_par:
+                continue
+            kw[key] = interp_fns[key](input_data)
 
         return list(kw.values())
+
 
 
 def sfr(z):
