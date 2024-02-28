@@ -453,7 +453,7 @@ class Survey:
 
         """
         # Dimension check
-        if s_peak.ndim == w_arr.ndim:
+        if s_peak.ndim == w_eff.ndim:
             pass
         elif s_peak.ndim == 1:
             s_peak = s_peak[:, None]
