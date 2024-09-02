@@ -1,5 +1,6 @@
 """Class to generate a cosmic population of FRBs."""
 import numpy as np
+#import numexpr as ne
 
 from frbpoppy.misc import pprint
 from frbpoppy.number_density import NumberDensity
@@ -114,7 +115,7 @@ class CosmicPopulation(Population):
             model = 'vol_co'
 
         # Check whether recognised number density model
-        if model not in ['vol_co', 'sfr', 'smd']:
+        if model not in ['vol_co', 'sfr', 'smd', 'delayed_sfr']:
             raise ValueError('set_dist input not recognised')
 
         # Set number density model
@@ -132,6 +133,8 @@ class CosmicPopulation(Population):
         frbs = self.frbs
         # Get the proper distance
         dist_pr = frbs.dist_co/(1+frbs.z)
+        #dist_pr = ne.evaluate("dist_co/(1+z)", global_dict=vars(frbs))
+        
         # Convert into galactic coordinates
         frbs.gx, frbs.gy, frbs.gz = go.lb_to_xyz(frbs.gl, frbs.gb, dist_pr)
 
@@ -170,7 +173,7 @@ class CosmicPopulation(Population):
         """Set the model for the Milky Way dispersion measure.
 
         Args:
-            model (str): Option of 'ne2001'.
+            model (str): Option of 'ne2001', 'ymw16'.
         """
         if not isinstance(model, str):
             self.dm_mw_func = lambda: model(**kwargs)
@@ -179,6 +182,9 @@ class CosmicPopulation(Population):
         # Distribution from which to draw dm_mw
         if model == 'ne2001':
             self.dm_mw_func = lambda: pc.NE2001Table().lookup(self.frbs.gl,
+                                                              self.frbs.gb)
+        elif model == 'ymw16':
+            self.dm_mw_func = lambda: pc.YMW16Table().lookup(self.frbs.gl,
                                                               self.frbs.gb)
         else:
             raise ValueError('set_dm_mw input not recognised')
@@ -268,6 +274,7 @@ class CosmicPopulation(Population):
         def run_dm():
             [c() for c in self.dm_components]
             return self.frbs.dm_mw + self.frbs.dm_igm + self.frbs.dm_host
+            #return ne.evaluate("dm_mw + dm_igm + dm_host", global_dict=vars(self.frbs))
 
         self.dm_func = run_dm
 
@@ -546,20 +553,20 @@ class CosmicPopulation(Population):
         return pop
 
     @classmethod
-    def optimal(cls, n_srcs, n_days=1, repeaters=False, generate=False):
-        """Set up an optimal population."""
+    def optimal(cls, n_srcs, n_days=1, repeaters=False, generate=False, mute=False):
+        """Set up a complex population."""
         pop = cls(n_srcs=n_srcs, n_days=n_days, name='optimal',
-                  repeaters=repeaters, generate=False)
-        pop.set_dist(model='vol_co', z_max=2.5, alpha=-2.2,
+                  repeaters=repeaters, generate=False, mute=mute)
+        pop.set_dist(model='sfr', z_max=1.5, alpha=-1.5,
                      H_0=67.74, W_m=0.3089, W_v=0.6911)
-        pop.set_dm_host(model='constant', value=50)
-        pop.set_dm_igm(model='ioka', slope=1000, std=None)
+        pop.set_dm_host(model='lognormal', mean=490, std=520)
+        pop.set_dm_igm(model='ioka', slope=840, std=None)
         pop.set_dm_mw(model='ne2001')
         pop.set_dm(mw=True, igm=True, host=True)
         pop.set_emission_range(low=10e7, high=10e9)
-        pop.set_lum(model='powerlaw', low=1e40, high=1e45, power=-0.8)
-        pop.set_w(model='lognormal', mean=6.3e-3, std=.6)
-        pop.set_si(model='constant', value=-0.4)
+        pop.set_lum(model='powerlaw', low=1e41, high=1e46, power=-1.58)
+        pop.set_w(model='lognormal', mean=10**(-0.5), std=1.65)
+        pop.set_si(model='constant', value=-1.5)
         if pop.repeaters:
             pop.set_time(model='poisson', rate=9)
         if generate:
