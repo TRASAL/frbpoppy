@@ -164,10 +164,12 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
     # Use an array of the beam pattern
     elif beam_array is not None:
         b_shape = beam_array.shape
-        ran_x = rng.integers(0, b_shape[0], shape, dtype=np.int32)
-        ran_y = rng.integers(0, b_shape[1], shape, dtype=np.int32)
+        ran_x = np.random.randint(0, b_shape[0], shape)
+        ran_y = np.random.randint(0, b_shape[1], shape)
+        #ran_x = rng.integers(0, b_shape[0], shape, dtype=np.int32)
+        #ran_y = rng.integers(0, b_shape[1], shape, dtype=np.int32)
+        
         int_pro = beam_array[ran_x, ran_y]
-
         x_offset = (ran_x-(b_shape[0]/2)) * pixel_scale
         y_offset = (ran_y-(b_shape[1]/2)) * pixel_scale
         
