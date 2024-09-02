@@ -1,6 +1,7 @@
 """Class to generate a survey population of FRBs."""
 from copy import deepcopy
 from tqdm import tqdm
+import time
 import numpy as np
 
 from frbpoppy.misc import pprint
@@ -12,7 +13,7 @@ class SurveyPopulation(Population):
     """Class to create a survey population of FRBs."""
 
     def __init__(self, cosmic_pop, survey, scat=False, scin=False,
-                 mute=False, scale_by_area=True):
+                 mute=False, scale_by_area=False):
         """
         Run a survey to detect FRB sources.
 
@@ -27,7 +28,8 @@ class SurveyPopulation(Population):
             scale_by_area (bool): Whether to scale detection rates to the sky
                 area visible to a survey. Only relevant for one-offs.
         """
-        if not mute:
+        self.mute = mute
+        if not self.mute:
             pprint(f'Surveying {cosmic_pop.name} with {survey.name}')
         # Stops RuntimeWarnings about nan values
         np.warnings.filterwarnings('ignore')
@@ -84,7 +86,7 @@ class SurveyPopulation(Population):
         # Check whether source is in region
         region_mask = survey.in_region(frbs.ra, frbs.dec, frbs.gl, frbs.gb)
         frbs.apply(region_mask)
-
+        
         # Keep track of detection numbers
         sr.out = np.sum(~region_mask)
         if self.repeaters:
@@ -96,14 +98,16 @@ class SurveyPopulation(Population):
 
         # Set scattering timescale
         if scat:
-            frbs.t_scat = survey.calc_scat(frbs.dm)
+            #frbs.t_scat = frbs.t_scat
+            cosmic_pop.frbs.t_scat = survey.calc_scat(frbs.dm, model='lognormal')
+            frbs.t_scat = cosmic_pop.frbs.t_scat
 
         # Calculate total temperature
         frbs.T_sky, frbs.T_sys = survey.calc_Ts(frbs.gl, frbs.gb)
 
         # Calculate effective pulse width
         frbs.w_eff = survey.calc_w_eff(frbs.w_arr, frbs.t_dm, frbs.t_scat)
-
+        
         # Calculate peak flux density
         frbs.s_peak = survey.calc_s_peak(frbs.si,
                                          frbs.lum_bol,
@@ -119,7 +123,6 @@ class SurveyPopulation(Population):
             self.det_repeaters()
         else:
             self.det_oneoffs()
-
         # Prevent additional memory usage
         self.survey = None
 
@@ -129,13 +132,22 @@ class SurveyPopulation(Population):
         survey = self.survey
 
         # Account for beam offset
-        int_pro, offset = survey.calc_beam(shape=frbs.s_peak.shape)
-        frbs.s_peak *= int_pro
-        frbs.offset = offset  # [deg]
-
+        if survey.name == 'chime-frb':
+            int_pro, offset, x_offset, y_offset = survey.calc_beam(shape=frbs.s_peak.shape)
+            frbs.s_peak *= int_pro
+            frbs.int_pro = int_pro
+            frbs.offset = offset  # [deg]
+            frbs.x_offset = x_offset  # [deg]
+            frbs.y_offset = y_offset  # [deg]
+        else:
+            int_pro, offset = survey.calc_beam(shape=frbs.s_peak.shape)
+            frbs.s_peak *= int_pro
+            frbs.int_pro = int_pro
+            frbs.offset = offset  # [deg]
+        
         # Calculate fluence [Jy*ms]
         frbs.fluence = survey.calc_fluence(frbs.s_peak, frbs.w_eff)
-
+        
         # Calculate Signal to Noise Ratio
         frbs.snr = survey.calc_snr(frbs.s_peak, frbs.w_eff, frbs.T_sys)
 
@@ -143,15 +155,15 @@ class SurveyPopulation(Population):
         if self.scin:
 
             # Ensure scattering has been calculated
-            if not isinstance(frbs.t_scat, np.ndarray):
-                frbs.t_scat = survey.calc_scat(frbs.dm)
+            #if not isinstance(frbs.t_scat, np.ndarray):
+                #frbs.t_scat = survey.calc_scat(frbs.dm)
 
             # Calculate signal to noise ratio after scattering
             frbs.snr = survey.calc_scint(frbs.t_scat, frbs.dist_co, frbs.gl,
                                          frbs.gb, frbs.snr)
 
         # Check whether frbs would be above detection threshold
-        snr_mask = (frbs.snr >= survey.snr_limit)
+        snr_mask = (frbs.snr >= survey.snr_limit) & (frbs.snr != np.inf)
         frbs.apply(snr_mask)
         self.source_rate.faint = len(snr_mask) - np.count_nonzero(snr_mask)
 
@@ -161,13 +173,15 @@ class SurveyPopulation(Population):
         frbs.apply(rate_mask)
         self.source_rate.late = np.size(rate_mask)
         self.source_rate.late -= np.count_nonzero(rate_mask)
-
+        
         self.source_rate.det = len(frbs.snr)
+        if not self.mute:
+            pprint(len(frbs.snr))
 
         # Calculate detection rates
         if self.scale_by_area:
             self.calc_rates(survey)
-
+        
     def det_repeaters(self):
         """Detect repeating frbs."""
         frbs = self.frbs
