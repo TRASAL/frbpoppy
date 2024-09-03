@@ -1,5 +1,9 @@
 """Spatial direction distributions for FRB sources."""
 import numpy as np
+#import numexpr as ne
+
+#global rng
+#rng = np.random.default_rng()
 
 
 def uniform(min_ra=0, max_ra=360, min_dec=-90, max_dec=90, n_srcs=1):
@@ -21,8 +25,15 @@ def uniform(min_ra=0, max_ra=360, min_dec=-90, max_dec=90, n_srcs=1):
     min_dec_x = np.cos(np.deg2rad(min_dec + 90))
     max_dec_x = np.cos(np.deg2rad(max_dec + 90))
     dec = np.rad2deg(np.arccos(u(max_dec_x, min_dec_x, n_srcs))) - 90
+    
+    #rand1 = rng.random(n_srcs, dtype=np.float32)
+    #rand2 = rng.random(n_srcs, dtype=np.float32)
+    #ra = ne.evaluate("(max_ra - min_ra) * rand1 + min_ra")
+    #min_dec_x = ne.evaluate("cos((min_dec + 90.0) * 3.141592653589793 / 180.0)")
+    #max_dec_x = ne.evaluate("cos((max_dec + 90.0) * 3.141592653589793 / 180.0)")
+    #dec = ne.evaluate("(max_dec_x - min_dec_x) * rand2 + min_dec_x")
+    #dec = ne.evaluate("arccos(dec) * 180.0 / 3.141592653589793 - 90")
     return ra, dec
-
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt

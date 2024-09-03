@@ -1,10 +1,14 @@
 """Functions for calculating the intensity of points in a beam."""
 import numpy as np
+#import numexpr as ne
 from scipy.special import j1
+import time
 
 import frbpoppy.galacticops as go
 from frbpoppy.paths import paths
 
+#global rng
+#rng = np.random.default_rng()
 
 def get_beam_props(model, fwhm):
     """Get beam properties.
@@ -23,7 +27,6 @@ def get_beam_props(model, fwhm):
     if model in models:
         place = paths.models() + f'/beams/{model}.npy'
         beam_array = np.load(place)
-
     # Set up details if using beam arrays
     if model.startswith('wsrt-apertif'):
         pixel_scale = 0.94/60  # Degrees per pixel [deg]
@@ -32,13 +35,10 @@ def get_beam_props(model, fwhm):
         pixel_scale = 54/3600  # Degrees per pixel [deg]
         beam_size = 9.  # [sq deg]
     elif model == 'chime-frb':
-        pixel_scale = 0.08  # Degrees per pixel [deg]
-        beam_size = 180*80  # [sq deg]
-        # If integrating over 180*80 degrees
-        # Wolfram Alpha input:
-        # integral_0^pi integral_0^(4*pi/9) sin(theta) d theta d phi
-        # square radians to square degrees
-        beam_size = 8522  # [sq deg]
+        pixel_scale = 0.05  # Degrees per pixel [deg]
+        x_range = 2.   # Use 2 deg for CHIME main beam East-West range
+        beam_array = beam_array[:, 800-20*x_range:800+20*x_range]
+        beam_size = 120*2*x_range  # [sq deg]
     elif model == 'gaussian':
         pixel_scale = fwhm / 95  # Degrees per pixel [deg]
         beam_size = (pixel_scale*beam_array.shape[0])**2
@@ -102,17 +102,18 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
         array, array: intensity, offset from beam [degree]
 
     """
-    offset = fwhm/2  # Radius [deg]
-
-    # Take a random location in the 2D beampattern
-    offset *= np.sqrt(np.random.random(shape).astype(np.float32))
-
-    # Convert max offset to units of the radius
-    if max_offset is not None:
-        max_offset /= fwhm/2
-
     # Allow for a perfect beam pattern in which all is detected
     if pattern.startswith('perfect'):
+        offset = fwhm/2  # Radius [deg]
+
+        # Take a random location in the 2D beampattern
+        offset *= np.sqrt(np.random.random(shape).astype(np.float32))
+        #rand = rng.random(shape, dtype=np.float32).astype(np.float32)
+        #offset = ne.evaluate("offset * sqrt(rand)")
+
+        # Convert max offset to units of the radius
+        if max_offset is not None:
+            max_offset /= fwhm/2
         offset *= max_offset
         int_pro = np.ones(shape)
         return int_pro, offset
@@ -122,6 +123,16 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
     # George W. Swenson, JR. (Second edition), around p. 15
 
     if pattern == 'gaussian':
+        offset = fwhm/2  # Radius [deg]
+
+        # Take a random location in the 2D beampattern
+        offset *= np.sqrt(np.random.random(shape).astype(np.float32))
+        #rand = rng.random(shape).astype(np.float32)
+        #offset = ne.evaluate("offset * sqrt(rand)")
+
+        # Convert max offset to units of the radius
+        if max_offset is not None:
+            max_offset /= fwhm/2
         offset *= max_offset
         alpha = 2*np.sqrt(np.log(2))
         int_pro = np.exp(-(alpha*offset/fwhm)**2)
@@ -129,6 +140,16 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
 
     elif pattern == 'airy':
         # Set the maximum offset equal to the null after a sidelobe
+        offset = fwhm/2  # Radius [deg]
+
+        # Take a random location in the 2D beampattern
+        offset *= np.sqrt(np.random.random(shape).astype(np.float32))
+        #rand = rng.random(shape).astype(np.float32)
+        #offset = ne.evaluate("offset * sqrt(rand)")
+
+        # Convert max offset to units of the radius
+        if max_offset is not None:
+            max_offset /= fwhm/2
         offset *= max_offset
         c = 299792458
         conv = np.pi/180  # Conversion degrees -> radians
@@ -145,11 +166,21 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
         b_shape = beam_array.shape
         ran_x = np.random.randint(0, b_shape[0], shape)
         ran_y = np.random.randint(0, b_shape[1], shape)
+        #ran_x = rng.integers(0, b_shape[0], shape, dtype=np.int32)
+        #ran_y = rng.integers(0, b_shape[1], shape, dtype=np.int32)
+        
         int_pro = beam_array[ran_x, ran_y]
         x_offset = (ran_x-(b_shape[0]/2)) * pixel_scale
         y_offset = (ran_y-(b_shape[1]/2)) * pixel_scale
+        
+        #b_x = b_shape[0]/2
+        #b_y = b_shape[1]/2
+        #x_offset = ne.evaluate("(ran_x-b_x) * pixel_scale")
+        #y_offset = ne.evaluate("(ran_y-b_y) * pixel_scale")
+        
         offset = go.separation(0, 0, x_offset, y_offset)
-        return int_pro, offset
+
+        return int_pro, offset, x_offset, y_offset
 
     else:
         raise ValueError(f'Beam pattern "{pattern}" not recognised')
@@ -219,6 +250,7 @@ def int_pro_fixed(ra, dec, ra_p, dec_p, lst, pattern='perfect',
         # Convert ha, dec to az, alt
         az, alt = go.hadec_to_azalt(ha, dec, lat)
         az_p, alt_p = go.hadec_to_azalt(ha_p, dec_p, lat)
+        
         # Convert to offset
         # Only valid for +/-30 from the centre
         dx, dy = go.coord_to_offset(az_p, alt_p, az, alt)

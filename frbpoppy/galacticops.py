@@ -7,9 +7,12 @@ from datetime import timedelta
 import ctypes as C
 import math
 import numpy as np
+#import numexpr as ne
 import os
 import pandas as pd
 import random
+import time
+import pyymw16
 
 from frbpoppy.paths import paths
 
@@ -20,20 +23,20 @@ loc = os.path.join(dm_mods, 'libne2001.so')
 ne2001lib = C.CDLL(loc)
 ne2001lib.dm_.restype = C.c_float
 
-
 def frac_deg(ra, dec):
     """Convert coordinates expressed in hh:mm:ss to fractional degrees."""
     # Inspired by Joe Filippazzo calculator
     rh, rm, rs = [float(r) for r in ra.split(':')]
     ra = rh*15 + rm/4 + rs/240
+    #ra = ne.evaluate("rh*15 + rm/4 + rs/240")
     dd, dm, ds = [float(d) for d in dec.split(':')]
     if dd < 0:
         sign = -1
     else:
         sign = 1
     dec = dd + sign*dm/60 + sign*ds/3600
+    #dec = ne.evaluate("dd + sign*dm/60 + sign*ds/3600")
     return ra, dec
-
 
 def lb_to_xyz(gl, gb, dist):
     """
@@ -56,9 +59,15 @@ def lb_to_xyz(gl, gb, dist):
     gx = dist * np.cos(B) * np.sin(L)
     gy = rsun - dist * np.cos(B) * np.cos(L)
     gz = dist * np.sin(B)
+    
+    #L = ne.evaluate("gl * 3.141592653589793 / 180.0")
+    #B = ne.evaluate("gb * 3.141592653589793 / 180.0")
+
+    #gx = ne.evaluate("dist * cos(B) * sin(L)")
+    #gy = ne.evaluate("rsun - dist * cos(B) * cos(L)")
+    #gz = ne.evaluate("dist * sin(B)")
 
     return gx, gy, gz
-
 
 def lb_to_radec(l, b):
     """
@@ -84,6 +93,8 @@ def lb_to_radec(l, b):
     """
     gl = np.radians(l)
     gb = np.radians(b)
+    #gl = ne.evaluate("l * 3.141592653589793 / 180.0")
+    #gb = ne.evaluate("b * 3.141592653589793 / 180.0")
 
     # Coordinates of the galactic north pole (J2000)
     a_ngp = np.radians(12.9406333 * 15.)
@@ -94,20 +105,29 @@ def lb_to_radec(l, b):
     cd_ngp = np.cos(d_ngp)
     sb = np.sin(gb)
     cb = np.cos(gb)
+    #sd_ngp = ne.evaluate("sin(d_ngp)")
+    #cd_ngp = ne.evaluate("cos(d_ngp)")
+    #sb = ne.evaluate("sin(gb)")
+    #cb = ne.evaluate("cos(gb)")
 
     # Calculate right ascension
     y = cb*np.sin(l_ngp - gl)
     x = cd_ngp*sb - sd_ngp*cb*np.cos(l_ngp - gl)
     ra = np.arctan2(y, x) + a_ngp
     ra = np.degrees(ra) % 360
+    #y = ne.evaluate("cb*sin(l_ngp - gl)")
+    #x = ne.evaluate("cd_ngp*sb - sd_ngp*cb*cos(l_ngp - gl)")
+    #ra = ne.evaluate("arctan2(y, x) + a_ngp")
+    #ra = ne.evaluate("(ra * 180.0 / 3.141592653589793) % 360")
 
     # Calculate declination
     dec = np.arcsin(sd_ngp*sb + cd_ngp*cb*np.cos(l_ngp - gl))
     dec = np.degrees(dec) % 360.
+    #dec = ne.evaluate("arcsin(sd_ngp*sb + cd_ngp*cb*cos(l_ngp - gl))")
+    #dec = ne.evaluate("(dec * 180.0 / 3.141592653589793) % 360")
     dec[dec > 270] = -(360 - dec[dec > 270])
 
     return ra, dec
-
 
 def radec_to_lb(ra, dec, frac=False):
     """
@@ -136,22 +156,32 @@ def radec_to_lb(ra, dec, frac=False):
 
     a = np.radians(ra)
     d = np.radians(dec)
+    #a = ne.evaluate("ra * 3.141592653589793 / 180.0")
+    #d = ne.evaluate("dec * 3.141592653589793 / 180.0")
 
     # Coordinates of the galactic north pole (J2000)
     a_ngp = np.radians(12.9406333 * 15.)
     d_ngp = np.radians(27.1282500)
     l_ngp = np.radians(123.9320000)
-
+    
     sd_ngp = np.sin(d_ngp)
     cd_ngp = np.cos(d_ngp)
     sd = np.sin(d)
     cd = np.cos(d)
-
+    #sd_ngp = ne.evaluate("sin(d_ngp)")
+    #cd_ngp = ne.evaluate("cos(d_ngp)")
+    #sd = ne.evaluate("sin(d)")
+    #cd = ne.evaluate("cos(d)")
+    
     # Calculate galactic longitude
     y = cd*np.sin(a - a_ngp)
     x = cd_ngp*sd - sd_ngp*cd*np.cos(a - a_ngp)
     gl = - np.arctan2(y, x) + l_ngp
     gl = np.degrees(gl) % 360
+    #y = ne.evaluate("cd*sin(a - a_ngp)")
+    #x = ne.evaluate("cd_ngp*sd - sd_ngp*cd*cos(a - a_ngp)")
+    #gl = ne.evaluate("- arctan2(y, x) + l_ngp")
+    #gl = ne.evaluate("(gl * 180.0 / 3.141592653589793) % 360")
 
     # Shift so in range -180 to 180
     if isinstance(gl, np.ndarray):
@@ -163,6 +193,8 @@ def radec_to_lb(ra, dec, frac=False):
     # Calculate galactic latitude
     gb = np.arcsin(sd_ngp*sd + cd_ngp*cd*np.cos(a - a_ngp))
     gb = np.degrees(gb) % 360
+    #gb = ne.evaluate("arcsin(sd_ngp*sd + cd_ngp*cd*cos(a - a_ngp))")
+    #gb = ne.evaluate("(gb * 180.0 / 3.141592653589793) % 360")
 
     if isinstance(gb, np.ndarray):
         gb[gb > 270] = -(360 - gb[gb > 270])
@@ -171,7 +203,6 @@ def radec_to_lb(ra, dec, frac=False):
             gb = -(360 - gb)
 
     return gl, gb
-
 
 def separation(ra_1, dec_1, ra_2, dec_2):
     """Separation between points on sky [degrees].
@@ -187,6 +218,10 @@ def separation(ra_1, dec_1, ra_2, dec_2):
     dec_1 = np.deg2rad(dec_1)
     ra_2 = np.deg2rad(ra_2)
     dec_2 = np.deg2rad(dec_2)
+    #ra_1 = ne.evaluate("ra_1 * 3.141592653589793 / 180.0")
+    #dec_1 = ne.evaluate("dec_1 * 3.141592653589793 / 180.0")
+    #ra_2 = ne.evaluate("ra_2 * 3.141592653589793 / 180.0")
+    #dec_2 = ne.evaluate("dec_2 * 3.141592653589793 / 180.0")
 
     # Shortcuts
     sdr = np.sin(ra_2 - ra_1)
@@ -195,14 +230,23 @@ def separation(ra_1, dec_1, ra_2, dec_2):
     cd2 = np.cos(dec_2)
     sd1 = np.sin(dec_1)
     sd2 = np.sin(dec_2)
+    #sdr = ne.evaluate("sin(ra_2 - ra_1)")
+    #cdr = ne.evaluate("cos(ra_2 - ra_1)")
+    #cd1 = ne.evaluate("cos(dec_1)")
+    #cd2 = ne.evaluate("cos(dec_2)")
+    #sd1 = ne.evaluate("sin(dec_1)")
+    #sd2 = ne.evaluate("sin(dec_2)")
 
     # Calculation
     upper = np.sqrt((cd2*sdr)**2 + (cd1*sd2 - sd1*cd2*cdr)**2)
     lower = sd1*sd2 + cd1*cd2*cdr
     sep = np.arctan2(upper, lower)
+    #upper = ne.evaluate("sqrt((cd2*sdr)**2 + (cd1*sd2 - sd1*cd2*cdr)**2)")
+    #lower = ne.evaluate("sd1*sd2 + cd1*cd2*cdr")
+    #sep = ne.evaluate("arctan2(upper, lower)")
 
     return np.rad2deg(sep)
-
+    #return ne.evaluate("sep * 180.0 / 3.141592653589793")
 
 def ne2001_dist_to_dm(dist, gl, gb):
     """
@@ -336,6 +380,32 @@ def ne2001_scint_time_bw(dist, gl, gb, freq):
 
     return scint_time, scint_bw
 
+
+def ymw16_dist_to_dm(dist, gl, gb):
+    """
+    Convert position to a dispersion measure using YMW16.
+
+    Args:
+        dist (float): Distance to source [Gpc]. Distance will be cut at 100kpc,
+                      as NE2001 can not cope with larger distances. This value
+                      should be more than enough to clear the Milky Way.
+        gl (float): Galactic longitude [fractional degrees]
+        gb (float): Galactic latitude [fractional degrees]
+    Returns:
+        dm (float): Dispersion measure [pc*cm^-3]
+
+    """
+    dist *= 1e6  # Convert from Gpc to kpc
+
+    # YMW16 gives errors if distance input is too large! 200 kpc ought to be
+    # enough to clear the galaxy.
+    if dist > 200:
+        dist = 200
+
+    dm = pyymw16.dist_to_dm(gl, gb, dist)[0]
+    dm = dm.value
+
+    return dm
 
 def scatter_bhat(dm, offset=-6.46, scindex=-3.86, freq=1400.0):
     """

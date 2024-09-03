@@ -1,15 +1,18 @@
 """Define general distributions from which to get random numbers."""
 import numpy as np
+#import numexpr as ne
 from scipy.stats import truncnorm
 
+#global rng
+#rng = np.random.default_rng()
 
 def powerlaw(low, high, power, shape=1):
     """
     Return random variables distributed according to power law.
 
-    The power law distribution power is simply the power, not including a minus
-    sign (N(x) scales with x^p with p the power). A flat powerlaw can therefore
-    be created by taking setting power to zero.
+    The power law distribution power p is defined as dN(x)/dlogx ∝ L^p or dN(x)/dL ∝ x^(p-1), which after integration, is identical to the index in the cumulative distribution N(>x) ∝ x^p. 
+    It can be measured as the slope in the log-log plot of N(>x)-x. See Wang & van Leeuwen (2024) for detals.
+    A flat powerlaw can therefore be created by taking setting power to zero.
 
     Args:
         low (float): low limit of distribution
@@ -26,15 +29,22 @@ def powerlaw(low, high, power, shape=1):
 
     if power == 0 or low == high:
         return 10**np.random.uniform(np.log10(low), np.log10(high), shape)
-
+        #rand = rng.random(shape, dtype=np.float32)
+        #return ne.evaluate("10**((log10(high)-log10(low))*rand+log10(low))")
+    
     def sample(n_gen):
+        
         pl = np.random.uniform(0, 1, n_gen)**(1/power)
+        #rand = rng.random(n_gen, dtype=np.float32)
+        #pl = ne.evaluate("rand**(1/power)")
+        
         if power > 0:
             addition = np.log10(high)
         else:
             addition = np.log10(low)
         log_pl = np.log10(pl) + addition
         pl = 10**log_pl
+        #pl = ne.evaluate("10**log_pl")
         return pl
 
     def accept(pl):
@@ -62,7 +72,6 @@ def powerlaw(low, high, power, shape=1):
 
     return pl
 
-
 def trunc_norm(mean, std, shape=1, low=0, high=np.inf):
     """Draw from a truncated normal distribution.
 
@@ -83,7 +92,6 @@ def trunc_norm(mean, std, shape=1, low=0, high=np.inf):
     right = (high-mean)/std
     return truncnorm.rvs(left, right, loc=mean, scale=std, size=shape)
 
-
 def log10normal(mean, std, shape):
     """Random values from a normal distribution in the log space.
 
@@ -94,14 +102,13 @@ def log10normal(mean, std, shape):
     mean, std = np.log10(mean), np.log10(std)
     return 10**np.random.normal(mean, std, shape)
 
-
 def calc_lognormal_input(mean_x, std_x):
     """Calculate the mean and std of a lognormal distribution.
 
     See
     https://en.wikipedia.org/wiki/Log-normal_distribution
     """
-    normal_std = np.sqrt(np.log(1 + (std_x**2/mean_x)**2))
+    normal_std = np.sqrt(np.log(1 + (std_x**2/mean_x**2)))
     normal_mean = np.log(mean_x**2 / np.sqrt(mean_x**2 + std_x**2))
     return normal_mean, normal_std
 
@@ -114,3 +121,4 @@ def lognormal(mean, std, shape):
     """
     mean, std = calc_lognormal_input(mean, std)
     return np.random.lognormal(mean, std, shape)
+    #return rng.lognormal(mean, std, shape)

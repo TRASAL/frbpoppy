@@ -1,5 +1,7 @@
 """Do things with frbcat."""
 import pandas as pd
+import numpy as np
+import re
 
 from frbcat import TNS as BaseTNS
 
@@ -152,7 +154,46 @@ class TNS(BaseTNS):
 
         return pop
 
+def get_chimefrb_catalog1(repeater=False):
+    
+    #Load chime/frb catalog 1
+    chimefrbcat = pd.read_csv(paths.frbcat() + 'chimefrbcat1.csv', delimiter=',')
+    for i in range(len(chimefrbcat['scat_time'])):
+        chimefrbcat['scat_time'][i] = str(chimefrbcat['scat_time'][i])
+        chimefrbcat['scat_time'][i] = re.sub('<', '', chimefrbcat['scat_time'][i])
+        chimefrbcat['scat_time'][i] = float(chimefrbcat['scat_time'][i])
+
+    # Load TNS
+    if repeater==False:
+        # For oneoff study
+        tns = TNS(tns_name="YOUR_NAME", tns_id=YOUR_ID, repeaters=False, mute=True, update=False).df
+    else:
+        # For repeater
+        tns = TNS(tns_name="YOUR_NAME", tns_id=YOUR_ID, repeaters=True, mute=True, update=False).df
+
+    # Select CHIME and observation date range
+    mask = (tns.telescope =='chime') & (np.datetime64('2018-07-25') < tns.discovery_date) & (tns.discovery_date < np.datetime64('2019-07-02'))
+    tns = tns[mask]
+
+    # remove space in FRB names
+    for i in tns.name.keys():
+        tns.name[i] = re.sub(' ', '', tns.name[i])
+    
+    # FRB20190329A is a repeater in TNS (repeater of FRB20180814A) but marked as oneoff in Catalog 1!
+    # FRB20180908B, FRB20181120A, FRB20190518B, FRB20290604B in TNS but not in Catalog1! 
+    # You can choose whether mask out those 4 events
+    name_mask = (tns.name != 'FRB20180908B') & (tns.name != 'FRB20181120A') & (tns.name != 'FRB20190518B') & (tns.name != 'FRB20190604B')
+    tns = tns[name_mask]
+    
+    for i in tns.name.keys():
+        if len(chimefrbcat.loc[chimefrbcat['tns_name'] == tns.name[i]]) != 0:
+            # Coversion: second -> millisecond
+            tns.w_eff[i] = chimefrbcat.loc[chimefrbcat['tns_name']==tns.name[i]].head(1)['bc_width']*1000
+            tns.t_scat[i] = chimefrbcat.loc[chimefrbcat['tns_name']==tns.name[i]].head(1)['scat_time']*1000
+            tns.fluence[i] = chimefrbcat.loc[chimefrbcat['tns_name']==tns.name[i]].head(1)['fluence']
+    return tns
 
 if __name__ == '__main__':
-    tns = TNS()
+    # Please use your own tns name and id
+    tns = TNS(tns_name="YOUR_NAME", tns_id=YOUR_ID)
     import IPython; IPython.embed()

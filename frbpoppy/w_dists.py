@@ -1,8 +1,10 @@
 """Pulse width distributions."""
 import numpy as np
-
+#import numexpr as ne
 import frbpoppy.gen_dists as gd
 
+#global rng
+#rng = np.random.default_rng()
 
 def calc_w_arr(w_int, z=0):
     """Calculate the pulse width upon arrival to Earth.
@@ -17,6 +19,7 @@ def calc_w_arr(w_int, z=0):
     """
     if w_int.ndim == 1 or isinstance(z, int) or isinstance(z, float):
         return w_int*(1+z)
+        #return ne.evaluate("w_int*(1+z)")
     # These are methods to deal with numpy dimensionality aspects
     elif np.argmax(w_int.shape) != np.argmax(z.shape):
         if w_int.shape[0] == z.shape[0]:
@@ -26,12 +29,10 @@ def calc_w_arr(w_int, z=0):
     else:
         return w_int*(1+z[:, None])
 
-
 def constant(value=1., shape=1, z=0):
     """Generate pulse widths at a constant value."""
     w_int = np.full(shape, value).astype(np.float32)
     return w_int, calc_w_arr(w_int, z=z)
-
 
 def uniform(low=0, high=10, shape=1, z=0):
     """Generate pulse widths from a uniform distribution.
@@ -46,10 +47,11 @@ def uniform(low=0, high=10, shape=1, z=0):
         type: Description of returned object.
 
     """
-    w_int = np.random.uniform(low, high, shape).astype(np.float32)
+    w_int = np.random.uniform(low, high, shape).astype(np.float32)  
+    #rand = rng.random(shape, dtype=np.float32)
+    #w_int = ne.evaluate("((high-low)*rand+low)").astype(np.float32)
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr
-
 
 def gauss(mean=1, std=2, shape=1, z=0):
     """Generate pulse widths from a Gaussian/Normal distribution.
@@ -68,7 +70,6 @@ def gauss(mean=1, std=2, shape=1, z=0):
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr
 
-
 def log10normal(mean=0.1, std=0.5, shape=1, z=0):
     """Draw burst from log10normal distribution.
 
@@ -83,7 +84,6 @@ def log10normal(mean=0.1, std=0.5, shape=1, z=0):
     w_int = gd.log10normal(mean, std, shape).astype(np.float32)
     w_arr = calc_w_arr(w_int, z=z)
     return w_int, w_arr
-
 
 def lognormal(mean=0.1, std=0.5, shape=1, z=0):
     """Draw burst from lognormal distribution.

@@ -1,7 +1,10 @@
 """Functions to generate dispersion measure distributions."""
 import numpy as np
+#import numexpr as ne
 import frbpoppy.gen_dists as gd
 
+#global rng
+#rng = np.random.default_rng()
 
 def constant(value=100, n_srcs=1):
     """Adopt a constant DM value similar to Thorton."""
@@ -27,11 +30,14 @@ def ioka(z=0, slope=950, std=None, spread_dist='normal'):
     """
     if std is None:
         std = 0.2*slope*z
+        #std = ne.evaluate("0.2*slope*z")
 
     # Set up spread distribution
     mean = slope*z
+    #mean = ne.evaluate("slope*z")
     if spread_dist == 'normal':
         f = np.random.normal
+        #f = rng.normal
     elif spread_dist == 'lognormal':
         def f(mean, std):
             return gd.lognormal(mean, std)
@@ -58,6 +64,7 @@ def gauss(mean=100, std=200, n_srcs=1, z=0):
     """
     dm_host = gd.trunc_norm(mean, std, n_srcs).astype(np.float32)
     return dm_host / (1 + z)
+    #return ne.evaluate("dm_host / (1 + z)")
 
 
 def log10normal(mean=100, std=200, n_srcs=1, z=0):
@@ -75,6 +82,7 @@ def log10normal(mean=100, std=200, n_srcs=1, z=0):
     """
     dm_host = gd.log10normal(mean, std, n_srcs).astype(np.float32)
     return dm_host / (1 + z)
+    #return ne.evaluate("dm_host / (1 + z)")
 
 
 def lognormal(mean=100, std=200, n_srcs=1, z=0):
@@ -92,3 +100,4 @@ def lognormal(mean=100, std=200, n_srcs=1, z=0):
     """
     dm_host = gd.lognormal(mean, std, n_srcs).astype(np.float32)
     return dm_host / (1 + z)
+    #return ne.evaluate("dm_host / (1 + z)")

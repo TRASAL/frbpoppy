@@ -1,6 +1,7 @@
 """Class holding survey properties."""
 
 import numpy as np
+#import numexpr as ne
 import os
 import pandas as pd
 
@@ -9,6 +10,8 @@ import frbpoppy.pointings as pointings
 from frbpoppy.paths import paths
 import frbpoppy.beam_dists as bd
 
+#global rng
+#rng = np.random.default_rng()
 
 class Survey:
     """
@@ -184,7 +187,7 @@ class Survey:
         if size is not None:
             self.beam_size_at_fwhm = size
         self.fwhm = 2*go.calc_sky_radius(self.beam_size_at_fwhm)
-
+        
         # What should the maximum radius of the beam be?
         self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
         self.beam_size = go.calc_sky_area(self.max_offset)
@@ -199,7 +202,7 @@ class Survey:
             # fits. The area of the circle extending beyond the beam pattern
             # will have an intensity of zero.
             self.max_offset = go.calc_sky_radius(self.beam_size)
-
+        
         self.beam_func_oneoffs = lambda x: bd.int_pro_random(
                                  shape=x,
                                  fwhm=self.fwhm,
@@ -218,10 +221,11 @@ class Survey:
                                     mount_type=self.mount_type)
 
         self.beam_func_rep = int_pro
-
+        
     def calc_beam(self, repeaters=False, shape=None, ra=None, dec=None,
                   ra_p=None, dec_p=None, lst=None):
         """Calculate intensity profile."""
+        
         if not repeaters and self.beam_pattern in ('airy', 'gaussian'):
             # What should the maximum radius of the beam be?
             self.max_offset = bd.calc_max_offset(self.n_sidelobes, self.fwhm)
@@ -232,12 +236,15 @@ class Survey:
             self.beam_size = go.calc_sky_area(self.max_offset)
         else:
             self.beam_size = self.beam_size_array
-
+        
         if not repeaters:
-            return self.beam_func_oneoffs(shape)
+            #return self.beam_func_oneoffs(shape)
+            x = self.beam_func_oneoffs(shape)
+            return x
         else:
             return self.beam_func_rep(ra, dec, ra_p, dec_p, lst)
 
+        
     def calc_dm_smear(self, dm):
         """
         Calculate delay in pulse across a channel due to dm smearing.
@@ -253,9 +260,10 @@ class Survey:
             t_dm (array): Time of delay [ms] at central band frequency
 
         """
-        return 8.297616e6 * self.bw_chan * dm * (self.central_freq)**-3
+        return 8.297616e6 * self.bw_chan * dm * (self.central_freq)**(-3)
+        #return ne.evaluate("8.297616e6 * bw_chan * dm / central_freq**3", global_dict=vars(self))
 
-    def calc_scat(self, dm):
+    def calc_scat(self, dm, model='lognormal'):
         """Calculate scattering timescale for FRBs.
 
         Offset according to Lorimer et al. (doi:10.1093/mnrasl/slt098)
@@ -267,8 +275,14 @@ class Survey:
             array: Scattering timescales [ms]
 
         """
-        freq = self.central_freq
-        return go.scatter_bhat(dm, scindex=-3.86, offset=-9.5, freq=freq)
+        if model == 'uniform':
+            return np.random.uniform(0, 20, len(dm))
+        elif model == 'bhat':
+            freq = self.central_freq
+            return go.scatter_bhat(dm, scindex=-3.86, offset=-9.5, freq=freq)
+        elif model == 'lognormal':
+            # The parameters are from a fit to CHIME Catalog 1 t_scat
+            return rng.lognormal(0.30, 1.27, len(dm))
 
     def calc_Ts(self, gl, gb):
         """Set temperatures for frbs.
@@ -368,36 +382,47 @@ class Survey:
             si = si[:, None]
         elif lum_bol.ndim < si.ndim:
             lum_bol = lum_bol[:, None]
-
-        sp = si + 1
-        sm = si - 1
-
-        freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
-
+        
+        sp = si[0] + 1
+        sm = si[0] - 1
+        if si[0] != -1:
+            freq_frac = (f_2**sp - f_1**sp) / (f_2 - f_1)
+        else:
+            freq_frac = np.log(f_2 / f_1) / (f_2 - f_1)
+        
         # Convert distance in Gpc to 10^25 metres
         dist = dist_co * 3.085678
+        #dist = ne.evaluate("dist_co * 3.085678")
         dist = dist.astype(np.float64)
 
         # Convert luminosity in 10^7 Watts such that s_peak will be in Janskys
         lum = lum_bol * 1e-31
+        #lum = ne.evaluate("lum_bol * 1e-31")
         lum = lum.astype(np.float64)
 
         if lum.ndim > 1:
             z = z[:, None]
             dist = dist[:, None]
-
+        
         nom = lum * (1+z)**sm * freq_frac
-        den = 4*np.pi*dist**2 * (f_high**sp - f_low**sp)
-
+        #nom = ne.evaluate("lum * (1+z)**sm * freq_frac")
+        if si[0] != -1:
+            den = 4*np.pi*dist**2 * (f_high**sp - f_low**sp)
+            #den = ne.evaluate("4 * 3.141592653589793 * dist**2 * (f_high**sp - f_low**sp)")
+        else:
+            den = 4*np.pi*dist**2 * np.log(f_high / f_low)
+            #den = ne.evaluate("4 * 3.141592653589793 * dist**2 * log(f_high / f_low)")
+        
         if nom.ndim == den.ndim:
             pass
         elif nom.ndim > 1:
             den = den[:, None]
-
-        s_peak = nom/den
-
+        
+        s_peak = nom / den
+        #s_peak = ne.evaluate("nom / den")
         # Add degradation factor due to pulse broadening (see Connor 2019)
-        w_frac = (w_arr / w_eff)
+        w_frac = w_arr / w_eff
+        #w_frac = ne.evaluate("w_arr / w_eff")
 
         # Dimension conversions
         if w_frac.ndim == s_peak.ndim:
@@ -408,6 +433,7 @@ class Survey:
             w_frac = w_frac[:, None]
 
         s_peak = s_peak * w_frac
+        #s_peak = ne.evaluate("s_peak * w_frac")
 
         return s_peak.astype(np.float32)
 
@@ -431,10 +457,10 @@ class Survey:
             t_dm = t_dm[:, None]
             if isinstance(t_scat, np.ndarray):
                 t_scat = t_scat[:, None]
-
         return np.sqrt(w_arr**2 + t_dm**2 + t_scat**2 + self.t_samp**2)
-
-    def calc_snr(self, s_peak, w_arr, T_sys):
+        #return ne.evaluate("sqrt(w_arr**2 + t_dm**2 + t_scat**2 + t_samp**2)", global_dict=vars(self))
+    
+    def calc_snr(self, s_peak, w_eff, T_sys):
         """
         Caculate the SNR of several frbs.
 
@@ -444,7 +470,7 @@ class Survey:
 
         Args:
             s_peak (array): Peak flux [Jy]
-            w_arr (array): Pulse width at Earth [ms]
+            w_eff (array): Pulse width after broadening [ms]
             T_sys (array): System temperature [K]
 
         Returns:
@@ -452,20 +478,21 @@ class Survey:
                 equation for a single pulse.
 
         """
+        #print('Using weff')
         # Dimension check
-        if s_peak.ndim == w_arr.ndim:
+        if s_peak.ndim == w_eff.ndim:
             pass
         elif s_peak.ndim == 1:
             s_peak = s_peak[:, None]
-        elif w_arr.ndim == 1:
-            w_arr = w_arr[:, None]
+        elif w_eff.ndim == 1:
+            w_eff = w_eff[:, None]
 
-        if (s_peak.ndim or w_arr.ndim) > 1:
+        if (s_peak.ndim or w_eff.ndim) > 1:
             if isinstance(T_sys, np.ndarray):
                 T_sys = T_sys[:, None]
 
-        snr = s_peak*self.gain*np.sqrt(self.n_pol*self.bw*w_arr*1e3)
-        snr /= (T_sys * self.beta)
+        snr = s_peak * self.gain * np.sqrt(self.n_pol * self.bw * w_eff * 1e3) / (T_sys * self.beta)
+        #snr = ne.evaluate("s_peak * gain * sqrt(n_pol * bw * w_eff * 1e3) / (T_sys * beta)", global_dict=vars(self))
 
         return snr
 
