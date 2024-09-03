@@ -69,8 +69,9 @@ class NumberDensity:
     def sloped_dist(self, n_gen=1):
         """Draw from a sloped distribution to create a logNlogS slope."""
         
-        rand = rng.random(n_gen, dtype=np.float32)
-        vol_co = (self.maxi * rand)**(1/self.power)  # [Gpc]
+        vol_co = (self.maxi*np.random.random(n_gen))**(1/self.power)
+        #rand = rng.random(n_gen, dtype=np.float32)
+        #vol_co = (self.maxi * rand)**(1/self.power)  # [Gpc]
         #vol_co = ne.evaluate("(maxi*rand)**(1/power)", global_dict=vars(self))  # [Gpc]
         d = self.dt(vol_co=vol_co)
         z = d[0]
@@ -82,8 +83,9 @@ class NumberDensity:
 
         Can be influenced by changing alpha.
         """
-        rand = rng.random(n_gen, dtype=np.float32)
-        vol_co = self.vol_co_max * rand  # [Gpc]
+        vol_co = self.vol_co_max*np.random.random(n_gen)
+        #rand = rng.random(n_gen, dtype=np.float32)
+        #vol_co = self.vol_co_max * rand  # [Gpc]
         #vol_co = ne.evaluate("vol_co_max*rand", global_dict=vars(self))  # [Gpc]
         d = self.dt(vol_co=vol_co)
         z = d[0]
@@ -98,8 +100,9 @@ class NumberDensity:
         Follows Madau & Dickinson (2014), eq. 15. For more info see
         https://arxiv.org/pdf/1403.0007.pdf
         """
-        rand = rng.random(n_gen, dtype=np.float32)
-        sampling = self.cdf_sfr_max * rand  # [Gpc]
+        sampling = np.random.uniform(0., self.cdf_sfr_max, size=n_gen)
+        #rand = rng.random(n_gen, dtype=np.float32)
+        #sampling = self.cdf_sfr_max * rand  # [Gpc]
         #sampling = ne.evaluate("cdf_sfr_max*rand", global_dict=vars(self))  # [Gpc]
         d = self.dt(cdf_sfr=sampling)
         z = d[0]
@@ -115,7 +118,7 @@ class NumberDensity:
         https://arxiv.org/pdf/1403.0007.pdf
         """
         
-        rand = rng.random(n_gen, dtype=np.float32)
+        #rand = rng.random(n_gen, dtype=np.float32)
         
         d_list = [0.1, 0.5, 1]
         delay_time = min(d_list, key=lambda x:abs(x-self.delay_time))
@@ -123,15 +126,18 @@ class NumberDensity:
             print('Generate cosmic population with delay time', delay_time, 'Gyr instead')
         
         if delay_time == 0.1:
-            sampling = self.cdf_dsfr0d1_max * rand
+            sampling = np.random.uniform(0., self.cdf_dsfr0d1_max, size=n_gen)
+            #sampling = self.cdf_dsfr0d1_max * rand
             #sampling = ne.evaluate("cdf_dsfr0d1_max*rand", global_dict=vars(self))
             d = self.dt(cdf_dsfr0d1=sampling)
         elif delay_time == 0.5:
-            sampling = self.cdf_dsfr0d5_max * rand
+            sampling = np.random.uniform(0., self.cdf_dsfr0d5_max, size=n_gen)
+            #sampling = self.cdf_dsfr0d5_max * rand
             #sampling = ne.evaluate("cdf_dsfr0d5_max*rand", global_dict=vars(self))
             d = self.dt(cdf_dsfr0d5=sampling)
         elif delay_time == 1:
-            sampling = self.cdf_dsfr1_max * rand
+            sampling = np.random.uniform(0., self.cdf_dsfr1_max, size=n_gen)
+            #sampling = self.cdf_dsfr1_max * rand
             #sampling = ne.evaluate("cdf_dsfr1_max*rand", global_dict=vars(self))
             d = self.dt(cdf_dsfr1=sampling)
         
@@ -146,8 +152,9 @@ class NumberDensity:
         Follows Madau & Dickinson (2014), eq. 2 & 15. For more info see
         https://arxiv.org/pdf/1403.0007.pdf
         """
-        rand = rng.random(n_gen, dtype=np.float32)
-        sampling = self.cdf_smd_max * rand
+        sampling = np.random.uniform(0., self.cdf_smd_max, size=n_gen)
+        #rand = rng.random(n_gen, dtype=np.float32)
+        #sampling = self.cdf_smd_max * rand
         #sampling = ne.evaluate("cdf_smd_max*rand", global_dict=vars(self))
         d = self.dt(cdf_smd=sampling)
         z = d[0]
