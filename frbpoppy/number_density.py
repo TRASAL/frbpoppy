@@ -44,8 +44,6 @@ class NumberDensity:
         self.cdf_dsfr0d1_max = m[6]
         self.cdf_dsfr0d5_max = m[7]
         self.cdf_dsfr1_max = m[8]
-        self.cdf_dsfr2_max = m[9]
-        self.cdf_dsfr3_max = m[10]
         self.dist_co_max = self.dist_co_max[0]
         self.vol_co_max = self.vol_co_max[0]
         self.alpha = alpha
@@ -119,7 +117,7 @@ class NumberDensity:
         
         rand = rng.random(n_gen, dtype=np.float32)
         
-        d_list = [0.1, 0.5, 1, 2, 3]
+        d_list = [0.1, 0.5, 1]
         delay_time = min(d_list, key=lambda x:abs(x-self.delay_time))
         if delay_time != self.delay_time:
             print('Generate cosmic population with delay time', delay_time, 'Gyr instead')
@@ -136,14 +134,6 @@ class NumberDensity:
             sampling = self.cdf_dsfr1_max * rand
             #sampling = ne.evaluate("cdf_dsfr1_max*rand", global_dict=vars(self))
             d = self.dt(cdf_dsfr1=sampling)
-        elif delay_time == 2:
-            sampling = self.cdf_dsfr2_max * rand
-            #sampling = ne.evaluate("cdf_dsfr2_max*rand", global_dict=vars(self))
-            d = self.dt(cdf_dsfr2=sampling)
-        elif delay_time == 3:
-            sampling = self.cdf_dsfr3_max * rand
-            #sampling = ne.evaluate("cdf_dsfr3_max*rand", global_dict=vars(self))
-            d = self.dt(cdf_dsfr3=sampling)
         
         z = d[0]
         dist_co = d[1]
