@@ -326,21 +326,9 @@ class DistanceTable:
         cdf_dsfr1 = np.cumsum(pdf_dsfr1)
         cdf_dsfr1 /= cdf_dsfr1[-1] # Normalize
         
-        pprint('  - Calculating Delayed Star Formation Rate - 2 Gyr')
-        # Get pdf delayed sfr 2 Gyr
-        pdf_dsfr2 = np.array(Parallel(n_jobs=n_cpus)(delayed(delayed_sfr)(i, 2) for i in zs))*dvols
-        cdf_dsfr2 = np.cumsum(pdf_dsfr2)
-        cdf_dsfr2 /= cdf_dsfr2[-1] # Normalize
-        
-        pprint('  - Calculating Delayed Star Formation Rate - 3 Gyr')
-        # Get pdf delayed sfr 3 Gyr
-        pdf_dsfr3 = np.array(Parallel(n_jobs=n_cpus)(delayed(delayed_sfr)(i, 3) for i in zs))*dvols
-        cdf_dsfr3 = np.cumsum(pdf_dsfr3)  
-        cdf_dsfr3 /= cdf_dsfr3[-1] # Normalize
-        
         lookback_times = Planck18.lookback_time(zs).value
 
-        results = np.stack((zs, dists, vols, dvols, cdf_sfr, cdf_smd, cdf_dsfr0d1, cdf_dsfr0d5, cdf_dsfr1, cdf_dsfr2, cdf_dsfr3, lookback_times)).T
+        results = np.stack((zs, dists, vols, dvols, cdf_sfr, cdf_smd, cdf_dsfr0d1, cdf_dsfr0d5, cdf_dsfr1, lookback_times)).T
 
         pprint('  - Saving values to database')
         
@@ -350,7 +338,7 @@ class DistanceTable:
     
     def lookup(self, z=None, dist_co=None, vol_co=None, dvol_co=None,
                cdf_sfr=None, cdf_smd=None,
-               cdf_dsfr0d1=None, cdf_dsfr0d5=None, cdf_dsfr1=None, cdf_dsfr2=None, cdf_dsfr3=None,
+               cdf_dsfr0d1=None, cdf_dsfr0d5=None, cdf_dsfr1=None,
                lookback_time=None):
         """Look up associated values with input values."""
         
@@ -366,8 +354,6 @@ class DistanceTable:
               'cdf_dsfr0d1': cdf_dsfr0d1,
               'cdf_dsfr0d5': cdf_dsfr0d5,
               'cdf_dsfr1': cdf_dsfr1,
-              'cdf_dsfr2': cdf_dsfr2,
-              'cdf_dsfr3': cdf_dsfr3,
               'lookback_time': lookback_time}
         
         col = -1
