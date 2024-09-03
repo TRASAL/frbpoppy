@@ -1,17 +1,20 @@
-"""Create a lookup tables for redshift and the NE2001 dispersion measure."""
+"""Create a lookup tables for redshift and the NE2001, YMW16 dispersion measure."""
 
 import os
 import numpy as np
-import sqlite3
+#import numexpr as ne
+import time
+import bisect
 import sys
 from scipy.integrate import quad
 from tqdm import tqdm
 from joblib import Parallel, delayed
+import astropy.units as u
+from astropy.cosmology import Planck13, Planck18, z_at_value
 
 import frbpoppy.galacticops as go
 from frbpoppy.misc import pprint
 from frbpoppy.paths import paths
-
 
 class NE2001Table:
     """Create/use a NE2001 lookup table for dispersion measure."""
@@ -24,7 +27,7 @@ class NE2001Table:
         # Setup database
         self.db = False
         self.step = 0.1
-        self.rounding = 2
+        self.rounding = 1
 
         # For parallel processes
         self.temp_path = None
@@ -51,94 +54,34 @@ class NE2001Table:
     def set_file_name(self):
         """Determine filename."""
         uni_mods = os.path.join(paths.models(), 'universe/')
-        self.file_name = uni_mods + 'dm_mw.db'
-
+        #self.file_name = uni_mods + 'dm_mw.db'
+        self.file_name = uni_mods + 'dm_mw_ne2001_1d.npy'
         if self.test:
             uni_mods = os.path.join(paths.models(), 'universe/')
-            self.file_name = uni_mods + 'test_dm_mw.db'
+            self.file_name = uni_mods + 'test_dm_mw_ne2001_1d.npy'
 
     def create_table(self, parallel=True):
         """Create a lookup table for dispersion measure."""
-        # Connect to database
-        conn = sqlite3.connect(self.file_name)
-        c = conn.cursor()
-
-        # Set array of coordinates
-        gls = np.arange(-180., 180. + self.step, self.step).round(1)
-        gbs = np.arange(-90., 90. + self.step, self.step).round(1)
+        step = 1
+        gls = np.arange(-180., 180. + step, step).round(1)
+        gbs = np.arange(-90., 90. + step, step).round(1)
         dist = 0.1  # [Gpc]
 
         gls = gls.astype(np.float32)
         gbs = gbs.astype(np.float32)
 
-        # Create database
-        c.execute('create table dm ' +
-                  '(gl real, gb real, dm_mw real)')
-
-        # Give an update on the progress
-        m = ['Creating a DM lookup table',
-             '  - Only needs to happen once',
-             '  - Unfortunately pretty slow',
-             '  - Prepare to wait for ~1.5h (4 cores)',
-             '  - Time given as [time_spent<time_left] in (hh:)mm:ss',
-             'Starting to calculate DM values']
-        for n in m:
-            pprint(n)
-
-        n_opt = len(gls)*len(gbs)
-        options = np.array(np.meshgrid(gls, gbs)).T.reshape(-1, 2)
-        dm_mw = np.zeros(len(options)).astype(np.float32)
-
-        def dm_tot(i, dm_mw):
-            gl, gb = options[i]
-            dm_mw[i] = go.ne2001_dist_to_dm(dist, gl, gb)
-
-        if parallel:
-
-            temp_path = os.path.join(paths.models(), 'universe/') + 'temp.mmap'
-            self.temp_path = temp_path
-
-            # Make a temp memmap to have a sharedable memory object
-            temp = np.memmap(temp_path, dtype=dm_mw.dtype,
-                             shape=len(dm_mw),
-                             mode='w+')
-
-            # Parallel process in order to populate array
-            r = range(n_opt)
-            j = min([4, os.cpu_count() - 1])
-            print(os.cpu_count())
-            Parallel(n_jobs=j)(delayed(dm_tot)(i, temp) for i in tqdm(r))
-
-            # Map results
-            r = np.concatenate((options, temp[:, np.newaxis]), axis=1)
-            results = map(tuple, r.tolist())
-
-            # Delete the temporary directory and contents
-            try:
-                os.remove(temp_path)
-            except FileNotFoundError:
-                print(f'Unable to remove {temp_path}')
-
-        else:
-            for i in tqdm(range(n_opt)):
-                dm_tot(i, dm_mw)
-
-            # Save results to database
-            dm_mw = dm_mw.astype(np.float32)
-            r = np.concatenate((options, dm_mw[:, np.newaxis]), axis=1)
-            results = map(tuple, r.tolist())
-
-        pprint('  - Saving results')
-        c.executemany('insert into dm values (?,?,?)', results)
-
-        # Make for easier searching
-        c.execute('create index ix on dm (gl, gb)')
-
-        # Save
-        conn.commit()
-
-        pprint('Finished DM table')
-
+        DM_MW_Table = {}
+        start = time.time()
+        for gl in gls:
+            for gb in gbs:
+                print(gl, gb)
+                if gl in DM_MW_Table:
+                    DM_MW_Table[gl].update({gb: go.ne2001_dist_to_dm(dist, gl, gb)})
+                else:
+                    DM_MW_Table.update({gl: {gb: go.ne2001_dist_to_dm(dist, gl, gb)}})
+        
+        np.save(self.file_name, DM_MW_Table)
+        
     def lookup(self, gal, gab):
         """Look up associated milky way dispersion measure with gal coords.
 
@@ -150,32 +93,109 @@ class NE2001Table:
             dm_mw (float): Galactic dispersion measure [pc*cm^-3]
 
         """
-        # Connect to database
-        conn = sqlite3.connect(self.file_name)
-        c = conn.cursor()
-
-        dm_mw = np.ones_like(gal)
+        # Load dm table
+        dm_mw_table_1d = np.load(self.file_name, allow_pickle=True)
 
         # Round values
-        def frac_round(x, prec=self.rounding, base=1):
-            return np.round(base * np.round(x/base), prec)
-
-        # Round values
-        gal = frac_round(gal, self.rounding)
-        gab = frac_round(gab, self.rounding)
-
-        # Search database
-        query = 'select dm_mw from dm where gl=? and gb=? limit 1'
-
-        for i, gl in enumerate(gal):
-            dm_mw[i] = c.execute(query, [str(gl), str(gab[i])]).fetchone()[0]
-
-        # Close database
-        conn.close()
-
+        gal = np.round(gal)
+        gab = np.round(gab)
+        index = (gal - (-180))*181 + (gab - (-90))
+        #index = ne.evaluate("(gal - (-180))*181 + (gab - (-90))")
+        
+        dm_mw = dm_mw_table_1d[np.searchsorted(dm_mw_table_1d[:, 0], index)][:, 1]
+        
         return dm_mw
 
+class YMW16Table:
+    """Create/use a NE2001 lookup table for dispersion measure."""
 
+    def __init__(self, test=False):
+        """Initializing."""
+        self.test = test
+        self.set_file_name()
+
+        # Setup database
+        self.db = False
+        self.step = 0.1
+        self.rounding = 1
+
+        # For parallel processes
+        self.temp_path = None
+
+        if self.test:
+            self.step = 0.1
+            if os.path.exists(self.file_name):
+                os.remove(self.file_name)
+
+        if os.path.exists(self.file_name) and self.test is False:
+            self.db = True
+        else:
+            # Calculations take quite some time
+            # Provide a way for people to quit
+            try:
+                self.create_table()
+            except KeyboardInterrupt:
+                pprint('Losing all progress in calculations')
+                os.remove(self.file_name)
+                if self.temp:
+                    os.remove(self.temp_path)
+                sys.exit()
+
+    def set_file_name(self):
+        """Determine filename."""
+        uni_mods = os.path.join(paths.models(), 'universe/')
+        #self.file_name = uni_mods + 'dm_mw.db'
+        self.file_name = uni_mods + 'dm_mw_ymw16_1d.npy'
+        if self.test:
+            uni_mods = os.path.join(paths.models(), 'universe/')
+            self.file_name = uni_mods + 'test_dm_mw_ymw16_1d.npy'
+
+    def create_table(self, parallel=True):
+        """Create a lookup table for dispersion measure."""
+        step = 1
+        gls = np.arange(-180., 180. + step, step).round(1)
+        gbs = np.arange(-90., 90. + step, step).round(1)
+        dist = 0.1  # [Gpc]
+
+        gls = gls.astype(np.float32)
+        gbs = gbs.astype(np.float32)
+
+        DM_MW_Table = {}
+        start = time.time()
+        for gl in gls:
+            for gb in gbs:
+                print(gl, gb)
+                if gl in DM_MW_Table:
+                    DM_MW_Table[gl].update({gb: go.ymw16_dist_to_dm(dist, gl, gb)})
+                else:
+                    DM_MW_Table.update({gl: {gb: go.ymw16_dist_to_dm(dist, gl, gb)}})
+        
+        np.save(self.file_name, DM_MW_Table)
+        pprint('Finished DM table')
+    
+    def lookup(self, gal, gab):
+        """Look up associated milky way dispersion measure with gal coords.
+
+        Args:
+            gl (array): Galactic longitude [fractional degrees]
+            gb (array): Galactic latitude [fractional degrees]
+
+        Returns:
+            dm_mw (float): Galactic dispersion measure [pc*cm^-3]
+
+        """
+        # Load dm table
+        dm_mw_table_1d = np.load(self.file_name, allow_pickle=True)
+
+        gal = np.round(gal)
+        gab = np.round(gab)
+        index = (gal - (-180))*181 + (gab - (-90))
+        #index = ne.evaluate("(gal - (-180))*181 + (gab - (-90))")
+        
+        dm_mw = dm_mw_table_1d[np.searchsorted(dm_mw_table_1d[:, 0], index)][:, 1]
+        
+        return dm_mw
+    
 class DistanceTable:
     """
     Create/use a lookup table for comoving distance, volume, redshift etc.
@@ -186,7 +206,7 @@ class DistanceTable:
     calculation times, it will check if a previous run with the same parameters
     has been done, which it will then load it. If not, it will calculate a new
     table, and save the table for later runs. Covers z, dist, vol, dvol,
-    cdf_sfr and cdf_smd.
+    cdf_sfr and cdf_smd and several delayed cdf_sfr.
 
     Args:
         H_0 (float, optional): Hubble parameter. Defaults to 67.74 km/s/Mpc
@@ -241,10 +261,11 @@ class DistanceTable:
                  'wv', cvt(self.W_v)]
         f = '-'.join(paras)
 
-        self.file_name = uni_mods + f'{f}.db'
-
+        #self.file_name = uni_mods + f'{f}.db'
+        self.file_name = uni_mods + f'{f}.npy'
+        
         if self.test:
-            self.file_name = uni_mods + 'cosmo_test.db'
+            self.file_name = uni_mods + 'cosmo_test.npy'
 
     def create_table(self):
         """Create a lookup table for distances."""
@@ -253,10 +274,6 @@ class DistanceTable:
              '  - May take up to 2m on a single core']
         for n in m:
             pprint(n)
-
-        # Connect to database
-        conn = sqlite3.connect(self.file_name)
-        c = conn.cursor()
 
         H_0 = self.H_0
         W_m = self.W_m
@@ -267,15 +284,8 @@ class DistanceTable:
         if W_k != 0.0:
             pprint('Careful - Your cosmological parameters do not sum to 1.0')
 
+        n_cpus = 128
         zs = np.arange(0, self.z_max+self.step, self.step)
-
-        # Create database
-        t = 'real'
-        par = f'(z {t}, dist {t}, vol {t}, dvol {t}, cdf_sfr {t}, cdf_smd {t})'
-        s = f'create table distances {par}'
-        c.execute(s)
-
-        results = []
 
         pprint('  - Calculating parameters at various redshifts')
         conv = go.Redshift(zs, H_0=H_0, W_m=W_m, W_v=W_v)
@@ -288,43 +298,63 @@ class DistanceTable:
 
         pprint('  - Calculating Star Formation Rate')
         # Get pdf sfr
-        pdf_sfr = sfr(zs)*dvols
-        cdf_sfr = np.cumsum(pdf_sfr)  # Unnormalized
-        cdf_sfr /= cdf_sfr[-1]
+        pdf_sfr = np.array(Parallel(n_jobs=n_cpus)(delayed(sfr)(i) for i in zs))*dvols
+        cdf_sfr = np.cumsum(pdf_sfr)
+        cdf_sfr /= cdf_sfr[-1] # Normalize
 
         pprint('  - Calculating Stellar Mass Density')
         # Get pdf csmd
-        pdf_smd = smd(zs, H_0=H_0, W_m=W_m, W_v=W_v)*dvols
-        cdf_smd = np.cumsum(pdf_smd)  # Unnormalized
-        cdf_smd /= cdf_smd[-1]
+        pdf_smd = np.array(Parallel(n_jobs=n_cpus)(delayed(smd)(i, H_0=H_0, W_m=W_m, W_v=W_v) for i in zs))*dvols
+        cdf_smd = np.cumsum(pdf_smd)
+        cdf_smd /= cdf_smd[-1] # Normalize
+        
+        pprint('  - Calculating Delayed Star Formation Rate - 0.1 Gyr')
+        # Get pdf delayed sfr 0.1 Gyr
+        pdf_dsfr0d1 = np.array(Parallel(n_jobs=n_cpus)(delayed(delayed_sfr)(i, 0.1) for i in zs))*dvols
+        cdf_dsfr0d1 = np.cumsum(pdf_dsfr0d1)
+        cdf_dsfr0d1 /= cdf_dsfr0d1[-1] # Normalize
+        
+        pprint('  - Calculating Delayed Star Formation Rate - 0.5 Gyr')
+        # Get pdf delayed sfr 0.5 Gyr
+        pdf_dsfr0d5 = np.array(Parallel(n_jobs=n_cpus)(delayed(delayed_sfr)(i, 0.5) for i in zs))*dvols
+        cdf_dsfr0d5 = np.cumsum(pdf_dsfr0d5)  # Unnormalized
+        cdf_dsfr0d5 /= cdf_dsfr0d5[-1]
+        
+        pprint('  - Calculating Delayed Star Formation Rate - 1 Gyr')
+        # Get pdf delayed sfr 1 Gyr
+        pdf_dsfr1 = np.array(Parallel(n_jobs=n_cpus)(delayed(delayed_sfr)(i, 1) for i in zs))*dvols
+        cdf_dsfr1 = np.cumsum(pdf_dsfr1)
+        cdf_dsfr1 /= cdf_dsfr1[-1] # Normalize
+        
+        pprint('  - Calculating Delayed Star Formation Rate - 2 Gyr')
+        # Get pdf delayed sfr 2 Gyr
+        pdf_dsfr2 = np.array(Parallel(n_jobs=n_cpus)(delayed(delayed_sfr)(i, 2) for i in zs))*dvols
+        cdf_dsfr2 = np.cumsum(pdf_dsfr2)
+        cdf_dsfr2 /= cdf_dsfr2[-1] # Normalize
+        
+        pprint('  - Calculating Delayed Star Formation Rate - 3 Gyr')
+        # Get pdf delayed sfr 3 Gyr
+        pdf_dsfr3 = np.array(Parallel(n_jobs=n_cpus)(delayed(delayed_sfr)(i, 3) for i in zs))*dvols
+        cdf_dsfr3 = np.cumsum(pdf_dsfr3)  
+        cdf_dsfr3 /= cdf_dsfr3[-1] # Normalize
+        
+        lookback_times = Planck18.lookback_time(zs).value
 
-        results = np.stack((zs, dists, vols, dvols, cdf_sfr, cdf_smd)).T
+        results = np.stack((zs, dists, vols, dvols, cdf_sfr, cdf_smd, cdf_dsfr0d1, cdf_dsfr0d5, cdf_dsfr1, cdf_dsfr2, cdf_dsfr3, lookback_times)).T
 
         pprint('  - Saving values to database')
-        # Save results to database
-        data = map(tuple, results.tolist())
-        c.executemany('insert into distances values (?,?,?,?,?,?)', data)
-
-        # Make for easier searching
-        # I don't really understand SQL index names...
-        c.execute('create index ix on distances (z)')
-        c.execute('create index ixx on distances (dist)')
-        c.execute('create index ixxx on distances (vol)')
-        c.execute('create index ixxxx on distances (dvol)')
-        c.execute('create index ixxxxx on distances (cdf_sfr)')
-        c.execute('create index ixxxxxx on distances (cdf_smd)')
-
-        # Save
-        conn.commit()
-
+        
+        np.save(self.file_name, results)
+        
         pprint('Finished distance table')
-
+    
     def lookup(self, z=None, dist_co=None, vol_co=None, dvol_co=None,
-               cdf_sfr=None, cdf_smd=None):
+               cdf_sfr=None, cdf_smd=None,
+               cdf_dsfr0d1=None, cdf_dsfr0d5=None, cdf_dsfr1=None, cdf_dsfr2=None, cdf_dsfr3=None,
+               lookback_time=None):
         """Look up associated values with input values."""
-        # Connect to database
-        conn = sqlite3.connect(self.file_name)
-        c = conn.cursor()
+        
+        distance_table = np.load(self.file_name, allow_pickle=True)
 
         # Check what's being looked up, set all other keywords to same length
         kw = {'z': z,
@@ -332,9 +362,17 @@ class DistanceTable:
               'vol': vol_co,
               'dvol': dvol_co,
               'cdf_sfr': cdf_sfr,
-              'cdf_smd': cdf_smd}
-
+              'cdf_smd': cdf_smd,
+              'cdf_dsfr0d1': cdf_dsfr0d1,
+              'cdf_dsfr0d5': cdf_dsfr0d5,
+              'cdf_dsfr1': cdf_dsfr1,
+              'cdf_dsfr2': cdf_dsfr2,
+              'cdf_dsfr3': cdf_dsfr3,
+              'lookback_time': lookback_time}
+        
+        col = -1
         for key, value in kw.items():
+            col += 1
             if value is not None:
                 in_par = key
                 break
@@ -346,21 +384,29 @@ class DistanceTable:
         keys = list(kw.keys())
 
         # Search database
-        query = f'select * from distances where {in_par} > ? limit 1'
-
-        for i, r in enumerate(kw[in_par]):
-            d = c.execute(query, [str(r)]).fetchone()
-            for ii, key in enumerate(keys):
-                if key == in_par:
-                    continue
-
-                kw[key][i] = d[ii]
-
-        # Close database
-        conn.close()
+        start = time.time()
+        
+        d = distance_table[np.searchsorted(distance_table[:, keys.index(in_par)], kw[in_par])]
+        for key in keys:
+            if key == in_par:
+                continue
+            kw[key] = d[:, keys.index(key)]
 
         return list(kw.values())
 
+def delayed_sfr(z, delay_time):
+    """Return the number density of star forming rate at redshift z.
+
+    Follows Madau & Dickinson (2014), eq. 15. For more info see
+    https://arxiv.org/pdf/1403.0007.pdf
+    """
+    #Make sure we do not exceed the z_at_value limit
+    z_lim = z_at_value(Planck18.age, delay_time * u.Gyr) - 0.002
+    z = np.piecewise(z, [z < z_lim, z >= z_lim], 
+                        [lambda z:np.array([z_at_value(Planck18.age, 13.7869 * u.Gyr - Planck18.lookback_time(i) - delay_time * u.Gyr) for i in z]), 
+                         lambda z:999])
+    
+    return (1+z)**2.7/(1+((1+z)/2.9)**5.6)
 
 def sfr(z):
     """Return the number density of star forming rate at redshift z.

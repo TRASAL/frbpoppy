@@ -1,6 +1,7 @@
 """Spectral index distributions."""
 import numpy as np
-
+#global rng
+#rng = np.random.default_rng()
 
 def constant(value=-1.4, shape=1):
     """Good for adopting a single value."""
@@ -20,3 +21,4 @@ def gauss(mean=-1.4, std=1, shape=1):
 
     """
     return np.random.normal(mean, std, shape).astype(np.float32)
+    #return rng.normal(mean, std, shape).astype(np.float32)
