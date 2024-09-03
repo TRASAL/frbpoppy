@@ -11,7 +11,7 @@ Establishing the origin and properties of Fast Radio Bursts (FRBs) is one of the
 *********************
 How can I install it?
 *********************
-1. Determine if you can and want to install frbpoppy system wide (e.g. with ``sudo``). Otherwise, first create and enter a virtual environment in python 
+1. Determine if you can and want to install frbpoppy system wide (e.g. with ``sudo``). Otherwise, first create and enter a virtual environment in python with e.g.: 
    ::
 
     $ python3 -m venv <foo>      # where <foo> is the install directory, e.g. ~/frbpoppy/virtualenv
@@ -44,21 +44,21 @@ Which dependencies does `frbpoppy` have?
 ****************************************
 All requirements can be found in `setup.py <https://github.com/TRASAL/frbpoppy/blob/master/setup.py>`_ but are also expanded upon in the following list:
 
- - `bokeh >= 1.3.4` for interactive plotting
- - `numpy >= 1.17.0` for array calculations
- - `pandas >= 1.0.3` for interactive plotting and easy import of csvs
+ - `bokeh` for interactive plotting
+ - `numpy` for array calculations
+ - `pandas` for interactive plotting and easy import of csvs
  - `frbcat` for importing frbcat data
- - `scipy >= 1.1.0` for Bessel functions and integrations
- - `SQLAlchemy >= 1.3.0` for creating and querying  cosmological databases
- - `matplotlib >= 2.2.3,<3.1` for plotting
- - `requests >= 2.20.0.` for downloading new versions of frbcat
- - `dill >= 0.3.1.1` for saving populations in pickled files
- - `tqdm >= 4.35.0` for nice progress bars during long calculations
- - `joblib >= 0.13.2` for parallel processing of long calculations
+ - `scipy` for Bessel functions and integrations
+ - `SQLAlchemy` for creating and querying  cosmological databases
+ - `matplotlib` for plotting
+ - `requests` for downloading new versions of frbcat
+ - `dill` for saving populations in pickled files
+ - `tqdm` for nice progress bars during long calculations
+ - `joblib` for parallel processing of long calculations
 
 And if using an old version of Python (<v3.6):
 
- - `future-fstrings >= 1.2.0` for using f-strings in old Python versions
+ - `future-fstrings` for using f-strings in old Python versions
 
 ***************
 How can I help?
