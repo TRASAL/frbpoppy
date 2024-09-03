@@ -63,12 +63,12 @@ Spotted a bug, or want to add some functionality? Simply `open an issue <https:/
 Who are the authors?
 ********************
 * **David Gardenier**
-   During his PhD, David worked at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), with the APERTIF/ALERT team, to establish the properties of FRBs. He wrote  ``frbpoppy``.  He works in industry now, drop him a line through `his webpage <https://davidgardenier.github.io/>`_ if you enjoy working with frbpoppy.
+   During his PhD, David worked at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), with the APERTIF/ALERT team, to establish the properties of FRBs. He wrote  frbpoppy.  He works in industry now, drop him a line through `his webpage <https://davidgardenier.github.io/>`_ if you enjoy working with frbpoppy.
 
 * **Yuyang Wang**
-   Yuyang currently persues a PhD at the University of Amsterdam (UvA) and the Netherlands Institute for Radio Astronomy (ASTRON). His research focusses on FRB population studies and pulsar timing. Get in touch with him via `email <y.wang3@uva.nl>`_.
+   Yuyang currently pursues a PhD at the University of Amsterdam (UvA) and the Netherlands Institute for Radio Astronomy (ASTRON). His research focuses on FRB population studies and pulsar timing. Get in touch with him via `email <y.wang3@uva.nl>`_.
 
 * **Joeri van Leeuwen**
-   Joeri is a faculty member at the Netherlands Institute for Radio Astronomy (ASTRON) and conceived  ``frbpoppy``.  `Email him <leeuwen@astron.nl>`_ or talk to him at a conference. 
+   Joeri is a faculty member at the Netherlands Institute for Radio Astronomy (ASTRON) and conceived frbpoppy.  `Email him <leeuwen@astron.nl>`_ or talk to him at a conference. 
 
    
