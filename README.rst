@@ -69,6 +69,6 @@ Who are the authors?
    Yuyang currently persues a PhD at the University of Amsterdam (UvA) and the Netherlands Institute for Radio Astronomy (ASTRON). His research focusses on FRB population studies and pulsar timing. Get in touch with him via `email <y.wang3@uva.nl>`_.
 
 * **Joeri van Leeuwen**
-   Joeri is a faculty member at the Netherlands Institute for Radio Astronomy (ASTRON) and conceived  ``frbpoppy``. Email him at `email <leeuwen@astron.nl>`_ or talk to him at a conference. 
+   Joeri is a faculty member at the Netherlands Institute for Radio Astronomy (ASTRON) and conceived  ``frbpoppy``.  `Email him <leeuwen@astron.nl>`_ or talk to him at a conference. 
 
    
