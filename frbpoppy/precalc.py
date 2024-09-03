@@ -54,11 +54,10 @@ class NE2001Table:
     def set_file_name(self):
         """Determine filename."""
         uni_mods = os.path.join(paths.models(), 'universe/')
-        #self.file_name = uni_mods + 'dm_mw.db'
-        self.file_name = uni_mods + 'dm_mw_ne2001_1d.npy'
+        self.file_name = uni_mods + 'dm_mw_ne2001.npy'
         if self.test:
             uni_mods = os.path.join(paths.models(), 'universe/')
-            self.file_name = uni_mods + 'test_dm_mw_ne2001_1d.npy'
+            self.file_name = uni_mods + 'test_dm_mw_ne2001.npy'
 
     def create_table(self, parallel=True):
         """Create a lookup table for dispersion measure."""
@@ -74,7 +73,6 @@ class NE2001Table:
         start = time.time()
         for gl in gls:
             for gb in gbs:
-                print(gl, gb)
                 if gl in DM_MW_Table:
                     DM_MW_Table[gl].update({gb: go.ne2001_dist_to_dm(dist, gl, gb)})
                 else:
@@ -94,8 +92,16 @@ class NE2001Table:
 
         """
         # Load dm table
-        dm_mw_table_1d = np.load(self.file_name, allow_pickle=True)
-
+        dm_mw_table = np.load(self.file_name, allow_pickle=True)
+        dm_mw_table = dict(enumerate(dm_mw_table.flatten()))[0]
+        
+        coor_index = range(0, 361*181)
+        dm_mw_table_1d = []
+        for i in range(-180, 181):
+            for j in range(-90, 91):
+                dm_mw_table_1d.append(dm_mw_table[i][j])
+        #dm_mw_table_1d = dict(zip(coor_index, dm_mw_table_1d))
+        dm_mw_table_1d = np.stack((np.array(coor_index), np.array(dm_mw_table_1d)), axis=-1)
         # Round values
         gal = np.round(gal)
         gab = np.round(gab)
@@ -144,11 +150,10 @@ class YMW16Table:
     def set_file_name(self):
         """Determine filename."""
         uni_mods = os.path.join(paths.models(), 'universe/')
-        #self.file_name = uni_mods + 'dm_mw.db'
-        self.file_name = uni_mods + 'dm_mw_ymw16_1d.npy'
+        self.file_name = uni_mods + 'dm_mw_ymw16.npy'
         if self.test:
             uni_mods = os.path.join(paths.models(), 'universe/')
-            self.file_name = uni_mods + 'test_dm_mw_ymw16_1d.npy'
+            self.file_name = uni_mods + 'test_dm_mw_ymw16.npy'
 
     def create_table(self, parallel=True):
         """Create a lookup table for dispersion measure."""
@@ -164,7 +169,6 @@ class YMW16Table:
         start = time.time()
         for gl in gls:
             for gb in gbs:
-                print(gl, gb)
                 if gl in DM_MW_Table:
                     DM_MW_Table[gl].update({gb: go.ymw16_dist_to_dm(dist, gl, gb)})
                 else:
@@ -185,8 +189,17 @@ class YMW16Table:
 
         """
         # Load dm table
-        dm_mw_table_1d = np.load(self.file_name, allow_pickle=True)
+        dm_mw_table = np.load(self.file_name, allow_pickle=True)
+        dm_mw_table = dict(enumerate(dm_mw_table.flatten()))[0]
 
+        coor_index = range(0, 361*181)
+        dm_mw_table_1d = []
+        for i in range(-180, 181):
+            for j in range(-90, 91):
+                dm_mw_table_1d.append(dm_mw_table[i][j])
+        #dm_mw_table_1d = dict(zip(coor_index, dm_mw_table_1d))
+        dm_mw_table_1d = np.stack((np.array(coor_index), np.array(dm_mw_table_1d)), axis=-1)
+        
         gal = np.round(gal)
         gab = np.round(gab)
         index = (gal - (-180))*181 + (gab - (-90))

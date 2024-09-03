@@ -37,7 +37,7 @@ def get_beam_props(model, fwhm):
     elif model == 'chime-frb':
         pixel_scale = 0.05  # Degrees per pixel [deg]
         x_range = 2.   # Use 2 deg for CHIME main beam East-West range
-        beam_array = beam_array[:, 800-20*x_range:800+20*x_range]
+        beam_array = beam_array[:, 800-20*int(x_range):800+20*int(x_range)]
         beam_size = 120*2*x_range  # [sq deg]
     elif model == 'gaussian':
         pixel_scale = fwhm / 95  # Degrees per pixel [deg]
@@ -179,8 +179,10 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
         #y_offset = ne.evaluate("(ran_y-b_y) * pixel_scale")
         
         offset = go.separation(0, 0, x_offset, y_offset)
-
-        return int_pro, offset, x_offset, y_offset
+        if pattern == 'chime-frb':
+            return int_pro, offset, x_offset, y_offset
+        else:
+            return int_pro, offset
 
     else:
         raise ValueError(f'Beam pattern "{pattern}" not recognised')
