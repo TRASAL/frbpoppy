@@ -57,17 +57,18 @@ And if using an old version of Python (<v3.6):
 ***************
 How can I help?
 ***************
-Spotted a bug, or want to add some functionality? Simply `open an issue <https://github.com/TRASAL/frbpoppy/issues/new>`_ on github, or `contact Joeri van Leeuwen <leeuwen@astron.nl> or Yuyang Wang <y.wang3@uva.nl>`_ directly. Any help is appreciated!
+Spotted a bug, or want to add some functionality? Simply `open an issue <https://github.com/TRASAL/frbpoppy/issues/new>`_ on github, or contact `Joeri van Leeuwen <leeuwen@astron.nl>`_ or `Yuyang Wang <y.wang3@uva.nl>`_ directly. Any help is appreciated!
 
 ********************
 Who are the authors?
 ********************
 * **David Gardenier**
-   David was a PhD student at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), where he worked with the APERTIF/ALERT team to establish the properties of FRBs. He works in industry now drop him a line through `his webpage <https://davidgardenier.github.io/>`_ if you enjoy working with frbpoppy.
+   David was a PhD student at the Netherlands Institute for Radio Astronomy (ASTRON) and the University of Amsterdam (UvA), where he worked with the APERTIF/ALERT team to establish the properties of FRBs, and wrote  ``frbpoppy``.  He works in industry now, drop him a line through `his webpage <https://davidgardenier.github.io/>`_ if you enjoy working with frbpoppy.
 
 * **Yuyang Wang**
    Yuyang currently persues a PhD student at the University of Amsterdam (UvA) and the Netherlands Institute for Radio Astronomy (ASTRON). His research focusses on FRB population studies and pulsar timing. Get in touch with him via `email <y.wang3@uva.nl>`_.
 
 * **Joeri van Leeuwen**
-   Joeri is a staff member at the Netherlands Institute for Radio Astronomy (ASTRON) and conceived frbpoppy. Email him at `email <leeuwen@astron.nl>`_ or talk to him at a conference. 
+   Joeri is a staff member at the Netherlands Institute for Radio Astronomy (ASTRON) and conceived  ``frbpoppy``. Email him at `email <leeuwen@astron.nl>`_ or talk to him at a conference. 
+
    
