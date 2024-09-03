@@ -179,8 +179,10 @@ def int_pro_random(shape=(1, 1), pattern='perfect', fwhm=2, max_offset=None,
         #y_offset = ne.evaluate("(ran_y-b_y) * pixel_scale")
         
         offset = go.separation(0, 0, x_offset, y_offset)
-
-        return int_pro, offset, x_offset, y_offset
+        if pattern == 'chime-frb':
+            return int_pro, offset, x_offset, y_offset
+        else:
+            return int_pro, offset
 
     else:
         raise ValueError(f'Beam pattern "{pattern}" not recognised')
