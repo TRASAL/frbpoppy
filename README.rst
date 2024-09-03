@@ -1,7 +1,7 @@
 .. image:: docs/logo_text.png
     :scale: 50
 
-Conduct Fast Radio Burst Population Synthesis | **David Gardenier, Joeri van Leeuwen & Yuyang Wang** | ASTRON & UvA
+Fast Radio Burst Population Synthesis | **David Gardenier, Joeri van Leeuwen & Yuyang Wang** | ASTRON & UvA
 
 ****************
 What's frbpoppy?
