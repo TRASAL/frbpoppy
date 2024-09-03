@@ -11,18 +11,24 @@ Establishing the origin and properties of Fast Radio Bursts (FRBs) is one of the
 *********************
 How can I install it?
 *********************
-1. Ensure ``gfortran`` is installed on your system (used for NE2001).
-2. Get the files from the github repository:
+1. Determine if you can and want to install frbpoppy system wide (e.g. with ``sudo``). Otherwise, first create and enter a virtual environment in python 
+   ::
+
+    $ python3 -m venv <foo>      # where <foo> is the install directory, e.g. ~/frbpoppy/virtualenv
+    $ source <foo>/bin/activate  # where <foo> is the same directory as above
+   
+2. Ensure ``gfortran`` is installed on your system (used for NE2001).
+3. Get the files from the github repository:
    ::
 
     $ git clone https://github.com/TRASAL/frbpoppy
 
-3. It's important that frbpoppy is installed locally. Why? It means that you can play around with the code without having to dig into a system wide install. It also allows frbpoppy to create data files more easily. Ubuntu is supported, as should be Macs, however no tests have been done on Windows. Install frbpoppy locally by going to the downloaded directory and running
+4. It's important that frbpoppy is installed locally. Why? It means that you can play around with the code without having to dig into a system wide install. It also allows frbpoppy to create data files more easily. Ubuntu is supported, as should be Macs, however no tests have been done on Windows. Install frbpoppy locally by going to the downloaded directory and running
    ::
 
     $ python3 setup.py develop
 
-4.  Run frbpoppy for the first time. Frbpoppy will automatically create lookup tables for complex calculations. Note this can take up to 2h on a modern machine (4 cores). Subsequent runs will be orders of magnitude faster.
+5.  Run frbpoppy for the first time. Frbpoppy will automatically create lookup tables for complex calculations. Note this can take up to 2h on a modern machine (4 cores). Subsequent runs will be orders of magnitude faster.
     ::
 
      $ python3 examples/_starting_with_frbpoppy_.py
