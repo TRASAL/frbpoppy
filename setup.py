@@ -82,18 +82,18 @@ class PostDevelopCommand(develop):
                 c = ['bash', 'backport.sh']
                 check_call(c)
             else:
-                ' - Avoiding runing bash script.'
+                ' - Avoiding running bash script.'
 
         develop.run(self)
 
 
 setup(name='frbpoppy',
-      version='1.0.0',
+      version='2.2.0',
       description='Fast Radio Burst Population Synthesis',
       long_description=open('README.rst').read(),
-      url='http://github.com/davidgardenier/frbpoppy',
-      author='David Gardenier',
-      author_email='gardenier@astron.nl',
+      url='http://github.com/TRASAL/frbpoppy',
+      author='Joeri van Leeuwen',
+      author_email='leeuwen@astron.nl',
       license='MIT',
       packages=['frbpoppy'],
       zip_safe=False,
